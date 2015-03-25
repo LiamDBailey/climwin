@@ -40,7 +40,7 @@
 #' @export
 
 
-plotcor <- function(CorWindowOutput, TYPE=TYPE){
+plotcor <- function(CorWindowOutput, TYPE = TYPE){
   ifelse (TYPE == "A", title <- "Correlation between single window and all other windows", 
           title <- "Correlation between 2 climate variables in all windows")
   with(CorWindowOutput, {

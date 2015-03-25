@@ -115,7 +115,7 @@
 
 climatewin <- function(Xvar, CDate, BDate, baseline, furthest, closest, 
                        FIXED, cutoff.day, cutoff.month, STAT = "mean", FUNC = "L",
-                      CMISSING = FALSE, CINTERVAL = "D",  nrandom = 0){
+                       CMISSING = FALSE, CINTERVAL = "D",  nrandom = 0){
   
   print("Initialising, please wait...")
   pb        <- SetProgressBar(furthest, closest, STAT)    # Calculate the number of models to run 

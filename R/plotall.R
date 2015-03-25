@@ -75,8 +75,8 @@
 #NOTES: Tidy code
 
 #Distinguish between Q and C
-plotall <- function(Dataset, DatasetRand = NA,
-                    BestModel = NA, BestModelData = NA,
+plotall <- function(Dataset, DatasetRand = NULL,
+                    BestModel = NULL, BestModelData = NULL,
                     CW1 = 0.95, CW2 = 0.5, CW3 = 0.25, HISTQ = 0.99){
   
   a       <- c(CW1, CW2, CW3)
@@ -95,7 +95,7 @@ plotall <- function(Dataset, DatasetRand = NA,
   WINDOW <- plotwin(Dataset = Dataset, CW = CWa)
   
   HIST   <- plothist(Dataset = Dataset, DatasetRand = DatasetRand, HISTQ = HISTQ)
-  if(is.na(BestModel)[1] == FALSE && is.na(BestModelData)[1] == FALSE){
+  if(is.null(BestModel) == FALSE && is.null(BestModelData) == FALSE){
   BEST   <- plotbest(Dataset = Dataset, BestModel = BestModel, BestModelData = BestModelData)
   
   if (Dataset$Function[1] == "L"){

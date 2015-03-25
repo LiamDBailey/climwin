@@ -37,13 +37,13 @@
 # last edited 18/2/15 by LDB
 # TIDY CODE
 
-plothist <- function(Dataset, DatasetRand = NA, HISTQ = 0.99){
+plothist <- function(Dataset, DatasetRand = NULL, HISTQ = 0.99){
   
   Dataset$delta  <- Dataset$ModelAICc - min(Dataset$ModelAICc)
   #Calculate a second delta compared to a model with no climate#
   Dataset$delta2 <- Dataset$ModelAICc - Dataset$baselineAICc
   
-  if (is.na(DatasetRand)[1] == FALSE){
+  if (is.null(DatasetRand) == FALSE){
     #Create delta2 for random data#
     DatasetRand$delta2 <- DatasetRand$ModelAICc - DatasetRand$baselineAICc
     
@@ -53,7 +53,7 @@ plothist <- function(Dataset, DatasetRand = NA, HISTQ = 0.99){
     levels(RandData$Randomised) <- c("Real data", paste("Randomised data (", max(DatasetRand$Repeat), "x )"))
   }
 
-  if (is.na(DatasetRand)[1] == TRUE){
+  if (is.null(DatasetRand) == TRUE){
     with(Dataset, {
       ggplot(Dataset, aes(x = delta2))+
       geom_histogram(aes(y = 2 * ..density..), colour = "black", fill = "red", binwidth = 2, alpha = 0.5)+
