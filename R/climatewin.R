@@ -137,8 +137,10 @@ climatewin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
   }
 
   if (CMISSING == FALSE && length(which(is.na(CMatrix))) > 0){
-    stop(c("Climate data file should not contain NA values: ", length(which(is.na(CMatrix))),
-           " NA value(s) found. Please add missing climate data or set CMISSING=TRUE"))
+    .GlobalEnv$Missing <- as.Date(cont$CIntNo[is.na(cont$Xvar)], origin = min(as.Date(CDate, format = "%d/%m/%Y")) - 1)
+    stop(c("Climate data should not contain NA values: ", length(.GlobalEnv$Missing),
+           " NA value(s) found. Please add missing climate data or set CMISSING=TRUE.
+           See object Missing for all missing climate data"))
   }
   
   if (CMISSING == TRUE && length(which(is.na(CMatrix))) > 0){
