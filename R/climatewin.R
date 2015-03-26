@@ -129,6 +129,13 @@ climatewin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
   baseline  <- update(baseline, .~.)
   nullmodel <- AICc(baseline)
   
+  modeldat      <- model.frame(baseline)
+  modeldat$Yvar <- modeldat[, 1]
+  
+  if(length(modeldat$Yvar) != length(BDate)){
+    stop("NA values present in biological response. Please remove NA values")
+  }
+  
   for (i in 1:length(BDate)){
    for (j in closest:furthest){
      k <- j - closest + 1
@@ -144,8 +151,6 @@ climatewin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
   }
   
   if (CMISSING == TRUE && length(which(is.na(CMatrix))) > 0){
-    modeldat      <- model.frame(baseline)
-    modeldat$Yvar <- modeldat[, 1]
     modeldat      <- modeldat[complete.cases(CMatrix), ]
     baseline      <- update(baseline, Yvar~., data = modeldat)
     CMatrix       <- CMatrix[complete.cases(CMatrix), ]

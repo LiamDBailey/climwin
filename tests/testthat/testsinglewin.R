@@ -106,6 +106,7 @@ test_that("No errors return when CMISSING FALSE with NAs", {
                           baseline = lm(Mass ~ 1, data = Mass), furthest = 2, closest = 2, 
                           FIXED = FALSE, STAT = "max", FUNC = "L", 
                           CMISSING = FALSE))
+  
 })
 
 
@@ -261,3 +262,15 @@ test_that("Inverse function works", {
   
 })
 
+################################################################
+
+#Error when you have NAs in the biological data
+test_that("singlewin gives error when NAs are present in biological data", {
+  
+  data(MassClimate, envir = environment())
+  Mass <- data.frame(Date = c("01/01/2014", "01/02/2014"), Mass = c(NA, 1))
+  
+  expect_error(singlewin(Xvar = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date, baseline = lm(Mass ~ 1, data = Mass), 
+            furthest = 2, closest = 2, FIXED = FALSE, STAT = "max", FUNC = "L", CMISSING = FALSE))
+  
+})

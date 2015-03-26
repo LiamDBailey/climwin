@@ -94,6 +94,7 @@ test_that("No errors return when CMISSING FALSE with NAs", {
                           baseline = lm(Mass ~ 1, data = Mass), furthest = 2, closest = 2, 
                           FIXED = FALSE, STAT = "max", FUNC = "L", 
                           CMISSING=FALSE))
+  
   })
 
 
@@ -282,3 +283,17 @@ expect_true(ncol(test[[3]]) >= 12)
   
 })
 
+################################################################
+
+#Error when you have NAs in the biological data
+test_that("climatewin gives error when NAs are present in biological data", {
+  
+  data(MassClimate, envir = environment())
+  Mass <- data.frame(Date = c("01/01/2014", "01/02/2014"), Mass = c(NA, 1))
+  
+  expect_error(climatewin(Xvar = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date, 
+                          baseline = lm(Mass ~ 1, data = Mass), furthest = 2, closest = 2, 
+                          FIXED = FALSE, STAT = "max", FUNC = "L",
+                          CMISSING=FALSE, CINTERVAL = "D"))
+  
+})

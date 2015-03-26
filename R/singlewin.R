@@ -82,14 +82,20 @@ singlewin <- function(Xvar, CDate, BDate, baseline,
   nullmodel <- AICc(baseline)  
   duration  <- (furthest-closest) + 1
   MODLIST   <- list()   # dataframes to store ouput
-  CMatrix   <- matrix(ncol = (duration), nrow = length(BDate))  # matrix that stores the weather data for variable or fixed windows
-  # create new climate dataframe with continuous daynumbers, leap days are not a problem
+  CMatrix   <- matrix(ncol = (duration), nrow = length(BDate))
   
-  BDate <- as.Date(BDate, format = "%d/%m/%Y")
+  modeldat      <- model.frame(baseline)
+  modeldat$Yvar <- modeldat[, 1]
+  
+  if(length(modeldat$Yvar) != length(BDate)){
+    stop("NA values present in biological response. Please remove NA values")
+  }
+  
+  BDate  <- as.Date(BDate, format = "%d/%m/%Y")
   CDate2 <- seq(min(as.Date(CDate, format = "%d/%m/%Y")), max(as.Date(CDate, format = "%d/%m/%Y")), "days") # Convert the date variables into the R date format
-  CDate <- as.Date(CDate, format = "%d/%m/%Y") #Convert the date variables into the R date format#
+  CDate  <- as.Date(CDate, format = "%d/%m/%Y") #Convert the date variables into the R date format#
   
-  Xvar <- Xvar[match(CDate2, CDate)]
+  Xvar       <- Xvar[match(CDate2, CDate)]
   CIntNo     <- as.numeric(CDate2) - min(as.numeric(CDate2)) + 1   # atrribute daynumbers for both datafiles with first date in CLimateData set to CIntNo 1
   RealBIntNo <- as.numeric(BDate) - min(as.numeric(CDate2)) + 1
   
@@ -161,9 +167,7 @@ singlewin <- function(Xvar, CDate, BDate, baseline,
            See object Missing for all missing climate data"))
   }
   
-  if (CMISSING == TRUE && length(which(is.na(CMatrix))) > 0){ 
-    modeldat      <- model.frame(baseline)
-    modeldat$Yvar <- modeldat[, 1]
+  if (CMISSING == TRUE && length(which(is.na(CMatrix))) > 0){
     modeldat      <- modeldat[complete.cases(CMatrix), ]
     baseline      <- update(baseline, Yvar~., data = modeldat)
     CMatrix       <- CMatrix[complete.cases(CMatrix), ]
