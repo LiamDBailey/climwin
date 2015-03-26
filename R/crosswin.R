@@ -83,13 +83,17 @@ crosswin <- function(Xvar, Xvar2, CDate, BDate, furthest, closest,
   }
   
   if (CMISSING == FALSE && length(which(is.na(CMatrix1))) > 0){
-    stop(c("Climate data Xvar file should not contain NA values: ", length(which(is.na(CMatrix1))), 
-           " NA value(s) found. Please add missing climate data or set CMISSING=TRUE"))
-  }
+    .GlobalEnv$Missing <- as.Date(cont$CIntNo[is.na(cont$Xvar)], origin = min(as.Date(CDate, format = "%d/%m/%Y")) - 1)
+    stop(c("Climate data Xvar should not contain NA values: ", length(.GlobalEnv$Missing),
+           " NA value(s) found. Please add missing climate data or set CMISSING=TRUE.
+           See object Missing for all missing climate data"))
+  }  
   
   if (CMISSING == FALSE && length(which(is.na(CMatrix2))) > 0){
-    stop(c("Climate data Xvar2 file should not contain NA values: ", length(which(is.na(CMatrix2))),  
-           " NA value(s) found. Please add missing climate data or set CMISSING=TRUE"))
+    .GlobalEnv$Missing2 <- as.Date(cont$CIntNo[is.na(cont$Xvar)], origin = min(as.Date(CDate, format = "%d/%m/%Y")) - 1)
+    stop(c("Climate data Xvar2 should not contain NA values: ", length(.GlobalEnv$Missing),
+           " NA value(s) found. Please add missing climate data or set CMISSING=TRUE.
+           See object Missing2 for all missing climate data"))
   }
   
   if (CMISSING == TRUE){ 
