@@ -28,7 +28,7 @@
 
 
 
-explore <- function(shape = 0, scale = 1, loc = 0, WeightFunction = "W"){
+explore <- function(shape = 1, scale = 1, loc = 0, WeightFunction = "W"){
   par(mfrow = c(1, 1))
   duration <- 365
   j        <- seq(1:duration) / duration
