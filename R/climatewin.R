@@ -228,10 +228,10 @@ climatewin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
   #Save the best model output
   m <- (MODLIST$WindowOpen[MODLIST$ModelAICc %in% min(MODLIST$ModelAICc)])
   n <- (MODLIST$WindowOpen[MODLIST$ModelAICc %in% min(MODLIST$ModelAICc)]) - (MODLIST$WindowClose[MODLIST$ModelAICc %in% min(MODLIST$ModelAICc)]) + 1
-  windowopen  <- m - closest + 1
-  windowclose <- windowopen - n + 1
+  windowopen  <- m[1] - closest + 1
+  windowclose <- windowopen - n[1] + 1
   if(STAT == "slope"){
-    time      <- seq(1, n, 1)
+    time      <- seq(1, n[1], 1)
     modeldat$temporary <- apply(CMatrix[, windowclose:windowopen], 1, FUN = function(x) coef(lm(x ~ time))[2])
   } else {
     ifelse (n == 1, modeldat$temporary <- CMatrix[, windowclose:windowopen], modeldat$temporary <- apply (CMatrix[, windowclose:windowopen], 1, FUN = STAT))
