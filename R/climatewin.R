@@ -118,6 +118,7 @@ climatewin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
                        CMISSING = FALSE, CINTERVAL = "D",  nrandom = 0){
   
   print("Initialising, please wait...")
+  #NOTE
   pb        <- SetProgressBar(furthest, closest, STAT)    # Calculate the number of models to run 
   cont      <- DateConverter(BDate = BDate, CDate = CDate, Xvar = Xvar, 
                              CINTERVAL = CINTERVAL, FIXED = FIXED, 
