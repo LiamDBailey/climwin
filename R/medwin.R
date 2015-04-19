@@ -1,3 +1,5 @@
+#' Return the value of the median climate window
+
 medwin <- function(Dataset, CW = 0.95){
   
   Dataset$delta  <- Dataset$ModelAICc - min(Dataset$ModelAICc)
