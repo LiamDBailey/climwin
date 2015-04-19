@@ -234,7 +234,7 @@ climatewin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
     time      <- seq(1, n[1], 1)
     modeldat$temporary <- apply(CMatrix[, windowclose:windowopen], 1, FUN = function(x) coef(lm(x ~ time))[2])
   } else {
-    ifelse (n == 1, modeldat$temporary <- CMatrix[, windowclose:windowopen], modeldat$temporary <- apply (CMatrix[, windowclose:windowopen], 1, FUN = STAT))
+    ifelse (windowopen - windowclose == 0, modeldat$temporary <- CMatrix[, windowclose:windowopen], modeldat$temporary <- apply (CMatrix[, windowclose:windowopen], 1, FUN = STAT))
   }
   LocalModel           <- update(modeloutput, .~.)
   MODLIST$baselineAICc <- AICc(baseline)
