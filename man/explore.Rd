@@ -4,7 +4,7 @@
 \alias{explore}
 \title{Visualise the weight distribution for given parameter values}
 \usage{
-explore(shape = 0, scale = 1, loc = 0, WeightFunction = "W")
+explore(shape = 1, scale = 1, loc = 0, WeightFunction = "W")
 }
 \arguments{
 \item{shape}{A parameter that determines the shape of the distribution.

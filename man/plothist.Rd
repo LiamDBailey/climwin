@@ -4,7 +4,7 @@
 \alias{plothist}
 \title{Create a histogram of deltaAICc values}
 \usage{
-plothist(Dataset, DatasetRand = NA, HISTQ = 0.99)
+plothist(Dataset, DatasetRand = NULL, HISTQ = 0.99)
 }
 \arguments{
 \item{Dataset}{A dataframe containing information on all fitted climate
