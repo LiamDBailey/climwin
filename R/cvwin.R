@@ -195,36 +195,36 @@ cvwin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
 
 #######################
 
-data(Mass)
-data(MassClimate)
-Mass$weight1<-abs(rnorm(length(Mass$Mass),0,1))
-Mass$cov<-abs(rnorm(length(Mass$Mass),0,1))
+#data(Mass)
+#data(MassClimate)
+#Mass$weight1<-abs(rnorm(length(Mass$Mass),0,1))
+#Mass$cov<-abs(rnorm(length(Mass$Mass),0,1))
 #Mass<-Mass[1:10,]
-MassWin <- cvwin(Xvar = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date,
-                        baseline = lm(Mass$Mass ~ 1, weights=Mass$weight1),
-                        furthest = 150, closest = 0,
-                        STAT = "mean", FUNC = "L",
-                        FIXED = TRUE, cutoff.day = 20, cutoff.month = 5,
-                        nrandom = 0, CMISSING = FALSE, CINTERVAL = "D", CVK=2)
+#MassWin <- cvwin(Xvar = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date,
+#                        baseline = lm(Mass$Mass ~ 1, weights=Mass$weight1),
+#                        furthest = 150, closest = 0,
+#                        STAT = "mean", FUNC = "L",
+#                        FIXED = TRUE, cutoff.day = 20, cutoff.month = 5,
+#                        nrandom = 0, CMISSING = FALSE, CINTERVAL = "D", CVK=2)
 #give Error in model.frame.default(formula = Yvar ~ temporary, data = train,  : variable lengths differ (found for '(weights)') 
 
 
 
-MassWin <- cvwin(Xvar = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date,
-                 baseline = lm(Mass ~ 1+cov, weights=weight1, data=Mass),
-                 furthest = 150, closest = 0,
-                 STAT = "mean", FUNC = "L",
-                 FIXED = TRUE, cutoff.day = 20, cutoff.month = 5,
-                 nrandom = 0, CMISSING = FALSE, CINTERVAL = "D", CVK=2)
+#MassWin <- cvwin(Xvar = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date,
+#                 baseline = lm(Mass ~ 1+cov, weights=weight1, data=Mass),
+#                 furthest = 150, closest = 0,
+#                 STAT = "mean", FUNC = "L",
+#                 FIXED = TRUE, cutoff.day = 20, cutoff.month = 5,
+#                 nrandom = 0, CMISSING = FALSE, CINTERVAL = "D", CVK=2)
 # gives  Error in eval(expr, envir, enclos) : object 'weight1' not found 
 
 
-MassWin <- cvwin(Xvar = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date,
-                 baseline = lm(Mass$Mass ~ 1+Mass$cov, weights=Mass$weight1),
-                 furthest = 150, closest = 0,
-                 STAT = "mean", FUNC = "L",
-                 FIXED = TRUE, cutoff.day = 20, cutoff.month = 5,
-                 nrandom = 0, CMISSING = FALSE, CINTERVAL = "D", CVK=2)
+#MassWin <- cvwin(Xvar = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date,
+#                 baseline = lm(Mass$Mass ~ 1+Mass$cov, weights=Mass$weight1),
+#                 furthest = 150, closest = 0,
+#                 STAT = "mean", FUNC = "L",
+#                 FIXED = TRUE, cutoff.day = 20, cutoff.month = 5,
+#                 nrandom = 0, CMISSING = FALSE, CINTERVAL = "D", CVK=2)
 #give Error in model.frame.default(formula = Yvar ~ Mass$cov + temporary, data = train,  : variable lengths differ (found for 'Mass$cov') 
 
                  
