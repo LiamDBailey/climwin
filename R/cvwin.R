@@ -1,4 +1,3 @@
-library(climwin)
 # make sure you run all the function in otherfunctions.r from climwin package, they do not seem to be automatically recognized
 
 cvwin <- function(Xvar, CDate, BDate, baseline, furthest, closest, 
