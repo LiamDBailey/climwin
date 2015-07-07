@@ -1,15 +1,72 @@
-# make sure you run all the function in otherfunctions.r from climwin package, they do not seem to be automatically recognized
+#'  Carry out k-fold cross validation process for climate window selection
+#'  
+#'  Finds the time period when a biological variable is most strongly affected 
+#'  by climate. Note that climate data and biological data should be loaded as 
+#'  two seperate objects. Both objects should contain a date column to designate
+#'  when the data were recorded (dd/mm/yyyy) and a response variable column.
+#'  @param Xvar The climate variable of interest. Please specify the parent 
+#'    environment and variable name (e.g. Climate$Temp).
+#'  @param CDate The climate date variable (dd/mm/yyyy). Please specify the 
+#'    parent environment and variable name (e.g. Climate$Date).
+#'  @param BDate The biological date variable (dd/mm/yyyy). Please specify the 
+#'    parent environment and variable name (e.g. Biol$Date).
+#'  @param baseline The baseline model structure used for testing correlation. 
+#'    Currently known to support lm, glm, lmer and glmer objects.
+#'  @param furthest The furthest number of time intervals (set by CINTERVAL) 
+#'    back from the cutoff date or biological record that you want to include in
+#'    your climate window search.
+#'  @param closest The closest number of time intervals (set by CINTERVAL) back 
+#'    from the cutoff date or biological record that you want to include in your
+#'    climate window search.
+#'  @param STAT The aggregate statistic used to analyse the climate data. Can 
+#'    currently use basic R statistics (e.g. mean, min), as well as slope. 
+#'    Additional aggregate statistics can be created using the format 
+#'    function(x) (...). See FUN in \code{\link{apply}} for more detail.
+#'  @param FUNC The function used to fit the climate variable. Can be linear 
+#'    ("L"), quadratic ("Q"), cubic ("C"), inverse ("I") or log ("LOG").
+#'  @param FIXED TRUE or FALSE, whether you wish the climate window to be 
+#'    variable (i.e. the number of days before each biological record is 
+#'    measured) or fixed (i.e. number of days before a set point in time).
+#'  @param cutoff.day,cutoff.month If FIXED is TRUE, the day and month of the 
+#'    year from which the fixed window analysis will start.
+#'  @param nrandom Used in conjunction with \code{\link{randwin}}. Not to be 
+#'    changed manually.
+#'  @param CMISSING TRUE or FALSE, determines what should be done if there are 
+#'    missing climate data. If FALSE, the function will not run if missing 
+#'    climate data is encountered. If TRUE, any records affected by missing 
+#'    climate data will be removed from climate window analysis.
+#'  @param CINTERVAL The resolution at which climate window analysis will be 
+#'    conducted. May be days ("D"), weeks ("W"), or months ("M"). Note the units
+#'    of parameters 'furthest' and 'closest' will differ depending on the choice
+#'    of CINTERVAL.
+#'  @param CVK The number of folds used in the k-fold cross validation
+#'  @return Will return a list containing three objects:
+#'    
+#'    \itemize{ \item BestModel, a model object. The strongest climate window 
+#'    model based on AICc. \item BestModelData, a dataframe with the data used 
+#'    to fit the strongest climate window model. \item WindowOutput, a dataframe
+#'    with information on all fitted climate windows. Ordered using AICc model
+#'    strength, with lowest AICc value first. See \code{\link{MassOutput}} as an
+#'    example. }
+#'  @author Liam D. Bailey and Martijn van de Pol
+#'  @importFrom MuMIn AICc
+#'  @import lme4  
+#'  @export
+
+#LAST EDITED: 07/07/2015
+#EDITED BY: LIAM
+#NOTES: Integrated function into main package (no need to individually load each "other function" just run devtools::load_all("climwin"))
 
 cvwin <- function(Xvar, CDate, BDate, baseline, furthest, closest, 
                        FIXED, cutoff.day, cutoff.month, STAT = "mean", FUNC = "L",
                        CMISSING = FALSE, CINTERVAL = "D",  nrandom = 0, CVK=0){
   print("Initialising, please wait...")
-  pb        <- SetProgressBar(furthest, closest, STAT)    # Calculate the number of models to run 
+  duration  <- (furthest - closest) + 1
+  MaxMODNO  <- (duration * (duration + 1))/2
   cont      <- DateConverter(BDate = BDate, CDate = CDate, Xvar = Xvar, 
                              CINTERVAL = CINTERVAL, FIXED = FIXED, 
                              cutoff.day = cutoff.day, cutoff.month = cutoff.month)   # create new climate dataframe with continuous daynumbers, leap days are not a problem
   MODNO     <- 1  #Create a model number variable that will count up during the loop#
-  duration  <- (furthest - closest) + 1
   CMatrix   <- matrix(ncol = (duration), nrow = length(BDate))  # matrix that stores the weather data for variable or fixed windows
   MODLIST   <- list()   # dataframes to store ouput
   baseline  <- update(baseline, .~.)
@@ -69,6 +126,8 @@ cvwin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
     print("DEFINE FUNC")
   }
   
+  pb       <- txtProgressBar(min = 0, max = MaxMODNO, style = 3, char = "|")
+  
   #CREATE A FOR LOOP TO FIT DIFFERENT CLIMATE WINDOWS#
   for (m in closest:furthest){
     for (n in 1:duration){
@@ -82,36 +141,52 @@ cvwin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
           } else { 
             ifelse (n == 1, modeldat$temporary <- CMatrix[, windowclose:windowopen], modeldat$temporary <- apply(CMatrix[, windowclose:windowopen], 1, FUN = STAT))
           }
+          modeloutput <- update(modeloutput, .~.)
           # run the model
           #modeloutput <- update(modeloutput, .~., weights = modweights)
           #baseline    <- update(baseline, .~., weights = modweights)
         
-          # perform k-fold crossvalidation
+          # If valid, perform k-fold crossvalidation
           if (CVK>1) {      
             for (k in 1:CVK) {
-              test           <- subset(modeldat, modeldat$K == k)
-              train          <- subset(modeldat, modeldat$K != k)
-              modeloutputcv <- update(modeloutput, Yvar~., data = train)  # note that we now use Yvar
-              baselinecv    <- update(baseline, Yvar~., data = train)
-              test$predictions<-predict(modeloutputcv, newdata=test)
-              test$predictionsbaseline<-predict(baselinecv,newdata=test)
-              N<-length(test$predictions) 
-              P<-length(test$predictions)-modeloutputcv$df[1]  
-              P_baseline<-length(test$predictions)-baselinecv$df[1]  
-              mse<-sum((test$predictions-test[,1])^2)/N  #calc mse only works non-categorical Yvars, e.g. normal, binary, count data 
-              mse_baseline<-sum((test$predictionsbaseline-test[,1])^2)/N
-              AICc_cv<-N*log(mse)+(2*P*(P+1))/(N-P-1)
-              AICc_cv_baseline<-N*log(mse_baseline)+(2*P_baseline*(P_baseline+1))/(N-P_baseline-1)  
-              deltaAICc_cv<-AICc_cv-AICc_cv_baseline
+              test           <- subset(modeldat, modeldat$K == k) # Create the test dataset
+              train          <- subset(modeldat, modeldat$K != k) # Create the train dataset
+              modeloutputcv <- update(modeloutput, Yvar~., data = train)  # Refit the model with climate using the train dataset
+              baselinecv    <- update(baseline, Yvar~., data = train) # Refit the model without climate using the train dataset
+              test$predictions <- predict(modeloutputcv, newdata = test) # Test the output of the climate model fitted using the test data
+              test$predictionsbaseline <- predict(baselinecv,newdata = test) # Test the output of the null models fitted using the test data
+              N <- length(test$predictions) # Determine the length of the test dataset
+              P <- N - df.residual(modeloutputcv)  # Determine df for the climate model
+              P_baseline <- N - df.residual(baselinecv)  # Determine df for the baseline model
+              mse <- sum((test$predictions - test[, 1]) ^ 2) / N
+              #calculate mean standard errors for climate model
+              #calc mse only works non-categorical Yvars, e.g. normal, binary, count data 
+              mse_baseline <- sum((test$predictionsbaseline - test[, 1]) ^ 2) / N
+              #calculate mean standard errors for null model
+              AICc_cv <- N * log(mse) + (2 * P * (P + 1)) / (N - P - 1)
+              AICc_cv_baseline <- N * log(mse_baseline) + (2 * P_baseline * (P_baseline + 1)) / (N - P_baseline - 1)
+              #Calculate AICc values for climate and baseline models
               #rmse_corrected<-sqrt(sum((test$predictions-test[,1])^2)/modeloutputcv$df[1])
-              ifelse(k==1,deltaAICc_cvtotal<-deltaAICc_cv,  deltaAICc_cvtotal<-deltaAICc_cvtotal+deltaAICc_cv)              
+              ifelse(k == 1, AICc_cvtotal <- AICc_cv, AICc_cvtotal <- AICc_cvtotal + AICc_cv)              
+              ifelse(k == 1, AICc_cv_basetotal <- AICc_cv_baseline, AICc_cv_basetotal <- AICc_cv_basetotal + AICc_cv_baseline)
+              #Add up the AICc values for all iterations of crossvalidation
             }
-            deltaAICcCV<-deltaAICc_cvtotal/CVK
+            AICc_cv_avg <- AICc_cvtotal / CVK # Determine the average AICc value of the climate model from cross validations
+            AICc_cv_baseline_avg <- AICc_cv_basetotal / CVK # Determine the average AICc value of the null model from cross validations
+            deltaAICc_cv <- AICc_cv_avg - AICc_cv_baseline_avg # Calculate delta AICc
           }
 
           #Add model parameters to list
-          if (CVK>1) { MODLIST$deltaAICcCV[[MODNO]]<-deltaAICcCV }
-          MODLIST$ModelAICc[[MODNO]]   <- AICc(modeloutput)
+          if(CVK > 1){
+            MODLIST$ModelAICc[[MODNO]]    <- AICc_cv_avg
+            MODLIST$deltaAICc[[MODNO]]    <- deltaAICc_cv
+            MODLIST$baselineAICc[[MODNO]] <- AICc_cv_baseline_avg
+          } else {
+            MODLIST$ModelAICc[[MODNO]]   <- AICc(modeloutput)
+            MODLIST$baselineAICc <- AICc(baseline) 
+            #WORK OUT A WAY TO REMOVE THIS FROM LOOP
+          }
+          
           MODLIST$WindowOpen[[MODNO]]  <- m
           MODLIST$WindowClose[[MODNO]] <- m - n + 1
           
@@ -128,8 +203,8 @@ cvwin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
               MODLIST$ModelBetaC[[MODNO]] <- fixef(modeloutput)[4]
             }
           } else {
-          MODLIST$ModelBeta[[MODNO]]   <- coef(modeloutput)[2]   # add one coef if quadratic
-          MODLIST$ModelInt[[MODNO]]    <- coef(modeloutput)[1]   # add one coef if quadratic
+          MODLIST$ModelBeta[[MODNO]]   <- coef(modeloutput)[2]
+          MODLIST$ModelInt[[MODNO]]    <- coef(modeloutput)[1]
           
           if (FUNC == "Q"){
             MODLIST$ModelBetaQ[[MODNO]] <- coef(modeloutput)[3]
@@ -159,7 +234,6 @@ cvwin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
     ifelse (windowopen - windowclose == 0, modeldat$temporary <- CMatrix[, windowclose:windowopen], modeldat$temporary <- apply(CMatrix[, windowclose:windowopen], 1, FUN = STAT))
   }
   LocalModel           <- update(modeloutput, .~.)
-  MODLIST$baselineAICc <- AICc(baseline)
   MODLIST$furthest     <- furthest
   MODLIST$closest      <- closest
   MODLIST$Statistics   <- STAT
