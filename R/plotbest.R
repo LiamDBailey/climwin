@@ -36,12 +36,8 @@
 plotbest <- function(Dataset, BestModel, BestModelData){
   names(BestModelData)[1] <- "Yvar"
   
-  if (Dataset$Function[1] == "LOG"){
-    BestModelData$temporary <- BestModelData$"log(temporary)"
-  }
-  
-  if (Dataset$Function[1] == "I"){
-    BestModelData$temporary <- BestModelData$"I(temporary^-1)"
+  if (Dataset$Function[1] == "LOG" || Dataset$Function[1] == "I"){
+    BestModelData$temporary <- BestModelData[, max(ncol(BestModelData))]
   }
   
   xval <- seq (from = min(BestModelData$temporary), to = max(BestModelData$temporary),
