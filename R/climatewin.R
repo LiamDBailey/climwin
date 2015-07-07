@@ -65,7 +65,7 @@
 #'  OffspringWin <- climatewin(Xvar = OffspringClimate$Temperature, 
 #'                             CDate = OffspringClimate$Date, 
 #'                             BDate = Offspring$Date, 
-#'                             baseline = glm(Offspring$Offspring ~ 1, family = poisson),
+#'                             baseline = glm(Offspring ~ 1, data = Offspring, family = poisson),
 #'                             furthest = 150, closest = 0, 
 #'                             FIXED = FALSE, STAT = "mean", 
 #'                             FUNC = "L", CMISSING = FALSE, CINTERVAL = "D")
@@ -90,7 +90,7 @@
 #'  # Test at the resolution of days (CINTERVAL = "D")
 #'  
 #'  MassWin <- climatewin(Xvar = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date,
-#'                        baseline = lm(Mass$Mass ~ 1),
+#'                        baseline = lm(Mass ~ 1, data = Mass),
 #'                        furthest = 100, closest = 0,
 #'                        STAT = "mean", FUNC = "L",
 #'                        FIXED = TRUE, cutoff.day = 20, cutoff.month = 5,
@@ -118,12 +118,12 @@ climatewin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
                        CMISSING = FALSE, CINTERVAL = "D",  nrandom = 0){
   
   print("Initialising, please wait...")
-  pb        <- SetProgressBar(furthest, closest, STAT)    # Calculate the number of models to run 
+  duration  <- (furthest - closest) + 1
+  MaxMODNO  <- (duration * (duration + 1))/2
   cont      <- DateConverter(BDate = BDate, CDate = CDate, Xvar = Xvar, 
                              CINTERVAL = CINTERVAL, FIXED = FIXED, 
                              cutoff.day = cutoff.day, cutoff.month = cutoff.month)   # create new climate dataframe with continuous daynumbers, leap days are not a problem
   MODNO     <- 1  #Create a model number variable that will count up during the loop#
-  duration  <- (furthest - closest) + 1
   CMatrix   <- matrix(ncol = (duration), nrow = length(BDate))  # matrix that stores the weather data for variable or fixed windows
   MODLIST   <- list()   # dataframes to store ouput
   baseline  <- update(baseline, .~.)
@@ -172,6 +172,20 @@ climatewin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
   } else {
     print("DEFINE FUNC")
   }
+  
+  #Time function
+  #ptm <- proc.time()
+  
+  #if(MODNO == 100){
+  #  singletime <- proc.time() - ptm
+  #  print(singletime)
+  #  runtime  <- as.numeric(singletime[3] * (MaxMODNO/100))
+  #  seconds  <- floor(runtime %% 60)
+  #  minutes  <- floor((runtime / 60) %% 60)
+  #  hours    <- floor(runtime / 3600)  
+  #  print(paste("Estimated running time:", hours, "hours,", minutes, "minutes and", seconds, "seconds."))
+  #}
+  pb       <- txtProgressBar(min = 0, max = MaxMODNO, style = 3, char = "|")
 
   #CREATE A FOR LOOP TO FIT DIFFERENT CLIMATE WINDOWS#
   for (m in closest:furthest){
@@ -221,8 +235,7 @@ climatewin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
           MODNO <- MODNO + 1        #Increase ModNo#
         }
       }
-    }  
-    #Fill progress bar
+    }
     setTxtProgressBar(pb, MODNO - 1)
   }
   #Save the best model output
