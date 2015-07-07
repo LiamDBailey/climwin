@@ -77,7 +77,8 @@
 #Distinguish between Q and C
 plotall <- function(Dataset, DatasetRand = NULL,
                     BestModel = NULL, BestModelData = NULL,
-                    CW1 = 0.95, CW2 = 0.5, CW3 = 0.25, HISTQ = 0.99){
+                    CW1 = 0.95, CW2 = 0.5, CW3 = 0.25, HISTQ = 0.99,
+                    Title){
   
   a       <- c(CW1, CW2, CW3)
   b       <- a[order (-a)]
@@ -99,23 +100,23 @@ plotall <- function(Dataset, DatasetRand = NULL,
   BEST   <- plotbest(Dataset = Dataset, BestModel = BestModel, BestModelData = BestModelData)
   
   if (Dataset$Function[1] == "L"){
-    gridExtra::grid.arrange(DELTA, CW, plotenv$BETA, HIST, WINDOW, BEST, nrow = 2, ncol = 3)
+    gridExtra::grid.arrange(DELTA, CW, plotenv$BETA, HIST, WINDOW, BEST, nrow = 2, ncol = 3, main = paste(Title))
   } else if (Dataset$Function[1] == "Q"){
-    gridExtra::grid.arrange(DELTA, CW, plotenv$BETA, plotenv$BETA2, HIST, WINDOW, BEST, nrow = 2, ncol = 4)
+    gridExtra::grid.arrange(DELTA, CW, plotenv$BETA, plotenv$BETA2, HIST, WINDOW, BEST, nrow = 2, ncol = 4, main = paste(Title))
   } else if(Dataset$Function[1] == "C"){
-    gridExtra::grid.arrange(DELTA, CW, plotenv$BETA, plotenv$BETA2, HIST, WINDOW, BEST, plotenv$BETA3, nrow = 2, ncol = 4)
+    gridExtra::grid.arrange(DELTA, CW, plotenv$BETA, plotenv$BETA2, HIST, WINDOW, BEST, plotenv$BETA3, nrow = 2, ncol = 4, main = paste(Title))
   } else {
-    gridExtra::grid.arrange(plotenv$BETA, DELTA, CW, HIST, WINDOW, BEST, nrow = 2)
+    gridExtra::grid.arrange(plotenv$BETA, DELTA, CW, HIST, WINDOW, BEST, nrow = 2, main = paste(Title))
   }
   } else {
     if (Dataset$Function[1] == "L"){
-      gridExtra::grid.arrange(DELTA, CW, plotenv$BETA, HIST, WINDOW, nrow = 2, ncol = 3)
+      gridExtra::grid.arrange(DELTA, CW, plotenv$BETA, HIST, WINDOW, nrow = 2, ncol = 3, main = paste(Title))
     } else if (Dataset$Function[1] == "Q"){
-      gridExtra::grid.arrange(DELTA, CW, plotenv$BETA, plotenv$BETA2, HIST, WINDOW, nrow = 2, ncol = 4)
+      gridExtra::grid.arrange(DELTA, CW, plotenv$BETA, plotenv$BETA2, HIST, WINDOW, nrow = 2, ncol = 4, main = paste(Title))
     } else if(Dataset$Function[1] == "C"){
-      gridExtra::grid.arrange(DELTA, CW, plotenv$BETA, plotenv$BETA2, HIST, WINDOW, plotenv$BETA3, nrow = 2, ncol = 4)
+      gridExtra::grid.arrange(DELTA, CW, plotenv$BETA, plotenv$BETA2, HIST, WINDOW, plotenv$BETA3, nrow = 2, ncol = 4, main = paste(Title))
     } else {
-      gridExtra::grid.arrange(plotenv$BETA, DELTA, CW, HIST, WINDOW, nrow = 2)
+      gridExtra::grid.arrange(plotenv$BETA, DELTA, CW, HIST, WINDOW, nrow = 2, main = paste(Title))
     } 
   }
 }
