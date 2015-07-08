@@ -109,24 +109,6 @@ DateConverter <- function(BDate, CDate, Xvar, Xvar2 = NULL, CINTERVAL, FIXED,
 }
 
 
-#Set progress bar
-SetProgressBar <- function(furthest, closest, STAT) {
-  MaxMODNO <- 0
-  duration <- (furthest - closest) + 1
-  for (m in closest:furthest){
-    for (n in 1:duration){
-      if ( (m-n) >= (closest - 1)){  
-        if (STAT != "slope" || n > 1){
-          MaxMODNO <- MaxMODNO + 1
-        }
-      }
-    }
-  }
-  pb <- txtProgressBar(min = 0, max = MaxMODNO, style = 3, char = "|") # create progress bar object#
-  return(pb)
-}
-
-
 # define a function that returns the AICc or -2LogLikelihood of model using Generalized Extreme Value (GEV) weight function
 ModelLogLikelihoodG <- function(par = par, modeloutput = modeloutput, 
                                 duration = duration, CMatrix = CMatrix, 
