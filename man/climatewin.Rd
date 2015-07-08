@@ -2,11 +2,11 @@
 % Please edit documentation in R/climatewin.R
 \name{climatewin}
 \alias{climatewin}
-\title{Test for a climate window}
+\title{Test for a climate windows in data.}
 \usage{
 climatewin(Xvar, CDate, BDate, baseline, furthest, closest, FIXED, cutoff.day,
   cutoff.month, STAT = "mean", FUNC = "L", CMISSING = FALSE,
-  CINTERVAL = "D", nrandom = 0)
+  CINTERVAL = "D", nrandom = 0, CVK = 0)
 }
 \arguments{
 \item{Xvar}{The climate variable of interest. Please specify the parent
@@ -56,6 +56,10 @@ climatewin(Xvar, CDate, BDate, baseline, furthest, closest, FIXED, cutoff.day,
 
 \item{nrandom}{Used in conjunction with \code{\link{randwin}}. Not to be
   changed manually.}
+
+\item{CVK}{The number of folds used for the k-fold cross validation. By default
+  this value is set to 0, so no cross validation occurs. Value should be a
+  minimum of 2 for cross validation to occur.}
 }
 \value{
 Will return a list containing three objects:
@@ -88,7 +92,7 @@ Finds the time period when a biological variable is most strongly affected
  OffspringWin <- climatewin(Xvar = OffspringClimate$Temperature,
                             CDate = OffspringClimate$Date,
                             BDate = Offspring$Date,
-                            baseline = glm(Offspring$Offspring ~ 1, family = poisson),
+                            baseline = glm(Offspring ~ 1, data = Offspring, family = poisson),
                             furthest = 150, closest = 0,
                             FIXED = FALSE, STAT = "mean",
                             FUNC = "L", CMISSING = FALSE, CINTERVAL = "D")
@@ -113,7 +117,7 @@ Finds the time period when a biological variable is most strongly affected
  # Test at the resolution of days (CINTERVAL = "D")
 
  MassWin <- climatewin(Xvar = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date,
-                       baseline = lm(Mass$Mass ~ 1),
+                       baseline = lm(Mass ~ 1, data = Mass),
                        furthest = 100, closest = 0,
                        STAT = "mean", FUNC = "L",
                        FIXED = TRUE, cutoff.day = 20, cutoff.month = 5,
