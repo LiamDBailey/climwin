@@ -63,9 +63,6 @@
 #'
 #'@export
 
-
-
-
 #LAST EDITED: 18/02/2015
 #EDITED BY: LIAM
 #NOTES: Renamed to be RandomiSed rather than RandomiZed. Help keep American/UK spelling standardised.
