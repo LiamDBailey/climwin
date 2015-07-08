@@ -6,7 +6,7 @@
 \usage{
 plotall(Dataset, DatasetRand = NULL, BestModel = NULL,
   BestModelData = NULL, CW1 = 0.95, CW2 = 0.5, CW3 = 0.25,
-  HISTQ = 0.99)
+  HISTQ = 0.99, Title = NULL)
 }
 \arguments{
 \item{Dataset}{A dataframe containing information on all fitted climate

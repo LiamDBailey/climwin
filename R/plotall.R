@@ -78,7 +78,7 @@
 plotall <- function(Dataset, DatasetRand = NULL,
                     BestModel = NULL, BestModelData = NULL,
                     CW1 = 0.95, CW2 = 0.5, CW3 = 0.25, HISTQ = 0.99,
-                    Title){
+                    Title = NULL){
   
   a       <- c(CW1, CW2, CW3)
   b       <- a[order (-a)]
