@@ -267,28 +267,32 @@ climatewin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
           MODLIST$WindowClose[[MODNO]] <- m - n + 1
           
           if(length(attr(class(modeloutput),"package")) > 0 && attr(class(modeloutput), "package") == "lme4"){
-            MODLIST$ModelBeta[[MODNO]] <- fixef(modeloutput)[2]
+            MODLIST$ModelBeta[[MODNO]] <- fixef(modeloutput)[length(fixef(modeloutput))]
             MODLIST$ModelInt[[MODNO]]  <- fixef(modeloutput)[1]
             
             if (FUNC == "Q"){
-              MODLIST$ModelBetaQ[[MODNO]] <- fixef(modeloutput)[3]
+              MODLIST$ModelBeta[[MODNO]] <- fixef(modeloutput)[length(fixef(modeloutput))-1]
+              MODLIST$ModelBetaQ[[MODNO]] <- fixef(modeloutput)[length(fixef(modeloutput))]
             }   
             
             if (FUNC == "C"){
-              MODLIST$ModelBetaQ[[MODNO]] <- fixef(modeloutput)[3]    
-              MODLIST$ModelBetaC[[MODNO]] <- fixef(modeloutput)[4]
+              MODLIST$ModelBeta[[MODNO]] <- fixef(modeloutput)[length(fixef(modeloutput))-2]
+              MODLIST$ModelBetaQ[[MODNO]] <- fixef(modeloutput)[length(fixef(modeloutput))-1]    
+              MODLIST$ModelBetaC[[MODNO]] <- fixef(modeloutput)[length(fixef(modeloutput))]
             }
           } else {
-          MODLIST$ModelBeta[[MODNO]]   <- coef(modeloutput)[2]
+          MODLIST$ModelBeta[[MODNO]]   <- coef(modeloutput)[length(coef(modeloutput))]
           MODLIST$ModelInt[[MODNO]]    <- coef(modeloutput)[1]
           
           if (FUNC == "Q"){
-            MODLIST$ModelBetaQ[[MODNO]] <- coef(modeloutput)[3]
+            MODLIST$ModelBeta[[MODNO]]   <- coef(modeloutput)[length(coef(modeloutput))-1]
+            MODLIST$ModelBetaQ[[MODNO]] <- coef(modeloutput)[length(coef(modeloutput))]
           }   
           
           if (FUNC == "C"){
-            MODLIST$ModelBetaQ[[MODNO]] <- coef(modeloutput)[3]    
-            MODLIST$ModelBetaC[[MODNO]] <- coef(modeloutput)[4]
+            MODLIST$ModelBeta[[MODNO]]   <- coef(modeloutput)[length(coef(modeloutput))-2]
+            MODLIST$ModelBetaQ[[MODNO]] <- coef(modeloutput)[length(coef(modeloutput))-1]    
+            MODLIST$ModelBetaC[[MODNO]] <- coef(modeloutput)[length(coef(modeloutput))]
           }
           }
           MODNO <- MODNO + 1        #Increase ModNo#
