@@ -37,11 +37,21 @@ plotbest <- function(Dataset, BestModel, BestModelData){
   
 names(BestModelData)[1] <- "Yvar"
     
-if(is.null(BestModel$weights) == TRUE){
+if (Dataset$Function[1] == "LOG"){
+  names(BestModelData)[(ncol(BestModelData)-1)] <- "temporary"
+}
+if (Dataset$Function[1] == "I"){
+  names(BestModelData)[ncol(BestModelData)-1] <- "temporary"
+  class(BestModelData[, ncol(BestModelData)-1]) <- class(BestModelData[, ncol(BestModelData)-1])[-match("AsIs", class(BestModelData[, ncol(BestModelData)-1]))]
+  #WHEN WE USE INVERSE FUNCTION 'temporary' becomes class AsIs which the graphs can't deal with
+  #With this class change, we turn the 'temporary' value in to a basic numeric.
+}
+
+if(is.null(weights(BestModel)) == TRUE || sum(weights(BestModel)) == nrow(BestModelData)){
   if(ncol(BestModelData) == 2 || Dataset$Function[1] == "Q" & ncol(BestModelData) == 3 || Dataset$Function[1] == "C" & ncol(BestModelData) == 4){ 
         ggplot(BestModelData, aes(x = temporary, y = Yvar), environment = environment()) +
           geom_point(size = 1, alpha = 1) +
-          geom_line(data = cbind(BestModelData, pred = predict(BestModel, type = "response")), aes(y = pred)) +
+          geom_line(data = cbind(BestModelData, pred = predict(BestModel, type = "response", allow.new.levels = TRUE)), aes(y = pred)) +
           theme_classic() +
           theme(panel.grid.major = element_blank(),
                 panel.grid.minor = element_blank(),
@@ -64,15 +74,6 @@ if(is.null(BestModel$weights) == TRUE){
       if(Dataset$Function[1] == "C"){
         col = 3
       }
-      if (Dataset$Function[1] == "LOG"){
-        names(BestModelData)[ncol(BestModelData)] <- "temporary"  
-      }
-      if (Dataset$Function[1] == "I"){
-        names(BestModelData)[ncol(BestModelData)] <- "temporary"
-        class(BestModelData[, ncol(BestModelData)]) <- class(BestModelData[, ncol(BestModelData)])[-match("AsIs", class(BestModelData[, ncol(BestModelData)]))]
-        #WHEN WE USE INVERSE FUNCTION 'temporary' becomes class AsIs which the graphs can't deal with
-        #With this class change, we turn the 'temporary' value in to a basic numeric.
-      }
       xval <- seq(from = min(BestModelData$temporary), to = max(BestModelData$temporary),
                   by = (max(BestModelData$temporary) - min(BestModelData$temporary)) / (nrow(BestModelData)))
       #When we have additional covariates, we need to integrate them in to the dataset for the predictions
@@ -91,7 +92,7 @@ if(is.null(BestModel$weights) == TRUE){
         }
       }
   names(newdat) <- c("temporary", names(BestModelData)[2:(ncol(BestModelData) - col)])  #Then change the names so they match what would be in the model
-  pred <- predict(BestModel, newdata = newdat, type = "response")
+  pred <- predict(BestModel, newdata = newdat, type = "response", allow.new.levels = TRUE)
     ggplot(BestModelData, aes(x = temporary, y = Yvar), environment = environment()) +
       geom_point(size = 1, alpha = 1) +
       geom_line(data = newdat, aes(y = pred)) +
@@ -117,7 +118,7 @@ if(is.null(BestModel$weights) == TRUE){
     }
     ggplot(BestModelData, aes(x = temporary, y = Yvar), environment = environment()) +
       geom_point(size = 1, alpha = 1) +
-      geom_line(data = cbind(BestModelData, pred = predict(BestModel, type = "response")), aes(y = pred)) +
+      geom_line(data = cbind(BestModelData, pred = predict(BestModel, type = "response", allow.new.levels = TRUE)), aes(y = pred)) +
       theme_classic() +
       theme(panel.grid.major = element_blank(),
             panel.grid.minor = element_blank(),
@@ -140,13 +141,6 @@ if(is.null(BestModel$weights) == TRUE){
     if(Dataset$Function[1] == "C"){
       col = 3
     }
-    if (Dataset$Function[1] == "LOG"){
-      names(BestModelData)[ncol(BestModelData) - 1] <- "temporary"  
-    }
-    if (Dataset$Function[1] == "I"){
-      names(BestModelData)[ncol(BestModelData)] <- "temporary"
-      class(BestModelData[, ncol(BestModelData)-1]) <- class(BestModelData[, ncol(BestModelData)-1])[-match("AsIs", class(BestModelData[, ncol(BestModelData)-1]))]
-    }
     xval <- seq(from = min(BestModelData$temporary), to = max(BestModelData$temporary),
                 by = (max(BestModelData$temporary) - min(BestModelData$temporary)) / (nrow(BestModelData)))
     #When we have additional covariates, we need to integrate them in to the dataset for the predictions
@@ -165,7 +159,7 @@ if(is.null(BestModel$weights) == TRUE){
       }
     }
     names(newdat) <- c("temporary", names(BestModelData)[2:(ncol(BestModelData) - col)])  #Then change the names so they match what would be in the model
-    pred <- predict(BestModel, newdata = newdat,  type = "response")
+    pred <- predict(BestModel, newdata = newdat,  type = "response", allow.new.levels = TRUE)
     ggplot(BestModelData, aes(x = temporary, y = Yvar), environment = environment()) +
       geom_point(size = 1, alpha = 1) +
       geom_line(data = newdat, aes(y = pred)) +
