@@ -38,10 +38,14 @@ plotwin <- function(Dataset, CW = 0.95){
   DatasetCW$variable         <- factor(DatasetCW$variable, levels = c("WindowOpen", "WindowClose"))
   levels(DatasetCW$variable) <- c("Window Open", "Window Close")
   
-with(DatasetCW, {
+  p_meds <- data.frame(variable = levels(DatasetCW$variable), value = as.numeric(tapply(DatasetCW$value, DatasetCW$variable, median)))
+  
+  with(DatasetCW, {
   ggplot(DatasetCW, aes(x = variable, y = value))+
          scale_y_continuous(limits = c(min(Dataset$WindowClose), max(Dataset$WindowClose)))+
          geom_boxplot(width = 0.5)+
+         geom_text(data = p_meds, aes(x = variable, y = value, label = value),
+                   size = 7, vjust = -2.2) +
          coord_flip()+
          theme_classic()+
          theme(panel.grid.major = element_blank(),
