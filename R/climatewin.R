@@ -113,7 +113,8 @@
 
 climatewin <- function(Xvar, CDate, BDate, baseline, furthest, closest, 
                        FIXED, cutoff.day, cutoff.month, STAT = "mean", FUNC = "L",
-                       CMISSING = FALSE, CINTERVAL = "D",  nrandom = 0, CVK=0){
+                       CMISSING = FALSE, CINTERVAL = "D",  nrandom = 0, CVK = 0,
+                       upper = NA, lower = NA, thresh = FALSE){
   print("Initialising, please wait...")
   duration  <- (furthest - closest) + 1
   MaxMODNO  <- (duration * (duration + 1))/2
@@ -132,6 +133,30 @@ climatewin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
   if(length(modeldat$Yvar) != length(BDate)){
     stop("NA values present in biological response. Please remove NA values")
   }
+  
+  if(is.na(upper) == FALSE && is.na(lower) == TRUE){
+    if(thresh == TRUE){
+      cont$Xvar <- ifelse(cont$Xvar > upper, 1, 0)
+    } else {
+      cont$Xvar <- ifelse(cont$Xvar > upper, cont$Xvar, 0)
+    }
+  }
+  
+  if(is.na(lower) == FALSE && is.na(upper) == TRUE){
+    if(thresh == TRUE){
+      cont$Xvar <- ifelse(cont$Xvar < lower, 1, 0)
+    } else {
+      cont$Xvar <- ifelse(cont$Xvar < lower, cont$Xvar, 0)
+    }
+  }
+  
+  if(is.na(lower) == FALSE && is.na(upper) == FALSE){
+    if(thresh == TRUE){
+      cont$Xvar <- ifelse(cont$Xvar > lower & cont$Xvar < upper, 1, 0)
+    } else {
+      cont$Xvar <- ifelse(cont$Xvar > lower & cont$Xvar < upper, cont$Xvar, 0)
+    } 
+  }  
   
   for (i in 1:length(BDate)){
    for (j in closest:furthest){
