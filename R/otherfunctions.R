@@ -48,7 +48,7 @@ basewin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
     if(thresh == TRUE){
       cont$Xvar <- ifelse(cont$Xvar > lower & cont$Xvar < upper, 1, 0)
     } else {
-      cont$Xvar <- ifelse(cont$Xvar > lower & cont$Xvar < upper, cont$Xvar, 0)
+      cont$Xvar <- ifelse(cont$Xvar > lower & cont$Xvar < upper, cont$Xvar - lower, 0)
     } 
   }  
   
@@ -74,7 +74,7 @@ basewin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
   
   modeldat           <- model.frame(baseline)
   modeldat$Yvar      <- modeldat[, 1]
-  modeldat$temporary <- matrix(ncol = 1, nrow = nrow(CMatrix), seq(from = 1, to = nrow(CMatrix), by = 1))
+  modeldat$climate <- matrix(ncol = 1, nrow = nrow(CMatrix), seq(from = 1, to = nrow(CMatrix), by = 1))
   
   if(is.null(weights(baseline)) == FALSE){
     modeldat$modweights <- weights(baseline)
@@ -82,19 +82,19 @@ basewin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
   }
   
   if (CVK>1){
-    modeldat$K <- sample(seq(from = 1, to = length(modeldat$temporary), by = 1) %% CVK + 1)
+    modeldat$K <- sample(seq(from = 1, to = length(modeldat$climate), by = 1) %% CVK + 1)
   }   # create labels K-fold crossvalidation
   
   if (FUNC == "L"){
-    modeloutput <- update(baseline, .~. + temporary, data = modeldat)
+    modeloutput <- update(baseline, .~. + climate, data = modeldat)
   } else if (FUNC == "Q") {
-    modeloutput <- update(baseline, .~. + temporary + I(temporary ^ 2), data = modeldat)
+    modeloutput <- update(baseline, .~. + climate + I(climate ^ 2), data = modeldat)
   } else if (FUNC == "C") {
-    modeloutput <- update(baseline, .~. + temporary + I(temporary ^ 2) + I(temporary ^ 3), data = modeldat)
+    modeloutput <- update(baseline, .~. + climate + I(climate ^ 2) + I(climate ^ 3), data = modeldat)
   } else if (FUNC == "LOG") {
-    modeloutput <- update(baseline, .~. + log(temporary), data = modeldat)
+    modeloutput <- update(baseline, .~. + log(climate), data = modeldat)
   } else if (FUNC == "I") {
-    modeloutput <- update (baseline, .~. + I(temporary ^ -1), data = modeldat)
+    modeloutput <- update (baseline, .~. + I(climate ^ -1), data = modeldat)
   } else {
     print("DEFINE FUNC")
   }
@@ -110,11 +110,11 @@ basewin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
           windowclose <- windowopen - n + 1
           if (STAT == "slope"){ 
             time               <- seq(1, n, 1)
-            modeldat$temporary <- apply(CMatrix[, windowclose:windowopen], 1, FUN = function(x) coef(lm(x ~ time))[2])
+            modeldat$climate <- apply(CMatrix[, windowclose:windowopen], 1, FUN = function(x) coef(lm(x ~ time))[2])
           } else { 
-            ifelse (n == 1, modeldat$temporary <- CMatrix[, windowclose:windowopen], modeldat$temporary <- apply(CMatrix[, windowclose:windowopen], 1, FUN = STAT))
+            ifelse (n == 1, modeldat$climate <- CMatrix[, windowclose:windowopen], modeldat$climate <- apply(CMatrix[, windowclose:windowopen], 1, FUN = STAT))
           }
-          if(min(modeldat$temporary) <= 0 & FUNC == "LOG" || min(modeldat$temporary) <= 0 & FUNC == "I"){
+          if(min(modeldat$climate) <= 0 & FUNC == "LOG" || min(modeldat$climate) <= 0 & FUNC == "I"){
             stop("FUNC = LOG or I cannot be used with climate values >= 0. 
                  Consider adding a constant to climate data to remove these values")
           }
@@ -213,9 +213,9 @@ basewin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
   windowclose <- windowopen - n[1] + 1
   if(STAT == "slope"){
     time      <- seq(1, n[1], 1)
-    modeldat$temporary <- apply(CMatrix[, windowclose:windowopen], 1, FUN = function(x) coef(lm(x ~ time))[2])
+    modeldat$climate <- apply(CMatrix[, windowclose:windowopen], 1, FUN = function(x) coef(lm(x ~ time))[2])
   } else {
-    ifelse (windowopen - windowclose == 0, modeldat$temporary <- CMatrix[, windowclose:windowopen], modeldat$temporary <- apply(CMatrix[, windowclose:windowopen], 1, FUN = STAT))
+    ifelse (windowopen - windowclose == 0, modeldat$climate <- CMatrix[, windowclose:windowopen], modeldat$climate <- apply(CMatrix[, windowclose:windowopen], 1, FUN = STAT))
   }
   LocalModel           <- update(modeloutput, .~.)
   MODLIST$furthest     <- furthest
@@ -375,7 +375,7 @@ ModelLogLikelihoodG <- function(par = par, modeloutput = modeloutput,
   }
 
   weight                                <- weight / sum(weight) 
-  funcenv$modeldat$temporary            <- apply(CMatrix, 1, FUN = function(x) {sum(x*weight)})    # calculate weighted mean from weather data
+  funcenv$modeldat$climate            <- apply(CMatrix, 1, FUN = function(x) {sum(x*weight)})    # calculate weighted mean from weather data
   modeloutput                           <- update(modeloutput, .~., data = funcenv$modeldat)   # rerun regression model using new weather index
   deltaAICc                             <- AICc(modeloutput) - nullmodel
   funcenv$DAICc[[funcenv$MODNO]]        <- deltaAICc
@@ -389,7 +389,7 @@ ModelLogLikelihoodG <- function(par = par, modeloutput = modeloutput,
   plot(as.numeric(funcenv$par_shape), type = "l", ylab = "shape parameter", xlab = "convergence step", main = "GEV parameter values being tested")
   plot(as.numeric(funcenv$DAICc), type = "l", ylab = expression(paste(Delta, "AICc")), xlab = "convergence step")
   plot(as.numeric(funcenv$par_scale), type = "l", ylab = "scale parameter", xlab = "convergence step")
-  plot(funcenv$modeldat$temporary[1:(3 * duration)], type = "s", ylab = "weighted mean of climate", xlab = "timestep (e.g. days)")
+  plot(funcenv$modeldat$climate[1:(3 * duration)], type = "s", ylab = "weighted mean of climate", xlab = "timestep (e.g. days)")
   plot(as.numeric(funcenv$par_location), type = "l", ylab = "location parameter", xlab = "convergence step")
   
   funcenv$MODNO <- funcenv$MODNO + 1
@@ -410,7 +410,7 @@ ModelLogLikelihoodW <- function(par = par,  modeloutput = modeloutput, duration 
   }
   
   weight                                <- weight / sum(weight) 
-  funcenv$modeldat$temporary            <- apply(CMatrix, 1, FUN = function(x) {sum(x*weight)})    # calculate weighted mean from weather data
+  funcenv$modeldat$climate            <- apply(CMatrix, 1, FUN = function(x) {sum(x*weight)})    # calculate weighted mean from weather data
   modeloutput                           <- update(modeloutput, .~., data = funcenv$modeldat)   # rerun regression model using new weather index
   deltaAICc                             <- AICc(modeloutput) - nullmodel
   funcenv$DAICc[[funcenv$MODNO]]        <- deltaAICc
@@ -425,7 +425,7 @@ ModelLogLikelihoodW <- function(par = par,  modeloutput = modeloutput, duration 
   plot(as.numeric(funcenv$par_shape), type = "l", ylab = "shape parameter", xlab = "convergence step", main = "Weibull parameter values being tested")
   plot(as.numeric(funcenv$DAICc), type = "l", ylab = expression(paste(Delta, "AICc")), xlab = "convergence step")
   plot(as.numeric(funcenv$par_scale), type = "l", ylab = "scale parameter", xlab = "convergence step")
-  plot(funcenv$modeldat$temporary[1:(duration)], type = "s", ylab = "weighted mean of weather", xlab = "time step (e.g days)")
+  plot(funcenv$modeldat$climate[1:(duration)], type = "s", ylab = "weighted mean of weather", xlab = "time step (e.g days)")
   plot(as.numeric(funcenv$par_location), type = "l", ylab = "location parameter", xlab = "convergence step")
   
   funcenv$MODNO <- funcenv$MODNO + 1
