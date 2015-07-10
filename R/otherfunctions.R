@@ -157,11 +157,14 @@ basewin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
           
           if(length(attr(class(modeloutput),"package")) > 0 && attr(class(modeloutput), "package") == "lme4"){
             MODLIST$ModelBeta[[MODNO]] <- fixef(modeloutput)[length(fixef(modeloutput))]
+            MODLIST$ModelBetaQ[[MODNO]] <- NA
+            MODLIST$ModelBetaC[[MODNO]] <- NA
             MODLIST$ModelInt[[MODNO]]  <- fixef(modeloutput)[1]
             
             if (FUNC == "Q"){
               MODLIST$ModelBeta[[MODNO]] <- fixef(modeloutput)[length(fixef(modeloutput))-1]
               MODLIST$ModelBetaQ[[MODNO]] <- fixef(modeloutput)[length(fixef(modeloutput))]
+              MODLIST$ModelBetaC[[MODNO]] <- NA
             }   
             
             if (FUNC == "C"){
@@ -171,11 +174,14 @@ basewin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
             }
           } else {
             MODLIST$ModelBeta[[MODNO]]   <- coef(modeloutput)[length(coef(modeloutput))]
+            MODLIST$ModelBetaQ[[MODNO]] <- NA
+            MODLIST$ModelBetaC[[MODNO]] <- NA
             MODLIST$ModelInt[[MODNO]]    <- coef(modeloutput)[1]
             
             if (FUNC == "Q"){
               MODLIST$ModelBeta[[MODNO]]   <- coef(modeloutput)[length(coef(modeloutput))-1]
               MODLIST$ModelBetaQ[[MODNO]] <- coef(modeloutput)[length(coef(modeloutput))]
+              MODLIST$ModelBetaC[[MODNO]] <- NA
             }   
             
             if (FUNC == "C"){
