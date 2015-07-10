@@ -4,7 +4,7 @@
 #'  by climate. Note that climate data and biological data should be loaded as 
 #'  two seperate objects. Both objects should contain a date column to designate
 #'  when the data were recorded (dd/mm/yyyy) and a response variable column.
-#'  @param Xvar The climate variable of interest. Please specify the parent 
+#'  @param Xvars A list containing all climate variables of interest. Please specify the parent 
 #'    environment and variable name (e.g. Climate$Temp).
 #'  @param CDate The climate date variable (dd/mm/yyyy). Please specify the 
 #'    parent environment and variable name (e.g. Climate$Date).
@@ -118,6 +118,13 @@ climatewin <- function(Xvars, CDate, BDate, baseline, furthest, closest,
   
   #Make Xvars a list where the name of list object is the climate variable (e.g. Rain, Temp)
   
+  if(is.null(names(Xvars)) == TRUE){
+    numbers <- seq(1, length(Xvars), 1)
+    for(Xname in 1:length(Xvars)){
+      names(Xvars)[Xname] = paste("climate", numbers[Xname])
+    }
+  }
+  
   if(is.na(uppers) == FALSE && is.na(lowers) == FALSE){
     combos <- expand.grid(list(uppers = uppers, lowers = lowers))
     combos <- combos[which(combos$uppers >= combos$lowers), ]
@@ -131,6 +138,9 @@ climatewin <- function(Xvars, CDate, BDate, baseline, furthest, closest,
   } else if(is.na(uppers) == TRUE && is.na(lowers) == FALSE){
     allcombos <- expand.grid(list(Climate = names(Xvars), Stat = STATS, Func = FUNCS, lowers = lowers, Thresh = thresh))
     threshlevel <- "lower"
+  } else if(is.na(uppers) == TRUE && is.na(lowers) == TRUE){
+    allcombos <- expand.grid(list(Climate = names(Xvars), Stat = STATS, Func = FUNCS))
+    threshlevel <- "none"
   }
   
   combined <- list()
