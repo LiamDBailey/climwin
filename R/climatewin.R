@@ -10,19 +10,19 @@
 #'    parent environment and variable name (e.g. Climate$Date).
 #'  @param BDate The biological date variable (dd/mm/yyyy). Please specify the 
 #'    parent environment and variable name (e.g. Biol$Date).
-#'  @param baseline The baseline model structure used for testing correlation. 
+#'  @param baseline The baseline model structure used for model testing. 
 #'    Currently known to support lm, glm, lmer and glmer objects.
 #'  @param furthest The furthest number of time intervals (set by CINTERVAL) 
-#'    back from the cutoff date or biological record that you want to include in
-#'    your climate window search.
+#'    back from the cutoff date or biological record that will be included in
+#'    the climate window search.
 #'  @param closest The closest number of time intervals (set by CINTERVAL) back 
-#'    from the cutoff date or biological record that you want to include in your
+#'    from the cutoff date or biological record that will be included in the
 #'    climate window search.
-#'  @param STAT The aggregate statistic used to analyse the climate data. Can 
+#'  @param STATS The aggregate statistics used to analyse the climate data. Can 
 #'    currently use basic R statistics (e.g. mean, min), as well as slope. 
 #'    Additional aggregate statistics can be created using the format 
 #'    function(x) (...). See FUN in \code{\link{apply}} for more detail.
-#'  @param FUNC The function used to fit the climate variable. Can be linear 
+#'  @param FUNCS The functions used to fit the climate variable. Can be linear 
 #'    ("L"), quadratic ("Q"), cubic ("C"), inverse ("I") or log ("LOG").
 #'  @param FIXED TRUE or FALSE, whether you wish the climate window to be 
 #'    variable (i.e. the number of days before each biological record is 
@@ -42,6 +42,17 @@
 #'  @param CVK The number of folds used for the k-fold cross validation. By default
 #'    this value is set to 0, so no cross validation occurs. Value should be a
 #'    minimum of 2 for cross validation to occur.
+#'  @param uppers Cut-off values used to determine growing degree days or positive 
+#'    climate thresholds (determined by parameter thresh). Note that when values
+#'    of lowers and uppers are both provided, climatewin will instead calculate a 
+#'    optimal climate zone (?).
+#'  @param lowers Cut-off values used to determine chill days or negative 
+#'    climate thresholds (determined by parameter thresh). Note that when values
+#'    of lowers and uppers are both provided, climatewin will instead calculate a 
+#'    optimal climate zone (?).
+#'  @param thresh TRUE or FALSE. Determines whether to use values of uppers and
+#'    lowers to calculate binary climate data (thresh = TRUE), or to use for
+#'    growing degree days (thresh = FALSE).  
 #'  @return Will return a list containing three objects:
 #'    
 #'    \itemize{ \item BestModel, a model object. The strongest climate window 
