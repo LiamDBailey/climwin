@@ -36,6 +36,17 @@
 #'  conducted. Can be days ("D"), weeks ("W"), or months ("M"). Note the units 
 #'  of parameters 'furthest' and 'closest' will differ depending on the chouice 
 #'  of CINTERVAL.
+#'@param upper Cut-off value used to determine growing degree days or positive 
+#'    climate thresholds (determined by parameter thresh). Note that when values
+#'    of lower and upper are both provided, randwin will instead calculate a 
+#'    optimal climate zone (?).
+#'@param lower Cut-off value used to determine chill days or negative 
+#'    climate thresholds (determined by parameter thresh). Note that when values
+#'    of lower and upper are both provided, randwin will instead calculate a 
+#'    optimal climate zone (?).
+#'@param thresh TRUE or FALSE. Determines whether to use values of upper and
+#'    lower to calculate binary climate data (thresh = TRUE), or to use for
+#'    growing degree days (thresh = FALSE).
 #'@return Will return a dataframe containing information on all fitted climate
 #'  windows. See \code{\link{MassRand}} as an example.
 #'@author Liam D. Bailey and Martijn van de Pol
@@ -71,16 +82,18 @@
 randwin <- function(repeats = 1, Xvar, CDate, BDate, baseline, 
                     furthest, closest, STAT,  
                     FUNC, FIXED, cutoff.day, cutoff.month,
-                    CMISSING = FALSE, CINTERVAL = "D"){
+                    CMISSING = FALSE, CINTERVAL = "D",
+                    upper = NA, lower = NA, thresh = FALSE){
   for (r in 1:repeats){
     print (c("randomization number ", r))
     BDateNew        <- sample(BDate)
-    WindowOutputRep <- climatewin(Xvar = Xvar, CDate = CDate, BDate = BDateNew, 
-                                  baseline = baseline, furthest = furthest,
-                                  closest = closest, STAT = STAT, 
-                                  FUNC = FUNC, FIXED = FIXED,
-                                  cutoff.day = cutoff.day, cutoff.month = cutoff.month,
-                                  nrandom = repeats, CMISSING = CMISSING, CINTERVAL = CINTERVAL)
+    WindowOutputRep <- basewin(Xvar = Xvar, CDate = CDate, BDate = BDateNew, 
+                               baseline = baseline, furthest = furthest,
+                               closest = closest, STAT = STAT, 
+                               FUNC = FUNC, FIXED = FIXED,
+                               cutoff.day = cutoff.day, cutoff.month = cutoff.month,
+                               nrandom = repeats, CMISSING = CMISSING, CINTERVAL = CINTERVAL,
+                               upper = upper, lower = lower, thresh = thresh)
     WindowOutputRep$Repeat <- r
     if(r == 1){ 
       WindowOutputRand <- WindowOutputRep 
