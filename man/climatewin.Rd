@@ -4,12 +4,13 @@
 \alias{climatewin}
 \title{Test for a climate windows in data.}
 \usage{
-climatewin(Xvar, CDate, BDate, baseline, furthest, closest, FIXED, cutoff.day,
-  cutoff.month, STAT = "mean", FUNC = "L", CMISSING = FALSE,
-  CINTERVAL = "D", nrandom = 0, CVK = 0)
+climatewin(Xvars, CDate, BDate, baseline, furthest, closest, FIXED, cutoff.day,
+  cutoff.month, STATS = "mean", FUNCS = "L", CMISSING = FALSE,
+  CINTERVAL = "D", nrandom = 0, CVK = 0, uppers = NA, lowers = NA,
+  thresh = FALSE)
 }
 \arguments{
-\item{Xvar}{The climate variable of interest. Please specify the parent
+\item{Xvars}{A list containing all climate variables of interest. Please specify the parent
   environment and variable name (e.g. Climate$Temp).}
 
 \item{CDate}{The climate date variable (dd/mm/yyyy). Please specify the
@@ -18,15 +19,15 @@ climatewin(Xvar, CDate, BDate, baseline, furthest, closest, FIXED, cutoff.day,
 \item{BDate}{The biological date variable (dd/mm/yyyy). Please specify the
   parent environment and variable name (e.g. Biol$Date).}
 
-\item{baseline}{The baseline model structure used for testing correlation.
+\item{baseline}{The baseline model structure used for model testing.
   Currently known to support lm, glm, lmer and glmer objects.}
 
 \item{furthest}{The furthest number of time intervals (set by CINTERVAL)
-  back from the cutoff date or biological record that you want to include in
-  your climate window search.}
+  back from the cutoff date or biological record that will be included in
+  the climate window search.}
 
 \item{closest}{The closest number of time intervals (set by CINTERVAL) back
-  from the cutoff date or biological record that you want to include in your
+  from the cutoff date or biological record that will be included in the
   climate window search.}
 
 \item{FIXED}{TRUE or FALSE, whether you wish the climate window to be
@@ -36,12 +37,12 @@ climatewin(Xvar, CDate, BDate, baseline, furthest, closest, FIXED, cutoff.day,
 \item{cutoff.day,cutoff.month}{If FIXED is TRUE, the day and month of the
   year from which the fixed window analysis will start.}
 
-\item{STAT}{The aggregate statistic used to analyse the climate data. Can
+\item{STATS}{The aggregate statistics used to analyse the climate data. Can
   currently use basic R statistics (e.g. mean, min), as well as slope.
   Additional aggregate statistics can be created using the format
   function(x) (...). See FUN in \code{\link{apply}} for more detail.}
 
-\item{FUNC}{The function used to fit the climate variable. Can be linear
+\item{FUNCS}{The functions used to fit the climate variable. Can be linear
   ("L"), quadratic ("Q"), cubic ("C"), inverse ("I") or log ("LOG").}
 
 \item{CMISSING}{TRUE or FALSE, determines what should be done if there are
@@ -60,6 +61,20 @@ climatewin(Xvar, CDate, BDate, baseline, furthest, closest, FIXED, cutoff.day,
 \item{CVK}{The number of folds used for the k-fold cross validation. By default
   this value is set to 0, so no cross validation occurs. Value should be a
   minimum of 2 for cross validation to occur.}
+
+\item{uppers}{Cut-off values used to determine growing degree days or positive
+  climate thresholds (determined by parameter thresh). Note that when values
+  of lowers and uppers are both provided, climatewin will instead calculate a
+  optimal climate zone (?).}
+
+\item{lowers}{Cut-off values used to determine chill days or negative
+  climate thresholds (determined by parameter thresh). Note that when values
+  of lowers and uppers are both provided, climatewin will instead calculate a
+  optimal climate zone (?).}
+
+\item{thresh}{TRUE or FALSE. Determines whether to use values of uppers and
+  lowers to calculate binary climate data (thresh = TRUE), or to use for
+  growing degree days (thresh = FALSE).}
 }
 \value{
 Will return a list containing three objects:
