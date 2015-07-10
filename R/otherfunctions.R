@@ -1,3 +1,240 @@
+#Basewin function that is combined with manywin to test multiple climate window characteristics
+basewin <- function(Xvar, CDate, BDate, baseline, furthest, closest, 
+                    FIXED, cutoff.day, cutoff.month, STAT = "mean", FUNC = "L",
+                    CMISSING = FALSE, CINTERVAL = "D",  nrandom = 0, CVK = 0,
+                    upper = NA, lower = NA, thresh = FALSE){
+  print("Initialising, please wait...")
+  duration  <- (furthest - closest) + 1
+  MaxMODNO  <- (duration * (duration + 1))/2
+  cont      <- DateConverter(BDate = BDate, CDate = CDate, Xvar = Xvar, 
+                             CINTERVAL = CINTERVAL, FIXED = FIXED, 
+                             cutoff.day = cutoff.day, cutoff.month = cutoff.month)   # create new climate dataframe with continuous daynumbers, leap days are not a problem
+  MODNO     <- 1  #Create a model number variable that will count up during the loop#
+  CMatrix   <- matrix(ncol = (duration), nrow = length(BDate))  # matrix that stores the weather data for variable or fixed windows
+  MODLIST   <- list()   # dataframes to store ouput
+  baseline  <- update(baseline, .~.)
+  nullmodel <- AICc(baseline)
+  
+  modeldat      <- model.frame(baseline)
+  modeldat$Yvar <- modeldat[, 1]
+  
+  if(length(modeldat$Yvar) != length(BDate)){
+    stop("NA values present in biological response. Please remove NA values")
+  }
+  
+  if(is.na(upper) == FALSE && is.na(lower) == TRUE){
+    if(thresh == TRUE){
+      cont$Xvar <- ifelse(cont$Xvar > upper, 1, 0)
+    } else {
+      cont$Xvar <- ifelse(cont$Xvar > upper, cont$Xvar, 0)
+    }
+  }
+  
+  
+  if(is.na(lower) == FALSE && is.na(upper) == TRUE){
+    if(thresh == TRUE){
+      cont$Xvar <- ifelse(cont$Xvar < lower, 1, 0)
+    } else {
+      cont$Xvar <- ifelse(cont$Xvar < lower, cont$Xvar, 0)
+    }
+  }
+  
+  if(is.na(lower) == FALSE && is.na(upper) == FALSE){
+    if(thresh == TRUE){
+      cont$Xvar <- ifelse(cont$Xvar > lower & cont$Xvar < upper, 1, 0)
+    } else {
+      cont$Xvar <- ifelse(cont$Xvar > lower & cont$Xvar < upper, cont$Xvar, 0)
+    } 
+  }  
+  
+  for (i in 1:length(BDate)){
+    for (j in closest:furthest){
+      k <- j - closest + 1
+      CMatrix[i, k] <- cont$Xvar[which(cont$CIntNo == cont$BIntNo[i] - j)]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
+    }
+  }
+  
+  if (CMISSING == FALSE && length(which(is.na(CMatrix))) > 0){
+    .GlobalEnv$Missing <- as.Date(cont$CIntNo[is.na(cont$Xvar)], origin = min(as.Date(CDate, format = "%d/%m/%Y")) - 1)
+    stop(c("Climate data should not contain NA values: ", length(.GlobalEnv$Missing),
+           " NA value(s) found. Please add missing climate data or set CMISSING=TRUE.
+           See object Missing for all missing climate data"))
+  }
+  
+  if (CMISSING == TRUE && length(which(is.na(CMatrix))) > 0){
+    modeldat      <- modeldat[complete.cases(CMatrix), ]
+    baseline      <- update(baseline, Yvar~., data = modeldat)
+    CMatrix       <- CMatrix[complete.cases(CMatrix), ]
+  }
+  
+  modeldat           <- model.frame(baseline)
+  modeldat$Yvar      <- modeldat[, 1]
+  modeldat$temporary <- matrix(ncol = 1, nrow = nrow(CMatrix), seq(from = 1, to = nrow(CMatrix), by = 1))
+  
+  if(is.null(weights(baseline)) == FALSE){
+    modeldat$modweights <- weights(baseline)
+    baseline <- update(baseline, .~., weights = modweights, data = modeldat)
+  }
+  
+  if (CVK>1){
+    modeldat$K <- sample(seq(from = 1, to = length(modeldat$temporary), by = 1) %% CVK + 1)
+  }   # create labels K-fold crossvalidation
+  
+  if (FUNC == "L"){
+    modeloutput <- update(baseline, .~. + temporary, data = modeldat)
+  } else if (FUNC == "Q") {
+    modeloutput <- update(baseline, .~. + temporary + I(temporary ^ 2), data = modeldat)
+  } else if (FUNC == "C") {
+    modeloutput <- update(baseline, .~. + temporary + I(temporary ^ 2) + I(temporary ^ 3), data = modeldat)
+  } else if (FUNC == "LOG") {
+    modeloutput <- update(baseline, .~. + log(temporary), data = modeldat)
+  } else if (FUNC == "I") {
+    modeloutput <- update (baseline, .~. + I(temporary ^ -1), data = modeldat)
+  } else {
+    print("DEFINE FUNC")
+  }
+  
+  pb <- txtProgressBar(min = 0, max = MaxMODNO, style = 3, char = "|")
+  
+  #CREATE A FOR LOOP TO FIT DIFFERENT CLIMATE WINDOWS#
+  for (m in closest:furthest){
+    for (n in 1:duration){
+      if ( (m - n) >= (closest - 1)){  # do not use windows that overshoot the closest possible day in window   
+        if (STAT != "slope" || n > 1){
+          windowopen  <- m - closest + 1
+          windowclose <- windowopen - n + 1
+          if (STAT == "slope"){ 
+            time               <- seq(1, n, 1)
+            modeldat$temporary <- apply(CMatrix[, windowclose:windowopen], 1, FUN = function(x) coef(lm(x ~ time))[2])
+          } else { 
+            ifelse (n == 1, modeldat$temporary <- CMatrix[, windowclose:windowopen], modeldat$temporary <- apply(CMatrix[, windowclose:windowopen], 1, FUN = STAT))
+          }
+          modeloutput <- update(modeloutput, .~.)
+          
+          # If valid, perform k-fold crossvalidation
+          if (CVK>1) {      
+            for (k in 1:CVK) {
+              test           <- subset(modeldat, modeldat$K == k) # Create the test dataset
+              train          <- subset(modeldat, modeldat$K != k) # Create the train dataset
+              modeloutputcv <- update(modeloutput, Yvar~., data = train)  # Refit the model with climate using the train dataset
+              baselinecv    <- update(baseline, Yvar~., data = train) # Refit the model without climate using the train dataset
+              test$predictions <- predict(modeloutputcv, newdata = test, allow.new.levels = TRUE) # Test the output of the climate model fitted using the test data
+              test$predictionsbaseline <- predict(baselinecv, newdata = test, allow.new.levels = TRUE) # Test the output of the null models fitted using the test data
+              N <- length(test$predictions) # Determine the length of the test dataset
+              P <- N - df.residual(modeloutputcv)  # Determine df for the climate model
+              P_baseline <- N - df.residual(baselinecv)  # Determine df for the baseline model
+              mse <- sum((test$predictions - test[, 1]) ^ 2) / N
+              #calculate mean standard errors for climate model
+              #calc mse only works non-categorical Yvars, e.g. normal, binary, count data 
+              mse_baseline <- sum((test$predictionsbaseline - test[, 1]) ^ 2) / N
+              #calculate mean standard errors for null model
+              AICc_cv <- N * log(mse) + (2 * P * (P + 1)) / (N - P - 1)
+              AICc_cv_baseline <- N * log(mse_baseline) + (2 * P_baseline * (P_baseline + 1)) / (N - P_baseline - 1)
+              #Calculate AICc values for climate and baseline models
+              #rmse_corrected<-sqrt(sum((test$predictions-test[,1])^2)/modeloutputcv$df[1])
+              ifelse(k == 1, AICc_cvtotal <- AICc_cv, AICc_cvtotal <- AICc_cvtotal + AICc_cv)              
+              ifelse(k == 1, AICc_cv_basetotal <- AICc_cv_baseline, AICc_cv_basetotal <- AICc_cv_basetotal + AICc_cv_baseline)
+              #Add up the AICc values for all iterations of crossvalidation
+            }
+            AICc_cv_avg <- AICc_cvtotal / CVK # Determine the average AICc value of the climate model from cross validations
+            AICc_cv_baseline_avg <- AICc_cv_basetotal / CVK # Determine the average AICc value of the null model from cross validations
+            deltaAICc_cv <- AICc_cv_avg - AICc_cv_baseline_avg # Calculate delta AICc
+          }
+          
+          #Add model parameters to list
+          if(CVK > 1){
+            MODLIST$ModelAICc[[MODNO]]    <- AICc_cv_avg
+            MODLIST$deltaAICc[[MODNO]]    <- deltaAICc_cv
+            MODLIST$baselineAICc[[MODNO]] <- AICc_cv_baseline_avg
+          } else {
+            MODLIST$ModelAICc[[MODNO]]   <- AICc(modeloutput)
+            MODLIST$baselineAICc <- AICc(baseline) 
+            #WORK OUT A WAY TO REMOVE THIS FROM LOOP
+          }
+          
+          MODLIST$WindowOpen[[MODNO]]  <- m
+          MODLIST$WindowClose[[MODNO]] <- m - n + 1
+          
+          if(length(attr(class(modeloutput),"package")) > 0 && attr(class(modeloutput), "package") == "lme4"){
+            MODLIST$ModelBeta[[MODNO]] <- fixef(modeloutput)[length(fixef(modeloutput))]
+            MODLIST$ModelInt[[MODNO]]  <- fixef(modeloutput)[1]
+            
+            if (FUNC == "Q"){
+              MODLIST$ModelBeta[[MODNO]] <- fixef(modeloutput)[length(fixef(modeloutput))-1]
+              MODLIST$ModelBetaQ[[MODNO]] <- fixef(modeloutput)[length(fixef(modeloutput))]
+            }   
+            
+            if (FUNC == "C"){
+              MODLIST$ModelBeta[[MODNO]] <- fixef(modeloutput)[length(fixef(modeloutput))-2]
+              MODLIST$ModelBetaQ[[MODNO]] <- fixef(modeloutput)[length(fixef(modeloutput))-1]    
+              MODLIST$ModelBetaC[[MODNO]] <- fixef(modeloutput)[length(fixef(modeloutput))]
+            }
+          } else {
+            MODLIST$ModelBeta[[MODNO]]   <- coef(modeloutput)[length(coef(modeloutput))]
+            MODLIST$ModelInt[[MODNO]]    <- coef(modeloutput)[1]
+            
+            if (FUNC == "Q"){
+              MODLIST$ModelBeta[[MODNO]]   <- coef(modeloutput)[length(coef(modeloutput))-1]
+              MODLIST$ModelBetaQ[[MODNO]] <- coef(modeloutput)[length(coef(modeloutput))]
+            }   
+            
+            if (FUNC == "C"){
+              MODLIST$ModelBeta[[MODNO]]   <- coef(modeloutput)[length(coef(modeloutput))-2]
+              MODLIST$ModelBetaQ[[MODNO]] <- coef(modeloutput)[length(coef(modeloutput))-1]    
+              MODLIST$ModelBetaC[[MODNO]] <- coef(modeloutput)[length(coef(modeloutput))]
+            }
+          }
+          MODNO <- MODNO + 1        #Increase ModNo#
+        }
+      }
+    }  
+    #Fill progress bar
+    setTxtProgressBar(pb, MODNO - 1)
+  }
+  #Save the best model output
+  m <- (MODLIST$WindowOpen[MODLIST$ModelAICc %in% min(MODLIST$ModelAICc)])
+  n <- (MODLIST$WindowOpen[MODLIST$ModelAICc %in% min(MODLIST$ModelAICc)]) - (MODLIST$WindowClose[MODLIST$ModelAICc %in% min(MODLIST$ModelAICc)]) + 1
+  windowopen  <- m[1] - closest + 1
+  windowclose <- windowopen - n[1] + 1
+  if(STAT == "slope"){
+    time      <- seq(1, n[1], 1)
+    modeldat$temporary <- apply(CMatrix[, windowclose:windowopen], 1, FUN = function(x) coef(lm(x ~ time))[2])
+  } else {
+    ifelse (windowopen - windowclose == 0, modeldat$temporary <- CMatrix[, windowclose:windowopen], modeldat$temporary <- apply(CMatrix[, windowclose:windowopen], 1, FUN = STAT))
+  }
+  LocalModel           <- update(modeloutput, .~.)
+  MODLIST$furthest     <- furthest
+  MODLIST$closest      <- closest
+  MODLIST$Statistics   <- STAT
+  MODLIST$Function     <- FUNC
+  MODLIST$FIXED        <- FIXED
+  MODLIST$K            <- CVK
+  
+  if (FIXED == TRUE){
+    MODLIST$cutoff.day   <- cutoff.day
+    MODLIST$cutoff.month <- cutoff.month
+  }
+  
+  if (nrandom == 0){
+    LocalData           <- model.frame(LocalModel)
+    MODLIST$Randomised  <- "no"
+    MODLIST             <- as.data.frame(MODLIST)
+    LocalOutput         <- MODLIST[order(MODLIST$ModelAICc), ]
+  }
+  
+  if (nrandom > 0){
+    MODLIST$Randomised <- "yes"
+    MODLIST            <- as.data.frame (MODLIST)
+    LocalOutputRand    <- MODLIST[order(MODLIST$ModelAICc), ]
+  }
+  
+  if (nrandom == 0){
+    return(list(BestModel = LocalModel, BestModelData = LocalData, Dataset = LocalOutput))
+  } else {
+    return(LocalOutputRand)
+  }
+  }
+
 #Function to convert dates into day/week/month number
 DateConverter <- function(BDate, CDate, Xvar, Xvar2 = NULL, CINTERVAL, FIXED, 
                           cutoff.day, cutoff.month, cross = FALSE){
