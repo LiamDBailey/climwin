@@ -4,6 +4,11 @@ basewin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
                     CMISSING = FALSE, CINTERVAL = "D",  nrandom = 0, CVK = 0,
                     upper = NA, lower = NA, thresh = FALSE){
   print("Initialising, please wait...")
+  
+  if(STAT == "slope" && FUNC == "LOG" | FUNC == "I"){
+    stop("STAT = slope cannot be used with FUNC = LOG or I as negative values may be present")
+  }
+  
   duration  <- (furthest - closest) + 1
   MaxMODNO  <- (duration * (duration + 1))/2
   cont      <- DateConverter(BDate = BDate, CDate = CDate, Xvar = Xvar, 
@@ -108,6 +113,10 @@ basewin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
             modeldat$temporary <- apply(CMatrix[, windowclose:windowopen], 1, FUN = function(x) coef(lm(x ~ time))[2])
           } else { 
             ifelse (n == 1, modeldat$temporary <- CMatrix[, windowclose:windowopen], modeldat$temporary <- apply(CMatrix[, windowclose:windowopen], 1, FUN = STAT))
+          }
+          if(min(modeldat$temporary) <= 0 & FUNC == "LOG" || min(modeldat$temporary) <= 0 & FUNC == "I"){
+            stop("FUNC = LOG or I cannot be used with climate values >= 0. 
+                 Consider adding a constant to climate data to remove these values")
           }
           modeloutput <- update(modeloutput, .~.)
           
