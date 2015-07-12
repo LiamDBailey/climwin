@@ -29,6 +29,8 @@ distribution. See \code{\link{plotweights}} for more detail.}
 to be compared with non-randomised data. Can be used to determine the
 likelihood of finding a climate window model of a given AICc value by
 chance.}
+
+\item{Title}{Main title of the plot panel.}
 }
 \value{
 Will return a panel of 6-8 plots:

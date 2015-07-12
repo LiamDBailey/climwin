@@ -19,7 +19,7 @@ Returns the median values for window open and window close
 from all climate windows that fall within specified model weights.
 }
 \examples{
-Find median window values for climate windows fitted to the Mass dataset
+# Find median window values for climate windows fitted to the Mass dataset
 
 data(MassOutput)
 

@@ -9,7 +9,7 @@
 #' @author Liam D. Bailey and Martijn van de Pol
 #' @examples
 #' 
-#' Find median window values for climate windows fitted to the Mass dataset
+#' # Find median window values for climate windows fitted to the Mass dataset
 #' 
 #' data(MassOutput)
 #' 
