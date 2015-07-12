@@ -79,13 +79,13 @@ autowin <- function(reference, Xvar, CDate, BDate, furthest,
                     CMISSING = FALSE, CINTERVAL = "D"){
   
   print("Initialising, please wait...")
-  pb         <- SetProgressBar(furthest, closest, STAT) 
+  duration   <- (furthest - closest) + 1
+  MaxMODNO  <- (duration * (duration + 1))/2 
   cont       <- DateConverter(BDate = BDate, CDate = CDate, Xvar = Xvar, 
                               CINTERVAL = CINTERVAL, FIXED = FIXED, 
                               cutoff.day = cutoff.day, cutoff.month = cutoff.month)
   MODNO      <- 1
   MODLIST    <- list()
-  duration   <- (furthest - closest) + 1
   CMatrix    <- matrix(ncol = (duration), nrow = length(BDate))
   temporary1 <- matrix(ncol = 1, nrow = length(BDate), 1)
 
@@ -109,6 +109,8 @@ autowin <- function(reference, Xvar, CDate, BDate, furthest,
     reference <- reference[complete.cases(CMatrix)]
     CMatrix   <- CMatrix[complete.cases(CMatrix), ]
   } 
+
+  pb <- txtProgressBar(min = 0, max = MaxMODNO, style = 3, char = "|")
   
   for (m in closest:furthest){
     for (n in 1:duration){
