@@ -31,7 +31,7 @@ test_that("Check randwin output", {
   }
   
   expect_true(is.data.frame(rand))
-  expect_equal(length(which(is.na(rand))), 0)
+  expect_equal(length(which(is.na(rand[,5]))), 0)
   expect_true(ncol(rand) >= 13)
   expect_equal(MaxMODNO, nrow(subset(rand, Repeat == 1)))
   expect_true((rand["Randomised"])[1,]=="yes")
