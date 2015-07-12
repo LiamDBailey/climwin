@@ -23,7 +23,7 @@ basewin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
   modeldat      <- model.frame(baseline)
   modeldat$Yvar <- modeldat[, 1]
   
-  if(length(modeldat$Yvar) != length(BDate)){
+  if(nrow(modeldat$Yvar) != length(BDate)){
     stop("NA values present in biological response. Please remove NA values")
   }
   
