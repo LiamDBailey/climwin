@@ -61,7 +61,10 @@
 #'                 CMISSING = FALSE, CINTERVAL = "D")
 #'                 
 #' # View the output
-#' head(auto)                 
+#' head(auto)
+#' 
+#' # Plot the output
+#' plotcor(auto, type = "A")                                   
 #'}
 #'        
 #'@export

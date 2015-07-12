@@ -49,8 +49,12 @@
 #'                   STAT = "mean", FIXED = FALSE,
 #'                   CMISSING = FALSE, CINTERVAL = "D")
 #'                   
-#' # View the output #
+#' # View the output
 #' head(cross)
+#' 
+#' # Plot the output
+#' plotcor(cross, TYPE = "C")
+#' 
 #' }
 #' 
 #'@export
