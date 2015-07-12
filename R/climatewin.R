@@ -63,7 +63,8 @@
 #'    example. }
 #'  @author Liam D. Bailey and Martijn van de Pol
 #'  @importFrom MuMIn AICc
-#'  @import lme4  
+#'  @import lme4
+#'  @import stats  
 #'  @examples
 #'  \dontrun{
 #'  ##EXAMPLE 1## 
