@@ -18,17 +18,8 @@ test_that("crosswin produces output", {
            STAT = "max", FIXED = FALSE,
            CMISSING = FALSE, CINTERVAL = "D")
   
-  MaxMODNO <- 0
-  duration <- (furthest-closest) + 1
-  for (m in closest:furthest){
-    for (n in 1:duration){
-      if ((m-n)>=(closest-1)){  
-        if (STAT!="slope" || n>1){
-          MaxMODNO <- MaxMODNO + 1
-        }
-      }
-    }
-  }
+  duration  <- (furthest - closest) + 1
+  MaxMODNO  <- (duration * (duration + 1))/2
   
   expect_true(is.data.frame(test))
   expect_equal(length(which(is.na(test))), 0)

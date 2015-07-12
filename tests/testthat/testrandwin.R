@@ -18,17 +18,8 @@ test_that("Check randwin output", {
                   baseline = lm(Mass ~ 1, data = Mass), furthest = 2, closest = 1, 
                   FIXED = FALSE, STAT = "max", FUNC = "L", CMISSING=FALSE)
   
-  MaxMODNO <- 0
-  duration <- (furthest-closest) + 1
-  for (m in closest:furthest){
-    for (n in 1:duration){
-      if ((m-n)>=(closest-1)){  
-        if (STAT!="slope" || n>1){
-          MaxMODNO <- MaxMODNO + 1
-        }
-      }
-    }
-  }
+  duration  <- (furthest - closest) + 1
+  MaxMODNO  <- (duration * (duration + 1))/2
   
   expect_true(is.data.frame(rand))
   expect_equal(length(which(is.na(rand[,5]))), 0)
