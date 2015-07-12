@@ -48,24 +48,27 @@ if (Dataset$Function[1] == "I"){
 }
 
 if(is.null(weights(BestModel)) == TRUE || sum(weights(BestModel)) == nrow(BestModelData)){
-  if(ncol(BestModelData) == 2 || Dataset$Function[1] == "Q" & ncol(BestModelData) == 3 || Dataset$Function[1] == "C" & ncol(BestModelData) == 4){ 
-        ggplot(BestModelData, aes(x = temporary, y = Yvar), environment = environment()) +
-          geom_point(size = 1, alpha = 1) +
-          geom_line(data = cbind(BestModelData, pred = predict(BestModel, type = "response", allow.new.levels = TRUE)), aes(y = pred)) +
-          theme_classic() +
-          theme(panel.grid.major = element_blank(),
-                panel.grid.minor = element_blank(),
-                axis.line = element_line(size = 0.25, colour = "black"),
-                plot.title = element_text(size = 18)) +
-          ggtitle("Output of best model") +
-          ylab("Biological variable") +    
-          if (Dataset$Function[1] == "LOG"){
-            xlab("Log of climate variable")
-          } else if (Dataset$Function[1] == "I"){
-            xlab("Inverse of climate variable")
-          } else {
-            xlab("Climate variable")
-          }
+  if(ncol(BestModelData) == 2 || Dataset$Function[1] == "Q" & ncol(BestModelData) == 3 || Dataset$Function[1] == "C" & ncol(BestModelData) == 4){
+    with(BestModelData, {
+      ggplot(BestModelData, aes(x = temporary, y = Yvar), environment = environment()) +
+        geom_point(size = 1, alpha = 1) +
+        geom_line(data = cbind(BestModelData, pred = predict(BestModel, type = "response", allow.new.levels = TRUE)), aes(y = pred)) +
+        theme_classic() +
+        theme(panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              axis.line = element_line(size = 0.25, colour = "black"),
+              plot.title = element_text(size = 18)) +
+        ggtitle("Output of best model") +
+        ylab("Biological variable") +    
+        if (Dataset$Function[1] == "LOG"){
+          xlab("Log of climate variable")
+        } else if (Dataset$Function[1] == "I"){
+          xlab("Inverse of climate variable")
+        } else {
+          xlab("Climate variable")
+        }
+    }
+    )       
     } else {
       col = 1
       if(Dataset$Function[1] == "Q"){
@@ -93,6 +96,7 @@ if(is.null(weights(BestModel)) == TRUE || sum(weights(BestModel)) == nrow(BestMo
       }
   names(newdat) <- c("temporary", names(BestModelData)[2:(ncol(BestModelData) - col)])  #Then change the names so they match what would be in the model
   pred <- predict(BestModel, newdata = newdat, type = "response", allow.new.levels = TRUE)
+  with(BestModelData, {
     ggplot(BestModelData, aes(x = temporary, y = Yvar), environment = environment()) +
       geom_point(size = 1, alpha = 1) +
       geom_line(data = newdat, aes(y = pred)) +
@@ -110,29 +114,34 @@ if(is.null(weights(BestModel)) == TRUE || sum(weights(BestModel)) == nrow(BestMo
       } else {
         xlab("Climate variable")
       }
+  }
+  )  
 }
 } else {
   if(ncol(BestModelData) == 3 || Dataset$Function[1] == "Q" & ncol(BestModelData) == 4 || Dataset$Function[1] == "C" & ncol(BestModelData) == 5){ 
     if (Dataset$Function[1] == "LOG" || Dataset$Function[1] == "I"){
       names(BestModelData)[ncol(BestModelData) - 1] <- "temporary"  
     }
-    ggplot(BestModelData, aes(x = temporary, y = Yvar), environment = environment()) +
-      geom_point(size = 1, alpha = 1) +
-      geom_line(data = cbind(BestModelData, pred = predict(BestModel, type = "response", allow.new.levels = TRUE)), aes(y = pred)) +
-      theme_classic() +
-      theme(panel.grid.major = element_blank(),
-            panel.grid.minor = element_blank(),
-            axis.line = element_line(size = 0.25, colour = "black"),
-            plot.title = element_text(size = 18)) +
-      ggtitle("Output of best model") +
-      ylab("Biological variable") +    
-      if (Dataset$Function[1] == "LOG"){
-        xlab("Log of climate variable")
-      } else if (Dataset$Function[1] == "I"){
-        xlab("Inverse of climate variable")
-      } else {
-        xlab("Climate variable")
-      }
+    with(BestModelData, {
+      ggplot(BestModelData, aes(x = temporary, y = Yvar), environment = environment()) +
+        geom_point(size = 1, alpha = 1) +
+        geom_line(data = cbind(BestModelData, pred = predict(BestModel, type = "response", allow.new.levels = TRUE)), aes(y = pred)) +
+        theme_classic() +
+        theme(panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              axis.line = element_line(size = 0.25, colour = "black"),
+              plot.title = element_text(size = 18)) +
+        ggtitle("Output of best model") +
+        ylab("Biological variable") +    
+        if (Dataset$Function[1] == "LOG"){
+          xlab("Log of climate variable")
+        } else if (Dataset$Function[1] == "I"){
+          xlab("Inverse of climate variable")
+        } else {
+          xlab("Climate variable")
+        }
+    }
+    )
   } else {
     col = 1
     if(Dataset$Function[1] == "Q"){
@@ -160,23 +169,26 @@ if(is.null(weights(BestModel)) == TRUE || sum(weights(BestModel)) == nrow(BestMo
     }
     names(newdat) <- c("temporary", names(BestModelData)[2:(ncol(BestModelData) - col)])  #Then change the names so they match what would be in the model
     pred <- predict(BestModel, newdata = newdat,  type = "response", allow.new.levels = TRUE)
-    ggplot(BestModelData, aes(x = temporary, y = Yvar), environment = environment()) +
-      geom_point(size = 1, alpha = 1) +
-      geom_line(data = newdat, aes(y = pred)) +
-      theme_classic() +
-      theme(panel.grid.major = element_blank(),
-            panel.grid.minor = element_blank(),
-            axis.line = element_line(size = 0.25, colour = "black"),
-            plot.title = element_text(size = 18)) +
-      ggtitle("Output of best model") +
-      ylab("Biological variable") +    
-      if (Dataset$Function[1] == "LOG"){
-        xlab("Log of climate variable")
-      } else if (Dataset$Function[1] == "I"){
-        xlab("Inverse of climate variable")
-      } else {
-        xlab("Climate variable")
-      }
+    with(BestModelData, {
+      ggplot(BestModelData, aes(x = temporary, y = Yvar), environment = environment()) +
+        geom_point(size = 1, alpha = 1) +
+        geom_line(data = newdat, aes(y = pred)) +
+        theme_classic() +
+        theme(panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              axis.line = element_line(size = 0.25, colour = "black"),
+              plot.title = element_text(size = 18)) +
+        ggtitle("Output of best model") +
+        ylab("Biological variable") +    
+        if (Dataset$Function[1] == "LOG"){
+          xlab("Log of climate variable")
+        } else if (Dataset$Function[1] == "I"){
+          xlab("Inverse of climate variable")
+        } else {
+          xlab("Climate variable")
+        }
+    }
+    )
   }
 }
   }
