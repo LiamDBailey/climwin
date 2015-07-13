@@ -9,6 +9,24 @@ basewin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
     stop("STAT = slope cannot be used with FUNC = LOG or I as negative values may be present")
   }
   
+  if(CINTERVAL == "D"){
+    if((min(as.Date(BDate, format = "%d/%m/%Y")) - furthest) < min(as.Date(CDate, format = "%d/%m/%Y"))){
+      stop("You do not have enough climate data to search that far back. Please adjust the value of furthest or add additional climate data.")
+    }
+  }
+  
+  if(CINTERVAL == "W"){
+    if((min(as.Date(BDate, format = "%d/%m/%Y")) - lubridate::weeks(furthest)) < min(as.Date(CDate, format = "%d/%m/%Y"))){
+      stop("You do not have enough climate data to search that far back. Please adjust the value of furthest or add additional climate data.")
+    }
+  }
+  
+  if(CINTERVAL == "M"){
+    if((min(as.Date(BDate, format = "%d/%m/%Y")) - months(furthest)) < min(as.Date(CDate, format = "%d/%m/%Y"))){
+      stop("You do not have enough climate data to search that far back. Please adjust the value of furthest or add additional climate data.")
+    }
+  }
+  
   duration  <- (furthest - closest) + 1
   MaxMODNO  <- (duration * (duration + 1))/2
   cont      <- DateConverter(BDate = BDate, CDate = CDate, Xvar = Xvar, 

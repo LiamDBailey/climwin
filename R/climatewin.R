@@ -64,7 +64,8 @@
 #'  @author Liam D. Bailey and Martijn van de Pol
 #'  @importFrom MuMIn AICc
 #'  @import lme4
-#'  @import stats  
+#'  @import stats
+#'  @importFrom lubridate weeks  
 #'  @examples
 #'  \dontrun{
 #'  ##EXAMPLE 1## 
