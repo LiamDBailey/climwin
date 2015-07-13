@@ -5,7 +5,7 @@ basewin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
                     upper = NA, lower = NA, thresh = FALSE){
   print("Initialising, please wait...")
   
-  if(STAT == "slope" && FUNC == "LOG" | FUNC == "I"){
+  if(STAT == "slope" & FUNC == "LOG" || STAT == "slope" & FUNC == "I"){
     stop("STAT = slope cannot be used with FUNC = LOG or I as negative values may be present")
   }
   
