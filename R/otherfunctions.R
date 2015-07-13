@@ -273,6 +273,9 @@ DateConverter <- function(BDate, CDate, Xvar, Xvar2 = NULL, CINTERVAL, FIXED,
   }
   
   Xvar       <- Xvar[match(CDate2, CDate)]
+  if(is.null(Xvar2) == FALSE){
+    Xvar2 <- Xvar2[match(CDate2, CDate)]
+  }
   CIntNo     <- as.numeric(CDate2) - min(as.numeric(CDate2)) + 1   # atrribute daynumbers for both datafiles with first date in CLimateData set to CIntNo 1
   RealBIntNo <- as.numeric(BDate) - min(as.numeric(CDate2)) + 1
   
