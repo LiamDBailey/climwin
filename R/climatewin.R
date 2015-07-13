@@ -77,18 +77,20 @@
 #'  data(Offspring) 
 #'  data(OffspringClimate)
 #'  
-#'  OffspringWin <- climatewin(Xvar = OffspringClimate$Temperature, 
+#'  # Test both linear and quadratic functions with climate variable temperature
+#'  
+#'  OffspringWin <- climatewin(Xvars = list(Temp = OffspringClimate$Temperature), 
 #'                             CDate = OffspringClimate$Date, 
 #'                             BDate = Offspring$Date, 
 #'                             baseline = glm(Offspring ~ 1, data = Offspring, family = poisson),
 #'                             furthest = 150, closest = 0, 
-#'                             FIXED = FALSE, STAT = "mean", 
-#'                             FUNC = "L", CMISSING = FALSE, CINTERVAL = "D")
+#'                             FIXED = FALSE, STATS = "mean", 
+#'                             FUNCS = c("L", "Q"), CMISSING = FALSE, CINTERVAL = "D")
 #'  
-#'  # View output.
+#'  # View output testing linear relationship of temperature
 #'  
-#'  head(OffspringWin[[3]]) 
-#'  OffspringWin[[1]]
+#'  head(OffspringWin[[1]]$Dataset) 
+#'  summary(OffspringWin[[1]]$BestModel)
 #'  
 #'  ##EXAMPLE 2##
 #'  
@@ -103,18 +105,19 @@
 #'  # Test for climate windows between 100 and 0 days ago (furthest = 100, closest = 0)
 #'  # Fit a linear term for the mean climate (FUNC = "L")
 #'  # Test at the resolution of days (CINTERVAL = "D")
+#'  # Test using both mean and max aggregate statistics
 #'  
-#'  MassWin <- climatewin(Xvar = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date,
+#'  MassWin <- climatewin(Xvars = list(Temp = MassClimate$Temp), CDate = MassClimate$Date, BDate = Mass$Date,
 #'                        baseline = lm(Mass ~ 1, data = Mass),
 #'                        furthest = 100, closest = 0,
-#'                        STAT = "mean", FUNC = "L",
+#'                        STATS = c("mean", "max"), FUNCS = "L",
 #'                        FIXED = TRUE, cutoff.day = 20, cutoff.month = 5,
 #'                        nrandom = 0, CMISSING = FALSE, CINTERVAL = "D")
 #'  
-#'  # View output
+#'  # View output for mean temperature
 #'  
-#'  head(MassWin[[3]])
-#'  MassWin[[1]]
+#'  head(MassWin[[1]]$Dataset)
+#'  summary(MassWin[[1]]$BestModel)
 #'  }
 #'  
 #'  @export

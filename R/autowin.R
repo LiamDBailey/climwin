@@ -11,10 +11,10 @@
 #'@param BDate The biological date variable (dd/mm/yyyy). Please specify the 
 #'  parent environment and variable name (e.g. Biol$Date).
 #'@param furthest The furthest number of time intervals (set by CINTERVAL) back 
-#'  from the cutoff date or biological record to include in your climate window 
+#'  from the cutoff date or biological record to include in the climate window 
 #'  search.
 #'@param closest The closest number of time intervals (set by CINTERVAL) back 
-#'  from the cutoff date or biological record to include in your climate window 
+#'  from the cutoff date or biological record to include in the climate window 
 #'  search.
 #'@param STAT The aggregate statistic used to analyse the climate data. Can 
 #'  currently use basic R statistics (e.g. mean, min), as well as slope. 
@@ -33,6 +33,17 @@
 #'  conducted. May be days ("D"), weeks ("W"), or months ("M"). Note the units 
 #'  of parameters 'furthest' and 'closest' will differ with the choice of 
 #'  CINTERVAL.
+#'@param upper Cut-off value used to determine growing degree days or positive 
+#'    climate thresholds (determined by parameter thresh). Note that when values
+#'    of lowers and uppers are both provided, climatewin will instead calculate a 
+#'    optimal climate zone (?).
+#'@param lower Cut-off value used to determine chill days or negative 
+#'    climate thresholds (determined by parameter thresh). Note that when values
+#'    of lowers and uppers are both provided, climatewin will instead calculate a 
+#'    optimal climate zone (?).
+#'@param thresh TRUE or FALSE. Determines whether to use values of uppers and
+#'    lowers to calculate binary climate data (thresh = TRUE), or to use for
+#'    growing degree days (thresh = FALSE).
 #'@return Will return a data frame showing the correlation between the climate 
 #'  in each fitted window and the chosen reference window.
 #'@author Liam D. Bailey and Martijn van de Pol
@@ -64,7 +75,7 @@
 #' head(auto)
 #' 
 #' # Plot the output
-#' plotcor(auto, type = "A")                                   
+#' plotcor(auto, TYPE = "A")                                   
 #'}
 #'        
 #'@export
@@ -76,9 +87,11 @@
 
 autowin <- function(reference, Xvar, CDate, BDate, furthest, 
                     closest,  STAT, FIXED, cutoff.day, cutoff.month, 
-                    CMISSING = FALSE, CINTERVAL = "D"){
+                    CMISSING = FALSE, CINTERVAL = "D", upper = NA,
+                    lower = NA, thresh = FALSE){
   
   print("Initialising, please wait...")
+  
   duration   <- (furthest - closest) + 1
   MaxMODNO  <- (duration * (duration + 1))/2 
   cont       <- DateConverter(BDate = BDate, CDate = CDate, Xvar = Xvar, 
@@ -89,6 +102,31 @@ autowin <- function(reference, Xvar, CDate, BDate, furthest,
   CMatrix    <- matrix(ncol = (duration), nrow = length(BDate))
   temporary1 <- matrix(ncol = 1, nrow = length(BDate), 1)
 
+  if(is.na(upper) == FALSE && is.na(lower) == TRUE){
+    if(thresh == TRUE){
+      cont$Xvar <- ifelse(cont$Xvar > upper, 1, 0)
+    } else {
+      cont$Xvar <- ifelse(cont$Xvar > upper, cont$Xvar, 0)
+    }
+  }
+  
+  
+  if(is.na(lower) == FALSE && is.na(upper) == TRUE){
+    if(thresh == TRUE){
+      cont$Xvar <- ifelse(cont$Xvar < lower, 1, 0)
+    } else {
+      cont$Xvar <- ifelse(cont$Xvar < lower, cont$Xvar, 0)
+    }
+  }
+  
+  if(is.na(lower) == FALSE && is.na(upper) == FALSE){
+    if(thresh == TRUE){
+      cont$Xvar <- ifelse(cont$Xvar > lower & cont$Xvar < upper, 1, 0)
+    } else {
+      cont$Xvar <- ifelse(cont$Xvar > lower & cont$Xvar < upper, cont$Xvar - lower, 0)
+    } 
+  }
+  
   # Create a matrix with the climate data from closest to furthest days
   # back from each biological record
   for (i in 1:length(BDate)){
@@ -99,7 +137,17 @@ autowin <- function(reference, Xvar, CDate, BDate, furthest,
   }
   
   if (CMISSING == FALSE && length(which(is.na(CMatrix))) > 0){
-    .GlobalEnv$Missing <- as.Date(cont$CIntNo[is.na(cont$Xvar)], origin = min(as.Date(CDate, format = "%d/%m/%Y")) - 1)
+    if(CINTERVAL == "D"){
+      .GlobalEnv$Missing <- as.Date(cont$CIntNo[is.na(cont$Xvar)], origin = min(as.Date(CDate, format = "%d/%m/%Y")) - 1)
+    }
+    if(CINTERVAL == "M"){
+      .GlobalEnv$Missing <- c(paste("Month:", month(as.Date(cont$CIntNo[is.na(cont$Xvar)], origin = min(as.Date(CDate, format = "%d/%m/%Y")) - 1)),
+                                    "Year:", year(as.Date(cont$CIntNo[is.na(cont$Xvar)], origin = min(as.Date(CDate, format = "%d/%m/%Y")) - 1))))
+    }
+    if(CINTERVAL == "W"){
+      .GlobalEnv$Missing <- c(paste("Week:", month(as.Date(cont$CIntNo[is.na(cont$Xvar)], origin = min(as.Date(CDate, format = "%d/%m/%Y")) - 1)),
+                                    "Year:", year(as.Date(cont$CIntNo[is.na(cont$Xvar)], origin = min(as.Date(CDate, format = "%d/%m/%Y")) - 1))))
+    }
     stop(c("Climate data should not contain NA values: ", length(.GlobalEnv$Missing),
            " NA value(s) found. Please add missing climate data or set CMISSING=TRUE.
            See object Missing for all missing climate data"))
