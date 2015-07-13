@@ -84,6 +84,9 @@ auto <- autowin(reference = single[[2]]$temporary,
 
 # View the output
 head(auto)
+
+# Plot the output
+plotcor(auto, type = "A")
 }
 }
 \author{

@@ -19,23 +19,14 @@ test_that("climatewin produces the right output", {
   
   furthest = 2
   closest = 2
-  STAT = "max"
+  STATS = "max"
   
-  test <- climatewin(Xvar = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date, 
+  test <- climatewin(Xvars = list(MassClimate$Temp), CDate = MassClimate$Date, BDate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), furthest = 2, closest = 2, 
-                     FIXED = FALSE, STAT = "max", FUNC = "L", CMISSING = FALSE)
+                     FIXED = FALSE, STATS = "max", FUNCS = "L", CMISSING = FALSE)
   
-  MaxMODNO <- 0
-  duration <- (furthest-closest) + 1
-  for (m in closest:furthest){
-    for (n in 1:duration){
-      if ( (m-n) >= (closest - 1)){  
-        if (STAT != "slope" || n > 1){
-          MaxMODNO <- MaxMODNO + 1
-        }
-      }
-    }
-  }
+  duration  <- (furthest - closest) + 1
+  MaxMODNO  <- (duration * (duration + 1))/2
   
   expect_true(is.list(test))
   expect_false(is.na((test[[1]])[1]))
@@ -62,7 +53,7 @@ test_that("No errors return when CMISSING TRUE and full dataset", {
   
   test <- climatewin(Xvar = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), furthest = 2, closest = 2, 
-                     FIXED = FALSE, STAT = "max", FUNC = "L", CMISSING=TRUE)
+                     FIXED = FALSE, STATS = "max", FUNCS = "L", CMISSING=TRUE)
   
   expect_true(is.list(test))
 
@@ -75,9 +66,9 @@ test_that("No errors return when CMISSING TRUE with NAs", {
   data(MassClimate, envir = environment())
   
   MassClimate2 <- MassClimate[-491, ]
-  test <- climatewin(Xvar = MassClimate2$Temp, CDate = MassClimate2$Date, BDate = Mass$Date, 
+  test <- climatewin(Xvars = MassClimate2$Temp, CDate = MassClimate2$Date, BDate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), furthest = 2, closest = 0, 
-                     FIXED = FALSE, STAT = "max", FUNC = "L", CMISSING = TRUE)
+                     FIXED = FALSE, STATS = "max", FUNCS = "L", CMISSING = TRUE)
   
   expect_true(is.list(test))
   
@@ -90,9 +81,9 @@ test_that("No errors return when CMISSING FALSE with NAs", {
   data(MassClimate, envir = environment())
   
   MassClimate2 <- MassClimate[-491, ]
-  expect_error(climatewin(Xvar = MassClimate2$Temp, CDate = MassClimate2$Date, BDate = Mass$Date, 
+  expect_error(climatewin(Xvars = MassClimate2$Temp, CDate = MassClimate2$Date, BDate = Mass$Date, 
                           baseline = lm(Mass ~ 1, data = Mass), furthest = 2, closest = 2, 
-                          FIXED = FALSE, STAT = "max", FUNC = "L", 
+                          FIXED = FALSE, STATS = "max", FUNCS = "L", 
                           CMISSING=FALSE))
   
   })
@@ -108,9 +99,9 @@ test_that("glm models can run", {
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
   
-  test <- climatewin(Xvar = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date, 
+  test <- climatewin(Xvars = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date, 
                      baseline = glm(Mass ~ 1, data = Mass, family = poisson), furthest = 2, closest = 2, 
-                     FIXED = FALSE, STAT = "max", FUNC = "L", CMISSING=FALSE)
+                     FIXED = FALSE, STATS = "max", FUNCS = "L", CMISSING=FALSE)
   
   expect_true(is.list(test))
   expect_false(is.na((test[[1]])[1]))
@@ -125,11 +116,11 @@ test_that("lmer models can run", {
   data(Offspring, envir = environment())
   data(OffspringClimate, envir = environment())
   
-  test <- climatewin(Xvar = OffspringClimate$Temp, CDate = OffspringClimate$Date, 
+  test <- climatewin(Xvars = OffspringClimate$Temp, CDate = OffspringClimate$Date, 
                      BDate = Offspring$Date, 
                      baseline = lmer(Offspring ~ 1 + (1|BirdID), data = Offspring),  
                      furthest = 2, closest = 2, FIXED = FALSE, 
-                     STAT = "max", FUNC = "L", CMISSING=FALSE)
+                     STATS = "max", FUNCS = "L", CMISSING=FALSE)
   
   expect_true(is.list(test))
   expect_false(is.na(fixef(test[[1]])[1]))
@@ -150,10 +141,10 @@ test_that("Fixed window works", {
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
   
-  test <- climatewin(Xvar = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date, 
+  test <- climatewin(Xvars = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), furthest = 2, closest = 2, 
                      FIXED = TRUE, cutoff.day = 20, cutoff.month = 5, 
-                     STAT = "max", FUNC = "L", CMISSING=FALSE)
+                     STATS = "max", FUNCS = "L", CMISSING=FALSE)
   
   expect_true(is.list(test))
   
@@ -167,9 +158,9 @@ test_that("slope stats work", {
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
   
-  test <- climatewin(Xvar = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date, 
+  test <- climatewin(Xvars = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), furthest = 2, closest = 1, 
-                     FIXED = FALSE, STAT = "slope", FUNC = "L", CMISSING=FALSE)
+                     FIXED = FALSE, STATS = "slope", FUNCS = "L", CMISSING=FALSE)
   
   expect_true(is.list(test))
   expect_true((test[[3]]["Statistics"])[1] == "slope")
@@ -186,9 +177,9 @@ test_that("Quadratic function works", {
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
   
-  test <- climatewin(Xvar = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date, 
+  test <- climatewin(Xvars = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), furthest = 2, closest = 2, 
-                     FIXED = FALSE, STAT = "max", FUNC = "Q", CMISSING=FALSE)
+                     FIXED = FALSE, STATS = "max", FUNCS = "Q", CMISSING=FALSE)
   
   expect_true(is.list(test))
   expect_true((test[[3]]["Function"])[1] == "Q")
@@ -203,9 +194,9 @@ test_that("Cubic function works", {
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
   
-  test <- climatewin(Xvar = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date, 
+  test <- climatewin(Xvars = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), furthest = 2, closest = 2, 
-                     FIXED = FALSE, STAT = "max", FUNC = "C", CMISSING=FALSE)
+                     FIXED = FALSE, STATS = "max", FUNCS = "C", CMISSING=FALSE)
   
   expect_true(is.list(test))
   expect_true((test[[3]]["Function"])[1] == "C")
@@ -221,9 +212,9 @@ test_that("Log function works", {
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
   
-  test <- climatewin(Xvar = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date, 
+  test <- climatewin(Xvars = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), furthest = 2, closest = 2, 
-                     FIXED = FALSE, STAT = "max", FUNC = "LOG", CMISSING=FALSE)
+                     FIXED = FALSE, STATS = "max", FUNCS = "LOG", CMISSING=FALSE)
   
   expect_true(is.list(test))
   expect_true((test[[3]]["Function"])[1] == "LOG")
@@ -237,9 +228,9 @@ test_that("Inverse function works", {
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
   
-  test <- climatewin(Xvar = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date, 
+  test <- climatewin(Xvars = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), furthest = 2, closest = 2, 
-                     FIXED = FALSE, STAT = "max", FUNC = "I", CMISSING=FALSE)
+                     FIXED = FALSE, STATS = "max", FUNCS = "I", CMISSING=FALSE)
   
   expect_true(is.list(test))
   expect_true((test[[3]]["Function"])[1] == "I")
@@ -257,9 +248,9 @@ test_that("Weekly interval works", {
 data(Mass, envir = environment())
 data(MassClimate, envir = environment())
 
-test <- climatewin(Xvar = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date, 
+test <- climatewin(Xvars = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date, 
                    baseline = lm(Mass ~ 1, data = Mass), furthest = 2, closest = 2, 
-                   FIXED = FALSE, STAT = "max", FUNC = "L",
+                   FIXED = FALSE, STATS = "max", FUNCS = "L",
                    CMISSING=FALSE, CINTERVAL = "W")
 
 expect_true(is.list(test))
@@ -273,9 +264,9 @@ test_that("Monthly interval works", {
 data(Mass, envir = environment())
 data(MassClimate, envir = environment())
   
-test <- climatewin(Xvar = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date, 
+test <- climatewin(Xvars = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date, 
                    baseline = lm(Mass ~ 1, data = Mass), furthest = 2, closest = 2, 
-                   FIXED = FALSE, STAT = "max", FUNC = "L",
+                   FIXED = FALSE, STATS = "max", FUNCS = "L",
                    CMISSING=FALSE, CINTERVAL = "M")
   
 expect_true(is.list(test))
@@ -291,9 +282,9 @@ test_that("climatewin gives error when NAs are present in biological data", {
   data(MassClimate, envir = environment())
   Mass <- data.frame(Date = c("01/01/2014", "01/02/2014"), Mass = c(NA, 1))
   
-  expect_error(climatewin(Xvar = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date, 
+  expect_error(climatewin(Xvars = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date, 
                           baseline = lm(Mass ~ 1, data = Mass), furthest = 2, closest = 2, 
-                          FIXED = FALSE, STAT = "max", FUNC = "L",
+                          FIXED = FALSE, STATS = "max", FUNCS = "L",
                           CMISSING=FALSE, CINTERVAL = "D"))
   
 })

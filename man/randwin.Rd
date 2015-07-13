@@ -5,7 +5,8 @@
 \title{Climate window analysis for randomised data}
 \usage{
 randwin(repeats = 1, Xvar, CDate, BDate, baseline, furthest, closest, STAT,
-  FUNC, FIXED, cutoff.day, cutoff.month, CMISSING = FALSE, CINTERVAL = "D")
+  FUNC, FIXED, cutoff.day, cutoff.month, CMISSING = FALSE, CINTERVAL = "D",
+  upper = NA, lower = NA, thresh = FALSE)
 }
 \arguments{
 \item{repeats}{The number of times that data will be randomised and analysed
@@ -54,6 +55,20 @@ will be deleted from climate window analysis.}
 conducted. Can be days ("D"), weeks ("W"), or months ("M"). Note the units
 of parameters 'furthest' and 'closest' will differ depending on the chouice
 of CINTERVAL.}
+
+\item{upper}{Cut-off value used to determine growing degree days or positive
+climate thresholds (determined by parameter thresh). Note that when values
+of lower and upper are both provided, randwin will instead calculate a
+optimal climate zone (?).}
+
+\item{lower}{Cut-off value used to determine chill days or negative
+climate thresholds (determined by parameter thresh). Note that when values
+of lower and upper are both provided, randwin will instead calculate a
+optimal climate zone (?).}
+
+\item{thresh}{TRUE or FALSE. Determines whether to use values of upper and
+lower to calculate binary climate data (thresh = TRUE), or to use for
+growing degree days (thresh = FALSE).}
 }
 \value{
 Will return a dataframe containing information on all fitted climate

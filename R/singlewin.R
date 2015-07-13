@@ -110,16 +110,16 @@ singlewin <- function(Xvar, CDate, BDate, baseline,
   if (CINTERVAL == "D"){  
     if (FIXED == TRUE){   
       BIntNo            <- as.numeric(as.Date(paste(cutoff.day, cutoff.month, year(BDate), sep = "-"), 
-                                              format = "%d-%m-%Y")) - min(as.numeric(CDate)) + 1 
+                                              format = "%d-%m-%Y")) - min(as.numeric(CDate2)) + 1 
       wrongyear         <- which(BIntNo<RealBIntNo)
       BIntNo[wrongyear] <- (as.numeric(as.Date(paste(cutoff.day, cutoff.month, (year(BDate[wrongyear]) + 1), sep = "-"), 
-                                               format = "%d-%m-%Y")) - min(as.numeric(CDate)) + 1)
+                                               format = "%d-%m-%Y")) - min(as.numeric(CDate2)) + 1)
     } else {
       BIntNo <- RealBIntNo
     }
   } else if (CINTERVAL == "W"){
-    CIntNo     <- ceiling((as.numeric(CDate) - min(as.numeric(CDate)) + 1) / 7)   # atrribute weeknumbers for both datafiles with first week in CLimateData set to CIntNo 1
-    RealBIntNo <- ceiling((as.numeric(BDate) - min(as.numeric(CDate)) + 1) / 7)
+    CIntNo     <- ceiling((as.numeric(CDate2) - min(as.numeric(CDate2)) + 1) / 7)   # atrribute weeknumbers for both datafiles with first week in CLimateData set to CIntNo 1
+    RealBIntNo <- ceiling((as.numeric(BDate) - min(as.numeric(CDate2)) + 1) / 7)
     NewClim    <- data.frame("CIntNo" = CIntNo, "Xvar" = Xvar)
     NewClim2   <- melt(NewClim, id = "CIntNo")
     NewClim3   <- cast(NewClim2, CIntNo ~ variable, mean)
@@ -127,27 +127,27 @@ singlewin <- function(Xvar, CDate, BDate, baseline,
     Xvar       <- NewClim3$Xvar
     if(FIXED == TRUE){ 
       BIntNo            <- ceiling((as.numeric(as.Date(paste(cutoff.day, cutoff.month, year(BDate), sep = "-"), 
-                                                       format = "%d-%m-%Y")) - min(as.numeric(CDate)) + 1) / 7) 
+                                                       format = "%d-%m-%Y")) - min(as.numeric(CDate2)) + 1) / 7) 
       wrongyear         <- which(BIntNo<RealBIntNo)
       BIntNo[wrongyear] <- ceiling((as.numeric(as.Date(paste(cutoff.day, cutoff.month, (year(BDate[wrongyear]) + 1), sep = "-"), 
-                                                       format = "%d-%m-%Y")) - min(as.numeric(CDate)) + 1) / 7)  
+                                                       format = "%d-%m-%Y")) - min(as.numeric(CDate2)) + 1) / 7)  
     } else {
       BIntNo <- RealBIntNo
     }
   } else if (CINTERVAL == "M"){
-    Cmonth     <- month(CDate)
-    Cyear      <- year(CDate) - min(year(CDate))
+    Cmonth     <- month(CDate2)
+    Cyear      <- year(CDate2) - min(year(CDate2))
     CIntNo     <- Cmonth + 12 * Cyear
-    RealBIntNo <- month(BDate) + 12 * (year(BDate) - min(year(CDate)))
+    RealBIntNo <- month(BDate) + 12 * (year(BDate) - min(year(CDate2)))
     NewClim    <- data.frame("CIntNo" = CIntNo, "Xvar" = Xvar)
     NewClim2   <- melt(NewClim, id = "CIntNo")
     NewClim3   <- cast(NewClim2, CIntNo ~ variable, mean)
     CIntNo     <- NewClim3$CIntNo
     Xvar       <- NewClim3$Xvar
     if (FIXED == TRUE){ 
-      BIntNo            <- cutoff.month + 12 * (year(BDate) - min(year(CDate)))
+      BIntNo            <- cutoff.month + 12 * (year(BDate) - min(year(CDate2)))
       wrongyear         <- which(BIntNo < RealBIntNo)
-      BIntNo[wrongyear] <- cutoff.month + 12 * (year(BDate[wrongyear]) + 1 - min(year(CDate)))
+      BIntNo[wrongyear] <- cutoff.month + 12 * (year(BDate[wrongyear]) + 1 - min(year(CDate2)))
     } else {
       BIntNo <- RealBIntNo
     }
@@ -161,7 +161,7 @@ singlewin <- function(Xvar, CDate, BDate, baseline,
   }
   
   if (CMISSING == FALSE && length(which(is.na(CMatrix))) > 0){
-    .GlobalEnv$Missing <- as.Date(cont$CIntNo[is.na(cont$Xvar)], origin = min(as.Date(CDate, format = "%d/%m/%Y")) - 1)
+    .GlobalEnv$Missing <- as.Date(CIntNo[is.na(Xvar)], origin = min(as.Date(CDate2, format = "%d/%m/%Y")) - 1)
     stop(c("Climate data should not contain NA values: ", length(.GlobalEnv$Missing),
            " NA value(s) found. Please add missing climate data or set CMISSING=TRUE.
            See object Missing for all missing climate data"))

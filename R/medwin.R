@@ -9,7 +9,7 @@
 #' @author Liam D. Bailey and Martijn van de Pol
 #' @examples
 #' 
-#' Find median window values for climate windows fitted to the Mass dataset
+#' # Find median window values for climate windows fitted to the Mass dataset
 #' 
 #' data(MassOutput)
 #' 
@@ -31,8 +31,8 @@ medwin <- function(Dataset, CW = 0.95){
   DatasetCW$variable         <- factor(DatasetCW$variable, levels = c("WindowOpen", "WindowClose"))
   levels(DatasetCW$variable) <- c("Window Open", "Window Close")
   
-  WO <- subset(DatasetCW, variable == "Window Open")
-  WC <- subset(DatasetCW, variable == "Window Close")
+  WO <- DatasetCW[which(DatasetCW$variable == "Window Open"), ]
+  WC <- DatasetCW[which(DatasetCW$variable == "Window Close"), ]
   
   return(list("Median Window Open" = median(WO$value), "Median Window Close" = median(WC$value)))
 }

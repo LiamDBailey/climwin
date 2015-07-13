@@ -49,8 +49,12 @@
 #'                   STAT = "mean", FIXED = FALSE,
 #'                   CMISSING = FALSE, CINTERVAL = "D")
 #'                   
-#' # View the output #
+#' # View the output
 #' head(cross)
+#' 
+#' # Plot the output
+#' plotcor(cross, TYPE = "C")
+#' 
 #' }
 #' 
 #'@export
@@ -64,13 +68,13 @@ crosswin <- function(Xvar, Xvar2, CDate, BDate, furthest, closest,
                   CINTERVAL = "D", CMISSING = FALSE){
   
   print("Initialising, please wait...")
-  pb       <- SetProgressBar(furthest, closest, STAT) 
+  duration <- (furthest - closest) + 1
+  MaxMODNO  <- (duration * (duration + 1))/2 
   cont     <- DateConverter(BDate = BDate, CDate = CDate, Xvar = Xvar, Xvar2 = Xvar2, 
                             CINTERVAL = CINTERVAL, FIXED = FIXED, 
-                            cutoff.day = cutoff.day, cutoff.month = cutoff.month)   # create new climate dataframe with continuous daynumbers, leap days are not a problem
+                            cutoff.day = cutoff.day, cutoff.month = cutoff.month, cross = TRUE)   # create new climate dataframe with continuous daynumbers, leap days are not a problem
   MODNO    <- 1  #Create a model number variable that will count up during the loop#
   MODLIST  <- list()   # dataframes to store ouput
-  duration <- (furthest - closest) + 1
   CMatrix1 <- matrix(ncol = (duration), nrow = length(BDate))  # matrix that stores the weather data for variable or fixed windows
   CMatrix2 <- matrix(ncol = (duration), nrow = length(BDate))  # matrix that stores the weather data for variable or fixed windows
   
@@ -78,7 +82,7 @@ crosswin <- function(Xvar, Xvar2, CDate, BDate, furthest, closest,
     for (j in closest:furthest){
       k <- j - closest + 1
       CMatrix1[i, k] <- cont$Xvar[which(cont$CIntNo == cont$BIntNo[i] - j)]  #Create a matrix which contains the climate data from furthest to furthest from each biological record#
-      CMatrix2[i, k] <- Xvar2[match(cont$BIntNo[i] - j,cont$CIntNo)]
+      CMatrix2[i, k] <- cont$Xvar2[match(cont$BIntNo[i] - j,cont$CIntNo)]
     }
   }
   
@@ -90,7 +94,7 @@ crosswin <- function(Xvar, Xvar2, CDate, BDate, furthest, closest,
   }  
   
   if (CMISSING == FALSE && length(which(is.na(CMatrix2))) > 0){
-    .GlobalEnv$Missing2 <- as.Date(cont$CIntNo[is.na(cont$Xvar)], origin = min(as.Date(CDate, format = "%d/%m/%Y")) - 1)
+    .GlobalEnv$Missing2 <- as.Date(cont$CIntNo[is.na(cont$Xvar2)], origin = min(as.Date(CDate, format = "%d/%m/%Y")) - 1)
     stop(c("Climate data Xvar2 should not contain NA values: ", length(.GlobalEnv$Missing),
            " NA value(s) found. Please add missing climate data or set CMISSING=TRUE.
            See object Missing2 for all missing climate data"))
@@ -103,6 +107,8 @@ crosswin <- function(Xvar, Xvar2, CDate, BDate, furthest, closest,
   
   temporary1 <- matrix(ncol = 1, nrow = nrow(CMatrix1), 1)
   temporary2 <- matrix(ncol = 1, nrow = nrow(CMatrix2), 1)
+  
+  pb <- txtProgressBar(min = 0, max = MaxMODNO, style = 3, char = "|")
   
   for (m in closest:furthest){
     for (n in 1:duration){

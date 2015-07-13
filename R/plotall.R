@@ -16,6 +16,7 @@
 #'  to be compared with non-randomised data. Can be used to determine the 
 #'  likelihood of finding a climate window model of a given AICc value by
 #'  chance.
+#'@param Title Main title of the plot panel.
 #'@return Will return a panel of 6-8 plots:
 #'  
 #'  \itemize{ \item DeltaAICc: A colour plot of model deltaAICc values (larger
@@ -100,23 +101,23 @@ plotall <- function(Dataset, DatasetRand = NULL,
   BEST   <- plotbest(Dataset = Dataset, BestModel = BestModel, BestModelData = BestModelData)
   
   if (Dataset$Function[1] == "L"){
-    gridExtra::grid.arrange(DELTA, CW, plotenv$BETA, HIST, WINDOW, BEST, nrow = 2, ncol = 3, main = paste(Title))
+    gridExtra::grid.arrange(DELTA, CW, plotenv$BETA, HIST, WINDOW, BEST, nrow = 2, ncol = 3, top = paste(Title))
   } else if (Dataset$Function[1] == "Q"){
-    gridExtra::grid.arrange(DELTA, CW, plotenv$BETA, plotenv$BETA2, HIST, WINDOW, BEST, nrow = 2, ncol = 4, main = paste(Title))
+    gridExtra::grid.arrange(DELTA, CW, plotenv$BETA, plotenv$BETA2, HIST, WINDOW, BEST, nrow = 2, ncol = 4, top = paste(Title))
   } else if(Dataset$Function[1] == "C"){
-    gridExtra::grid.arrange(DELTA, CW, plotenv$BETA, plotenv$BETA2, HIST, WINDOW, BEST, plotenv$BETA3, nrow = 2, ncol = 4, main = paste(Title))
+    gridExtra::grid.arrange(DELTA, CW, plotenv$BETA, plotenv$BETA2, HIST, WINDOW, BEST, plotenv$BETA3, nrow = 2, ncol = 4, top = paste(Title))
   } else {
-    gridExtra::grid.arrange(plotenv$BETA, DELTA, CW, HIST, WINDOW, BEST, nrow = 2, main = paste(Title))
+    gridExtra::grid.arrange(plotenv$BETA, DELTA, CW, HIST, WINDOW, BEST, nrow = 2, top = paste(Title))
   }
   } else {
     if (Dataset$Function[1] == "L"){
-      gridExtra::grid.arrange(DELTA, CW, plotenv$BETA, HIST, WINDOW, nrow = 2, ncol = 3, main = paste(Title))
+      gridExtra::grid.arrange(DELTA, CW, plotenv$BETA, HIST, WINDOW, nrow = 2, ncol = 3, top = paste(Title))
     } else if (Dataset$Function[1] == "Q"){
-      gridExtra::grid.arrange(DELTA, CW, plotenv$BETA, plotenv$BETA2, HIST, WINDOW, nrow = 2, ncol = 4, main = paste(Title))
+      gridExtra::grid.arrange(DELTA, CW, plotenv$BETA, plotenv$BETA2, HIST, WINDOW, nrow = 2, ncol = 4, top = paste(Title))
     } else if(Dataset$Function[1] == "C"){
-      gridExtra::grid.arrange(DELTA, CW, plotenv$BETA, plotenv$BETA2, HIST, WINDOW, plotenv$BETA3, nrow = 2, ncol = 4, main = paste(Title))
+      gridExtra::grid.arrange(DELTA, CW, plotenv$BETA, plotenv$BETA2, HIST, WINDOW, plotenv$BETA3, nrow = 2, ncol = 4, top = paste(Title))
     } else {
-      gridExtra::grid.arrange(plotenv$BETA, DELTA, CW, HIST, WINDOW, nrow = 2, main = paste(Title))
+      gridExtra::grid.arrange(plotenv$BETA, DELTA, CW, HIST, WINDOW, nrow = 2, top = paste(Title))
     } 
   }
 }

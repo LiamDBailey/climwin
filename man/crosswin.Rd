@@ -71,8 +71,12 @@ cross <- crosswin(Xvar = MassClimate$Temp, Xvar2 = MassClimate$Rain,
                   STAT = "mean", FIXED = FALSE,
                   CMISSING = FALSE, CINTERVAL = "D")
 
-# View the output #
+# View the output
 head(cross)
+
+# Plot the output
+plotcor(cross, TYPE = "C")
+
 }
 }
 \author{
