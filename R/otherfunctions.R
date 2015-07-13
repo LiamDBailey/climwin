@@ -268,6 +268,10 @@ DateConverter <- function(BDate, CDate, Xvar, Xvar2 = NULL, CINTERVAL, FIXED,
   CDate2 <- seq(min(as.Date(CDate, format = "%d/%m/%Y")), max(as.Date(CDate, format = "%d/%m/%Y")), "days") # Convert the date variables into the R date format
   CDate  <- as.Date(CDate, format = "%d/%m/%Y")
   
+  if(min(CDate) > min(BDate)){
+    stop("Climate data does not cover all years of biological data. Please increase range of climate data")
+  }
+  
   Xvar       <- Xvar[match(CDate2, CDate)]
   CIntNo     <- as.numeric(CDate2) - min(as.numeric(CDate2)) + 1   # atrribute daynumbers for both datafiles with first date in CLimateData set to CIntNo 1
   RealBIntNo <- as.numeric(BDate) - min(as.numeric(CDate2)) + 1
