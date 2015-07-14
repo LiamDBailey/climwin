@@ -61,8 +61,8 @@ plotbetas <- function(Dataset, plotallenv, plotall = FALSE){
       if (plotall == FALSE){
         grid.arrange(WGMEAN, WGDEV, nrow = 1)
       } else {
-        plotallenv$BETA  <- WGMEAN
-        plotallenv$BETA2 <- WGDEV
+        plotallenv$WGMEAN  <- WGMEAN
+        plotallenv$WGDEV <- WGDEV
       }
     } else {
       if (plotall == FALSE){

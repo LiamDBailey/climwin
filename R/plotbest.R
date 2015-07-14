@@ -43,10 +43,10 @@ if(is.null(BestModelData$WGdev) == FALSE){
     geom_abline(intercept = coef(OffspringWin[[1]]$BestModel)[1], slope = coef(OffspringWin[[1]]$BestModel)[2], colour = "red")+
     geom_abline(intercept = coef(OffspringWin[[1]]$BestModel)[1], slope = coef(OffspringWin[[1]]$BestModel)[3], colour = "blue")
 } else {
-  if (Dataset$Function[1] == "LOG"){
+  if (Dataset$Function[1] == "log"){
     names(BestModelData)[(ncol(BestModelData)-1)] <- "climate"
   }
-  if (Dataset$Function[1] == "I"){
+  if (Dataset$Function[1] == "inv"){
     names(BestModelData)[ncol(BestModelData)-1] <- "climate"
     class(BestModelData[, ncol(BestModelData)-1]) <- class(BestModelData[, ncol(BestModelData)-1])[-match("AsIs", class(BestModelData[, ncol(BestModelData)-1]))]
     #WHEN WE USE INVERSE FUNCTION 'climate' becomes class AsIs which the graphs can't deal with
@@ -56,7 +56,7 @@ if(is.null(BestModelData$WGdev) == FALSE){
   #TEST IF THERE ARE MODEL WEIGHTS
   if(is.null(weights(BestModel)) == TRUE || sum(weights(BestModel)) == nrow(BestModelData)){
     #TEST IF THERE ARE ADDITIONAL COVARIATES IN THE MODEL
-    if(ncol(BestModelData) == 2 || Dataset$Function[1] == "Q" & ncol(BestModelData) == 3 || Dataset$Function[1] == "C" & ncol(BestModelData) == 4){
+    if(ncol(BestModelData) == 2 || Dataset$Function[1] == "quad" & ncol(BestModelData) == 3 || Dataset$Function[1] == "cub" & ncol(BestModelData) == 4){
       with(BestModelData, {
         ggplot(BestModelData, aes(x = climate, y = Yvar), environment = environment()) +
           geom_point(size = 1, alpha = 1) +
@@ -68,9 +68,9 @@ if(is.null(BestModelData$WGdev) == FALSE){
                 plot.title = element_text(size = 18)) +
           ggtitle("Output of best model") +
           ylab("Biological variable") +    
-          if (Dataset$Function[1] == "LOG"){
+          if (Dataset$Function[1] == "log"){
             xlab("Log of climate variable")
-          } else if (Dataset$Function[1] == "I"){
+          } else if (Dataset$Function[1] == "inv"){
             xlab("Inverse of climate variable")
           } else {
             xlab("Climate variable")
@@ -79,10 +79,10 @@ if(is.null(BestModelData$WGdev) == FALSE){
       )       
     } else {
       col = 1
-      if(Dataset$Function[1] == "Q"){
+      if(Dataset$Function[1] == "quad"){
         col = 2
       } 
-      if(Dataset$Function[1] == "C"){
+      if(Dataset$Function[1] == "cub"){
         col = 3
       }
       xval <- seq(from = min(BestModelData$climate), to = max(BestModelData$climate),
@@ -115,9 +115,9 @@ if(is.null(BestModelData$WGdev) == FALSE){
                 plot.title = element_text(size = 18)) +
           ggtitle("Output of best model") +
           ylab("Biological variable") +    
-          if (Dataset$Function[1] == "LOG"){
+          if (Dataset$Function[1] == "log"){
             xlab("Log of climate variable")
-          } else if (Dataset$Function[1] == "I"){
+          } else if (Dataset$Function[1] == "inv"){
             xlab("Inverse of climate variable")
           } else {
             xlab("Climate variable")
@@ -126,8 +126,8 @@ if(is.null(BestModelData$WGdev) == FALSE){
       )  
     }
   } else {
-    if(ncol(BestModelData) == 3 || Dataset$Function[1] == "Q" & ncol(BestModelData) == 4 || Dataset$Function[1] == "C" & ncol(BestModelData) == 5){ 
-      if (Dataset$Function[1] == "LOG" || Dataset$Function[1] == "I"){
+    if(ncol(BestModelData) == 3 || Dataset$Function[1] == "quad" & ncol(BestModelData) == 4 || Dataset$Function[1] == "cub" & ncol(BestModelData) == 5){ 
+      if (Dataset$Function[1] == "log" || Dataset$Function[1] == "inv"){
         names(BestModelData)[ncol(BestModelData) - 1] <- "climate"  
       }
       with(BestModelData, {
@@ -141,9 +141,9 @@ if(is.null(BestModelData$WGdev) == FALSE){
                 plot.title = element_text(size = 18)) +
           ggtitle("Output of best model") +
           ylab("Biological variable") +    
-          if (Dataset$Function[1] == "LOG"){
+          if (Dataset$Function[1] == "log"){
             xlab("Log of climate variable")
-          } else if (Dataset$Function[1] == "I"){
+          } else if (Dataset$Function[1] == "inv"){
             xlab("Inverse of climate variable")
           } else {
             xlab("Climate variable")
@@ -152,10 +152,10 @@ if(is.null(BestModelData$WGdev) == FALSE){
       )
     } else {
       col = 1
-      if(Dataset$Function[1] == "Q"){
+      if(Dataset$Function[1] == "quad"){
         col = 2
       } 
-      if(Dataset$Function[1] == "C"){
+      if(Dataset$Function[1] == "cub"){
         col = 3
       }
       xval <- seq(from = min(BestModelData$climate), to = max(BestModelData$climate),
@@ -188,9 +188,9 @@ if(is.null(BestModelData$WGdev) == FALSE){
                 plot.title = element_text(size = 18)) +
           ggtitle("Output of best model") +
           ylab("Biological variable") +    
-          if (Dataset$Function[1] == "LOG"){
+          if (Dataset$Function[1] == "log"){
             xlab("Log of climate variable")
-          } else if (Dataset$Function[1] == "I"){
+          } else if (Dataset$Function[1] == "inv"){
             xlab("Inverse of climate variable")
           } else {
             xlab("Climate variable")
