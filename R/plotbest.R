@@ -47,7 +47,9 @@ if (Dataset$Function[1] == "I"){
   #With this class change, we turn the 'climate' value in to a basic numeric.
 }
 
+#TEST IF THERE ARE MODEL WEIGHTS
 if(is.null(weights(BestModel)) == TRUE || sum(weights(BestModel)) == nrow(BestModelData)){
+  #TEST IF THERE ARE ADDITIONAL COVARIATES IN THE MODEL
   if(ncol(BestModelData) == 2 || Dataset$Function[1] == "Q" & ncol(BestModelData) == 3 || Dataset$Function[1] == "C" & ncol(BestModelData) == 4){
     with(BestModelData, {
       ggplot(BestModelData, aes(x = climate, y = Yvar), environment = environment()) +
