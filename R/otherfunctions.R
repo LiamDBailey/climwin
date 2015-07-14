@@ -1,39 +1,41 @@
 #Basewin function that is combined with manywin to test multiple climate window characteristics
-basewin <- function(Xvar, CDate, BDate, baseline, furthest, closest, 
-                    FIXED, cutoff.day, cutoff.month, STAT = "mean", FUNC = "L",
-                    CMISSING = FALSE, CINTERVAL = "D",  nrandom = 0, CVK = 0,
+basewin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest, 
+                    type, cutoff.day, cutoff.month, stat = "mean", func = "lin",
+                    Cmissing = FALSE, Cinterval = "day",  nrandom = 0, CVK = 0,
                     upper = NA, lower = NA, thresh = FALSE){
   print("Initialising, please wait...")
   
-  if(STAT == "slope" & FUNC == "LOG" || STAT == "slope" & FUNC == "I"){
-    stop("STAT = slope cannot be used with FUNC = LOG or I as negative values may be present")
+  func.env <- new.env()
+  
+  if(stat == "slope" & func == "log" || stat == "slope" & func == "inv"){
+    stop("stat = slope cannot be used with func = LOG or I as negative values may be present")
   }
   
-  if(CINTERVAL == "D"){
-    if((min(as.Date(BDate, format = "%d/%m/%Y")) - furthest) < min(as.Date(CDate, format = "%d/%m/%Y"))){
+  if(Cinterval == "day"){
+    if((min(as.Date(Bdate, format = "%d/%m/%Y")) - furthest) < min(as.Date(Cdate, format = "%d/%m/%Y"))){
       stop("You do not have enough climate data to search that far back. Please adjust the value of furthest or add additional climate data.")
     }
   }
   
-  if(CINTERVAL == "W"){
-    if((min(as.Date(BDate, format = "%d/%m/%Y")) - lubridate::weeks(furthest)) < min(as.Date(CDate, format = "%d/%m/%Y"))){
+  if(Cinterval == "week"){
+    if((min(as.Date(Bdate, format = "%d/%m/%Y")) - lubridate::weeks(furthest)) < min(as.Date(Cdate, format = "%d/%m/%Y"))){
       stop("You do not have enough climate data to search that far back. Please adjust the value of furthest or add additional climate data.")
     }
   }
   
-  if(CINTERVAL == "M"){
-    if((min(as.Date(BDate, format = "%d/%m/%Y")) - months(furthest)) < min(as.Date(CDate, format = "%d/%m/%Y"))){
+  if(Cinterval == "month"){
+    if((min(as.Date(Bdate, format = "%d/%m/%Y")) - months(furthest)) < min(as.Date(Cdate, format = "%d/%m/%Y"))){
       stop("You do not have enough climate data to search that far back. Please adjust the value of furthest or add additional climate data.")
     }
   }
   
   duration  <- (furthest - closest) + 1
   MaxMODNO  <- (duration * (duration + 1))/2
-  cont      <- DateConverter(BDate = BDate, CDate = CDate, Xvar = Xvar, 
-                             CINTERVAL = CINTERVAL, FIXED = FIXED, 
+  cont      <- DateConverter(Bdate = Bdate, Cdate = Cdate, Xvar = Xvar, 
+                             Cinterval = Cinterval, type = type, 
                              cutoff.day = cutoff.day, cutoff.month = cutoff.month)   # create new climate dataframe with continuous daynumbers, leap days are not a problem
   MODNO     <- 1  #Create a model number variable that will count up during the loop#
-  CMatrix   <- matrix(ncol = (duration), nrow = length(BDate))  # matrix that stores the weather data for variable or fixed windows
+  CMatrix   <- matrix(ncol = (duration), nrow = length(Bdate))  # matrix that stores the weather data for variable or fixed windows
   MODLIST   <- list()   # dataframes to store ouput
   baseline  <- update(baseline, .~.)
   nullmodel <- AICc(baseline)
@@ -41,8 +43,14 @@ basewin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
   modeldat      <- model.frame(baseline)
   modeldat$Yvar <- modeldat[, 1]
   
-  if(length(modeldat$Yvar) != length(BDate)){
-    stop("NA values present in biological response. Please remove NA values")
+  if(class(baseline)[1] == "coxph.null"){
+    if(nrow(modeldat$Yvar) != length(Bdate)){
+      stop("NA values present in biological response. Please remove NA values")
+    }
+  } else {
+    if(length(modeldat$Yvar) != length(Bdate)){
+      stop("NA values present in biological response. Please remove NA values")
+    }
   }
   
   if(is.na(upper) == FALSE && is.na(lower) == TRUE){
@@ -70,31 +78,31 @@ basewin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
     } 
   }  
   
-  for (i in 1:length(BDate)){
+  for (i in 1:length(Bdate)){
     for (j in closest:furthest){
       k <- j - closest + 1
       CMatrix[i, k] <- cont$Xvar[which(cont$CIntNo == cont$BIntNo[i] - j)]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
     }
   }
   
-  if (CMISSING == FALSE && length(which(is.na(CMatrix))) > 0){
-    if(CINTERVAL == "D"){
-      .GlobalEnv$Missing <- as.Date(cont$CIntNo[is.na(cont$Xvar)], origin = min(as.Date(CDate, format = "%d/%m/%Y")) - 1)
+  if (Cmissing == FALSE && length(which(is.na(CMatrix))) > 0){
+    if(Cinterval == "day"){
+      .GlobalEnv$Missing <- as.Date(cont$CIntNo[is.na(cont$Xvar)], origin = min(as.Date(Cdate, format = "%d/%m/%Y")) - 1)
     }
-    if(CINTERVAL == "M"){
-      .GlobalEnv$Missing <- c(paste("Month:", month(as.Date(cont$CIntNo[is.na(cont$Xvar)], origin = min(as.Date(CDate, format = "%d/%m/%Y")) - 1)),
-                                    "Year:", year(as.Date(cont$CIntNo[is.na(cont$Xvar)], origin = min(as.Date(CDate, format = "%d/%m/%Y")) - 1))))
+    if(Cinterval == "month"){
+      .GlobalEnv$Missing <- c(paste("Month:", month(as.Date(cont$CIntNo[is.na(cont$Xvar)], origin = min(as.Date(Cdate, format = "%d/%m/%Y")) - 1)),
+                                    "Year:", year(as.Date(cont$CIntNo[is.na(cont$Xvar)], origin = min(as.Date(Cdate, format = "%d/%m/%Y")) - 1))))
     }
-    if(CINTERVAL == "W"){
-      .GlobalEnv$Missing <- c(paste("Week:", month(as.Date(cont$CIntNo[is.na(cont$Xvar)], origin = min(as.Date(CDate, format = "%d/%m/%Y")) - 1)),
-                                    "Year:", year(as.Date(cont$CIntNo[is.na(cont$Xvar)], origin = min(as.Date(CDate, format = "%d/%m/%Y")) - 1))))
+    if(Cinterval == "week"){
+      .GlobalEnv$Missing <- c(paste("Week:", month(as.Date(cont$CIntNo[is.na(cont$Xvar)], origin = min(as.Date(Cdate, format = "%d/%m/%Y")) - 1)),
+                                    "Year:", year(as.Date(cont$CIntNo[is.na(cont$Xvar)], origin = min(as.Date(Cdate, format = "%d/%m/%Y")) - 1))))
     }
     stop(c("Climate data should not contain NA values: ", length(.GlobalEnv$Missing),
-           " NA value(s) found. Please add missing climate data or set CMISSING=TRUE.
+           " NA value(s) found. Please add missing climate data or set Cmissing=TRUE.
            See object Missing for all missing climate data"))
   }
   
-  if (CMISSING == TRUE && length(which(is.na(CMatrix))) > 0){
+  if (Cmissing == TRUE && length(which(is.na(CMatrix))) > 0){
     modeldat      <- modeldat[complete.cases(CMatrix), ]
     baseline      <- update(baseline, Yvar~., data = modeldat)
     CMatrix       <- CMatrix[complete.cases(CMatrix), ]
@@ -113,18 +121,18 @@ basewin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
     modeldat$K <- sample(seq(from = 1, to = length(modeldat$climate), by = 1) %% CVK + 1)
   }   # create labels K-fold crossvalidation
   
-  if (FUNC == "L"){
-    modeloutput <- update(baseline, .~. + climate, data = modeldat)
-  } else if (FUNC == "Q") {
+  if (func == "lin"){
+    modeloutput <- update(baseline, Yvar~. + climate, data = modeldat)
+  } else if (func == "quad") {
     modeloutput <- update(baseline, .~. + climate + I(climate ^ 2), data = modeldat)
-  } else if (FUNC == "C") {
+  } else if (func == "cub") {
     modeloutput <- update(baseline, .~. + climate + I(climate ^ 2) + I(climate ^ 3), data = modeldat)
-  } else if (FUNC == "LOG") {
+  } else if (func == "log") {
     modeloutput <- update(baseline, .~. + log(climate), data = modeldat)
-  } else if (FUNC == "I") {
+  } else if (func == "inv") {
     modeloutput <- update (baseline, .~. + I(climate ^ -1), data = modeldat)
   } else {
-    print("DEFINE FUNC")
+    print("Define func")
   }
   
   pb <- txtProgressBar(min = 0, max = MaxMODNO, style = 3, char = "|")
@@ -133,17 +141,17 @@ basewin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
   for (m in closest:furthest){
     for (n in 1:duration){
       if ( (m - n) >= (closest - 1)){  # do not use windows that overshoot the closest possible day in window   
-        if (STAT != "slope" || n > 1){
+        if (stat != "slope" || n > 1){
           windowopen  <- m - closest + 1
           windowclose <- windowopen - n + 1
-          if (STAT == "slope"){ 
+          if (stat == "slope"){ 
             time               <- seq(1, n, 1)
             modeldat$climate <- apply(CMatrix[, windowclose:windowopen], 1, FUN = function(x) coef(lm(x ~ time))[2])
           } else { 
-            ifelse (n == 1, modeldat$climate <- CMatrix[, windowclose:windowopen], modeldat$climate <- apply(CMatrix[, windowclose:windowopen], 1, FUN = STAT))
+            ifelse (n == 1, modeldat$climate <- CMatrix[, windowclose:windowopen], modeldat$climate <- apply(CMatrix[, windowclose:windowopen], 1, FUN = stat))
           }
-          if(min(modeldat$climate) <= 0 & FUNC == "LOG" || min(modeldat$climate) <= 0 & FUNC == "I"){
-            stop("FUNC = LOG or I cannot be used with climate values >= 0. 
+          if(min(modeldat$climate) <= 0 & func == "log" || min(modeldat$climate) <= 0 & func == "inv"){
+            stop("func = LOG or I cannot be used with climate values >= 0. 
                  Consider adding a constant to climate data to remove these values")
           }
           modeloutput <- update(modeloutput, .~.)
@@ -198,13 +206,13 @@ basewin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
             MODLIST$ModelBetaC[[MODNO]] <- NA
             MODLIST$ModelInt[[MODNO]]  <- fixef(modeloutput)[1]
             
-            if (FUNC == "Q"){
+            if (func == "quad"){
               MODLIST$ModelBeta[[MODNO]] <- fixef(modeloutput)[length(fixef(modeloutput))-1]
               MODLIST$ModelBetaQ[[MODNO]] <- fixef(modeloutput)[length(fixef(modeloutput))]
               MODLIST$ModelBetaC[[MODNO]] <- NA
             }   
             
-            if (FUNC == "C"){
+            if (func == "cub"){
               MODLIST$ModelBeta[[MODNO]] <- fixef(modeloutput)[length(fixef(modeloutput))-2]
               MODLIST$ModelBetaQ[[MODNO]] <- fixef(modeloutput)[length(fixef(modeloutput))-1]    
               MODLIST$ModelBetaC[[MODNO]] <- fixef(modeloutput)[length(fixef(modeloutput))]
@@ -215,13 +223,13 @@ basewin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
             MODLIST$ModelBetaC[[MODNO]] <- NA
             MODLIST$ModelInt[[MODNO]]    <- coef(modeloutput)[1]
             
-            if (FUNC == "Q"){
+            if (func == "quad"){
               MODLIST$ModelBeta[[MODNO]]   <- coef(modeloutput)[length(coef(modeloutput))-1]
               MODLIST$ModelBetaQ[[MODNO]] <- coef(modeloutput)[length(coef(modeloutput))]
               MODLIST$ModelBetaC[[MODNO]] <- NA
             }   
             
-            if (FUNC == "C"){
+            if (func == "cub"){
               MODLIST$ModelBeta[[MODNO]]   <- coef(modeloutput)[length(coef(modeloutput))-2]
               MODLIST$ModelBetaQ[[MODNO]] <- coef(modeloutput)[length(coef(modeloutput))-1]    
               MODLIST$ModelBetaC[[MODNO]] <- coef(modeloutput)[length(coef(modeloutput))]
@@ -239,35 +247,46 @@ basewin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
   n <- (MODLIST$WindowOpen[MODLIST$ModelAICc %in% min(MODLIST$ModelAICc)]) - (MODLIST$WindowClose[MODLIST$ModelAICc %in% min(MODLIST$ModelAICc)]) + 1
   windowopen  <- m[1] - closest + 1
   windowclose <- windowopen - n[1] + 1
-  if(STAT == "slope"){
+  if(stat == "slope"){
     time      <- seq(1, n[1], 1)
     modeldat$climate <- apply(CMatrix[, windowclose:windowopen], 1, FUN = function(x) coef(lm(x ~ time))[2])
   } else {
-    ifelse (windowopen - windowclose == 0, modeldat$climate <- CMatrix[, windowclose:windowopen], modeldat$climate <- apply(CMatrix[, windowclose:windowopen], 1, FUN = STAT))
+    ifelse (windowopen - windowclose == 0, modeldat$climate <- CMatrix[, windowclose:windowopen], modeldat$climate <- apply(CMatrix[, windowclose:windowopen], 1, FUN = stat))
   }
   LocalModel           <- update(modeloutput, .~.)
   MODLIST$furthest     <- furthest
   MODLIST$closest      <- closest
-  MODLIST$Statistics   <- STAT
-  MODLIST$Function     <- FUNC
-  MODLIST$FIXED        <- FIXED
+  MODLIST$Statistics   <- stat
+  MODLIST$Function     <- func
+  MODLIST$type         <- type
   MODLIST$K            <- CVK
   
-  if (FIXED == TRUE){
+  if (type == "fixed"){
     MODLIST$cutoff.day   <- cutoff.day
     MODLIST$cutoff.month <- cutoff.month
   }
   
+  print(LocalModel)
+  print(head(modeldat))
+  print(where("LocalModel"))
+  print(where("modeldat"))
+  print(where("modeloutput"))
+  
   if (nrandom == 0){
+    print("line 270")
     LocalData           <- model.frame(LocalModel)
+    print("line 272")
     MODLIST$Randomised  <- "no"
+    print("274")
     MODLIST             <- as.data.frame(MODLIST)
+    print("276")
     LocalOutput         <- MODLIST[order(MODLIST$ModelAICc), ]
+    print("278")
   }
   
   if (nrandom > 0){
     MODLIST$Randomised <- "yes"
-    MODLIST            <- as.data.frame (MODLIST)
+    MODLIST            <- as.data.frame(MODLIST)
     LocalOutputRand    <- MODLIST[order(MODLIST$ModelAICc), ]
   }
   
@@ -279,114 +298,114 @@ basewin <- function(Xvar, CDate, BDate, baseline, furthest, closest,
   }
 
 #Function to convert dates into day/week/month number
-DateConverter <- function(BDate, CDate, Xvar, Xvar2 = NULL, CINTERVAL, FIXED, 
+DateConverter <- function(Bdate, Cdate, Xvar, Xvar2 = NULL, Cinterval, type, 
                           cutoff.day, cutoff.month, cross = FALSE){
   
-  BDate  <- as.Date(BDate, format = "%d/%m/%Y") # Convert the date variables into the R date format
-  CDate2 <- seq(min(as.Date(CDate, format = "%d/%m/%Y")), max(as.Date(CDate, format = "%d/%m/%Y")), "days") # Convert the date variables into the R date format
-  CDate  <- as.Date(CDate, format = "%d/%m/%Y")
+  Bdate  <- as.Date(Bdate, format = "%d/%m/%Y") # Convert the date variables into the R date format
+  Cdate2 <- seq(min(as.Date(Cdate, format = "%d/%m/%Y")), max(as.Date(Cdate, format = "%d/%m/%Y")), "days") # Convert the date variables into the R date format
+  Cdate  <- as.Date(Cdate, format = "%d/%m/%Y")
   
-  if(min(CDate) > min(BDate)){
+  if(min(Cdate) > min(Bdate)){
     stop("Climate data does not cover all years of biological data. Please increase range of climate data")
   }
   
-  Xvar       <- Xvar[match(CDate2, CDate)]
+  Xvar       <- Xvar[match(Cdate2, Cdate)]
   if(is.null(Xvar2) == FALSE){
-    Xvar2 <- Xvar2[match(CDate2, CDate)]
+    Xvar2 <- Xvar2[match(Cdate2, Cdate)]
   }
-  CIntNo     <- as.numeric(CDate2) - min(as.numeric(CDate2)) + 1   # atrribute daynumbers for both datafiles with first date in CLimateData set to CIntNo 1
-  RealBIntNo <- as.numeric(BDate) - min(as.numeric(CDate2)) + 1
+  CIntNo     <- as.numeric(Cdate2) - min(as.numeric(Cdate2)) + 1   # atrribute daynumbers for both datafiles with first date in CLimateData set to CIntNo 1
+  RealBIntNo <- as.numeric(Bdate) - min(as.numeric(Cdate2)) + 1
   
   if (length(CIntNo) != length(unique(CIntNo))){
     stop ("There are duplicate dayrecords in climate data")
   }
   
-  if (CINTERVAL != "D" && CINTERVAL != "W" && CINTERVAL != "M"){
-    stop("CINTERVAL should be either D, W or M")
+  if (Cinterval != "day" && Cinterval != "week" && Cinterval != "month"){
+    stop("Cinterval should be either day, week or month")
   }
   
   if(cross == FALSE){
-    if (CINTERVAL == "D"){  
-      if (FIXED == TRUE){   
-        BIntNo            <- as.numeric(as.Date(paste(cutoff.day, cutoff.month, year(BDate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(CDate)) + 1 
+    if (Cinterval == "day"){  
+      if (type == "fixed"){   
+        BIntNo            <- as.numeric(as.Date(paste(cutoff.day, cutoff.month, year(Bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(Cdate)) + 1 
         wrongyear         <- which(BIntNo < RealBIntNo)
-        BIntNo[wrongyear] <- (as.numeric(as.Date(paste(cutoff.day, cutoff.month, (year(BDate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(CDate)) + 1)
+        BIntNo[wrongyear] <- (as.numeric(as.Date(paste(cutoff.day, cutoff.month, (year(Bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(Cdate)) + 1)
       } else {
         BIntNo <- RealBIntNo
       }
-    } else if (CINTERVAL == "W"){
-      CIntNo     <- ceiling((as.numeric(CDate2) - min(as.numeric(CDate2)) + 1) / 7)   # atrribute weeknumbers for both datafiles with first week in CLimateData set to CIntNo 1
-      RealBIntNo <- ceiling((as.numeric(BDate) - min(as.numeric(CDate2)) + 1) / 7)
+    } else if (Cinterval == "week"){
+      CIntNo     <- ceiling((as.numeric(Cdate2) - min(as.numeric(Cdate2)) + 1) / 7)   # atrribute weeknumbers for both datafiles with first week in CLimateData set to CIntNo 1
+      RealBIntNo <- ceiling((as.numeric(Bdate) - min(as.numeric(Cdate2)) + 1) / 7)
       NewClim    <- data.frame("CIntNo" = CIntNo, "Xvar" = Xvar)
       NewClim2   <- melt(NewClim, id = "CIntNo")
       NewClim3   <- cast(NewClim2, CIntNo~variable, mean)
       CIntNo     <- NewClim3$CIntNo
       Xvar       <- NewClim3$Xvar
-      if (FIXED == TRUE){ 
-        BIntNo            <- ceiling((as.numeric(as.Date(paste(cutoff.day, cutoff.month, year(BDate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(CDate2)) + 1) / 7) 
+      if (type == "fixed"){ 
+        BIntNo            <- ceiling((as.numeric(as.Date(paste(cutoff.day, cutoff.month, year(Bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(Cdate2)) + 1) / 7) 
         wrongyear         <- which(BIntNo < RealBIntNo)
-        BIntNo[wrongyear] <- ceiling((as.numeric(as.Date(paste(cutoff.day, cutoff.month, (year(BDate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(CDate2)) + 1) / 7)
+        BIntNo[wrongyear] <- ceiling((as.numeric(as.Date(paste(cutoff.day, cutoff.month, (year(Bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(Cdate2)) + 1) / 7)
       } else {
         BIntNo <- RealBIntNo
       }
-    } else if (CINTERVAL == "M"){ 
-      Cmonth     <- month(CDate2)
-      Cyear      <- year(CDate2) - min(year(CDate2))
+    } else if (Cinterval == "month"){ 
+      Cmonth     <- month(Cdate2)
+      Cyear      <- year(Cdate2) - min(year(Cdate2))
       CIntNo     <- Cmonth + 12 * Cyear
-      RealBIntNo <- month(BDate) + 12 * (year(BDate) - min(year(CDate2)))
+      RealBIntNo <- month(Bdate) + 12 * (year(Bdate) - min(year(Cdate2)))
       NewClim    <- data.frame("CIntNo" = CIntNo, "Xvar" = Xvar)
       NewClim2   <- melt(NewClim, id = "CIntNo")
       NewClim3   <- cast(NewClim2, CIntNo~variable, mean)
       CIntNo     <- NewClim3$CIntNo
       Xvar       <- NewClim3$Xvar
-      if (FIXED == TRUE){ 
-        BIntNo            <- cutoff.month + 12 * (year(BDate) - min(year(CDate2)))
+      if (type == "fixed"){ 
+        BIntNo            <- cutoff.month + 12 * (year(Bdate) - min(year(Cdate2)))
         wrongyear         <- which(BIntNo < RealBIntNo)
-        BIntNo[wrongyear] <- cutoff.month + 12 * (year(BDate[wrongyear]) + 1 - min(year(CDate2)))
+        BIntNo[wrongyear] <- cutoff.month + 12 * (year(Bdate[wrongyear]) + 1 - min(year(Cdate2)))
       } else {
         BIntNo <- RealBIntNo
       }
     }
   } else {
-    if (CINTERVAL == "D"){  
-      if (FIXED == TRUE){   
-        BIntNo            <- as.numeric(as.Date(paste(cutoff.day, cutoff.month, year(BDate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(CDate2)) + 1 
+    if (Cinterval == "day"){  
+      if (type == "fixed"){   
+        BIntNo            <- as.numeric(as.Date(paste(cutoff.day, cutoff.month, year(Bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(Cdate2)) + 1 
         wrongyear         <- which(BIntNo < RealBIntNo)
-        BIntNo[wrongyear] <- (as.numeric(as.Date(paste(cutoff.day, cutoff.month, (year(BDate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(CDate2)) + 1)
+        BIntNo[wrongyear] <- (as.numeric(as.Date(paste(cutoff.day, cutoff.month, (year(Bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(Cdate2)) + 1)
       } else {
         BIntNo <- RealBIntNo
       }    
-    } else if (CINTERVAL == "W"){
-      CIntNo     <- ceiling((as.numeric(CDate2) - min(as.numeric(CDate2)) + 1) / 7)   # atrribute weeknumbers for both datafiles with first week in CLimateData set to CIntNo 1
-      RealBIntNo <- ceiling((as.numeric(BDate) - min(as.numeric(CDate2)) + 1) / 7)
+    } else if (Cinterval == "week"){
+      CIntNo     <- ceiling((as.numeric(Cdate2) - min(as.numeric(Cdate2)) + 1) / 7)   # atrribute weeknumbers for both datafiles with first week in CLimateData set to CIntNo 1
+      RealBIntNo <- ceiling((as.numeric(Bdate) - min(as.numeric(Cdate2)) + 1) / 7)
       NewClim    <- data.frame("CIntNo" = CIntNo, "Xvar" = Xvar, "Xvar2" = Xvar2)
       NewClim2   <- melt(NewClim, id = "CIntNo")
       NewClim3   <- cast(NewClim2, CIntNo~variable, mean)
       CIntNo     <- NewClim3$CIntNo
       Xvar       <- NewClim3$Xvar
       Xvar2      <- NewClim3$Xvar2
-      if (FIXED == TRUE){ 
-        BIntNo            <- ceiling((as.numeric(as.Date(paste(cutoff.day, cutoff.month, year(BDate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(CDate2)) + 1) / 7) 
+      if (type == "fixed"){ 
+        BIntNo            <- ceiling((as.numeric(as.Date(paste(cutoff.day, cutoff.month, year(Bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(Cdate2)) + 1) / 7) 
         wrongyear         <- which(BIntNo < RealBIntNo)
-        BIntNo[wrongyear] <- ceiling((as.numeric(as.Date(paste(cutoff.day, cutoff.month, (year(BDate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(CDate2)) + 1) / 7)
+        BIntNo[wrongyear] <- ceiling((as.numeric(as.Date(paste(cutoff.day, cutoff.month, (year(Bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(Cdate2)) + 1) / 7)
       } else {
         BIntNo <- RealBIntNo
       }
-    } else if (CINTERVAL == "M"){ 
-      Cmonth     <- month(CDate2)
-      Cyear      <- year(CDate2) - min(year(CDate2))
+    } else if (Cinterval == "month"){ 
+      Cmonth     <- month(Cdate2)
+      Cyear      <- year(Cdate2) - min(year(Cdate2))
       CIntNo     <- Cmonth + 12 * Cyear
-      RealBIntNo <- month(BDate) + 12 * (year(BDate) - min(year(CDate2)))
+      RealBIntNo <- month(Bdate) + 12 * (year(Bdate) - min(year(Cdate2)))
       NewClim    <- data.frame("CIntNo" = CIntNo, "Xvar" = Xvar, "Xvar2" = Xvar2)
       NewClim2   <- melt(NewClim, id = "CIntNo")
       NewClim3   <- cast(NewClim2, CIntNo ~ variable, mean)
       CIntNo     <- NewClim3$CIntNo
       Xvar       <- NewClim3$Xvar
       Xvar2      <- NewClim3$Xvar2
-      if (FIXED == TRUE){ 
-        BIntNo            <- cutoff.month + 12 * (year(BDate) - min(year(CDate2)))
+      if (type == "fixed"){ 
+        BIntNo            <- cutoff.month + 12 * (year(Bdate) - min(year(Cdate2)))
         wrongyear         <- which(BIntNo < RealBIntNo)
-        BIntNo[wrongyear] <- cutoff.month + 12 * (year(BDate[wrongyear]) + 1 - min(year(CDate2)))
+        BIntNo[wrongyear] <- cutoff.month + 12 * (year(Bdate[wrongyear]) + 1 - min(year(Cdate2)))
       } else {
         BIntNo <- RealBIntNo
       }
@@ -469,7 +488,7 @@ ModelLogLikelihoodW <- function(par = par,  modeloutput = modeloutput, duration 
 
 
 PlotWeight <- function(Dataset = .GlobalEnv$WeightedOutput){
-  ifelse (Dataset$WeightFunction == "W", WF <- "Weibull", WF <- "GEV")
+  ifelse (Dataset$WeightFunction == "week", WF <- "Weibull", WF <- "GEV")
   plot(Dataset$Weight, type = "l", ylab = "weight", xlab = "time step (e.g days)", 
        main = c(paste("Weight function of best", WF, "window"), 
                 paste("shape=", Dataset$par_shape), paste("scale=", Dataset$par_scale), paste("location=", Dataset$par_loc)))

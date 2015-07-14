@@ -45,7 +45,7 @@ with(Dataset, {
     ylab("Window open") +
     xlab("Window close")
   
-  if(Dataset$Function[1] == "Q"){
+  if(Dataset$Function[1] == "quad"){
     BETA2 <- ggplot(Dataset, aes(x = WindowClose, y = WindowOpen, z = ModelBetaQ)) +
       geom_tile(aes(fill = ModelBetaQ)) +
       scale_fill_gradientn(colours = c("red", "yellow", "blue"), name = "") +
@@ -59,7 +59,7 @@ with(Dataset, {
       ylab("Window open") +
       xlab("Window close")}
   
-  if(Dataset$Function[1] == "C"){
+  if(Dataset$Function[1] == "cub"){
     BETA2 <- ggplot(Dataset, aes(x = WindowClose, y = WindowOpen, z = ModelBetaQ)) +
       geom_tile(aes(fill = ModelBetaQ)) +
       scale_fill_gradientn(colours = c("red", "yellow", "blue"), name = "") +
@@ -86,10 +86,10 @@ with(Dataset, {
       ylab("Window open") +
       xlab("Window close")
   }
-  if(Dataset$Function[1] == "Q"){
+  if(Dataset$Function[1] == "quad"){
     grid.arrange(BETA, BETA2, nrow = 1)
   } else {
-    if (Dataset$Function[1] == "C"){
+    if (Dataset$Function[1] == "cub"){
       grid.arrange(BETA, BETA2, BETA3, nrow = 1)
     } else {
       BETA
@@ -109,7 +109,7 @@ with(Dataset, {
     ylab("Window open") +
     xlab("Window close")
   
-  if (Dataset$Function[1] == "Q"){
+  if (Dataset$Function[1] == "quad"){
     plotallenv$BETA2 <- ggplot(Dataset, aes(x = WindowClose, y = WindowOpen, z = ModelBetaQ)) +
       geom_tile(aes(fill = ModelBetaQ)) +
       scale_fill_gradientn(colours = c("red", "yellow", "blue"), name = "") +
@@ -124,7 +124,7 @@ with(Dataset, {
       xlab("Window close")
   }
   
-  if (Dataset$Function[1] == "C"){
+  if (Dataset$Function[1] == "cub"){
     plotallenv$BETA2 <- ggplot(Dataset, aes(x = WindowClose, y = WindowOpen, z = ModelBetaQ)) +
       geom_tile(aes(fill = ModelBetaQ)) +
       scale_fill_gradientn(colours = c("red", "yellow", "blue"), name = "") +

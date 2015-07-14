@@ -19,14 +19,14 @@
 #'data(Mass)
 #'data(MassClimate)
 #'
-#'single <- singlewin(Xvar = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date, 
+#'single <- singlewin(Xvar = MassClimate$Temp, Cdate = MassClimate$Date, Bdate = Mass$Date, 
 #'                    baseline = lm(Mass$Mass ~ 1),furthest = 72, closest = 15, 
-#'                    STAT = "mean", FUNC = "L", 
-#'                    FIXED = TRUE, cutoff.day = 20, cutoff.month = 5, 
-#'                    CMISSING = FALSE, CINTERVAL = "D")
+#'                    stat = "mean", func = "lin", 
+#'                    type = "fixed", cutoff.day = 20, cutoff.month = 5, 
+#'                    Cmissing = FALSE, Cinterval = "day")
 #'            
-#'plotbest(Dataset = MassOutput, BestModel = single[[1]],
-#'         BestModelData = single[[2]])
+#'plotbest(Dataset = MassOutput, BestModel = single$BestModel,
+#'         BestModelData = single$BestModelData)
 #'              
 #'@import ggplot2
 #'@export
@@ -38,19 +38,19 @@ plotbest <- function(Dataset, BestModel, BestModelData){
 names(BestModelData)[1] <- "Yvar"
     
 if (Dataset$Function[1] == "LOG"){
-  names(BestModelData)[(ncol(BestModelData)-1)] <- "temporary"
+  names(BestModelData)[(ncol(BestModelData)-1)] <- "climate"
 }
 if (Dataset$Function[1] == "I"){
-  names(BestModelData)[ncol(BestModelData)-1] <- "temporary"
+  names(BestModelData)[ncol(BestModelData)-1] <- "climate"
   class(BestModelData[, ncol(BestModelData)-1]) <- class(BestModelData[, ncol(BestModelData)-1])[-match("AsIs", class(BestModelData[, ncol(BestModelData)-1]))]
-  #WHEN WE USE INVERSE FUNCTION 'temporary' becomes class AsIs which the graphs can't deal with
-  #With this class change, we turn the 'temporary' value in to a basic numeric.
+  #WHEN WE USE INVERSE FUNCTION 'climate' becomes class AsIs which the graphs can't deal with
+  #With this class change, we turn the 'climate' value in to a basic numeric.
 }
 
 if(is.null(weights(BestModel)) == TRUE || sum(weights(BestModel)) == nrow(BestModelData)){
   if(ncol(BestModelData) == 2 || Dataset$Function[1] == "Q" & ncol(BestModelData) == 3 || Dataset$Function[1] == "C" & ncol(BestModelData) == 4){
     with(BestModelData, {
-      ggplot(BestModelData, aes(x = temporary, y = Yvar), environment = environment()) +
+      ggplot(BestModelData, aes(x = climate, y = Yvar), environment = environment()) +
         geom_point(size = 1, alpha = 1) +
         geom_line(data = cbind(BestModelData, pred = predict(BestModel, type = "response", allow.new.levels = TRUE)), aes(y = pred)) +
         theme_classic() +
@@ -77,8 +77,8 @@ if(is.null(weights(BestModel)) == TRUE || sum(weights(BestModel)) == nrow(BestMo
       if(Dataset$Function[1] == "C"){
         col = 3
       }
-      xval <- seq(from = min(BestModelData$temporary), to = max(BestModelData$temporary),
-                  by = (max(BestModelData$temporary) - min(BestModelData$temporary)) / (nrow(BestModelData)))
+      xval <- seq(from = min(BestModelData$climate), to = max(BestModelData$climate),
+                  by = (max(BestModelData$climate) - min(BestModelData$climate)) / (nrow(BestModelData)))
       #When we have additional covariates, we need to integrate them in to the dataset for the predictions
       #However, we need to determine the mean (or reference category) for each of these variables
       newdat <- matrix(ncol = ncol(BestModelData) - col, nrow = nrow(BestModelData) + 1)
@@ -94,10 +94,10 @@ if(is.null(weights(BestModel)) == TRUE || sum(weights(BestModel)) == nrow(BestMo
           newdat[, cols] = BestModelData[1, cols]          
         }
       }
-  names(newdat) <- c("temporary", names(BestModelData)[2:(ncol(BestModelData) - col)])  #Then change the names so they match what would be in the model
+  names(newdat) <- c("climate", names(BestModelData)[2:(ncol(BestModelData) - col)])  #Then change the names so they match what would be in the model
   pred <- predict(BestModel, newdata = newdat, type = "response", allow.new.levels = TRUE)
   with(BestModelData, {
-    ggplot(BestModelData, aes(x = temporary, y = Yvar), environment = environment()) +
+    ggplot(BestModelData, aes(x = climate, y = Yvar), environment = environment()) +
       geom_point(size = 1, alpha = 1) +
       geom_line(data = newdat, aes(y = pred)) +
       theme_classic() +
@@ -120,10 +120,10 @@ if(is.null(weights(BestModel)) == TRUE || sum(weights(BestModel)) == nrow(BestMo
 } else {
   if(ncol(BestModelData) == 3 || Dataset$Function[1] == "Q" & ncol(BestModelData) == 4 || Dataset$Function[1] == "C" & ncol(BestModelData) == 5){ 
     if (Dataset$Function[1] == "LOG" || Dataset$Function[1] == "I"){
-      names(BestModelData)[ncol(BestModelData) - 1] <- "temporary"  
+      names(BestModelData)[ncol(BestModelData) - 1] <- "climate"  
     }
     with(BestModelData, {
-      ggplot(BestModelData, aes(x = temporary, y = Yvar), environment = environment()) +
+      ggplot(BestModelData, aes(x = climate, y = Yvar), environment = environment()) +
         geom_point(size = 1, alpha = 1) +
         geom_line(data = cbind(BestModelData, pred = predict(BestModel, type = "response", allow.new.levels = TRUE)), aes(y = pred)) +
         theme_classic() +
@@ -150,8 +150,8 @@ if(is.null(weights(BestModel)) == TRUE || sum(weights(BestModel)) == nrow(BestMo
     if(Dataset$Function[1] == "C"){
       col = 3
     }
-    xval <- seq(from = min(BestModelData$temporary), to = max(BestModelData$temporary),
-                by = (max(BestModelData$temporary) - min(BestModelData$temporary)) / (nrow(BestModelData)))
+    xval <- seq(from = min(BestModelData$climate), to = max(BestModelData$climate),
+                by = (max(BestModelData$climate) - min(BestModelData$climate)) / (nrow(BestModelData)))
     #When we have additional covariates, we need to integrate them in to the dataset for the predictions
     #However, we need to determine the mean (or reference category) for each of these variables
     newdat <- matrix(ncol = ncol(BestModelData) - col, nrow = nrow(BestModelData) + 1)
@@ -167,10 +167,10 @@ if(is.null(weights(BestModel)) == TRUE || sum(weights(BestModel)) == nrow(BestMo
         newdat[, cols] = BestModelData[1, cols]          
       }
     }
-    names(newdat) <- c("temporary", names(BestModelData)[2:(ncol(BestModelData) - col)])  #Then change the names so they match what would be in the model
+    names(newdat) <- c("climate", names(BestModelData)[2:(ncol(BestModelData) - col)])  #Then change the names so they match what would be in the model
     pred <- predict(BestModel, newdata = newdat,  type = "response", allow.new.levels = TRUE)
     with(BestModelData, {
-      ggplot(BestModelData, aes(x = temporary, y = Yvar), environment = environment()) +
+      ggplot(BestModelData, aes(x = climate, y = Yvar), environment = environment()) +
         geom_point(size = 1, alpha = 1) +
         geom_line(data = newdat, aes(y = pred)) +
         theme_classic() +
