@@ -100,21 +100,21 @@ plotall <- function(Dataset, DatasetRand = NULL,
   if(is.null(BestModel) == FALSE && is.null(BestModelData) == FALSE){
   BEST   <- plotbest(Dataset = Dataset, BestModel = BestModel, BestModelData = BestModelData)
   
-  if (Dataset$Function[1] == "L"){
+  if (Dataset$Function[1] == "lin"){
     gridExtra::grid.arrange(DELTA, CW, plotenv$BETA, HIST, WINDOW, BEST, nrow = 2, ncol = 3, top = paste(Title))
-  } else if (Dataset$Function[1] == "Q"){
+  } else if (Dataset$Function[1] == "quad"){
     gridExtra::grid.arrange(DELTA, CW, plotenv$BETA, plotenv$BETA2, HIST, WINDOW, BEST, nrow = 2, ncol = 4, top = paste(Title))
-  } else if(Dataset$Function[1] == "C"){
+  } else if(Dataset$Function[1] == "cub"){
     gridExtra::grid.arrange(DELTA, CW, plotenv$BETA, plotenv$BETA2, HIST, WINDOW, BEST, plotenv$BETA3, nrow = 2, ncol = 4, top = paste(Title))
   } else {
     gridExtra::grid.arrange(plotenv$BETA, DELTA, CW, HIST, WINDOW, BEST, nrow = 2, top = paste(Title))
   }
   } else {
-    if (Dataset$Function[1] == "L"){
+    if (Dataset$Function[1] == "lin"){
       gridExtra::grid.arrange(DELTA, CW, plotenv$BETA, HIST, WINDOW, nrow = 2, ncol = 3, top = paste(Title))
-    } else if (Dataset$Function[1] == "Q"){
+    } else if (Dataset$Function[1] == "quad"){
       gridExtra::grid.arrange(DELTA, CW, plotenv$BETA, plotenv$BETA2, HIST, WINDOW, nrow = 2, ncol = 4, top = paste(Title))
-    } else if(Dataset$Function[1] == "C"){
+    } else if(Dataset$Function[1] == "cub"){
       gridExtra::grid.arrange(DELTA, CW, plotenv$BETA, plotenv$BETA2, HIST, WINDOW, plotenv$BETA3, nrow = 2, ncol = 4, top = paste(Title))
     } else {
       gridExtra::grid.arrange(plotenv$BETA, DELTA, CW, HIST, WINDOW, nrow = 2, top = paste(Title))
