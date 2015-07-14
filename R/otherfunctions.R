@@ -302,7 +302,7 @@ basewin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest,
     modeldat$WGdev  <- WGdev(modeldat$climate, centre)
     modeldat$WGmean <- WGmean(modeldat$climate, centre)
     LocalModel      <- update(modeloutput, .~., data = modeldat)
-    MODLIST$Function     <- "quad"
+    MODLIST$Function     <- "centred"
   } else {
     LocalModel           <- update(modeloutput, .~.)
     MODLIST$Function     <- func
