@@ -2,7 +2,7 @@
 basewin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest, 
                     type, cutoff.day, cutoff.month, stat = "mean", func = "lin",
                     Cmissing = FALSE, Cinterval = "day",  nrandom = 0, CVK = 0,
-                    upper = NA, lower = NA, thresh = FALSE){
+                    upper = NA, lower = NA, thresh = FALSE, centre = NULL){
   print("Initialising, please wait...")
   
   if(stat == "slope" & func == "log" || stat == "slope" & func == "inv"){
@@ -102,11 +102,15 @@ basewin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest,
   
   modeldat           <- model.frame(baseline)
   modeldat$Yvar      <- modeldat[, 1]
-  modeldat$climate <- matrix(ncol = 1, nrow = nrow(CMatrix), seq(from = 1, to = nrow(CMatrix), by = 1))
+  modeldat$climate   <- matrix(ncol = 1, nrow = nrow(CMatrix), seq(from = 1, to = nrow(CMatrix), by = 1))
   
   if(is.null(weights(baseline)) == FALSE){
-    modeldat$modweights <- weights(baseline)
-    baseline <- update(baseline, .~., weights = modweights, data = modeldat)
+    if(class(baseline)[1] == "glm" & sum(weights(baseline)) == nrow(model.frame(baseline))){
+    } else {
+      print("model weights")
+      modeldat$modweights <- weights(baseline)
+      baseline <- update(baseline, .~., weights = modweights, data = modeldat)
+    }
   }
   
   if (CVK>1){
@@ -116,13 +120,13 @@ basewin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest,
   if (func == "lin"){
     modeloutput <- update(baseline, Yvar~. + climate, data = modeldat)
   } else if (func == "quad") {
-    modeloutput <- update(baseline, .~. + climate + I(climate ^ 2), data = modeldat)
+    modeloutput <- update(baseline, Yvar~. + climate + I(climate ^ 2), data = modeldat)
   } else if (func == "cub") {
-    modeloutput <- update(baseline, .~. + climate + I(climate ^ 2) + I(climate ^ 3), data = modeldat)
+    modeloutput <- update(baseline, Yvar~. + climate + I(climate ^ 2) + I(climate ^ 3), data = modeldat)
   } else if (func == "log") {
-    modeloutput <- update(baseline, .~. + log(climate), data = modeldat)
+    modeloutput <- update(baseline, Yvar~. + log(climate), data = modeldat)
   } else if (func == "inv") {
-    modeloutput <- update (baseline, .~. + I(climate ^ -1), data = modeldat)
+    modeloutput <- update (baseline, Yvar~. + I(climate ^ -1), data = modeldat)
   } else {
     print("Define func")
   }
@@ -146,7 +150,14 @@ basewin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest,
             stop("func = LOG or I cannot be used with climate values >= 0. 
                  Consider adding a constant to climate data to remove these values")
           }
-          modeloutput <- update(modeloutput, .~.)
+          
+          if(is.null(centre) == FALSE){
+            modeldat$WGdev  <- WGdev(modeldat$climate, centre)
+            modeldat$WGmean <- WGmean(modeldat$climate, centre)
+            modeloutput <- update(baseline, .~ WGdev + WGmean, data = modeldat)
+          } else {
+            modeloutput <- update(modeloutput, .~.)
+          }
           
           # If valid, perform k-fold crossvalidation
           if (CVK>1) {      
@@ -185,7 +196,7 @@ basewin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest,
             MODLIST$baselineAICc[[MODNO]] <- AICc_cv_baseline_avg
           } else {
             MODLIST$ModelAICc[[MODNO]]   <- AICc(modeloutput)
-            MODLIST$baselineAICc <- AICc(baseline) 
+            MODLIST$baselineAICc         <- AICc(baseline) 
             #WORK OUT A WAY TO REMOVE THIS FROM LOOP
           }
           
@@ -245,7 +256,15 @@ basewin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest,
   } else {
     ifelse (windowopen - windowclose == 0, modeldat$climate <- CMatrix[, windowclose:windowopen], modeldat$climate <- apply(CMatrix[, windowclose:windowopen], 1, FUN = stat))
   }
-  LocalModel           <- update(modeloutput, .~.)
+  
+  if(is.null(centre) == FALSE){
+    modeldat$WGdev  <- WGdev(modeldat$climate, centre)
+    modeldat$WGmean <- WGmean(modeldat$climate, centre)
+    LocalModel      <- update(baseline, .~ WGdev + WGmean, data = modeldat)
+  } else {
+    LocalModel      <- update(modeloutput, .~.)
+  }
+  
   MODLIST$furthest     <- furthest
   MODLIST$closest      <- closest
   MODLIST$Statistics   <- stat
@@ -259,7 +278,12 @@ basewin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest,
   }
   
   if (nrandom == 0){
-    LocalData           <- model.frame(LocalModel)
+    if(is.null(centre) == FALSE){
+      LocalData <- model.frame(LocalModel)
+      LocalData$climate <- modeldat$climate
+    } else {
+      LocalData <- model.frame(LocalModel)
+    }
     MODLIST$Randomised  <- "no"
     MODLIST             <- as.data.frame(MODLIST)
     LocalOutput         <- MODLIST[order(MODLIST$ModelAICc), ]
