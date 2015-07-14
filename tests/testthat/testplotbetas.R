@@ -1,7 +1,7 @@
 # Test function plotbetas #
 
 # Test that plotbetas produces a ggplot objects #
-# Test that plotbetas produces new plots for Q and C #
+# Test that plotbetas produces new plots for quad and cub #
 test_that("plotbetas produces a graph", {
   
   data(MassOutput, envir = environment())
@@ -12,14 +12,14 @@ test_that("plotbetas produces a graph", {
   expect_true(attr(test, "class")[1] == "gg")
  
   MassOutput$ModelBetaQ <- MassOutput$ModelBeta
-  MassOutput$Function   <- "Q"
+  MassOutput$Function   <- "quad"
   
   test <- plotbetas(Dataset = MassOutput, plotall = TRUE, plotallenv = testenv)
   
   expect_true(exists("BETA2", envir = testenv))
   
   MassOutput$ModelBetaC <- MassOutput$ModelBeta
-  MassOutput$Function   <- "C"
+  MassOutput$Function   <- "cub"
   
   test <- plotbetas(Dataset = MassOutput, plotall = TRUE, plotallenv = testenv)
   

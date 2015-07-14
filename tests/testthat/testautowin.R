@@ -12,19 +12,19 @@ test_that("AutoWinOutput has created an output", {
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
   
-  single <- singlewin(Xvar = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date,
-                      baseline = lm(Mass$Mass~1), furthest = 1, closest = 1,
-                      STAT = "mean", FUNC = "L",
-                      FIXED = FALSE, CMISSING = FALSE, CINTERVAL = "D")
+  single <- singlewin(Xvar = MassClimate$Temp, Cdate = MassClimate$Date, Bdate = Mass$Date,
+                      baseline = lm(Mass ~ 1, data = Mass), furthest = 1, closest = 1,
+                      stat = "mean", func = "lin",
+                      type = "variable", Cmissing = FALSE, Cinterval = "day")
   
   furthest  <- 2
   closest   <- 1
-  STAT <- "max"
+  stat <- "max"
   
-  test <- autowin(reference = single[[2]]$temporary,
-          Xvar  = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date,
-          furthest = 2, closest = 1, STAT = "mean",
-          FIXED = FALSE, CMISSING = FALSE, CINTERVAL = "D")
+  test <- autowin(reference = single$BestModelData$climate,
+          Xvar  = MassClimate$Temp, Cdate = MassClimate$Date, Bdate = Mass$Date,
+          baseline = lm(Mass ~ 1, data = Mass), furthest = 2, closest = 1, 
+          stat = "mean", func = "lin", type = "variable", Cmissing = FALSE, Cinterval = "day")
   
   duration  <- (furthest - closest) + 1
   MaxMODNO  <- (duration * (duration + 1))/2

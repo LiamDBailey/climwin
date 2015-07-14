@@ -10,13 +10,13 @@ test_that("GEV loglik test", {
   
   funcenv              <- environment()
   Xvar                 <- MassClimate$Temp
-  BDate                <- Mass$Date
-  CDate                <- MassClimate$Date
+  Bdate                <- Mass$Date
+  Cdate                <- MassClimate$Date
   furthest             <- 2
   closest              <- 1
   duration             <- (furthest-closest) + 1
   baseline             <- lm(Mass ~ 1, data = Mass)
-  CMatrix              <- matrix(ncol = (duration), nrow = length(BDate))
+  CMatrix              <- matrix(ncol = (duration), nrow = length(Bdate))
   nullmodel            <- AICc(baseline)
   funcenv$MODNO        <- 1
   funcenv$DAICc        <- list()
@@ -24,10 +24,10 @@ test_that("GEV loglik test", {
   funcenv$par_scale    <- list()
   funcenv$par_location <- list()
   
-  cont <- DateConverter(BDate = BDate, CDate = CDate, Xvar = Xvar, 
-                        CINTERVAL = "D", FIXED = FALSE)   # create new climate dataframe with continuous daynumbers, leap days are not a problem 
+  cont <- DateConverter(Bdate = Bdate, Cdate = Cdate, Xvar = Xvar, 
+                        Cinterval = "day", type = "variable")   # create new climate dataframe with continuous daynumbers, leap days are not a problem 
   
-  for (i in 1:length(BDate)){
+  for (i in 1:length(Bdate)){
     for (j in closest:furthest){
       k <- j - closest + 1
       CMatrix[i, k] <- Xvar[match(cont$BIntNo[i] - j,cont$CIntNo)]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
@@ -56,13 +56,13 @@ test_that("Weibull loglik test", {
   
   funcenv              <- environment()
   Xvar                 <- MassClimate$Temp
-  BDate                <- Mass$Date
-  CDate                <- MassClimate$Date
+  Bdate                <- Mass$Date
+  Cdate                <- MassClimate$Date
   furthest             <- 2
   closest              <- 1
   duration             <- (furthest-closest) + 1
   baseline             <- lm(Mass ~ 1, data = Mass)
-  CMatrix              <- matrix(ncol = (duration), nrow = length(BDate))
+  CMatrix              <- matrix(ncol = (duration), nrow = length(Bdate))
   nullmodel            <- AICc(baseline)
   funcenv$MODNO        <- 1
   funcenv$DAICc        <- list()
@@ -70,10 +70,10 @@ test_that("Weibull loglik test", {
   funcenv$par_scale    <- list()
   funcenv$par_location <- list()
   
-  cont <- DateConverter(BDate = BDate, CDate = CDate, Xvar = Xvar, 
-                        CINTERVAL = "D", FIXED = FALSE)   # create new climate dataframe with continuous daynumbers, leap days are not a problem 
+  cont <- DateConverter(Bdate = Bdate, Cdate = Cdate, Xvar = Xvar, 
+                        Cinterval = "day", type = "variable")   # create new climate dataframe with continuous daynumbers, leap days are not a problem 
   
-  for (i in 1:length(BDate)){
+  for (i in 1:length(Bdate)){
     for (j in closest:furthest){
       k <- j - closest + 1
       CMatrix[i, k] <- Xvar[match(cont$BIntNo[i] - j,cont$CIntNo)]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    

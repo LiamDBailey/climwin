@@ -10,38 +10,38 @@ test_that("weightwin test", {
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
   
-  test <- weightwin(Xvar = MassClimate$Temp, CDate = MassClimate$Date,
-                    BDate = Mass$Date, baseline = lm(Mass ~ 1, data = Mass),
-                    furthest = 2, closest = 1, FUNC = "L",
-                    FIXED = FALSE, WeightFunction = "W", CINTERVAL = "D",
+  test <- weightwin(Xvar = MassClimate$Temp, Cdate = MassClimate$Date,
+                    Bdate = Mass$Date, baseline = lm(Mass ~ 1, data = Mass),
+                    furthest = 2, closest = 1, func = "lin",
+                    type = "variable", WeightFunction = "week", Cinterval = "day",
                     par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)),
                     method = "L-BFGS-B")
   
-  expect_error(weightwin(Xvar = MassClimate$Temp, CDate = MassClimate$Date,
-                         BDate = Mass$Date, baseline = lm(Mass$Mass ~ 1),
-                         furthest = 2, closest = 1, FUNC = "L",
-                         FIXED = FALSE, WeightFunction = "W", CINTERVAL = "D",
+  expect_error(weightwin(Xvar = MassClimate$Temp, Cdate = MassClimate$Date,
+                         Bdate = Mass$Date, baseline = lm(Mass$Mass ~ 1),
+                         furthest = 2, closest = 1, func = "lin",
+                         type = "variable", WeightFunction = "week", Cinterval = "day",
                          par = c(-1, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)),
                          method = "L-BFGS-B"))
   
-  expect_error(weightwin(Xvar = MassClimate$Temp, CDate = MassClimate$Date,
-                         BDate = Mass$Date, baseline = lm(Mass$Mass ~ 1),
-                         furthest = 2, closest = 1, FUNC = "L",
-                         FIXED = FALSE, WeightFunction = "W", CINTERVAL = "D",
+  expect_error(weightwin(Xvar = MassClimate$Temp, Cdate = MassClimate$Date,
+                         Bdate = Mass$Date, baseline = lm(Mass$Mass ~ 1),
+                         furthest = 2, closest = 1, func = "lin",
+                         type = "variable", WeightFunction = "week", Cinterval = "day",
                          par = c(3, -1, 0), control = list(ndeps = c(0.01, 0.01, 0.01)),
                          method = "L-BFGS-B"))
   
-  expect_error(weightwin(Xvar = MassClimate$Temp, CDate = MassClimate$Date,
-                         BDate = Mass$Date, baseline = lm(Mass$Mass ~ 1),
-                         furthest = 2, closest = 1, FUNC = "L",
-                         FIXED = FALSE, WeightFunction = "W", CINTERVAL = "D",
+  expect_error(weightwin(Xvar = MassClimate$Temp, Cdate = MassClimate$Date,
+                         Bdate = Mass$Date, baseline = lm(Mass$Mass ~ 1),
+                         furthest = 2, closest = 1, func = "lin",
+                         type = "variable", WeightFunction = "week", Cinterval = "day",
                          par = c(3, 0.2, 1), control = list(ndeps = c(0.01, 0.01, 0.01)),
                          method = "L-BFGS-B"))
   
-  expect_error(weightwin(Xvar = MassClimate$Temp, CDate = MassClimate$Date,
-                         BDate = Mass$Date, baseline = lm(Mass$Mass ~ 1),
-                         furthest = 2, closest = 1, FUNC = "L",
-                         FIXED = FALSE, WeightFunction = "G", CINTERVAL = "D",
+  expect_error(weightwin(Xvar = MassClimate$Temp, Cdate = MassClimate$Date,
+                         Bdate = Mass$Date, baseline = lm(Mass$Mass ~ 1),
+                         furthest = 2, closest = 1, func = "lin",
+                         type = "variable", WeightFunction = "G", Cinterval = "day",
                          par = c(3, -1, 0), control = list(ndeps = c(0.01, 0.01, 0.01)),
                          method = "L-BFGS-B"))
   

@@ -9,15 +9,13 @@ test_that("crosswin produces output", {
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
   
+  test <- crosswin(Xvar = MassClimate$Temp, Xvar2 = MassClimate$Rain, Cdate = MassClimate$Date,
+           Bdate = Mass$Date, furthest = 2, closest = 1, 
+           stat = "max", stat2 = "max", type = "variable",
+           Cmissing = FALSE, Cinterval = "day")
+  
   furthest = 2
   closest = 1
-  STAT = "max"
-  
-  test <- crosswin(Xvar = MassClimate$Temp, Xvar2 = MassClimate$Rain, CDate = MassClimate$Date,
-           BDate = Mass$Date, furthest = 2, closest = 1, 
-           STAT = "max", FIXED = FALSE,
-           CMISSING = FALSE, CINTERVAL = "D")
-  
   duration  <- (furthest - closest) + 1
   MaxMODNO  <- (duration * (duration + 1))/2
   

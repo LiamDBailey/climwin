@@ -1,7 +1,7 @@
 # Test randwin function #
 
 # Test that randwin create only WindowOutputRand, not BestModel or BestModelData
-# Test that WindowOutputRand is at least 13 columns (will vary with FUNC = Q or C)
+# Test that WindowOutputRand is at least 13 columns (will vary with func = Q or C)
 # Test that the number of rows in each repeat is the same as number of windows
 # Test that the randimised column is yes
 
@@ -12,11 +12,11 @@ test_that("Check randwin output", {
   
   furthest = 2
   closest = 1
-  STAT = "max"
+  stat = "max"
   
-  rand <- randwin(repeats = 1, Xvar = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date, 
+  rand <- randwin(repeats = 1, Xvar = MassClimate$Temp, Cdate = MassClimate$Date, Bdate = Mass$Date, 
                   baseline = lm(Mass ~ 1, data = Mass), furthest = 2, closest = 1, 
-                  FIXED = FALSE, STAT = "max", FUNC = "L", CMISSING=FALSE)
+                  type = "variable", stat = "max", func = "lin", Cmissing = FALSE)
   
   duration  <- (furthest - closest) + 1
   MaxMODNO  <- (duration * (duration + 1))/2
