@@ -4,19 +4,19 @@
 \alias{weightwin}
 \title{Find a weighted climate window}
 \usage{
-weightwin(Xvar, CDate, BDate, baseline, furthest, closest, FUNC = "L",
-  FIXED = FALSE, cutoff.day, cutoff.month, WeightFunction = "W",
-  CINTERVAL = "D", par = c(3, 0.2, 0), control = list(ndeps = c(0.01,
+weightwin(Xvar, Cdate, Bdate, baseline, furthest, closest, func = "lin",
+  type = "fixed", cutoff.day, cutoff.month, WeightFunction = "week",
+  Cinterval = "day", par = c(3, 0.2, 0), control = list(ndeps = c(0.01,
   0.01, 0.01)), method = "L-BFGS-B")
 }
 \arguments{
 \item{Xvar}{The climate variable of interest. Please specify the parent
 environment and variable name (e.g. Climate$Temp).}
 
-\item{CDate}{The climate date variable. Please specify the parent environment
+\item{Cdate}{The climate date variable. Please specify the parent environment
 and variable name (e.g. Climate$Date).}
 
-\item{BDate}{The biological date variable. Please specify the parent
+\item{Bdate}{The biological date variable. Please specify the parent
 environment and variable name (e.g. Biol$Date).}
 
 \item{baseline}{The baseline model structure used for testing correlation.
@@ -28,23 +28,23 @@ climate window.}
 \item{closest}{The closest number of days back that you want any climate
 windows to reach.}
 
-\item{FUNC}{The function used to fit the climate variable in the model. Can be
-linear ("L"), quadratic ("Q"), cubic ("C"), inverse ("I") or log ("LOG").}
+\item{func}{The function used to fit the climate variable in the model. Can be
+linear ("lin"), quadratic ("quad"), cubic ("cub"), inverse ("inv") or log ("log").}
 
-\item{FIXED}{TRUE or FALSE, whether you wish the climate window to be variable
+\item{type}{fixed or variable, whether you wish the climate window to be variable
 (i.e. the number of days before each biological record is measured) or fixed
 (i.e. number of days before a set point in time).}
 
-\item{cutoff.day,cutoff.month}{If FIXED is TRUE, the day and month of the year
+\item{cutoff.day,cutoff.month}{If type is "fixed", the day and month of the year
 from which the fixed window analysis will start.}
 
 \item{WeightFunction}{The distribution to be used for optimisation. Can be
-either a Weibull ("W") or Generalised Extreme Value distribution ("G").}
+either a Weibull ("week") or Generalised Extreme Value distribution ("G").}
 
-\item{CINTERVAL}{The resolution at which the climate window analysis will be
-conducted. May be days ("D"), weeks ("W"), or months ("M"). Note the units
+\item{Cinterval}{The resolution at which the climate window analysis will be
+conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the units
 of parameters 'furthest' and 'closest' will differ depending on the choice
-of CINTERVAL.}
+of Cinterval.}
 
 \item{par}{Shape, scale and location parameters of the Weibull of GEV weight
 function used as start weight function. For Weibull : Shape and scale
@@ -98,17 +98,17 @@ description.
  data(OffspringClimate)
 
  # Test for climate windows between 365 and 0 days ago (furthest=365, closest=0)
- # Fit a quadratic term for the mean weighted climate (FUNC="Q")
+ # Fit a quadratic term for the mean weighted climate (func="quad")
  # in a Poisson regression (offspring number ranges 0-3)
- # Test a variable window (FIXED=FALSE)
- # Test at the resolution of days (CINTERVAL="D")
- # Uses a Weibull weight function (WeightFunction="W")
+ # Test a variable window (type = "fixed")
+ # Test at the resolution of days (Cinterval="day")
+ # Uses a Weibull weight function (WeightFunction="week")
 
- weight <- weightwin(Xvar = OffspringClimate$Temperature, CDate = OffspringClimate$Date,
-                     BDate = Offspring$Date,
+ weight <- weightwin(Xvar = OffspringClimate$Temperature, Cdate = OffspringClimate$Date,
+                     Bdate = Offspring$Date,
                      baseline = glm(Offspring ~ 1, family = poisson, data = Offspring),
-                     furthest = 365, closest = 0, FUNC = "Q",
-                     FIXED = FALSE, WeightFunction = "W", CINTERVAL = "D",
+                     furthest = 365, closest = 0, func = "quad",
+                     type = "fixed", WeightFunction = "week", Cinterval = "day",
                      par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)),
                      method = "L-BFGS-B")
 

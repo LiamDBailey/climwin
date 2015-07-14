@@ -4,8 +4,8 @@
 \alias{randwin}
 \title{Climate window analysis for randomised data}
 \usage{
-randwin(repeats = 1, Xvar, CDate, BDate, baseline, furthest, closest, STAT,
-  FUNC, FIXED, cutoff.day, cutoff.month, CMISSING = FALSE, CINTERVAL = "D",
+randwin(repeats = 1, Xvar, Cdate, Bdate, baseline, furthest, closest, stat,
+  func, type, cutoff.day, cutoff.month, Cmissing = FALSE, Cinterval = "day",
   upper = NA, lower = NA, thresh = FALSE)
 }
 \arguments{
@@ -15,46 +15,46 @@ for climate windows}
 \item{Xvar}{The climate variable of interest. Please specify the parent
 environment and variable (e.g. Climate$Temp)}
 
-\item{CDate}{The climate date variable (dd/mm/yyyy). Please specify the parent
+\item{Cdate}{The climate date variable (dd/mm/yyyy). Please specify the parent
 environment and variable name (e.g. Climate$Date).}
 
-\item{BDate}{The biological date variable (dd/mm/yyyy). Please specify the
+\item{Bdate}{The biological date variable (dd/mm/yyyy). Please specify the
 parent environment and variable name (e.g. Biol$Date).}
 
 \item{baseline}{The baseline model structure used for testing correlation.
 Currently known to support lm, glm, lmer and glmer objects.}
 
-\item{furthest}{The furthest number of time intervals (set by CINTERVAL) back
+\item{furthest}{The furthest number of time intervals (set by Cinterval) back
 from the cutoff date or biological record that you want to include in your
 climate window search.}
 
-\item{closest}{The closest number of time intervals (set by CINTERVAL) back
+\item{closest}{The closest number of time intervals (set by Cinterval) back
 from the cutoff date or biological record that you want to include in your
 climate window search.}
 
-\item{STAT}{The aggregate statistic used to analyse the climate data. Can
+\item{stat}{The aggregate statistic used to analyse the climate data. Can
 currently use basic R statistics (e.g. mean, min), as well as slope.
 Additional aggregate statistics can be created using the format function(x)
 (...). See FUN in \code{\link{apply}} for more detail.}
 
-\item{FUNC}{The function of the climate variable.}
+\item{func}{The function of the climate variable.}
 
-\item{FIXED}{TRUE or FALSE, whether you wish the climate window to be variable
+\item{type}{fixed or variable, whether you wish the climate window to be variable
 (i.e. the number of days before a biological record is measured) or fixed
 (i.e. number of days before a set point in time).}
 
-\item{cutoff.day,cutoff.month}{If FIXED is TRUE, the day and month of the year
+\item{cutoff.day,cutoff.month}{If type is "fixed", the day and month of the year
 from which the fixed window analysis will be set.}
 
-\item{CMISSING}{TRUE or FALSE, determines what should be done if there is
+\item{Cmissing}{TRUE or FALSE, determines what should be done if there is
 missing climate data. If false, the function will not run if missing climate
 data is encountered. If true, any records affected by missing climate data
 will be deleted from climate window analysis.}
 
-\item{CINTERVAL}{The resolution at which climate window analysis can be
-conducted. Can be days ("D"), weeks ("W"), or months ("M"). Note the units
+\item{Cinterval}{The resolution at which climate window analysis can be
+conducted. Can be days ("day"), weeks ("week"), or months ("month"). Note the units
 of parameters 'furthest' and 'closest' will differ depending on the chouice
-of CINTERVAL.}
+of Cinterval.}
 
 \item{upper}{Cut-off value used to determine growing degree days or positive
 climate thresholds (determined by parameter thresh). Note that when values
@@ -89,11 +89,11 @@ data(MassClimate)
 # Note all other parameters are fitted in the same way as the ClimateWindow function.
 
 rand <- randwin(repeats = 2, Xvar = MassClimate$Temp,
-                CDate = MassClimate$Date, BDate = Mass$Date,
+                Cdate = MassClimate$Date, Bdate = Mass$Date,
                 baseline = lm(Mass ~ 1, data = Mass), furthest = 100, closest = 0,
-                STAT = "mean", FUNC = "L", FIXED = TRUE,
+                stat = "mean", func = "lin", type = "fixed",
                 cutoff.day = 20, cutoff.month = 5,
-                CMISSING = FALSE, CINTERVAL = "D")
+                Cmissing = FALSE, Cinterval = "day")
 
 # View output #
 

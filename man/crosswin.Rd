@@ -4,8 +4,8 @@
 \alias{crosswin}
 \title{Test the correlation between two climate variables}
 \usage{
-crosswin(Xvar, Xvar2, CDate, BDate, furthest, closest, STAT, FIXED, cutoff.day,
-  cutoff.month, CINTERVAL = "D", CMISSING = FALSE)
+crosswin(Xvar, Xvar2, Cdate, Bdate, furthest, closest, stat, stat2, type,
+  cutoff.day, cutoff.month, Cinterval = "day", Cmissing = FALSE)
 }
 \arguments{
 \item{Xvar}{The first climate variable of interest. Please specify the parent
@@ -14,38 +14,43 @@ environment and variable name (e.g. Climate$Temp).}
 \item{Xvar2}{The second climate variable of interest. Please specify the parent
 environment and variable name (e.g. Climate$Temp).}
 
-\item{CDate}{The climate date variable (dd/mm/yyyy). Please specify the parent
+\item{Cdate}{The climate date variable (dd/mm/yyyy). Please specify the parent
 environment and variable name (e.g. Climate$Date).}
 
-\item{BDate}{The biological date variable (dd/mm/yyyy). Please specify the
+\item{Bdate}{The biological date variable (dd/mm/yyyy). Please specify the
 parent environment and variable name (e.g. Biol$Date).}
 
-\item{furthest}{The furthest number of time intervals (set by CINTERVAL) back
+\item{furthest}{The furthest number of time intervals (set by Cinterval) back
 from the cutoff date or biological record that you want to include in your
 climate window search.}
 
-\item{closest}{The closest number of time intervals (set by CINTERVAL) back
+\item{closest}{The closest number of time intervals (set by Cinterval) back
 from the cutoff date or biological record that you want to include in your
 climate window search.}
 
-\item{STAT}{The aggregate statistic used to analyse the climate data. Can
+\item{stat}{The aggregate statistic used to analyse the climate data. Can
 currently use basic R statistics (e.g. mean, min), as well as slope.
 Additional aggregate statistics can be created using the format function(x)
 (...). See FUN in \code{\link{apply}} for more detail.}
 
-\item{FIXED}{TRUE or FALSE, whether you wish the climate window to be variable
+\item{stat2}{Second aggregate statistic used to analyse climate data (Xvar2). Can
+currently use basic R statistics (e.g. mean, min), as well as slope.
+Additional aggregate statistics can be created using the format function(x)
+(...). See FUN in \code{\link{apply}} for more detail.}
+
+\item{type}{fixed or variable, whether you wish the climate window to be variable
 (i.e. the number of days before each biological record is measured) or fixed
 (i.e. number of days before a set point in time).}
 
-\item{cutoff.day,cutoff.month}{If FIXED is TRUE, the day and month of the year
+\item{cutoff.day,cutoff.month}{If type is "fixed", the day and month of the year
 from which the fixed window analysis will start.}
 
-\item{CINTERVAL}{The resolution at which climate window analysis will be
-conducted. May be days ("D"), weeks ("W"), or months ("M"). Note the units
+\item{Cinterval}{The resolution at which climate window analysis will be
+conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the units
 of parameters 'furthest' and 'closest' will differ depending on the choice
-of CINTERVAL.}
+of Cinterval}
 
-\item{CMISSING}{TRUE or FALSE, determines what should be done if there are
+\item{Cmissing}{TRUE or FALSE, determines what should be done if there are
 missing climate data. If FALSE, the function will not run if missing climate
 data is encountered. If TRUE, any records affected by missing climate data
 will be removed from climate window analysis.}
@@ -66,16 +71,16 @@ data(Mass)
 data(MassClimate)
 
 cross <- crosswin(Xvar = MassClimate$Temp, Xvar2 = MassClimate$Rain,
-                  CDate = MassClimate$Date, BDate = Mass$Date,
+                  Cdate = MassClimate$Date, Bdate = Mass$Date,
                   furthest = 365, closest = 0,
-                  STAT = "mean", FIXED = FALSE,
-                  CMISSING = FALSE, CINTERVAL = "D")
+                  stat = "mean", stat2 = "mean", type = "variable",
+                  Cmissing = FALSE, Cinterval = "day")
 
 # View the output
 head(cross)
 
 # Plot the output
-plotcor(cross, TYPE = "C")
+plotcor(cross, type = "C")
 
 }
 }

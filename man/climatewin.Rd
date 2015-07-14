@@ -4,56 +4,56 @@
 \alias{climatewin}
 \title{Test for a climate windows in data.}
 \usage{
-climatewin(Xvars, CDate, BDate, baseline, furthest, closest, FIXED, cutoff.day,
-  cutoff.month, STATS = "mean", FUNCS = "L", CMISSING = FALSE,
-  CINTERVAL = "D", nrandom = 0, CVK = 0, uppers = NA, lowers = NA,
+climatewin(Xvar, Cdate, Bdate, baseline, furthest, closest, type, cutoff.day,
+  cutoff.month, stat = "mean", func = "lin", Cmissing = FALSE,
+  Cinterval = "day", nrandom = 0, CVK = 0, upper = NA, lower = NA,
   thresh = FALSE)
 }
 \arguments{
-\item{Xvars}{A list containing all climate variables of interest. Please specify the parent
+\item{Xvar}{A list containing all climate variables of interest. Please specify the parent
   environment and variable name (e.g. Climate$Temp).}
 
-\item{CDate}{The climate date variable (dd/mm/yyyy). Please specify the
+\item{Cdate}{The climate date variable (dd/mm/yyyy). Please specify the
   parent environment and variable name (e.g. Climate$Date).}
 
-\item{BDate}{The biological date variable (dd/mm/yyyy). Please specify the
+\item{Bdate}{The biological date variable (dd/mm/yyyy). Please specify the
   parent environment and variable name (e.g. Biol$Date).}
 
 \item{baseline}{The baseline model structure used for model testing.
   Currently known to support lm, glm, lmer and glmer objects.}
 
-\item{furthest}{The furthest number of time intervals (set by CINTERVAL)
+\item{furthest}{The furthest number of time intervals (set by Cinterval)
   back from the cutoff date or biological record that will be included in
   the climate window search.}
 
-\item{closest}{The closest number of time intervals (set by CINTERVAL) back
+\item{closest}{The closest number of time intervals (set by Cinterval) back
   from the cutoff date or biological record that will be included in the
   climate window search.}
 
-\item{FIXED}{TRUE or FALSE, whether you wish the climate window to be
+\item{type}{fixed or variable, whether you wish the climate window to be
   variable (i.e. the number of days before each biological record is
   measured) or fixed (i.e. number of days before a set point in time).}
 
-\item{cutoff.day,cutoff.month}{If FIXED is TRUE, the day and month of the
+\item{cutoff.day,cutoff.month}{If type is "fixed", the day and month of the
   year from which the fixed window analysis will start.}
 
-\item{STATS}{The aggregate statistics used to analyse the climate data. Can
+\item{stat}{The aggregate statistics used to analyse the climate data. Can
   currently use basic R statistics (e.g. mean, min), as well as slope.
   Additional aggregate statistics can be created using the format
   function(x) (...). See FUN in \code{\link{apply}} for more detail.}
 
-\item{FUNCS}{The functions used to fit the climate variable. Can be linear
-  ("L"), quadratic ("Q"), cubic ("C"), inverse ("I") or log ("LOG").}
+\item{func}{The functions used to fit the climate variable. Can be linear
+  ("lin"), quadratic ("quad"), cubic ("cub"), inverse ("inv") or log ("log").}
 
-\item{CMISSING}{TRUE or FALSE, determines what should be done if there are
+\item{Cmissing}{TRUE or FALSE, determines what should be done if there are
   missing climate data. If FALSE, the function will not run if missing
   climate data is encountered. If TRUE, any records affected by missing
   climate data will be removed from climate window analysis.}
 
-\item{CINTERVAL}{The resolution at which climate window analysis will be
-  conducted. May be days ("D"), weeks ("W"), or months ("M"). Note the units
+\item{Cinterval}{The resolution at which climate window analysis will be
+  conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the units
   of parameters 'furthest' and 'closest' will differ depending on the choice
-  of CINTERVAL.}
+  of Cinterval.}
 
 \item{nrandom}{Used in conjunction with \code{\link{randwin}}. Not to be
   changed manually.}
@@ -62,18 +62,18 @@ climatewin(Xvars, CDate, BDate, baseline, furthest, closest, FIXED, cutoff.day,
   this value is set to 0, so no cross validation occurs. Value should be a
   minimum of 2 for cross validation to occur.}
 
-\item{uppers}{Cut-off values used to determine growing degree days or positive
+\item{upper}{Cut-off values used to determine growing degree days or positive
   climate thresholds (determined by parameter thresh). Note that when values
-  of lowers and uppers are both provided, climatewin will instead calculate a
+  of lower and upper are both provided, climatewin will instead calculate a
   optimal climate zone (?).}
 
-\item{lowers}{Cut-off values used to determine chill days or negative
+\item{lower}{Cut-off values used to determine chill days or negative
   climate thresholds (determined by parameter thresh). Note that when values
-  of lowers and uppers are both provided, climatewin will instead calculate a
+  of lower and upper are both provided, climatewin will instead calculate a
   optimal climate zone (?).}
 
-\item{thresh}{TRUE or FALSE. Determines whether to use values of uppers and
-  lowers to calculate binary climate data (thresh = TRUE), or to use for
+\item{thresh}{TRUE or FALSE. Determines whether to use values of upper and
+  lower to calculate binary climate data (thresh = TRUE), or to use for
   growing degree days (thresh = FALSE).}
 }
 \value{
@@ -106,13 +106,13 @@ Finds the time period when a biological variable is most strongly affected
 
  # Test both linear and quadratic functions with climate variable temperature
 
- OffspringWin <- climatewin(Xvars = list(Temp = OffspringClimate$Temperature),
-                            CDate = OffspringClimate$Date,
-                            BDate = Offspring$Date,
+ OffspringWin <- climatewin(Xvar = list(Temp = OffspringClimate$Temperature),
+                            Cdate = OffspringClimate$Date,
+                            Bdate = Offspring$Date,
                             baseline = glm(Offspring ~ 1, data = Offspring, family = poisson),
                             furthest = 150, closest = 0,
-                            FIXED = FALSE, STATS = "mean",
-                            FUNCS = c("L", "Q"), CMISSING = FALSE, CINTERVAL = "D")
+                            type = "variables", stat = "mean",
+                            func = c("lin", "quad"), Cmissing = FALSE, Cinterval = "day")
 
  # View output testing linear relationship of temperature
 
@@ -130,16 +130,16 @@ Finds the time period when a biological variable is most strongly affected
 
  # Test a fixed window, starting 20 May
  # Test for climate windows between 100 and 0 days ago (furthest = 100, closest = 0)
- # Fit a linear term for the mean climate (FUNC = "L")
- # Test at the resolution of days (CINTERVAL = "D")
+ # Fit a linear term for the mean climate (func = "lin")
+ # Test at the resolution of days (Cinterval = "day")
  # Test using both mean and max aggregate statistics
 
- MassWin <- climatewin(Xvars = list(Temp = MassClimate$Temp), CDate = MassClimate$Date, BDate = Mass$Date,
-                       baseline = lm(Mass ~ 1, data = Mass),
+ MassWin <- climatewin(Xvar = list(Temp = MassClimate$Temp), Cdate = MassClimate$Date,
+                       Bdate = Mass$Date, baseline = lm(Mass ~ 1, data = Mass),
                        furthest = 100, closest = 0,
-                       STATS = c("mean", "max"), FUNCS = "L",
-                       FIXED = TRUE, cutoff.day = 20, cutoff.month = 5,
-                       nrandom = 0, CMISSING = FALSE, CINTERVAL = "D")
+                       stat = c("mean", "max"), func = "lin",
+                       type = "fixed", cutoff.day = 20, cutoff.month = 5,
+                       nrandom = 0, Cmissing = FALSE, Cinterval = "day")
 
  # View output for mean temperature
 

@@ -4,17 +4,17 @@
 \alias{singlewin}
 \title{Fit a single climate window}
 \usage{
-singlewin(Xvar, CDate, BDate, baseline, furthest, closest, STAT, FUNC, FIXED,
-  cutoff.day, cutoff.month, CMISSING = FALSE, CINTERVAL = "D")
+singlewin(Xvar, Cdate, Bdate, baseline, furthest, closest, stat, func, type,
+  cutoff.day, cutoff.month, Cmissing = FALSE, Cinterval = "day")
 }
 \arguments{
 \item{Xvar}{The climate variable of interest. Please specify the parent
 environment and variable name (e.g. Climate$Temp).}
 
-\item{CDate}{The climate date variable (dd/mm/yyyy). Please specify the parent
+\item{Cdate}{The climate date variable (dd/mm/yyyy). Please specify the parent
 environment and variable name (e.g. Climate$Date).}
 
-\item{BDate}{The biological date variable (dd/mm/yyyy). Please specify the
+\item{Bdate}{The biological date variable (dd/mm/yyyy). Please specify the
 parent environment and variable name (e.g. Biol$Date).}
 
 \item{baseline}{The baseline model structure used for testing correlation.
@@ -24,30 +24,30 @@ Currently known to support lm, glm, lmer and glmer objects.}
 
 \item{closest}{The end day of the single window.}
 
-\item{STAT}{The aggregate statistic used to analyse the climate data. Can
+\item{stat}{The aggregate statistic used to analyse the climate data. Can
 currently use basic R statistics (e.g. mean, min), as well as slope.
 Additional aggregate statistics can be created using the format function(x)
 (...). See FUN in \code{\link{apply}} for more detail.}
 
-\item{FUNC}{The function used to fit the climate variable in the model. Can be
-linear ("L"), quadratic ("Q"), cubic ("C"), inverse ("I") or log ("LOG").}
+\item{func}{The function used to fit the climate variable in the model. Can be
+linear ("lin"), quadratic ("quad"), cubic ("cub"), inverse ("inv") or log ("log").}
 
-\item{FIXED}{TRUE or FALSE, whether you wish the climate window to be variable
+\item{type}{fixed or variable, whether you wish the climate window to be variable
 (i.e. the number of days before each biological record is measured) or fixed
 (i.e. number of days before a set point in time).}
 
-\item{cutoff.day,cutoff.month}{If FIXED is TRUE, the day and month of the year
+\item{cutoff.day,cutoff.month}{If type is "fixed", the day and month of the year
 from which the fixed window analysis will start.}
 
-\item{CMISSING}{TRUE or FALSE, determines what should be done if there are
+\item{Cmissing}{TRUE or FALSE, determines what should be done if there are
 missing climate data. If FALSE, the function will not run if missing climate
 data is encountered. If TRUE, any records affected by missing climate data
 will be removed from climate window analysis.}
 
-\item{CINTERVAL}{The resolution at which climate window analysis will be
-conducted. May be days ("D"), weeks ("W"), or months ("M"). Note the units
+\item{Cinterval}{The resolution at which climate window analysis will be
+conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the units
 of parameters 'furthest' and 'closest' will differ depending on the choice
-of CINTERVAL.}
+of Cinterval.}
 }
 \value{
 Will return a list containing two objects:
@@ -73,15 +73,15 @@ data(MassClimate)
 # Fit a linear term for the mean climate
 # Fit climate windows at the resolution of days
 
-single <- singlewin(Xvar = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date,
+single <- singlewin(Xvar = MassClimate$Temp, Cdate = MassClimate$Date, Bdate = Mass$Date,
                    baseline = lm(Mass ~ 1, data = Mass), furthest = 72, closest = 15,
-                   STAT = "mean", FUNC = "L",
-                   FIXED = TRUE, cutoff.day = 20, cutoff.month = 5,
-                   CMISSING = FALSE, CINTERVAL = "D")
+                   stat = "mean", func = "lin",
+                   type = "fixed", cutoff.day = 20, cutoff.month = 5,
+                   Cmissing = FALSE, Cinterval = "day")
 
 ##View data##
-single[[1]]
-head(single[[2]])
+single$BestModel
+head(single$BestModelData)
 }
 }
 \author{

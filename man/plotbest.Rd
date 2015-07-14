@@ -32,14 +32,14 @@ data(MassOutput)
 data(Mass)
 data(MassClimate)
 
-single <- singlewin(Xvar = MassClimate$Temp, CDate = MassClimate$Date, BDate = Mass$Date,
+single <- singlewin(Xvar = MassClimate$Temp, Cdate = MassClimate$Date, Bdate = Mass$Date,
                    baseline = lm(Mass$Mass ~ 1),furthest = 72, closest = 15,
-                   STAT = "mean", FUNC = "L",
-                   FIXED = TRUE, cutoff.day = 20, cutoff.month = 5,
-                   CMISSING = FALSE, CINTERVAL = "D")
+                   stat = "mean", func = "lin",
+                   type = "fixed", cutoff.day = 20, cutoff.month = 5,
+                   Cmissing = FALSE, Cinterval = "day")
 
-plotbest(Dataset = MassOutput, BestModel = single[[1]],
-        BestModelData = single[[2]])
+plotbest(Dataset = MassOutput, BestModel = single$BestModel,
+        BestModelData = single$BestModelData)
 }
 \author{
 Liam D. Bailey and Martijn van de Pol
