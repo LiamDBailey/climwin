@@ -130,7 +130,7 @@
 climatewin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest, 
                        type, cutoff.day, cutoff.month, stat = "mean", func = "lin",
                        Cmissing = FALSE, Cinterval = "day",  nrandom = 0, CVK = 0,
-                       upper = NA, lower = NA, thresh = FALSE, centre = NULL){
+                       upper = NA, lower = NA, thresh = FALSE, centre = NULL, centrefunc = c("lin","lin")){
   
   #Make Xvar a list where the name of list object is the climate variable (e.g. Rain, Temp)
   
@@ -171,7 +171,7 @@ climatewin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest,
                     Cmissing = Cmissing, Cinterval = Cinterval, CVK = CVK, 
                     upper = ifelse(threshlevel == "two" || threshlevel == "upper", allcombos$upper[combo], NA),
                     lower = ifelse(threshlevel == "two" || threshlevel == "lower", allcombos$lower[combo], NA),
-                    thresh = paste(allcombos$Thresh[combo]), centre = centre)
+                    thresh = paste(allcombos$Thresh[combo]), centre = centre, centrefunc = centrefunc)
     combined[[combo]] <- runs
   }
   combined <- c(combined, combos = list(allcombos))
