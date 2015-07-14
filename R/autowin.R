@@ -222,7 +222,7 @@ autowin <- function(reference, Xvar, Cdate, Bdate, baseline, furthest,
   } else if (func == "inv") {
     modeloutput <- update (baseline, .~. + I(climate ^ -1), data = modeldat)
   } else {
-    print("DEFINE func")
+    print("Define func")
   }
   
   pb <- txtProgressBar(min = 0, max = MaxMODNO, style = 3, char = "|")

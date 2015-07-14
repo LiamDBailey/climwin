@@ -99,7 +99,8 @@ single <- singlewin(Xvar = MassClimate$Temp, Cdate = MassClimate$Date, Bdate = M
 
 auto <- autowin(reference = single$BestModelData$climate,
                 Xvar  = MassClimate$Temp, Cdate = MassClimate$Date, Bdate = Mass$Date,
-                baseline = lm(Mass ~ 1, data = Mass), furthest = 365, closest = 0, stat = "mean", func = "lin",
+                baseline = lm(Mass ~ 1, data = Mass), furthest = 365, closest = 0,
+                stat = "mean", func = "lin",
                 type = "fixed", cutoff.day = 20, cutoff.month = 5,
                 Cmissing = FALSE, Cinterval = "day")
 

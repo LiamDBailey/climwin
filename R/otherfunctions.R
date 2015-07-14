@@ -5,8 +5,6 @@ basewin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest,
                     upper = NA, lower = NA, thresh = FALSE){
   print("Initialising, please wait...")
   
-  func.env <- new.env()
-  
   if(stat == "slope" & func == "log" || stat == "slope" & func == "inv"){
     stop("stat = slope cannot be used with func = LOG or I as negative values may be present")
   }
@@ -43,15 +41,9 @@ basewin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest,
   modeldat      <- model.frame(baseline)
   modeldat$Yvar <- modeldat[, 1]
   
-  if(class(baseline)[1] == "coxph.null"){
-    if(nrow(modeldat$Yvar) != length(Bdate)){
+  if(length(modeldat$Yvar) != length(Bdate)){
       stop("NA values present in biological response. Please remove NA values")
     }
-  } else {
-    if(length(modeldat$Yvar) != length(Bdate)){
-      stop("NA values present in biological response. Please remove NA values")
-    }
-  }
   
   if(is.na(upper) == FALSE && is.na(lower) == TRUE){
     if(thresh == TRUE){
@@ -266,22 +258,11 @@ basewin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest,
     MODLIST$cutoff.month <- cutoff.month
   }
   
-  print(LocalModel)
-  print(head(modeldat))
-  print(where("LocalModel"))
-  print(where("modeldat"))
-  print(where("modeloutput"))
-  
   if (nrandom == 0){
-    print("line 270")
     LocalData           <- model.frame(LocalModel)
-    print("line 272")
     MODLIST$Randomised  <- "no"
-    print("274")
     MODLIST             <- as.data.frame(MODLIST)
-    print("276")
     LocalOutput         <- MODLIST[order(MODLIST$ModelAICc), ]
-    print("278")
   }
   
   if (nrandom > 0){
@@ -498,4 +479,63 @@ PlotWeight <- function(Dataset = .GlobalEnv$WeightedOutput){
 
 weibull3<-function(x, shape,scale,location){
   shape / scale * ((x - location) / scale) ^ (shape - 1) * exp( - ((x - location) / scale) ^ shape)
+}
+
+my_update <- function(mod, formula = NULL, data = NULL) {
+  call <- getCall(mod)
+  if (is.null(call)) {
+    stop("Model object does not support updating (no call)", call. = FALSE)
+  }
+  term <- terms(mod)
+  if (is.null(term)) {
+    stop("Model object does not support updating (no terms)", call. = FALSE)
+  }
+  
+  if (!is.null(data)) call$data <- data
+  if (!is.null(formula)) call$formula <- update.formula(call$formula, formula)
+  env <- attr(term, ".Environment")
+  
+  eval(call, env, parent.frame())
+}
+
+WGdev <- function(Covar, GroupVar) {
+  a            <- unique(factor(GroupVar))
+  groups       <- length(a)
+  temp         <- rep(NA, groups)
+  observations <- length(Covar)
+  GroupMean    <- rep(NA, observations)
+  GroupDev     <- rep(NA, observations)
+  
+  for(i in 1:groups){
+    b <- which(GroupVar == a[i])
+    temp[i] <- mean(Covar[b])
+  }
+  
+  for(j in 1:observations){
+    c            <- which(a == GroupVar[j])
+    GroupMean[j] <- temp[c]
+    GroupDev[j]  <- Covar[j] - GroupMean[j]
+  }
+  return(GroupDev)
+}
+
+WGmean <- function(Covar, GroupVar){
+  a            <- unique(factor(GroupVar))
+  groups       <- length(a)
+  observations <- length(Covar)
+  temp         <- rep(NA, groups)
+  GroupMean    <- rep(NA, observations)
+  GroupDev     <- rep(NA, observations)
+  
+  for(i in 1:groups){
+    b       <- which(GroupVar == a[i])
+    temp[i] <- mean(Covar[b])
+  }
+  
+  for(j in 1:observations){
+    c            <- which(a == GroupVar[j])
+    GroupMean[j] <- temp[c]
+    GroupDev[j]  <- Covar[j] - GroupMean[j]
+  }
+  return(GroupMean)
 }
