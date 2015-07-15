@@ -2,29 +2,11 @@
 basewin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest, 
                     type, cutoff.day, cutoff.month, stat = "mean", func = "lin",
                     Cmissing = FALSE, Cinterval = "day",  nrandom = 0, CVK = 0,
-                    upper = NA, lower = NA, thresh = FALSE, centre = NULL, centrefunc = c("lin", "lin")){
+                    upper = NA, lower = NA, thresh = FALSE, centre = NULL){
   print("Initialising, please wait...")
   
   if(stat == "slope" & func == "log" || stat == "slope" & func == "inv"){
     stop("stat = slope cannot be used with func = LOG or I as negative values may be present")
-  }
-  
-  if(Cinterval == "day"){
-    if((min(as.Date(Bdate, format = "%d/%m/%Y")) - furthest) < min(as.Date(Cdate, format = "%d/%m/%Y"))){
-      stop("You do not have enough climate data to search that far back. Please adjust the value of furthest or add additional climate data.")
-    }
-  }
-  
-  if(Cinterval == "week"){
-    if((min(as.Date(Bdate, format = "%d/%m/%Y")) - lubridate::weeks(furthest)) < min(as.Date(Cdate, format = "%d/%m/%Y"))){
-      stop("You do not have enough climate data to search that far back. Please adjust the value of furthest or add additional climate data.")
-    }
-  }
-  
-  if(Cinterval == "month"){
-    if((min(as.Date(Bdate, format = "%d/%m/%Y")) - months(furthest)) < min(as.Date(Cdate, format = "%d/%m/%Y"))){
-      stop("You do not have enough climate data to search that far back. Please adjust the value of furthest or add additional climate data.")
-    }
   }
   
   duration  <- (furthest - closest) + 1
@@ -32,6 +14,33 @@ basewin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest,
   cont      <- DateConverter(Bdate = Bdate, Cdate = Cdate, Xvar = Xvar, 
                              Cinterval = Cinterval, type = type, 
                              cutoff.day = cutoff.day, cutoff.month = cutoff.month)   # create new climate dataframe with continuous daynumbers, leap days are not a problem
+  
+  if(Cinterval == "day"){
+    if((min(cont$BIntNo) - furthest) < min(cont$CIntNo)){
+      stop("You do not have enough climate data to search that far back. Please adjust the value of furthest or add additional climate data.")
+    }
+  }
+  
+  if(Cinterval == "week"){
+    if((min(cont$BIntNo) - furthest*7) < min(cont$CIntNo)){
+      stop("You do not have enough climate data to search that far back. Please adjust the value of furthest or add additional climate data.")
+    }
+  }
+  
+  if(Cinterval == "month"){
+    if((as.numeric(min(as.Date(Bdate, format = "%d/%m/%Y")) - months(furthest)) - (as.numeric(min(as.Date(Cdate, format = "%d/%m/%Y"))))) <= 0){
+      stop("You do not have enough climate data to search that far back. Please adjust the value of furthest or add additional climate data.")
+    }
+  }
+  
+  if(max(cont$BIntNo) > max(cont$CIntNo)){
+    if(type == "fixed"){
+      stop("You need more recent biological data. This error may be caused by your choice of cutoff.day/cutoff.month")
+    } else {
+      stop("You need more recent biological data")
+    }
+  }
+  
   MODNO     <- 1  #Create a model number variable that will count up during the loop#
   CMatrix   <- matrix(ncol = (duration), nrow = length(Bdate))  # matrix that stores the weather data for variable or fixed windows
   MODLIST   <- list()   # dataframes to store ouput
@@ -40,6 +49,10 @@ basewin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest,
   
   modeldat      <- model.frame(baseline)
   modeldat$Yvar <- modeldat[, 1]
+  
+  if(is.null(centre) == FALSE){
+    func = "centre"
+  }
   
   if(length(modeldat$Yvar) != length(Bdate)){
       stop("NA values present in biological response. Please remove NA values")
@@ -105,9 +118,8 @@ basewin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest,
   modeldat$climate   <- matrix(ncol = 1, nrow = nrow(CMatrix), seq(from = 1, to = nrow(CMatrix), by = 1))
   
   if(is.null(weights(baseline)) == FALSE){
-    if(class(baseline)[1] == "glm" & sum(weights(baseline)) == nrow(model.frame(baseline))){
+    if(class(baseline)[1] == "glm" & sum(weights(baseline)) == nrow(model.frame(baseline)) || class(baseline)[1] == "lmerMod" & sum(weights(baseline)) == nrow(model.frame(baseline))){
     } else {
-      print("model weights")
       modeldat$modweights <- weights(baseline)
       baseline <- update(baseline, .~., weights = modweights, data = modeldat)
     }
@@ -117,7 +129,6 @@ basewin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest,
     modeldat$K <- sample(seq(from = 1, to = length(modeldat$climate), by = 1) %% CVK + 1)
   }   # create labels K-fold crossvalidation
   
-  if(is.null(centre) == TRUE){
     if (func == "lin"){
       modeloutput <- update(baseline, Yvar~. + climate, data = modeldat)
     } else if (func == "quad") {
@@ -128,37 +139,13 @@ basewin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest,
       modeloutput <- update(baseline, Yvar~. + log(climate), data = modeldat)
     } else if (func == "inv") {
       modeloutput <- update (baseline, Yvar~. + I(climate ^ -1), data = modeldat)
+    } else if (func == "centre"){
+      modeldat$WGdev  <- matrix(ncol = 1, nrow = nrow(CMatrix), seq(from = 1, to = nrow(CMatrix), by = 1))
+      modeldat$WGmean <- matrix(ncol = 1, nrow = nrow(CMatrix), seq(from = 1, to = nrow(CMatrix), by = 1))
+      modeloutput <- update (baseline, Yvar ~. + WGdev + WGmean, data = modeldat)
     } else {
       print("Define func")
-    } 
-  } else if(is.null(centre) == FALSE){
-    modeldat$WGdev   <- matrix(ncol = 1, nrow = nrow(CMatrix), seq(from = 1, to = nrow(CMatrix), by = 1))
-    modeldat$WGmean   <- matrix(ncol = 1, nrow = nrow(CMatrix), seq(from = 1, to = nrow(CMatrix), by = 1))
-    if(centrefunc[1] == "lin"){
-      modeloutput <- update(baseline, Yvar~. + WGdev, data = modeldat)
-    } else if(centrefunc[1] == "quad") {
-      modeloutput <- update(baseline, Yvar~. + WGdev + I(WGdev ^ 2), data = modeldat)
-    } else if (centrefunc[1] == "cub") {
-      modeloutput <- update(baseline, Yvar~. + WGdev + I(WGdev ^ 2) + I(WGdev ^ 3), data = modeldat)
-    } else if (centrefunc[1] == "log") {
-      modeloutput <- update(baseline, Yvar~. + log(WGdev), data = modeldat)
-    } else if (centrefunc[1] == "inv") {
-      modeloutput <- update (baseline, Yvar~. + I(WGdev ^ -1), data = modeldat)
     }
-    if(centrefunc[2] == "lin"){
-      modeloutput <- update(modeloutput, .~. + WGmean, data = modeldat)
-    } else if(centrefunc[2] == "quad"){
-      modeloutput <- update(modeloutput, .~. + WGmean + I(WGmean ^ 2), data = modeldat)
-    } else if(centrefunc[2] == "cub"){
-      modeloutput <- update(modeloutput, .~. + WGmean + I(WGmean ^ 2) + I(WGmean ^ 3), data = modeldat)
-    } else if(centrefunc[2] == "log"){
-      modeloutput <- update(modeloutput, .~. + log(WGmean), data = modeldat)
-    } else if (centrefunc[1] == "inv") {
-      modeloutput <- update (modeloutput, .~. + I(WGmean ^ -1), data = modeldat)
-    } else {
-      print("Define centrefunc")
-    }
-  }
   
   pb <- txtProgressBar(min = 0, max = MaxMODNO, style = 3, char = "|")
   
@@ -222,41 +209,47 @@ basewin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest,
           if(CVK > 1){
             MODLIST$ModelAICc[[MODNO]]    <- AICc_cv_avg
             MODLIST$deltaAICc[[MODNO]]    <- deltaAICc_cv
-            MODLIST$baselineAICc[[MODNO]] <- AICc_cv_baseline_avg
           } else {
-            MODLIST$ModelAICc[[MODNO]]   <- AICc(modeloutput)
-            MODLIST$baselineAICc         <- AICc(baseline) 
-            #WORK OUT A WAY TO REMOVE THIS FROM LOOP
+            MODLIST$deltaAICc[[MODNO]] <- AICc(modeloutput) - AICc(baseline)
+            MODLIST$ModelAICc[[MODNO]] <- AICc(modeloutput)
           }
           
           MODLIST$WindowOpen[[MODNO]]  <- m
           MODLIST$WindowClose[[MODNO]] <- m - n + 1
           
           if(length(attr(class(modeloutput),"package")) > 0 && attr(class(modeloutput), "package") == "lme4"){            
-            if(is.null(centre) == FALSE){
+            if(func == "quad"){
+              MODLIST$ModelBeta[[MODNO]] <- fixef(modeloutput)[length(fixef(modeloutput))-1]
+              MODLIST$ModelBetaQ[[MODNO]] <- fixef(modeloutput)[length(fixef(modeloutput))]
+              MODLIST$ModelBetaC[[MODNO]]     <- NA
+              MODLIST$ModelInt[[MODNO]]  <- fixef(modeloutput)[1]
+            } else if(func == "cub"){
+              MODLIST$ModelBeta[[MODNO]] <- fixef(modeloutput)[length(fixef(modeloutput))-2]
+              MODLIST$ModelBetaQ[[MODNO]] <- fixef(modeloutput)[length(fixef(modeloutput))-1]    
+              MODLIST$ModelBetaC[[MODNO]] <- fixef(modeloutput)[length(fixef(modeloutput))]
+              MODLIST$ModelInt[[MODNO]]  <- fixef(modeloutput)[1]
+            } else if(func == "centre"){
               MODLIST$WithinGrpMean[[MODNO]] <- fixef(modeloutput)[length(fixef(modeloutput))]
               MODLIST$WithinGrpDev[[MODNO]]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
               MODLIST$ModelInt[[MODNO]]      <- fixef(modeloutput)[1]
             } else {
               MODLIST$ModelBeta[[MODNO]] <- fixef(modeloutput)[length(fixef(modeloutput))]
-              MODLIST$ModelBetaQ[[MODNO]] <- NA
-              MODLIST$ModelBetaC[[MODNO]] <- NA
+              MODLIST$ModelBetaQ[[MODNO]]     <- NA
+              MODLIST$ModelBetaC[[MODNO]]     <- NA
               MODLIST$ModelInt[[MODNO]]  <- fixef(modeloutput)[1]
-              
-              if (func == "quad"){
-                MODLIST$ModelBeta[[MODNO]] <- fixef(modeloutput)[length(fixef(modeloutput))-1]
-                MODLIST$ModelBetaQ[[MODNO]] <- fixef(modeloutput)[length(fixef(modeloutput))]
-                MODLIST$ModelBetaC[[MODNO]] <- NA
-              }   
-              
-              if (func == "cub"){
-                MODLIST$ModelBeta[[MODNO]] <- fixef(modeloutput)[length(fixef(modeloutput))-2]
-                MODLIST$ModelBetaQ[[MODNO]] <- fixef(modeloutput)[length(fixef(modeloutput))-1]    
-                MODLIST$ModelBetaC[[MODNO]] <- fixef(modeloutput)[length(fixef(modeloutput))]
-              }
-            }            
+            }
           } else {
-            if(is.null(centre) == FALSE){
+            if(func == "quad"){
+              MODLIST$ModelBeta[[MODNO]]   <- coef(modeloutput)[length(coef(modeloutput))-1]
+              MODLIST$ModelBetaQ[[MODNO]] <- coef(modeloutput)[length(coef(modeloutput))]
+              MODLIST$ModelBetaC[[MODNO]] <- NA
+              MODLIST$ModelInt[[MODNO]]    <- coef(modeloutput)[1]
+            } else if(func == "cub"){
+              MODLIST$ModelBeta[[MODNO]]   <- coef(modeloutput)[length(coef(modeloutput))-2]
+              MODLIST$ModelBetaQ[[MODNO]] <- coef(modeloutput)[length(coef(modeloutput))-1]
+              MODLIST$ModelBetaC[[MODNO]] <- coef(modeloutput)[length(coef(modeloutput))]
+              MODLIST$ModelInt[[MODNO]]    <- coef(modeloutput)[1]
+            } else if(func == "centre"){
               MODLIST$WithinGrpMean[[MODNO]] <- coef(modeloutput)[length(coef(modeloutput))]
               MODLIST$WithinGrpDev[[MODNO]]  <- coef(modeloutput)[length(coef(modeloutput)) - 1]
               MODLIST$ModelInt[[MODNO]]      <- coef(modeloutput)[1]
@@ -265,18 +258,6 @@ basewin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest,
               MODLIST$ModelBetaQ[[MODNO]] <- NA
               MODLIST$ModelBetaC[[MODNO]] <- NA
               MODLIST$ModelInt[[MODNO]]    <- coef(modeloutput)[1]
-              
-              if (func == "quad"){
-                MODLIST$ModelBeta[[MODNO]]   <- coef(modeloutput)[length(coef(modeloutput))-1]
-                MODLIST$ModelBetaQ[[MODNO]] <- coef(modeloutput)[length(coef(modeloutput))]
-                MODLIST$ModelBetaC[[MODNO]] <- NA
-              }   
-              
-              if (func == "cub"){
-                MODLIST$ModelBeta[[MODNO]]   <- coef(modeloutput)[length(coef(modeloutput))-2]
-                MODLIST$ModelBetaQ[[MODNO]] <- coef(modeloutput)[length(coef(modeloutput))-1]    
-                MODLIST$ModelBetaC[[MODNO]] <- coef(modeloutput)[length(coef(modeloutput))]
-              }
             }
           }
           MODNO <- MODNO + 1        #Increase ModNo#
@@ -299,13 +280,13 @@ basewin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest,
   }
   
   if(is.null(centre) == FALSE){
-    modeldat$WGdev  <- WGdev(modeldat$climate, centre)
-    modeldat$WGmean <- WGmean(modeldat$climate, centre)
-    LocalModel      <- update(modeloutput, .~., data = modeldat)
-    MODLIST$Function     <- "centred"
+    modeldat$WGdev   <- WGdev(modeldat$climate, centre)
+    modeldat$WGmean  <- WGmean(modeldat$climate, centre)
+    LocalModel       <- update(modeloutput, .~., data = modeldat)
+    MODLIST$Function <- "centre"
   } else {
-    LocalModel           <- update(modeloutput, .~.)
-    MODLIST$Function     <- func
+    LocalModel       <- update(modeloutput, .~.)
+    MODLIST$Function <- func
   }
   
   MODLIST$furthest     <- furthest
@@ -326,15 +307,17 @@ basewin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest,
     } else {
       LocalData <- model.frame(LocalModel)
     }
-    MODLIST$Randomised  <- "no"
-    MODLIST             <- as.data.frame(MODLIST)
-    LocalOutput         <- MODLIST[order(MODLIST$ModelAICc), ]
+    MODLIST$Randomised    <- "no"
+    MODLIST               <- as.data.frame(MODLIST)
+    LocalOutput           <- MODLIST[order(MODLIST$ModelAICc), ]
+    LocalOutput$ModelAICc <- NULL
   }
   
   if (nrandom > 0){
-    MODLIST$Randomised <- "yes"
-    MODLIST            <- as.data.frame(MODLIST)
-    LocalOutputRand    <- MODLIST[order(MODLIST$ModelAICc), ]
+    MODLIST$Randomised        <- "yes"
+    MODLIST                   <- as.data.frame(MODLIST)
+    LocalOutputRand           <- MODLIST[order(MODLIST$ModelAICc), ]
+    LocalOutputRand$ModelAICc <- NULL
   }
   
   if (nrandom == 0){
@@ -372,11 +355,11 @@ DateConverter <- function(Bdate, Cdate, Xvar, Xvar2 = NULL, Cinterval, type,
   }
   
   if(cross == FALSE){
-    if (Cinterval == "day"){  
-      if (type == "fixed"){   
-        BIntNo            <- as.numeric(as.Date(paste(cutoff.day, cutoff.month, year(Bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(Cdate)) + 1 
+    if(Cinterval == "day"){  
+      if(type == "fixed"){   
+        BIntNo            <- as.numeric(as.Date(paste(cutoff.day, cutoff.month, year(Bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(Cdate2)) + 1 
         wrongyear         <- which(BIntNo < RealBIntNo)
-        BIntNo[wrongyear] <- (as.numeric(as.Date(paste(cutoff.day, cutoff.month, (year(Bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(Cdate)) + 1)
+        BIntNo[wrongyear] <- (as.numeric(as.Date(paste(cutoff.day, cutoff.month, (year(Bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(Cdate2)) + 1)
       } else {
         BIntNo <- RealBIntNo
       }
