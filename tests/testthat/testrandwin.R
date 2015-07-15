@@ -19,12 +19,12 @@ test_that("Check randwin output", {
                   type = "variable", stat = "max", func = "lin", Cmissing = FALSE)
   
   duration  <- (furthest - closest) + 1
-  MaxMODNO  <- (duration * (duration + 1))/2
+  MaxMODNO  <- (duration * (duration + 1)) / 2
   
   expect_true(is.data.frame(rand))
-  expect_equal(length(which(is.na(rand[,5]))), 0)
-  expect_true(ncol(rand) >= 13)
+  expect_equal(length(which(is.na(rand[, 4]))), 0)
+  expect_true(ncol(rand) >= 15)
   expect_equal(MaxMODNO, nrow(subset(rand, Repeat == 1)))
-  expect_true((rand["Randomised"])[1,]=="yes")
+  expect_true((rand["Randomised"])[1,] == "yes")
   
 })

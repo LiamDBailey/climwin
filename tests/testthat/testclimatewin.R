@@ -8,6 +8,8 @@
 # upper: range
 # lower: range
 # thresh: TRUE or FALSE
+# CVK: 0 and >1
+# centre: value
 
 # Test that climatewin has created a BestModel, BestModelData and WindowOutput
 # Expect that an object BestModel exists
@@ -43,8 +45,8 @@ test_that("climatewin produces the right output", {
   expect_equal(length(which(is.na(test[[1]]$BestModelData))), 0)
   expect_true(ncol(test[[1]]$BestModelData) >= 2)
   
-  expect_equal(length(which(is.na(test[[1]]$Dataset[, 5]))), 0)
-  expect_true(ncol(test[[1]]$Dataset) >= 15)
+  expect_equal(length(which(is.na(test[[1]]$Dataset[, 4]))), 0)
+  expect_true(ncol(test[[1]]$Dataset) >= 14)
   expect_equal(MaxMODNO, nrow(test[[1]]$Dataset))
   expect_true((test[[1]]$Dataset["Randomised"])[1, ] == "no")
   
@@ -102,7 +104,7 @@ test_that("climatewin produces non-binary values with upper and thresh = FALSE",
                      upper = 10, thresh = FALSE)
   
   expect_equal(min(test[[1]]$BestModelData$climate), 0)
-  expect_true(max(test[[1]]$BestModelData$climate)>1)
+  expect_true(max(test[[1]]$BestModelData$climate) > 1)
   
 })
 
@@ -120,7 +122,7 @@ test_that("climatewin produces non-binary values with lower and thresh = FALSE",
                      lower = 10, upper = 15, thresh = FALSE)
   
   expect_equal(min(test[[1]]$BestModelData$climate), 0)
-  expect_true(max(test[[1]]$BestModelData$climate)>1)
+  expect_true(max(test[[1]]$BestModelData$climate) > 1)
   
 })
 
@@ -174,7 +176,7 @@ test_that("climatewin produces non-binary values with lower/upper and thresh = F
                      lower = 10, upper = 15, thresh = FALSE)
   
   expect_equal(min(test[[1]]$BestModelData$climate), 0)
-  expect_true(max(test[[1]]$BestModelData$climate)>1)
+  expect_true(max(test[[1]]$BestModelData$climate) > 1)
   
 })
 
@@ -421,9 +423,9 @@ test_that("Quadratic function works", {
   expect_equal(length(which(is.na(test[[1]]$BestModelData))), 0)
   expect_true(ncol(test[[1]]$BestModelData) >= 3)
   
-  expect_equal(length(which(is.na(test[[1]]$Dataset[, 6]))), 0)
-  expect_true(test[[1]]$Dataset[, 12] == "quad")
-  expect_true(ncol(test[[1]]$Dataset) >= 15)
+  expect_equal(length(which(is.na(test[[1]]$Dataset[, 5]))), 0)
+  expect_true(test[[1]]$Dataset[, 8] == "quad")
+  expect_true(ncol(test[[1]]$Dataset) >= 14)
   expect_equal(MaxMODNO, nrow(test[[1]]$Dataset))
   expect_true((test[[1]]$Dataset["Randomised"])[1, ] == "no")
   
@@ -450,9 +452,9 @@ test_that("Cubic function works", {
   expect_equal(length(which(is.na(test[[1]]$BestModelData))), 0)
   expect_true(ncol(test[[1]]$BestModelData) >= 4)
   
-  expect_equal(length(which(is.na(test[[1]]$Dataset[, 7]))), 0)
-  expect_true(test[[1]]$Dataset[, 12] == "cub")
-  expect_true(ncol(test[[1]]$Dataset) >= 15)
+  expect_equal(length(which(is.na(test[[1]]$Dataset[, 6]))), 0)
+  expect_true(test[[1]]$Dataset[, 8] == "cub")
+  expect_true(ncol(test[[1]]$Dataset) >= 14)
   expect_equal(MaxMODNO, nrow(test[[1]]$Dataset))
   expect_true((test[[1]]$Dataset["Randomised"])[1, ] == "no")
  
@@ -479,9 +481,9 @@ test_that("Log function works", {
   expect_equal(length(which(is.na(test[[1]]$BestModelData))), 0)
   expect_true(ncol(test[[1]]$BestModelData) >= 2)
   
-  expect_equal(length(which(is.na(test[[1]]$Dataset[, 5]))), 0)
-  expect_true(test[[1]]$Dataset[, 12] == "log")
-  expect_true(ncol(test[[1]]$Dataset) >= 15)
+  expect_equal(length(which(is.na(test[[1]]$Dataset[, 4]))), 0)
+  expect_true(test[[1]]$Dataset[, 8] == "log")
+  expect_true(ncol(test[[1]]$Dataset) >= 14)
   expect_equal(MaxMODNO, nrow(test[[1]]$Dataset))
   expect_true((test[[1]]$Dataset["Randomised"])[1, ] == "no")
   
@@ -508,9 +510,9 @@ test_that("Inverse function works", {
   expect_equal(length(which(is.na(test[[1]]$BestModelData))), 0)
   expect_true(ncol(test[[1]]$BestModelData) >= 2)
   
-  expect_equal(length(which(is.na(test[[1]]$Dataset[, 5]))), 0)
-  expect_true(test[[1]]$Dataset[, 12] == "inv")
-  expect_true(ncol(test[[1]]$Dataset) >= 15)
+  expect_equal(length(which(is.na(test[[1]]$Dataset[, 4]))), 0)
+  expect_true(test[[1]]$Dataset[, 8] == "inv")
+  expect_true(ncol(test[[1]]$Dataset) >= 14)
   expect_equal(MaxMODNO, nrow(test[[1]]$Dataset))
   expect_true((test[[1]]$Dataset["Randomised"])[1, ] == "no")
   
@@ -569,6 +571,56 @@ test_that("climatewin gives error when NAs are present in biological data", {
   expect_error(climatewin(Xvar = list(MassClimate$Temp), Cdate = MassClimate$Date, Bdate = Mass$Date, 
                           baseline = lm(Mass ~ 1, data = Mass), furthest = 2, closest = 2, 
                           type = "variable", stat = "max", func = "lin",
-                          Cmissing = FALSE, Cinterval = "day"))
+                          Cmissing = FALSE, Cinterval = "day"))  
+
+  })
+
+################################################################
+
+#Test that cross validation works
+test_that("cross validation functions", {
+  
+  data(Mass, envir = environment())
+  data(MassClimate, envir = environment())
+  
+  test <- climatewin(Xvar = list(MassClimate$Temp), Cdate = MassClimate$Date, Bdate = Mass$Date, 
+                     baseline = lm(Mass ~ 1, data = Mass), furthest = 2, closest = 2, 
+                     type = "variable", stat = "max", func = "lin",
+                     Cmissing = FALSE, Cinterval = "day", CVK = 2)
+  
+  expect_true(is.list(test))
+  expect_false(is.na((test[[1]]$BestModel)[1]))
+  
+  expect_equal(length(which(is.na(test[[1]]$BestModelData))), 0)
+  expect_true(ncol(test[[1]]$BestModelData) >= 2)
+  
+  expect_equal(test[[1]]$Dataset$K, 2)
+  
+})
+
+################################################################
+
+#Test mean centring
+test_that("Mean centring is functioning", {
+  
+  data(Offspring, envir = environment())
+  data(OffspringClimate, envir = environment())
+  Offspring$Year <- lubridate::year(as.Date(Offspring$Date, format = "%d/%m/%Y"))
+  
+  test <- climatewin(Xvar = list(OffspringClimate$Temp), Cdate = OffspringClimate$Date, 
+                     Bdate = Offspring$Date, baseline = lm(Offspring ~ 1, data = Offspring), furthest = 2, closest = 2, 
+                     type = "variable", stat = "max", func = "lin",
+                     Cmissing = FALSE, Cinterval = "day", centre = Offspring$Year)
+  
+  expect_true(is.list(test))
+  expect_false(is.na((test[[1]]$BestModel)[1]))
+  
+  expect_equal(length(which(is.na(test[[1]]$BestModelData))), 0)
+  expect_true(ncol(test[[1]]$BestModelData) >= 3)
+  
+  expect_equal(length(which(is.na(test[[1]]$Dataset[, 4]))), 0)
+  expect_equal(length(which(is.na(test[[1]]$Dataset[, 5]))), 0)
+  expect_true(ncol(test[[1]]$Dataset) >= 13)
+  expect_true((test[[1]]$Dataset["Randomised"])[1, ] == "no")
   
 })
