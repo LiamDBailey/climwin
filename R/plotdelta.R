@@ -1,27 +1,20 @@
 #' Plot deltaAICc of models
 #' 
-#' Create a colour plot of model deltaAICc values.
-#' @param Dataset A dataframe containing information on all fitted climate 
-#'   windows. Output from \code{\link{climatewin}}.
-#' @return Returns a colour plot of model deltaAICc values (larger negative
-#'   values indicate stronger models). DeltaAICc is the difference between AICc
-#'   of each climate window and a null model.
-#' @author Liam D. Bailey and Martijn van de Pol
-#' @examples
-#' # Plot deltaAICc estimates for climate windows in the Mass dataset
+#'Create a colour plot of model deltaAICc values.
+#'@param Dataset A dataframe containing information on all fitted climate 
+#' windows. Output from \code{\link{climatewin}}.
+#'@return Returns a colour plot of model deltaAICc values (larger negative
+#' values indicate stronger models). DeltaAICc is the difference between AICc
+#' of each climate window and a null model.
+#'@author Liam D. Bailey and Martijn van de Pol
+#'@examples
+#'# Plot deltaAICc estimates for climate windows in the Mass dataset
 #' 
-#' data(MassOutput)
+#'data(MassOutput)
 #' 
-#' plotdelta(Dataset = MassOutput)
-#' @import ggplot2
-#' @export
-
-
-
-
-#LAST EDITED: 18/02/2015
-#EDITED BY: LIAM
-#NOTES: TIDY CODE
+#'plotdelta(Dataset = MassOutput)
+#'@import ggplot2
+#'@export
 
 plotdelta <- function(Dataset){
   

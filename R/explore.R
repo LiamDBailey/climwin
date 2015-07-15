@@ -1,30 +1,30 @@
-#' Visualise the weight distribution for given parameter values
+#'Visualise the weight distribution for given parameter values
 #' 
-#' Create a plot of the weibell or generalised extreme values (GEV) distribution
-#' for given values of shape, scale and location parameters. Used to determine 
-#' initial parameter values for \code{\link{weightwin}}.
-#' @param shape A parameter that determines the shape of the distribution. 
-#'   Should be greater than 0.
-#' @param scale A parameter that determines the scale of the distribution. 
-#'   Should be greater than 0.
-#' @param loc A parameter that determines the location of the distribution. 
-#'   Should be less than or equal to 0.
-#' @param WeightFunction Choose whether to use a weibull ("W") or GEV ("G")
-#'   distribution.
-#' @return ExploreWeight will return an example plot of the distribution using
-#'   given parameter values. This can be used to select the initial parameter 
-#'   values for \code{\link{weightwin}}
-#' @author Martijn van de Pol and Liam D. Bailey
-#' @examples
-#' # Test a weibull distribution
-#' 
-#' explore(shape = 3, scale = 0.2, loc = 0, WeightFunction = "W")
-#' 
-#' # Test a GEV distribution
-#' 
-#' explore(shape = 3, scale = 5, loc = -5, WeightFunction = "G")
-#' 
-#' @export
+#'Create a plot of the weibell or generalised extreme values (GEV) distribution
+#'for given values of shape, scale and location parameters. Used to determine 
+#'initial parameter values for \code{\link{weightwin}}.
+#'@param shape A parameter that determines the shape of the distribution. 
+#' Should be greater than 0.
+#'@param scale A parameter that determines the scale of the distribution. 
+#' Should be greater than 0.
+#'@param loc A parameter that determines the location of the distribution. 
+#' Should be less than or equal to 0.
+#'@param WeightFunction Choose whether to use a weibull ("W") or GEV ("G")
+#' distribution.
+#'@return ExploreWeight will return an example plot of the distribution using
+#' given parameter values. This can be used to select the initial parameter 
+#' values for \code{\link{weightwin}}
+#'@author Martijn van de Pol and Liam D. Bailey
+#'@examples
+#'# Test a weibull distribution
+#'
+#'explore(shape = 3, scale = 0.2, loc = 0, WeightFunction = "W")
+#'
+#'# Test a GEV distribution
+#'
+#'explore(shape = 3, scale = 5, loc = -5, WeightFunction = "G")
+#'
+#'@export
 
 
 

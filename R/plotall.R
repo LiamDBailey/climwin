@@ -14,21 +14,24 @@
 #'  distribution. See \code{\link{plotweights}} for more detail.
 #'@param HISTQ If DatasetRand is provided. The quantile of the randomised data 
 #'  to be compared with non-randomised data. Can be used to determine the 
-#'  likelihood of finding a climate window model of a given AICc value by
+#'  likelihood of finding a climate window model of a given deltaAICc value by
 #'  chance.
-#'@param Title Main title of the plot panel.
+#'@param Title Title of the plot panel.
 #'@return Will return a panel of 6-8 plots:
 #'  
-#'  \itemize{ \item DeltaAICc: A colour plot of model deltaAICc values (larger
+#'  \itemize{
+#'  \item DeltaAICc: A colour plot of model deltaAICc values (larger
 #'  negative values indicate stronger models). DeltaAICc is the difference
-#'  between AICc of each climate window model and the baseline model.
+#'  between AICc of each climate window model and the baseline model containing
+#'  no climate data.
 #'  
-#'  \item Model weight: A colour plot showing the distribution of cumulative
-#'  model weights. Gradient levels determined by parameters CW1,CW2 and CW3.
+#'  \item Model weight: A plot showing the distribution of cumulative
+#'  model weights. Gradient levels determined by parameters CW1, CW2 and CW3.
+#'  Darker areas have a higher chance of containing the best climate window.
 #'  
 #'  \item Model betas: A colour plot of model beta estimates. Where applicable,
 #'  2nd order coefficients (quadratic) and 3rd order coefficients (cubic) will
-#'  be plotted seperately.
+#'  be plotted separately.
 #'  
 #'  \item Histogram(s): If DatasetRand is provided, plotall will create two 
 #'  stacked histograms to compare the deltaAICc of non-randomised and randomised
@@ -40,6 +43,7 @@
 #'  \item Boxplots: Two boxplots showing the opening and closing day for a 
 #'  subset of best climate windows. Best climate windows make up the
 #'  cumulative model weight equivalent to the largest value of CW1, CW2 and CW3.
+#'  Values above boxplots represent the median values.
 #'  
 #'  \item Best Model: If BestModel and BestModelData are provided, plotall will 
 #'  create a scatterplot to show the fit of the best model through the data. }
@@ -54,28 +58,20 @@
 #'data(MassClimate)
 #'
 #'single <- singlewin(Xvar = MassClimate$Temp, Cdate = MassClimate$Date, Bdate = Mass$Date, 
-#'                    baseline = lm(Mass$Mass ~ 1), furthest = 72, closest = 15, 
+#'                    baseline = lm(Mass ~ 1, data = Mass), furthest = 72, closest = 15, 
 #'                    stat = "mean", func = "lin", 
 #'                    type = "fixed", cutoff.day = 20, cutoff.month = 5, 
 #'                    Cmissing = FALSE, Cinterval = "day")
 #'            
-#' plotall(Dataset = MassOutput, BestModel = single$BestModel, 
-#'         BestModelData = single$BestModelData,
-#'         CW1 = 0.95, CW2 = 0.5, CW3 = 0.25, HISTQ = 0.99)
+#'plotall(Dataset = MassOutput, BestModel = single$BestModel, 
+#'        BestModelData = single$BestModelData,
+#'        CW1 = 0.95, CW2 = 0.5, CW3 = 0.25, HISTQ = 0.99, Title = "Mass")
 #'         
 #'          
 #'@import gridExtra
 #'@import ggplot2
 #'@export
- 
 
-
-
-#LAST EDITED: 18/02/2015
-#EDITED BY: LIAM
-#NOTES: Tidy code
-
-#Distinguish between Q and C
 plotall <- function(Dataset, DatasetRand = NULL,
                     BestModel = NULL, BestModelData = NULL,
                     CW1 = 0.95, CW2 = 0.5, CW3 = 0.25, HISTQ = 0.99,

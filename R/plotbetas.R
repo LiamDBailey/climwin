@@ -1,27 +1,27 @@
-#' Plot the model beta estimates
+#'Plot model beta estimates
 #' 
-#' Create colour plots of model beta estimates. Will include quadratic and cubic
-#' beta estimates where appropriate.
-#' @param Dataset A dataframe containing information on all fitted climate 
-#'   windows. Output from \code{\link{climatewin}}.
-#' @param plotall Used in conjunction with function \code{\link{plotall}}. 
-#'   Should not be changed manually.
-#' @param plotallenv Used in conjunction with function \code{\link{plotall}}.
-#'   Should not be changed manually.
-#' @return Returns colour plots of model beta estimates. Where applicable, 2nd 
-#'   order coefficients (quadratic) and 3rd order coefficients (cubic) will be 
-#'   plotted seperately.
-#' @author Liam D. Bailey and Martijn van de Pol
-#' @examples
-#' # Plot model beta estimates for linear models in the Mass dataset
+#'Create colour plots of model beta estimates. Will include quadratic and cubic
+#'beta estimates where appropriate.
+#'@param Dataset A dataframe containing information on all fitted climate 
+#' windows. Output from \code{\link{climatewin}}.
+#'@param plotall Used in conjunction with function \code{\link{plotall}}. 
+#' Should not be changed manually.
+#'@param plotallenv Used in conjunction with function \code{\link{plotall}}.
+#' Should not be changed manually.
+#'@return Returns colour plots of model beta estimates. Where applicable, 2nd 
+#' order coefficients (quadratic) and 3rd order coefficients (cubic) will be 
+#' plotted seperately.
+#'@author Liam D. Bailey and Martijn van de Pol
+#'@examples
+#'# Plot model beta estimates for linear models in the Mass dataset
 #' 
-#' data(MassOutput)
+#'data(MassOutput)
+#'
+#'plotbetas(Dataset = MassOutput)
 #' 
-#' plotbetas(Dataset = MassOutput)
-#' 
-#' @import ggplot2
-#' @import gridExtra
-#' @export
+#'@import ggplot2
+#'@import gridExtra
+#'@export
 
 
 #LAST EDITED: 18/02/2015

@@ -24,6 +24,7 @@
 #'  (...). See parameter FUN in \code{\link{apply}} for more detail.
 #'@param func The function used to fit the climate variable. Can be linear 
 #'  ("lin"), quadratic ("quad"), cubic ("cub"), inverse ("inv") or log ("log").
+#'  Not required when a variable is provided for parameter 'centre'.
 #'@param type fixed or variable, whether you wish the climate window to be variable
 #'  (e.g. the number of days before each biological record is measured) or fixed
 #'  (e.g. number of days before a set point in time).
@@ -38,16 +39,18 @@
 #'  of parameters 'furthest' and 'closest' will differ with the choice of 
 #'  Cinterval.
 #'@param upper Cut-off value used to determine growing degree days or positive 
-#'    climate thresholds (determined by parameter thresh). Note that when values
-#'    of lowers and uppers are both provided, climatewin will instead calculate a 
-#'    optimal climate zone (?).
+#'  climate thresholds (depending on parameter thresh). Note that when values
+#'  of lower and upper are both provided, autowin will instead calculate an 
+#'  optimal climate zone.
 #'@param lower Cut-off value used to determine chill days or negative 
-#'    climate thresholds (determined by parameter thresh). Note that when values
-#'    of lowers and uppers are both provided, climatewin will instead calculate a 
-#'    optimal climate zone (?).
-#'@param thresh TRUE or FALSE. Determines whether to use values of uppers and
-#'    lowers to calculate binary climate data (thresh = TRUE), or to use for
-#'    growing degree days (thresh = FALSE).
+#'  climate thresholds (determined by parameter thresh). Note that when values
+#'  of lower and upper are both provided, autowin will instead calculate an 
+#'  optimal climate zone.
+#'@param thresh TRUE or FALSE. Determines whether to use values of upper and
+#'  lower to calculate binary climate data (thresh = TRUE), or to use for
+#'  growing degree days (thresh = FALSE).
+#'@param centre Variable used for mean centring (e.g. Year, Site, Individual).
+#'  Please specify the parent environment and variable name (e.g. Biol$Year). 
 #'@return Will return a data frame showing the correlation between the climate 
 #'  in each fitted window and the chosen reference window.
 #'@author Liam D. Bailey and Martijn van de Pol
@@ -85,15 +88,10 @@
 #'        
 #'@export
 
-
-# LAST EDITED: 20/02/2015
-# EDITED BY: LIAM
-# NOTES: Tidy up coding
-
 autowin <- function(reference, Xvar, Cdate, Bdate, baseline, furthest, 
                     closest,  stat, func, type, cutoff.day, cutoff.month, 
                     Cmissing = FALSE, Cinterval = "day", upper = NA,
-                    lower = NA, thresh = FALSE){
+                    lower = NA, thresh = FALSE, centre = NULL){
   
   print("Initialising, please wait...")
   

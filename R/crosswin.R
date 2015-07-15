@@ -11,10 +11,10 @@
 #'@param Bdate The biological date variable (dd/mm/yyyy). Please specify the 
 #'  parent environment and variable name (e.g. Biol$Date).
 #'@param furthest The furthest number of time intervals (set by Cinterval) back
-#'  from the cutoff date or biological record that you want to include in your
+#'  from the cutoff date or biological record that will be included in the
 #'  climate window search.
 #'@param closest The closest number of time intervals (set by Cinterval) back 
-#'  from the cutoff date or biological record that you want to include in your 
+#'  from the cutoff date or biological record that will be included in the 
 #'  climate window search.
 #'@param stat The aggregate statistic used to analyse the climate data. Can 
 #'  currently use basic R statistics (e.g. mean, min), as well as slope. 
@@ -40,26 +40,26 @@
 #'@return Will return a dataframe containing the correlation between the two
 #'  climate variables.
 #'@author Liam D. Bailey and Martijn van de Pol
-#' @examples
-#' \dontrun{
-#' # Test correlation between temperature and rainfall in the MassClimate dataset.
+#'@examples
+#'\dontrun{
+#'# Test correlation between temperature and rainfall in the MassClimate dataset.
 #' 
-#' data(Mass)
-#' data(MassClimate)
+#'data(Mass)
+#'data(MassClimate)
+#'
+#'cross <- crosswin(Xvar = MassClimate$Temp, Xvar2 = MassClimate$Rain, 
+#'                 Cdate = MassClimate$Date, Bdate = Mass$Date, 
+#'                 furthest = 365, closest = 0,
+#'                 stat = "mean", stat2 = "mean", type = "variable",
+#'                 Cmissing = FALSE, Cinterval = "day")
+#'                 
+#'# View the output
+#'head(cross)
 #' 
-#' cross <- crosswin(Xvar = MassClimate$Temp, Xvar2 = MassClimate$Rain, 
-#'                   Cdate = MassClimate$Date, Bdate = Mass$Date, 
-#'                   furthest = 365, closest = 0,
-#'                   stat = "mean", stat2 = "mean", type = "variable",
-#'                   Cmissing = FALSE, Cinterval = "day")
-#'                   
-#' # View the output
-#' head(cross)
+#'# Plot the output
+#'plotcor(cross, type = "C")
 #' 
-#' # Plot the output
-#' plotcor(cross, type = "C")
-#' 
-#' }
+#'}
 #' 
 #'@export
 

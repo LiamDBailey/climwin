@@ -8,34 +8,30 @@
 #'  windows using randomised data. Output from \code{\link{randwin}}.
 #'@param HISTQ If DatasetRand is provided. The quantile of the randomised data 
 #'  that will be compared to non-randomised data. Used to determine the 
-#'  likelihood of finding a climate window model of a given AICc value at 
+#'  likelihood of finding a climate window model of a given deltaAICc value at 
 #'  random.
-#'@return If DatasetRand is provided, plotall will return two stacked histograms
+#'@return If DatasetRand is provided, plothist will return two stacked histograms
 #'  to compare the deltaAICc of non-randomised and randomised data. This can 
 #'  help determine the likelihood of obtaining a deltaAICc value of fitted 
 #'  climate windows at random. Without DatasetRand, plotall will create a single
 #'  histogram of deltaAICc values for all fitted climate windows.
 #'@author Liam D. Bailey and Martijn van de Pol
-#' @examples
-#' # Plot real and randomised data for the Mass dataset
+#'@examples
+#'# Plot real and randomised data for the Mass dataset
 #' 
-#' data(MassOutput)
-#' data(MassRand)
+#'data(MassOutput)
+#'data(MassRand)
 #' 
-#' plothist(Dataset = MassOutput, DatasetRand = MassRand, HISTQ = 0.95)
+#'plothist(Dataset = MassOutput, DatasetRand = MassRand, HISTQ = 0.95)
+#'
+#'# Plot deltaAICc when no randomised data is provided
 #' 
-#' # Plot deltaAICc when no randomised data is provided
+#'data(MassOutput)
 #' 
-#' data(MassOutput)
-#' 
-#' plothist(Dataset = MassOutput)
+#'plothist(Dataset = MassOutput)
 #' 
 #'@import ggplot2
 #'@export
-
-
-# last edited 18/2/15 by LDB
-# TIDY CODE
 
 plothist <- function(Dataset, DatasetRand = NULL, HISTQ = 0.99){
   

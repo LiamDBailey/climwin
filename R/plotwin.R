@@ -3,33 +3,27 @@
 #'Visualise the opening and closing point for a subset of best climate windows.
 #'@param Dataset A dataframe containing information on all fitted climate
 #'  windows. Output from \code{\link{climatewin}}.
-#'@param CW Cumulative model weight used to subset the group of best models
+#'@param CW Cumulative model weight used to subset the group of best models.
 #'@return Creates two boxplots showing the opening and closing point for a subset
 #'  of best climate windows. Best climate windows make up the
-#'  cumulative model weight equivalent to the largest value of CW1, CW2 and CW3.
+#'  cumulative model weight equivalent to the value of CW.
 #'@author Liam D. Bailey and Martijn van de Pol
-#' @examples
-#' # View window limits for climate windows in the top 95% of model weights.
+#'@examples
+#'# View window limits for climate windows in the top 95% of model weights.
 #' 
-#' data(MassOutput)
+#'data(MassOutput)
 #' 
-#' plotwin(Dataset = MassOutput, CW = 0.95)
+#'plotwin(Dataset = MassOutput, CW = 0.95)
 #' 
 #'@import ggplot2
 #'@import reshape
 #'@export
 
-
-#LAST EDITED: 19/02/2015
-#EDITED BY: LIAM
-#NOTES: TIDY CODE
-
 plotwin <- function(Dataset, CW = 0.95){
   
-  Dataset$weight <- (exp(-0.5 * Dataset$deltaAICc)) / sum(exp(-0.5 * Dataset$deltaAICc))
   #Order models by weight#
-  Dataset    <- Dataset[order(-Dataset$weight), ]
-  Dataset$CW <- as.numeric(cumsum(Dataset$weight) <= CW)
+  Dataset    <- Dataset[order(-Dataset$ModWeight), ]
+  Dataset$CW <- as.numeric(cumsum(Dataset$ModWeight) <= CW)
   DatasetCW  <- subset(Dataset, CW == 1)
   keep=c("closest", "WindowClose", "WindowOpen")
   DatasetCW                  <- DatasetCW[keep]
