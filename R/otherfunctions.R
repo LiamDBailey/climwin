@@ -339,7 +339,7 @@ DateConverter <- function(Bdate, Cdate, Xvar, Xvar2 = NULL, Cinterval, type,
     stop("Climate data does not cover all years of biological data. Please increase range of climate data")
   }
   
-  Xvar       <- Xvar[match(Cdate2, Cdate)]
+  Xvar <- Xvar[match(Cdate2, Cdate)]
   if(is.null(Xvar2) == FALSE){
     Xvar2 <- Xvar2[match(Cdate2, Cdate)]
   }
@@ -547,6 +547,10 @@ my_update <- function(mod, formula = NULL, data = NULL) {
   eval(call, env, parent.frame())
 }
 
+##################################################################################
+
+#Function to determine within group mean and deviance for centring
+
 WGdev <- function(Covar, GroupVar) {
   a            <- unique(factor(GroupVar))
   groups       <- length(a)
@@ -587,4 +591,14 @@ WGmean <- function(Covar, GroupVar){
     GroupDev[j]  <- Covar[j] - GroupMean[j]
   }
   return(GroupMean)
+}
+
+##################################################################################
+
+SkimOutput<-function(WindowOutput, duration, cutoff) {
+  WindowOutput$Duration<-WindowOutput$WindowOpen-WindowOutput$WindowClose
+  WindowOutput$filter<-WindowOutput$WindowOpen*0
+  WindowOutput$filter[which(WindowOutput$WindowOpen>=cutoff &  WindowOutput$WindowClose>=cutoff & WindowOutput$Duration<duration)]<-1
+  WindowOutput<-subset(WindowOutput, WindowOutput$filter==0)
+  return(WindowOutput)
 }
