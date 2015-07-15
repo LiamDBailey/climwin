@@ -106,7 +106,7 @@ plotall <- function(Dataset, DatasetRand = NULL,
     gridExtra::grid.arrange(DELTA, CW, plotenv$BETA, plotenv$BETA2, HIST, WINDOW, BEST, nrow = 2, ncol = 4, top = paste(Title))
   } else if(Dataset$Function[1] == "cub"){
     gridExtra::grid.arrange(DELTA, CW, plotenv$BETA, plotenv$BETA2, HIST, WINDOW, BEST, plotenv$BETA3, nrow = 2, ncol = 4, top = paste(Title))
-  } else if(Dataset$Function[1] == "centred"){
+  } else if(Dataset$Function[1] == "centre"){
     gridExtra::grid.arrange(DELTA, CW, plotenv$WGMEAN, plotenv$WGDEV, HIST, WINDOW, BEST, nrow = 2, ncol = 4, top = paste(Title))
   } else {
     gridExtra::grid.arrange(plotenv$BETA, DELTA, CW, HIST, WINDOW, BEST, nrow = 2, top = paste(Title))
@@ -118,7 +118,7 @@ plotall <- function(Dataset, DatasetRand = NULL,
       gridExtra::grid.arrange(DELTA, CW, plotenv$BETA, plotenv$BETA2, HIST, WINDOW, nrow = 2, ncol = 4, top = paste(Title))
     } else if(Dataset$Function[1] == "cub"){
       gridExtra::grid.arrange(DELTA, CW, plotenv$BETA, plotenv$BETA2, HIST, WINDOW, plotenv$BETA3, nrow = 2, ncol = 4, top = paste(Title))
-    } else if(Dataset$Function[1] == "centred"){
+    } else if(Dataset$Function[1] == "centre"){
       gridExtra::grid.arrange(DELTA, CW, plotenv$WGMEAN, plotenv$WGDEV, HIST, WINDOW, nrow = 2, ncol = 4, top = paste(Title))
     } else {
       gridExtra::grid.arrange(plotenv$BETA, DELTA, CW, HIST, WINDOW, nrow = 2, top = paste(Title))
