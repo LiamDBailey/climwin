@@ -83,7 +83,7 @@ randwin <- function(repeats = 1, Xvar, Cdate, Bdate, baseline,
                     furthest, closest, stat,  
                     func, type, cutoff.day, cutoff.month,
                     Cmissing = FALSE, Cinterval = "day",
-                    upper = NA, lower = NA, thresh = FALSE){
+                    upper = NA, lower = NA, thresh = FALSE, centre = NULL){
   for (r in 1:repeats){
     print (c("randomization number ", r))
     BdateNew        <- sample(Bdate)
@@ -93,7 +93,7 @@ randwin <- function(repeats = 1, Xvar, Cdate, Bdate, baseline,
                                func = func, type = type,
                                cutoff.day = cutoff.day, cutoff.month = cutoff.month,
                                nrandom = repeats, Cmissing = Cmissing, Cinterval = Cinterval,
-                               upper = upper, lower = lower, thresh = thresh)
+                               upper = upper, lower = lower, thresh = thresh, centre = centre)
     WindowOutputRep$Repeat <- r
     if(r == 1){ 
       WindowOutputRand <- WindowOutputRep 
