@@ -17,11 +17,11 @@ climate window model is contained within the cumulative weight level of
 0.95. Parameter values must <= 1.}
 }
 \value{
-Returns a colour plot showing the distribution of cumulative model
- weights. Colour levels determined by parameters CW1,CW2 and CW3.
+Returns a plot showing the distribution of cumulative model
+ weights. Levels determined by parameters CW1,CW2 and CW3.
 }
 \description{
-Create a colour plot showing the distribution of cumulative model weights for
+Create a plot showing the distribution of cumulative model weights for
 all fitted climate windows.
 }
 \examples{

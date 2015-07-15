@@ -10,12 +10,12 @@ plotwin(Dataset, CW = 0.95)
 \item{Dataset}{A dataframe containing information on all fitted climate
 windows. Output from \code{\link{climatewin}}.}
 
-\item{CW}{Cumulative model weight used to subset the group of best models}
+\item{CW}{Cumulative model weight used to subset the group of best models.}
 }
 \value{
 Creates two boxplots showing the opening and closing point for a subset
  of best climate windows. Best climate windows make up the
- cumulative model weight equivalent to the largest value of CW1, CW2 and CW3.
+ cumulative model weight equivalent to the value of CW.
 }
 \description{
 Visualise the opening and closing point for a subset of best climate windows.

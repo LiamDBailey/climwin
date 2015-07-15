@@ -5,11 +5,12 @@
 \title{Fit a single climate window}
 \usage{
 singlewin(Xvar, Cdate, Bdate, baseline, furthest, closest, stat, func, type,
-  cutoff.day, cutoff.month, Cmissing = FALSE, Cinterval = "day")
+  cutoff.day, cutoff.month, Cmissing = FALSE, Cinterval = "day",
+  upper = NA, lower = NA, thresh = FALSE, centre = NULL)
 }
 \arguments{
 \item{Xvar}{The climate variable of interest. Please specify the parent
-environment and variable name (e.g. Climate$Temp).}
+environment and variable (e.g. Climate$Temp).}
 
 \item{Cdate}{The climate date variable (dd/mm/yyyy). Please specify the parent
 environment and variable name (e.g. Climate$Date).}
@@ -20,42 +21,64 @@ parent environment and variable name (e.g. Biol$Date).}
 \item{baseline}{The baseline model structure used for testing correlation.
 Currently known to support lm, glm, lmer and glmer objects.}
 
-\item{furthest}{The start day of the single window.}
+\item{furthest}{The furthest number of time intervals (set by Cinterval) back
+from the cutoff date or biological record that will be included in the
+climate window search.}
 
-\item{closest}{The end day of the single window.}
+\item{closest}{The closest number of time intervals (set by Cinterval) back
+from the cutoff date or biological record that will be included in the
+climate window search.}
 
 \item{stat}{The aggregate statistic used to analyse the climate data. Can
 currently use basic R statistics (e.g. mean, min), as well as slope.
 Additional aggregate statistics can be created using the format function(x)
 (...). See FUN in \code{\link{apply}} for more detail.}
 
-\item{func}{The function used to fit the climate variable in the model. Can be
-linear ("lin"), quadratic ("quad"), cubic ("cub"), inverse ("inv") or log ("log").}
+\item{func}{The functions used to fit the climate variable. Can be linear
+("lin"), quadratic ("quad"), cubic ("cub"), inverse ("inv") or log ("log").}
 
-\item{type}{fixed or variable, whether you wish the climate window to be variable
-(i.e. the number of days before each biological record is measured) or fixed
-(i.e. number of days before a set point in time).}
+\item{type}{fixed or variable, whether you wish the climate window to be
+variable (i.e. the number of days before each biological record is
+measured) or fixed (i.e. number of days before a set point in time).}
 
-\item{cutoff.day,cutoff.month}{If type is "fixed", the day and month of the year
-from which the fixed window analysis will start.}
+\item{cutoff.day,cutoff.month}{If type is "fixed", the day and month of the
+year from which the fixed window analysis will start.}
 
 \item{Cmissing}{TRUE or FALSE, determines what should be done if there are
-missing climate data. If FALSE, the function will not run if missing climate
-data is encountered. If TRUE, any records affected by missing climate data
-will be removed from climate window analysis.}
+missing climate data. If FALSE, the function will not run if missing
+climate data is encountered. If TRUE, any records affected by missing
+climate data will be removed from climate window analysis.}
 
 \item{Cinterval}{The resolution at which climate window analysis will be
 conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the units
 of parameters 'furthest' and 'closest' will differ depending on the choice
 of Cinterval.}
+
+\item{upper}{Cut-off values used to determine growing degree days or positive
+climate thresholds (depending on parameter thresh). Note that when values
+of lower and upper are both provided, climatewin will instead calculate an
+optimal climate zone.}
+
+\item{lower}{Cut-off values used to determine chill days or negative
+climate thresholds (depending on parameter thresh). Note that when values
+of lower and upper are both provided, climatewin will instead calculate an
+optimal climate zone.}
+
+\item{thresh}{TRUE or FALSE. Determines whether to use values of upper and
+lower to calculate binary climate data (thresh = TRUE), or to use for
+growing degree days (thresh = FALSE).}
+
+\item{centre}{Variable used for mean centring (e.g. Year, Site, Individual).
+Please specify the parent environment and variable name (e.g. Biol$Year).}
 }
 \value{
 Will return a list containing two objects:
 
- \itemize{ \item SingleBestModel, a model object of the fitted climate window
+ \itemize{
+ \item BestModel, a model object of the fitted climate window
  model.
 
- \item SingleBestModelData, a dataframe with the biological and climate data
+ \item BestModelData, a dataframe with the biological and climate data
  used to fit the climate window model.}
 }
 \description{

@@ -12,8 +12,8 @@ windows. Output from \code{\link{climatewin}}.}
 }
 \value{
 Returns a colour plot of model deltaAICc values (larger negative
-  values indicate stronger models). DeltaAICc is the difference between AICc
-  of each climate window and a null model.
+values indicate stronger models). DeltaAICc is the difference between AICc
+of each climate window and a null model.
 }
 \description{
 Create a colour plot of model deltaAICc values.

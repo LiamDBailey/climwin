@@ -15,11 +15,11 @@ windows using randomised data. Output from \code{\link{randwin}}.}
 
 \item{HISTQ}{If DatasetRand is provided. The quantile of the randomised data
 that will be compared to non-randomised data. Used to determine the
-likelihood of finding a climate window model of a given AICc value at
+likelihood of finding a climate window model of a given deltaAICc value at
 random.}
 }
 \value{
-If DatasetRand is provided, plotall will return two stacked histograms
+If DatasetRand is provided, plothist will return two stacked histograms
  to compare the deltaAICc of non-randomised and randomised data. This can
  help determine the likelihood of obtaining a deltaAICc value of fitted
  climate windows at random. Without DatasetRand, plotall will create a single

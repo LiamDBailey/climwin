@@ -20,13 +20,15 @@ and variable name (e.g. Climate$Date).}
 environment and variable name (e.g. Biol$Date).}
 
 \item{baseline}{The baseline model structure used for testing correlation.
-Currently known to support lm, lme, glm objects.}
+Currently known to support lm, lme, glm and glmer objects.}
 
-\item{furthest}{The furthest number of days back that you want to search for a
-climate window.}
+\item{furthest}{The furthest number of time intervals (set by Cinterval)
+back from the cutoff date or biological record that will be included in
+the climate window search.}
 
-\item{closest}{The closest number of days back that you want any climate
-windows to reach.}
+\item{closest}{The closest number of time intervals (set by Cinterval) back
+from the cutoff date or biological record that will be included in the
+climate window search.}
 
 \item{func}{The function used to fit the climate variable in the model. Can be
 linear ("lin"), quadratic ("quad"), cubic ("cub"), inverse ("inv") or log ("log").}
@@ -59,7 +61,9 @@ function. Please see \code{\link{optim}} for more detail.}
 }
 \value{
 Produces a constantly updating grid of plots as the optimisation
- function is running. \itemize{ \item Right panel from top to bottom: The
+ function is running.
+ \itemize{
+ \item Right panel from top to bottom: The
  three parameters (shape, scale and location) determining the weight
  function.
 
@@ -68,8 +72,10 @@ Produces a constantly updating grid of plots as the optimisation
  \item Right middle panel: The delta AICc compared to the baseline model.
 
  \item Right bottom panel: The weighted mean of climate for the current
- weight function. } Also returns a list containing three objects: \itemize{
- \item BestModel, a model object. The best weighted window model deterimend
+ weight function. }
+
+ Also returns a list containing three objects: \itemize{
+ \item BestModel, a model object. The best weighted window model determined
  by AICc.
 
  \item BestModelData, a dataframe. Biological and climate data used to fit
@@ -87,36 +93,36 @@ description.
 \examples{
 \dontrun{
 
- # Test for a weighted average over a fixed climate window
- # using datasets 'Offspring' and 'OffspringClimate'
+# Test for a weighted average over a fixed climate window
+# using datasets 'Offspring' and 'OffspringClimate'
 
- # N.B. THIS EXAMPLE MAY TAKE A MOMENT TO CONVERGE ON THE BEST MODEL.
+# N.B. THIS EXAMPLE MAY TAKE A MOMENT TO CONVERGE ON THE BEST MODEL.
 
- # Load data
+# Load data
 
- data(Offspring)
- data(OffspringClimate)
+data(Offspring)
+data(OffspringClimate)
 
- # Test for climate windows between 365 and 0 days ago (furthest=365, closest=0)
- # Fit a quadratic term for the mean weighted climate (func="quad")
- # in a Poisson regression (offspring number ranges 0-3)
- # Test a variable window (type = "fixed")
- # Test at the resolution of days (Cinterval="day")
- # Uses a Weibull weight function (WeightFunction="week")
+# Test for climate windows between 365 and 0 days ago (furthest=365, closest=0)
+# Fit a quadratic term for the mean weighted climate (func="quad")
+# in a Poisson regression (offspring number ranges 0-3)
+# Test a variable window (type = "fixed")
+# Test at the resolution of days (Cinterval="day")
+# Uses a Weibull weight function (WeightFunction="week")
 
- weight <- weightwin(Xvar = OffspringClimate$Temperature, Cdate = OffspringClimate$Date,
-                     Bdate = Offspring$Date,
-                     baseline = glm(Offspring ~ 1, family = poisson, data = Offspring),
-                     furthest = 365, closest = 0, func = "quad",
-                     type = "fixed", WeightFunction = "week", Cinterval = "day",
-                     par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)),
-                     method = "L-BFGS-B")
+weight <- weightwin(Xvar = OffspringClimate$Temperature, Cdate = OffspringClimate$Date,
+                   Bdate = Offspring$Date,
+                   baseline = glm(Offspring ~ 1, family = poisson, data = Offspring),
+                   furthest = 365, closest = 0, func = "quad",
+                   type = "variable", WeightFunction = "week", Cinterval = "day",
+                   par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)),
+                   method = "L-BFGS-B")
 
- # View output
+# View output
 
- head(weight[[3]])
- summary(weight[[1]])
- head(weight[[2]])
+head(weight[[3]])
+summary(weight[[1]])
+head(weight[[2]])
  }
 }
 \author{
