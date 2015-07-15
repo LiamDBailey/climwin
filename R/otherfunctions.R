@@ -2,7 +2,7 @@
 basewin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest, 
                     type, cutoff.day, cutoff.month, stat = "mean", func = "lin",
                     Cmissing = FALSE, Cinterval = "day",  nrandom = 0, CVK = 0,
-                    upper = NA, lower = NA, thresh = FALSE, centre = NULL){
+                    upper = NA, lower = NA, thresh = FALSE, centre = NULL, CW = 0.95){
   print("Initialising, please wait...")
   
   if(stat == "slope" & func == "log" || stat == "slope" & func == "inv"){
@@ -213,7 +213,7 @@ basewin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest,
             MODLIST$deltaAICc[[MODNO]] <- AICc(modeloutput) - AICc(baseline)
             MODLIST$ModelAICc[[MODNO]] <- AICc(modeloutput)
           }
-          
+       
           MODLIST$WindowOpen[[MODNO]]  <- m
           MODLIST$WindowClose[[MODNO]] <- m - n + 1
           
@@ -294,6 +294,7 @@ basewin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest,
   MODLIST$Statistics   <- stat
   MODLIST$type         <- type
   MODLIST$K            <- CVK
+  MODLIST$ModWeight    <- (exp(-0.5 * MODLIST$deltaAICc)) / sum(exp(-0.5 * MODLIST$deltaAICc))
   
   if (type == "fixed"){
     MODLIST$cutoff.day   <- cutoff.day
@@ -320,8 +321,16 @@ basewin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest,
     LocalOutputRand$ModelAICc <- NULL
   }
   
+  WeightDist        <- paste("Percentage of models within", CW*100, "% cumulative model weights:", ceiling(100*mean(as.numeric(cumsum(MODLIST$ModWeight) <= CW))), "%")
+  BestModelOpen     <- paste("Best window open:", as.numeric(LocalOutput[1, 9]))
+  BestModelClose    <- paste("Best window close:", as.numeric(LocalOutput[1, 10]))
+  MedianWindowOpen  <- paste("Median window opening within", CW*100, "% cumulative model weights:", as.numeric(medwin(LocalOutput, CW = CW)[1]))
+  MedianWindowClose <- paste("Median window opening within", CW*100, "% cumulative model weights:", as.numeric(medwin(LocalOutput, CW = CW)[2]))
+  
+  ModSummary <- c(WeightDist, BestModelOpen, BestModelClose, MedianWindowOpen, MedianWindowClose)
+  
   if (nrandom == 0){
-    return(list(BestModel = LocalModel, BestModelData = LocalData, Dataset = LocalOutput))
+    return(list(BestModel = LocalModel, BestModelData = LocalData, Dataset = LocalOutput, Summary = ModSummary))
   } else {
     return(LocalOutputRand)
   }
@@ -601,4 +610,24 @@ SkimOutput<-function(WindowOutput, duration, cutoff) {
   WindowOutput$filter[which(WindowOutput$WindowOpen>=cutoff &  WindowOutput$WindowClose>=cutoff & WindowOutput$Duration<duration)]<-1
   WindowOutput<-subset(WindowOutput, WindowOutput$filter==0)
   return(WindowOutput)
+}
+
+##################################################################################
+
+medwin <- function(Dataset, CW = 0.95){
+  
+  #Order models by weight#
+  Dataset    <- Dataset[order(-Dataset$ModWeight), ]
+  Dataset$CW <- as.numeric(cumsum(Dataset$ModWeight) <= CW)
+  DatasetCW  <- subset(Dataset, CW == 1)
+  keep=c("closest", "WindowClose", "WindowOpen")
+  DatasetCW                  <- DatasetCW[keep]
+  DatasetCW                  <- melt(DatasetCW, id = "closest")
+  DatasetCW$variable         <- factor(DatasetCW$variable, levels = c("WindowOpen", "WindowClose"))
+  levels(DatasetCW$variable) <- c("Window Open", "Window Close")
+  
+  WO <- DatasetCW[which(DatasetCW$variable == "Window Open"), ]
+  WC <- DatasetCW[which(DatasetCW$variable == "Window Close"), ]
+  
+  return(list("Median Window Open" = median(WO$value), "Median Window Close" = median(WC$value)))
 }

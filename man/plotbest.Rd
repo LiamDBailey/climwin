@@ -33,7 +33,7 @@ data(Mass)
 data(MassClimate)
 
 single <- singlewin(Xvar = MassClimate$Temp, Cdate = MassClimate$Date, Bdate = Mass$Date,
-                   baseline = lm(Mass$Mass ~ 1),furthest = 72, closest = 15,
+                   baseline = lm(Mass ~ 1, data = Mass),furthest = 72, closest = 15,
                    stat = "mean", func = "lin",
                    type = "fixed", cutoff.day = 20, cutoff.month = 5,
                    Cmissing = FALSE, Cinterval = "day")

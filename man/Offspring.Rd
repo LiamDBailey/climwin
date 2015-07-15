@@ -3,7 +3,7 @@
 \name{Offspring}
 \alias{Offspring}
 \title{Reproductive success of birds since 2009.}
-\format{A data frame with 1,619 rows and 8 variables.
+\format{A data frame with 1,619 rows and 4 variables.
 \describe{
   \item{Offspring}{Total number of offspring produced.}
   \item{Date}{Date of hatching (dd/mm/yyyy).}

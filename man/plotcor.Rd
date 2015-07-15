@@ -31,18 +31,19 @@ data(MassClimate)
 # Fit a single climate window using the datasets Mass and MassClimate.
 
 single <- singlewin(Xvar = MassClimate$Temp, Cdate = MassClimate$Date, Bdate = Mass$Date,
-                    baseline = lm(Mass ~ 1, data = Mass), furthest = 72, closest = 15,
-                    stat = "mean", func = "L",
-                    type = "fixed", cutoff.day = 20, cutoff.month = 5,
-                    Cmissing = FALSE, Cinterval = "day")
+                  baseline = lm(Mass ~ 1, data = Mass), furthest = 72, closest = 15,
+                  stat = "mean", func = "lin",
+                  type = "fixed", cutoff.day = 20, cutoff.month = 5,
+                  Cmissing = FALSE, Cinterval = "day")
 
 # Test the autocorrelation between the climate in this single window and other climate windows.
 
 auto <- autowin(reference = single$BestModelData$climate,
-                Xvar  = MassClimate$Temp, Cdate = MassClimate$Date, Bdate = Mass$Date,
-                furthest = 365, closest = 0, stat = "mean", func = "lin",
-                type = "fixed", cutoff.day = 20, cutoff.month = 5,
-                CMISSING = FALSE, CINTERVAL = "day")
+               Xvar  = MassClimate$Temp, Cdate = MassClimate$Date, Bdate = Mass$Date,
+               baseline = lm(Mass ~ 1, data = Mass), furthest = 365, closest = 0,
+               stat = "mean", func = "lin",
+               type = "fixed", cutoff.day = 20, cutoff.month = 5,
+               Cmissing = FALSE, Cinterval = "day")
 
 # Plot the auto-correlation data
 

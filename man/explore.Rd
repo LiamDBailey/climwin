@@ -21,8 +21,8 @@ distribution.}
 }
 \value{
 ExploreWeight will return an example plot of the distribution using
-  given parameter values. This can be used to select the initial parameter
-  values for \code{\link{weightwin}}
+given parameter values. This can be used to select the initial parameter
+values for \code{\link{weightwin}}
 }
 \description{
 Create a plot of the weibell or generalised extreme values (GEV) distribution

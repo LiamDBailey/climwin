@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotbetas.R
 \name{plotbetas}
 \alias{plotbetas}
-\title{Plot the model beta estimates}
+\title{Plot model beta estimates}
 \usage{
 plotbetas(Dataset, plotallenv, plotall = FALSE)
 }
@@ -18,8 +18,8 @@ Should not be changed manually.}
 }
 \value{
 Returns colour plots of model beta estimates. Where applicable, 2nd
-  order coefficients (quadratic) and 3rd order coefficients (cubic) will be
-  plotted seperately.
+order coefficients (quadratic) and 3rd order coefficients (cubic) will be
+plotted seperately.
 }
 \description{
 Create colour plots of model beta estimates. Will include quadratic and cubic

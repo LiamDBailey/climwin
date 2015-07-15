@@ -6,7 +6,7 @@
 \usage{
 randwin(repeats = 1, Xvar, Cdate, Bdate, baseline, furthest, closest, stat,
   func, type, cutoff.day, cutoff.month, Cmissing = FALSE, Cinterval = "day",
-  upper = NA, lower = NA, thresh = FALSE)
+  upper = NA, lower = NA, thresh = FALSE, centre = NULL)
 }
 \arguments{
 \item{repeats}{The number of times that data will be randomised and analysed

@@ -6,146 +6,175 @@
 \usage{
 climatewin(Xvar, Cdate, Bdate, baseline, furthest, closest, type, cutoff.day,
   cutoff.month, stat = "mean", func = "lin", Cmissing = FALSE,
-  Cinterval = "day", nrandom = 0, CVK = 0, upper = NA, lower = NA,
-  thresh = FALSE)
+  Cinterval = "day", CVK = 0, upper = NA, lower = NA, thresh = FALSE,
+  centre = NULL)
 }
 \arguments{
-\item{Xvar}{A list containing all climate variables of interest. Please specify the parent
-  environment and variable name (e.g. Climate$Temp).}
+\item{Xvar}{A list object containing all climate variables of interest.
+Please specify the parent environment and variable name (e.g. Climate$Temp).}
 
 \item{Cdate}{The climate date variable (dd/mm/yyyy). Please specify the
-  parent environment and variable name (e.g. Climate$Date).}
+parent environment and variable name (e.g. Climate$Date).}
 
 \item{Bdate}{The biological date variable (dd/mm/yyyy). Please specify the
-  parent environment and variable name (e.g. Biol$Date).}
+parent environment and variable name (e.g. Biol$Date).}
 
 \item{baseline}{The baseline model structure used for model testing.
-  Currently known to support lm, glm, lmer and glmer objects.}
+Currently known to support lm, glm, lmer and glmer objects.}
 
 \item{furthest}{The furthest number of time intervals (set by Cinterval)
-  back from the cutoff date or biological record that will be included in
-  the climate window search.}
+back from the cutoff date or biological record that will be included in
+the climate window search.}
 
 \item{closest}{The closest number of time intervals (set by Cinterval) back
-  from the cutoff date or biological record that will be included in the
-  climate window search.}
+from the cutoff date or biological record that will be included in the
+climate window search.}
 
 \item{type}{fixed or variable, whether you wish the climate window to be
-  variable (i.e. the number of days before each biological record is
-  measured) or fixed (i.e. number of days before a set point in time).}
+variable (i.e. the number of days before each biological record is
+measured) or fixed (i.e. number of days before a set point in time).}
 
 \item{cutoff.day,cutoff.month}{If type is "fixed", the day and month of the
-  year from which the fixed window analysis will start.}
+year from which the fixed window analysis will start.}
 
 \item{stat}{The aggregate statistics used to analyse the climate data. Can
-  currently use basic R statistics (e.g. mean, min), as well as slope.
-  Additional aggregate statistics can be created using the format
-  function(x) (...). See FUN in \code{\link{apply}} for more detail.}
+currently use basic R statistics (e.g. mean, min), as well as slope.
+Additional aggregate statistics can be created using the format
+function(x) (...). See FUN in \code{\link{apply}} for more detail.}
 
 \item{func}{The functions used to fit the climate variable. Can be linear
-  ("lin"), quadratic ("quad"), cubic ("cub"), inverse ("inv") or log ("log").}
+("lin"), quadratic ("quad"), cubic ("cub"), inverse ("inv") or log ("log").}
 
 \item{Cmissing}{TRUE or FALSE, determines what should be done if there are
-  missing climate data. If FALSE, the function will not run if missing
-  climate data is encountered. If TRUE, any records affected by missing
-  climate data will be removed from climate window analysis.}
+missing climate data. If FALSE, the function will not run if missing
+climate data is encountered. If TRUE, any records affected by missing
+climate data will be removed from climate window analysis.}
 
 \item{Cinterval}{The resolution at which climate window analysis will be
-  conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the units
-  of parameters 'furthest' and 'closest' will differ depending on the choice
-  of Cinterval.}
+conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the units
+of parameters 'furthest' and 'closest' will differ depending on the choice
+of Cinterval.}
 
-\item{nrandom}{Used in conjunction with \code{\link{randwin}}. Not to be
-  changed manually.}
-
-\item{CVK}{The number of folds used for the k-fold cross validation. By default
-  this value is set to 0, so no cross validation occurs. Value should be a
-  minimum of 2 for cross validation to occur.}
+\item{CVK}{The number of folds used for k-fold cross validation. By default
+this value is set to 0, so no cross validation occurs. Value should be a
+minimum of 2 for cross validation to occur.}
 
 \item{upper}{Cut-off values used to determine growing degree days or positive
-  climate thresholds (determined by parameter thresh). Note that when values
-  of lower and upper are both provided, climatewin will instead calculate a
-  optimal climate zone (?).}
+climate thresholds (depending on parameter thresh). Note that when values
+of lower and upper are both provided, climatewin will instead calculate an
+optimal climate zone.}
 
 \item{lower}{Cut-off values used to determine chill days or negative
-  climate thresholds (determined by parameter thresh). Note that when values
-  of lower and upper are both provided, climatewin will instead calculate a
-  optimal climate zone (?).}
+climate thresholds (depending on parameter thresh). Note that when values
+of lower and upper are both provided, climatewin will instead calculate an
+optimal climate zone.}
 
 \item{thresh}{TRUE or FALSE. Determines whether to use values of upper and
-  lower to calculate binary climate data (thresh = TRUE), or to use for
-  growing degree days (thresh = FALSE).}
+lower to calculate binary climate data (thresh = TRUE), or to use for
+growing degree days (thresh = FALSE).}
+
+\item{centre}{Variable used for mean centring (e.g. Year, Site, Individual).
+Please specify the parent environment and variable name (e.g. Biol$Year).}
 }
 \value{
-Will return a list containing three objects:
+Will return a list with an output for each tested set of climate
+ window parameters. Each list item contains three objects:
 
-   \itemize{ \item BestModel, a model object. The strongest climate window
-   model based on AICc. \item BestModelData, a dataframe with the data used
-   to fit the strongest climate window model. \item WindowOutput, a dataframe
-   with information on all fitted climate windows. Ordered using AICc model
-   strength, with lowest AICc value first. See \code{\link{MassOutput}} as an
-   example. }
+ \itemize{
+ \item BestModel, a model object. The strongest climate window model based on AICc.
+ \item BestModelData, a dataframe with the data used to fit the strongest
+ climate window model.
+ \item Dataset, a dataframe with information on all fitted climate windows.
+ Ordered using deltaAICc, with most negative deltaAICc values first.
+ See \code{\link{MassOutput}} as an example.}
+
+ In addition, the returned list includes an object 'combos', a summary of all
+ tested sets of climate window parameters.
 }
 \description{
 Finds the time period when a biological variable is most strongly affected
- by climate. Note that climate data and biological data should be loaded as
- two seperate objects. Both objects should contain a date column to designate
- when the data were recorded (dd/mm/yyyy) and a response variable column.
+by climate. Note that climate data and biological data should be loaded as
+two seperate objects. Both objects should contain a date column to designate
+when the data were recorded (dd/mm/yyyy) and a response variable column.
+}
+\details{
+Note that climatewin allows you to test multiple possible parameters with the
+same code (e.g. func, stat, Xvar). See examples for more detail.
 }
 \examples{
 \dontrun{
- ##EXAMPLE 1##
+##EXAMPLE 1##
 
- # Test for a variable climate window using datasets "Offspring"
- # and "OffspringClimate".
+# Test both a linear and quadratic variable climate window using datasets "Offspring"
+# and "OffspringClimate".
 
- # Load data.
+# Load data.
 
- data(Offspring)
- data(OffspringClimate)
+data(Offspring)
+data(OffspringClimate)
 
- # Test both linear and quadratic functions with climate variable temperature
+# Test both linear and quadratic functions with climate variable temperature
 
- OffspringWin <- climatewin(Xvar = list(Temp = OffspringClimate$Temperature),
-                            Cdate = OffspringClimate$Date,
-                            Bdate = Offspring$Date,
-                            baseline = glm(Offspring ~ 1, data = Offspring, family = poisson),
-                            furthest = 150, closest = 0,
-                            type = "variables", stat = "mean",
-                            func = c("lin", "quad"), Cmissing = FALSE, Cinterval = "day")
+OffspringWin <- climatewin(Xvar = list(Temp = OffspringClimate$Temperature),
+                          Cdate = OffspringClimate$Date,
+                          Bdate = Offspring$Date,
+                          baseline = glm(Offspring ~ 1, data = Offspring, family = poisson),
+                          furthest = 150, closest = 0,
+                          type = "variables", stat = "mean",
+                          func = c("lin", "quad"), Cmissing = FALSE, Cinterval = "day")
 
- # View output testing linear relationship of temperature
+# Examine tested combinations
 
- head(OffspringWin[[1]]$Dataset)
- summary(OffspringWin[[1]]$BestModel)
+OffspringWin$combos
 
- ##EXAMPLE 2##
+# View output for func = "lin"
 
- # Test for a fixed climate window using datasets 'Mass' and 'MassClimate'.
+head(OffspringWin[[1]]$Dataset)
+summary(OffspringWin[[1]]$BestModel)
 
- # Load data.
+# View output for func = "quad"
 
- data(Mass)
- data(MassClimate)
+head(OffspringWin[[2]]$Dataset)
+summary(OffspringWin[[2]]$BestModel)
 
- # Test a fixed window, starting 20 May
- # Test for climate windows between 100 and 0 days ago (furthest = 100, closest = 0)
- # Fit a linear term for the mean climate (func = "lin")
- # Test at the resolution of days (Cinterval = "day")
- # Test using both mean and max aggregate statistics
+##EXAMPLE 2##
 
- MassWin <- climatewin(Xvar = list(Temp = MassClimate$Temp), Cdate = MassClimate$Date,
-                       Bdate = Mass$Date, baseline = lm(Mass ~ 1, data = Mass),
-                       furthest = 100, closest = 0,
-                       stat = c("mean", "max"), func = "lin",
-                       type = "fixed", cutoff.day = 20, cutoff.month = 5,
-                       nrandom = 0, Cmissing = FALSE, Cinterval = "day")
+# Test for a fixed climate window with both 'mean' and 'max' aggregate statistics
+# using datasets 'Mass' and 'MassClimate'.
 
- # View output for mean temperature
+# Load data.
 
- head(MassWin[[1]]$Dataset)
- summary(MassWin[[1]]$BestModel)
- }
+data(Mass)
+data(MassClimate)
+
+# Test a fixed window, starting 20 May (cutoff.month = 5, cutoff.day = 20)
+# Test for climate windows between 100 and 0 days ago (furthest = 100, closest = 0)
+# Test both mean and max aggregate statistics (stat = c("mean", "max"))
+# Fit a linear term (func = "lin")
+# Test at the resolution of days (Cinterval = "day")
+
+MassWin <- climatewin(Xvar = list(Temp = MassClimate$Temp), Cdate = MassClimate$Date,
+                     Bdate = Mass$Date, baseline = lm(Mass ~ 1, data = Mass),
+                     furthest = 100, closest = 0,
+                     stat = c("mean", "max"), func = "lin",
+                     type = "fixed", cutoff.day = 20, cutoff.month = 5,
+                     Cmissing = FALSE, Cinterval = "day")
+
+# Examine tested combinations
+
+MassWin$combos
+
+# View output for mean temperature
+
+head(MassWin[[1]]$Dataset)
+summary(MassWin[[1]]$BestModel)
+
+# View output for max temperature
+
+head(MassWin[[2]]$Dataset)
+summary(MassWin[[2]]$BestModel)
+
+}
 }
 \author{
 Liam D. Bailey and Martijn van de Pol

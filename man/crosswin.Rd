@@ -21,11 +21,11 @@ environment and variable name (e.g. Climate$Date).}
 parent environment and variable name (e.g. Biol$Date).}
 
 \item{furthest}{The furthest number of time intervals (set by Cinterval) back
-from the cutoff date or biological record that you want to include in your
+from the cutoff date or biological record that will be included in the
 climate window search.}
 
 \item{closest}{The closest number of time intervals (set by Cinterval) back
-from the cutoff date or biological record that you want to include in your
+from the cutoff date or biological record that will be included in the
 climate window search.}
 
 \item{stat}{The aggregate statistic used to analyse the climate data. Can
@@ -71,10 +71,10 @@ data(Mass)
 data(MassClimate)
 
 cross <- crosswin(Xvar = MassClimate$Temp, Xvar2 = MassClimate$Rain,
-                  Cdate = MassClimate$Date, Bdate = Mass$Date,
-                  furthest = 365, closest = 0,
-                  stat = "mean", stat2 = "mean", type = "variable",
-                  Cmissing = FALSE, Cinterval = "day")
+                Cdate = MassClimate$Date, Bdate = Mass$Date,
+                furthest = 365, closest = 0,
+                stat = "mean", stat2 = "mean", type = "variable",
+                Cmissing = FALSE, Cinterval = "day")
 
 # View the output
 head(cross)
