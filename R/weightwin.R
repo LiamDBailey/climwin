@@ -12,11 +12,13 @@
 #'@param Bdate The biological date variable. Please specify the parent 
 #'  environment and variable name (e.g. Biol$Date).
 #'@param baseline The baseline model structure used for testing correlation. 
-#'  Currently known to support lm, lme, glm objects.
-#'@param furthest The furthest number of days back that you want to search for a
-#'  climate window.
-#'@param closest The closest number of days back that you want any climate 
-#'  windows to reach.
+#'  Currently known to support lm, lme, glm and glmer objects.
+#'@param furthest The furthest number of time intervals (set by Cinterval) 
+#'  back from the cutoff date or biological record that will be included in
+#'  the climate window search.
+#'@param closest The closest number of time intervals (set by Cinterval) back 
+#'  from the cutoff date or biological record that will be included in the
+#'  climate window search.
 #'@param func The function used to fit the climate variable in the model. Can be
 #'  linear ("lin"), quadratic ("quad"), cubic ("cub"), inverse ("inv") or log ("log").
 #'@param type fixed or variable, whether you wish the climate window to be variable
@@ -42,7 +44,9 @@
 #'  10.1086/659101) "Identifying the critical climatic time window that affects 
 #'  trait expression"
 #'@return Produces a constantly updating grid of plots as the optimisation 
-#'  function is running. \itemize{ \item Right panel from top to bottom: The
+#'  function is running. 
+#'  \itemize{ 
+#'  \item Right panel from top to bottom: The
 #'  three parameters (shape, scale and location) determining the weight 
 #'  function.
 #'  
@@ -51,8 +55,10 @@
 #'  \item Right middle panel: The delta AICc compared to the baseline model.
 #'  
 #'  \item Right bottom panel: The weighted mean of climate for the current
-#'  weight function. } Also returns a list containing three objects: \itemize{ 
-#'  \item BestModel, a model object. The best weighted window model deterimend
+#'  weight function. }
+#'  
+#'  Also returns a list containing three objects: \itemize{ 
+#'  \item BestModel, a model object. The best weighted window model determined
 #'  by AICc.
 #'  
 #'  \item BestModelData, a dataframe. Biological and climate data used to fit
@@ -64,50 +70,40 @@
 #'  @examples
 #'  \dontrun{
 #'  
-#'  # Test for a weighted average over a fixed climate window 
-#'  # using datasets 'Offspring' and 'OffspringClimate'
+#'# Test for a weighted average over a fixed climate window 
+#'# using datasets 'Offspring' and 'OffspringClimate'
 #'  
-#'  # N.B. THIS EXAMPLE MAY TAKE A MOMENT TO CONVERGE ON THE BEST MODEL.
+#'# N.B. THIS EXAMPLE MAY TAKE A MOMENT TO CONVERGE ON THE BEST MODEL.
 #'  
-#'  # Load data
+#'# Load data
 #'  
-#'  data(Offspring)
-#'  data(OffspringClimate)
+#'data(Offspring)
+#'data(OffspringClimate)
 #'  
-#'  # Test for climate windows between 365 and 0 days ago (furthest=365, closest=0)
-#'  # Fit a quadratic term for the mean weighted climate (func="quad")
-#'  # in a Poisson regression (offspring number ranges 0-3)
-#'  # Test a variable window (type = "fixed")
-#'  # Test at the resolution of days (Cinterval="day")
-#'  # Uses a Weibull weight function (WeightFunction="week")
+#'# Test for climate windows between 365 and 0 days ago (furthest=365, closest=0)
+#'# Fit a quadratic term for the mean weighted climate (func="quad")
+#'# in a Poisson regression (offspring number ranges 0-3)
+#'# Test a variable window (type = "fixed")
+#'# Test at the resolution of days (Cinterval="day")
+#'# Uses a Weibull weight function (WeightFunction="week")
 #'  
-#'  weight <- weightwin(Xvar = OffspringClimate$Temperature, Cdate = OffspringClimate$Date, 
-#'                      Bdate = Offspring$Date, 
-#'                      baseline = glm(Offspring ~ 1, family = poisson, data = Offspring), 
-#'                      furthest = 365, closest = 0, func = "quad", 
-#'                      type = "fixed", WeightFunction = "week", Cinterval = "day", 
-#'                      par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)), 
-#'                      method = "L-BFGS-B") 
+#'weight <- weightwin(Xvar = OffspringClimate$Temperature, Cdate = OffspringClimate$Date, 
+#'                    Bdate = Offspring$Date, 
+#'                    baseline = glm(Offspring ~ 1, family = poisson, data = Offspring), 
+#'                    furthest = 365, closest = 0, func = "quad", 
+#'                    type = "variable", WeightFunction = "week", Cinterval = "day", 
+#'                    par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)), 
+#'                    method = "L-BFGS-B") 
 #'  
-#'  # View output
+#'# View output
 #'  
-#'  head(weight[[3]])
-#'  summary(weight[[1]])
-#'  head(weight[[2]])
+#'head(weight[[3]])
+#'summary(weight[[1]])
+#'head(weight[[2]])
 #'  }
 #'
 #'@importFrom evd dgev
 #'@export
-
-#LAST EDITED: 19/02/2015
-#EDITED BY: LIAM
-#NOTES: Removed parscale as it was unused in the code
-
-# wishlist weightedplot
-# 0.optim function still gives error with optimx
-# 1.add all new stuff from ClimateWindow
-# 2.add plotting function
-# 5. GEV method returns "invalid shape" error
 
 weightwin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest, 
                       func = "lin", type = "fixed", cutoff.day, cutoff.month, 
