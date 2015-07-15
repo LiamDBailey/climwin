@@ -144,18 +144,18 @@ climatewin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest,
   if(is.na(upper) == FALSE && is.na(lower) == FALSE){
     combos <- expand.grid(list(upper = upper, lower = lower))
     combos <- combos[which(combos$upper >= combos$lower), ]
-    allcombos <- expand.grid(list(Climate = names(Xvar), Stat = stat, func = func, gg = c(1:nrow(combos)), Thresh = thresh))
+    allcombos <- expand.grid(list(Climate = names(Xvar), Type = type, Stat = stat, func = func, gg = c(1:nrow(combos)), Thresh = thresh))
     allcombos <- cbind(allcombos, combos[allcombos$gg, ], deparse.level = 2)
     allcombos$gg <- NULL
     threshlevel <- "two"
   } else if(is.na(upper) == FALSE && is.na(lower) == TRUE){
-    allcombos <- expand.grid(list(Climate = names(Xvar), Stat = stat, func = func, upper = upper, Thresh = thresh))
+    allcombos <- expand.grid(list(Climate = names(Xvar), Type = type, Stat = stat, func = func, upper = upper, Thresh = thresh))
     threshlevel <- "upper"
   } else if(is.na(upper) == TRUE && is.na(lower) == FALSE){
-    allcombos <- expand.grid(list(Climate = names(Xvar), Stat = stat, func = func, lower = lower, Thresh = thresh))
+    allcombos <- expand.grid(list(Climate = names(Xvar), Type = type, Stat = stat, func = func, lower = lower, Thresh = thresh))
     threshlevel <- "lower"
   } else if(is.na(upper) == TRUE && is.na(lower) == TRUE){
-    allcombos <- expand.grid(list(Climate = names(Xvar), Stat = stat, func = func))
+    allcombos <- expand.grid(list(Climate = names(Xvar), Type = type, Stat = stat, func = func))
     threshlevel <- "none"
   }
   
@@ -166,8 +166,8 @@ climatewin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest,
   combined <- list()
   for(combo in 1:nrow(allcombos)){
     runs <- basewin(Xvar = Xvar[[paste(allcombos[combo, 1])]], Cdate = Cdate, Bdate = Bdate, baseline = baseline,
-                    furthest = furthest, closest = closest, type = type, cutoff.day = cutoff.day,
-                    cutoff.month = cutoff.month, stat = paste(allcombos[combo, 2]), func = paste(allcombos[combo, 3]),
+                    furthest = furthest, closest = closest, type = paste(allcombos[combo, 2]), cutoff.day = cutoff.day,
+                    cutoff.month = cutoff.month, stat = paste(allcombos[combo, 3]), func = paste(allcombos[combo, 4]),
                     Cmissing = Cmissing, Cinterval = Cinterval, CVK = CVK, 
                     upper = ifelse(threshlevel == "two" || threshlevel == "upper", allcombos$upper[combo], NA),
                     lower = ifelse(threshlevel == "two" || threshlevel == "lower", allcombos$lower[combo], NA),
