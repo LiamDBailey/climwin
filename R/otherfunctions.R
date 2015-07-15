@@ -2,7 +2,7 @@
 basewin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest, 
                     type, cutoff.day, cutoff.month, stat = "mean", func = "lin",
                     Cmissing = FALSE, Cinterval = "day",  nrandom = 0, CVK = 0,
-                    upper = NA, lower = NA, thresh = FALSE, centre = NULL, CW = 0.95){
+                    upper = NA, lower = NA, thresh = FALSE, centre = NULL){
   print("Initialising, please wait...")
   
   if(stat == "slope" & func == "log" || stat == "slope" & func == "inv"){
@@ -321,16 +321,8 @@ basewin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest,
     LocalOutputRand$ModelAICc <- NULL
   }
   
-  WeightDist        <- paste("Percentage of models within", CW*100, "% cumulative model weights:", ceiling(100*mean(as.numeric(cumsum(MODLIST$ModWeight) <= CW))), "%")
-  BestModelOpen     <- paste("Best window open:", as.numeric(LocalOutput[1, 9]))
-  BestModelClose    <- paste("Best window close:", as.numeric(LocalOutput[1, 10]))
-  MedianWindowOpen  <- paste("Median window opening within", CW*100, "% cumulative model weights:", as.numeric(medwin(LocalOutput, CW = CW)[1]))
-  MedianWindowClose <- paste("Median window opening within", CW*100, "% cumulative model weights:", as.numeric(medwin(LocalOutput, CW = CW)[2]))
-  
-  ModSummary <- c(WeightDist, BestModelOpen, BestModelClose, MedianWindowOpen, MedianWindowClose)
-  
   if (nrandom == 0){
-    return(list(BestModel = LocalModel, BestModelData = LocalData, Dataset = LocalOutput, Summary = ModSummary))
+    return(list(BestModel = LocalModel, BestModelData = LocalData, Dataset = LocalOutput))
   } else {
     return(LocalOutputRand)
   }
