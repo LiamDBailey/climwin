@@ -26,8 +26,7 @@
 
 plotwin <- function(Dataset, CW = 0.95){
   
-  Dataset$delta  <- Dataset$ModelAICc - min(Dataset$ModelAICc)
-  Dataset$weight <- (exp(-0.5 * Dataset$delta)) / sum(exp(-0.5 * Dataset$delta))
+  Dataset$weight <- (exp(-0.5 * Dataset$deltaAICc)) / sum(exp(-0.5 * Dataset$deltaAICc))
   #Order models by weight#
   Dataset    <- Dataset[order(-Dataset$weight), ]
   Dataset$CW <- as.numeric(cumsum(Dataset$weight) <= CW)

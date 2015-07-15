@@ -31,8 +31,7 @@ plotweights <- function(Dataset, CW1=0.95, CW2=0.5, CW3=0.25){
   CW1 <- b[1]
   CW2 <- b[2]
   CW3 <- b[3]
-  Dataset$delta  <- Dataset$ModelAICc - min(Dataset$ModelAICc)
-  Dataset$weight <- (exp(-0.5 * Dataset$delta)) / sum(exp(-0.5 * Dataset$delta))
+  Dataset$weight <- (exp(-0.5 * Dataset$deltaAICc)) / sum(exp(-0.5 * Dataset$deltaAICc))
   #Order models by weight#
   Dataset        <- Dataset[order(-Dataset$weight), ]
   Dataset$CW1    <- as.numeric(cumsum(Dataset$weight) <= CW1)

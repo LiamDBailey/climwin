@@ -24,13 +24,10 @@
 #NOTES: TIDY CODE
 
 plotdelta <- function(Dataset){
-  Dataset$delta  <- Dataset$ModelAICc - min(Dataset$ModelAICc)
-  #Calculate a second delta compared to a model with no climate#
-  Dataset$delta2 <- Dataset$ModelAICc - Dataset$baselineAICc
   
 with(Dataset, {
-  ggplot(Dataset, aes(x = WindowClose, y = WindowOpen, z = delta2))+
-    geom_tile(aes(fill = delta2))+
+  ggplot(Dataset, aes(x = WindowClose, y = WindowOpen, z = deltaAICc))+
+    geom_tile(aes(fill = deltaAICc))+
     scale_fill_gradientn(colours = c("red", "yellow", "blue"), name = "")+
     theme_classic()+
     theme(panel.grid.major = element_blank(),

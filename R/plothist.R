@@ -39,23 +39,17 @@
 
 plothist <- function(Dataset, DatasetRand = NULL, HISTQ = 0.99){
   
-  Dataset$delta  <- Dataset$ModelAICc - min(Dataset$ModelAICc)
-  #Calculate a second delta compared to a model with no climate#
-  Dataset$delta2 <- Dataset$ModelAICc - Dataset$baselineAICc
-  
   if (is.null(DatasetRand) == FALSE){
-    #Create delta2 for random data#
-    DatasetRand$delta2 <- DatasetRand$ModelAICc - DatasetRand$baselineAICc
     
-    keep2 <- c("delta2", "Randomised")
+    keep2 <- c("deltaAICc", "Randomised")
     RandData <- rbind(Dataset[keep2], DatasetRand[keep2])
-    RandData$delta2 <- as.numeric(RandData$delta2)
+    RandData$deltaAICc <- as.numeric(RandData$deltaAICc)
     levels(RandData$Randomised) <- c("Real data", paste("Randomised data (", max(DatasetRand$Repeat), "x )"))
   }
 
   if (is.null(DatasetRand) == TRUE){
     with(Dataset, {
-      ggplot(Dataset, aes(x = delta2))+
+      ggplot(Dataset, aes(x = deltaAICc))+
       geom_histogram(aes(y = 2 * ..density..), colour = "black", fill = "red", binwidth = 2, alpha = 0.5)+
       theme_classic()+
       theme(panel.grid.major = element_blank(),
@@ -69,8 +63,8 @@ plothist <- function(Dataset, DatasetRand = NULL, HISTQ = 0.99){
     }
     )
   } else { 
-    vline.data <- data.frame(y = as.numeric(quantile(DatasetRand$delta2, prob = (1 - HISTQ))))
-    with(RandData, {ggplot(RandData, aes(x = delta2, fill = Randomised))+
+    vline.data <- data.frame(y = as.numeric(quantile(DatasetRand$deltaAICc, prob = (1 - HISTQ))))
+    with(RandData, {ggplot(RandData, aes(x = deltaAICc, fill = Randomised))+
       geom_histogram(aes(y = 2 * ..density..), colour = "black", binwidth = 2, alpha = 0.5)+
       theme_classic()+
       theme(panel.grid.major = element_blank(),
