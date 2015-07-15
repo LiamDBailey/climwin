@@ -9,7 +9,7 @@ test_that("plotall produces a graph when all variables provided", {
   data(MassRand, envir = environment())
   
   single <- singlewin(Xvar = MassClimate$Temp, Cdate = MassClimate$Date, Bdate = Mass$Date,
-                    baseline = lm(Mass$Mass~1), furthest = 72, closest = 15,
+                    baseline = lm(Mass ~ 1, data = Mass), furthest = 72, closest = 15,
                     stat = "mean", func = "lin",
                     type = "variable", Cmissing = FALSE, Cinterval = "day")
   

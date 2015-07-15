@@ -46,7 +46,7 @@ test_that("climatewin produces the right output", {
   expect_true(ncol(test[[1]]$BestModelData) >= 2)
   
   expect_equal(length(which(is.na(test[[1]]$Dataset[, 4]))), 0)
-  expect_true(ncol(test[[1]]$Dataset) >= 14)
+  expect_true(ncol(test[[1]]$Dataset) >= 15)
   expect_equal(MaxMODNO, nrow(test[[1]]$Dataset))
   expect_true((test[[1]]$Dataset["Randomised"])[1, ] == "no")
   
@@ -425,7 +425,7 @@ test_that("Quadratic function works", {
   
   expect_equal(length(which(is.na(test[[1]]$Dataset[, 5]))), 0)
   expect_true(test[[1]]$Dataset[, 8] == "quad")
-  expect_true(ncol(test[[1]]$Dataset) >= 14)
+  expect_true(ncol(test[[1]]$Dataset) >= 15)
   expect_equal(MaxMODNO, nrow(test[[1]]$Dataset))
   expect_true((test[[1]]$Dataset["Randomised"])[1, ] == "no")
   
@@ -454,7 +454,7 @@ test_that("Cubic function works", {
   
   expect_equal(length(which(is.na(test[[1]]$Dataset[, 6]))), 0)
   expect_true(test[[1]]$Dataset[, 8] == "cub")
-  expect_true(ncol(test[[1]]$Dataset) >= 14)
+  expect_true(ncol(test[[1]]$Dataset) >= 15)
   expect_equal(MaxMODNO, nrow(test[[1]]$Dataset))
   expect_true((test[[1]]$Dataset["Randomised"])[1, ] == "no")
  
@@ -483,7 +483,7 @@ test_that("Log function works", {
   
   expect_equal(length(which(is.na(test[[1]]$Dataset[, 4]))), 0)
   expect_true(test[[1]]$Dataset[, 8] == "log")
-  expect_true(ncol(test[[1]]$Dataset) >= 14)
+  expect_true(ncol(test[[1]]$Dataset) >= 15)
   expect_equal(MaxMODNO, nrow(test[[1]]$Dataset))
   expect_true((test[[1]]$Dataset["Randomised"])[1, ] == "no")
   
@@ -512,7 +512,7 @@ test_that("Inverse function works", {
   
   expect_equal(length(which(is.na(test[[1]]$Dataset[, 4]))), 0)
   expect_true(test[[1]]$Dataset[, 8] == "inv")
-  expect_true(ncol(test[[1]]$Dataset) >= 14)
+  expect_true(ncol(test[[1]]$Dataset) >= 15)
   expect_equal(MaxMODNO, nrow(test[[1]]$Dataset))
   expect_true((test[[1]]$Dataset["Randomised"])[1, ] == "no")
   
@@ -620,7 +620,7 @@ test_that("Mean centring is functioning", {
   
   expect_equal(length(which(is.na(test[[1]]$Dataset[, 4]))), 0)
   expect_equal(length(which(is.na(test[[1]]$Dataset[, 5]))), 0)
-  expect_true(ncol(test[[1]]$Dataset) >= 13)
+  expect_true(ncol(test[[1]]$Dataset) >= 14)
   expect_true((test[[1]]$Dataset["Randomised"])[1, ] == "no")
   
 })
