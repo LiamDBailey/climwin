@@ -73,6 +73,8 @@
 #'@importFrom MuMIn AICc
 #'@import lme4
 #'@import stats
+#'@import utils
+#'@import graphics
 #'@importFrom lubridate weeks  
 #'@examples
 #'\dontrun{
