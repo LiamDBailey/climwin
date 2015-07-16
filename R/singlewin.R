@@ -166,7 +166,7 @@ singlewin <- function(Xvar, Cdate, Bdate, baseline,
       stop("You do not have enough climate data to search that far back. Please adjust the value of furthest or add additional climate data.")
     }
   }
-  
+
   if(Cinterval == "week"){
     if((min(BIntNo) - furthest*7) < min(CIntNo)){
       stop("You do not have enough climate data to search that far back. Please adjust the value of furthest or add additional climate data.")
