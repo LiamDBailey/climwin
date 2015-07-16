@@ -28,7 +28,7 @@ test_that("Cinterval W works", {
   data(MassClimate, envir = environment())
   
   test <- singlewin(Xvar = MassClimate$Temp, Cdate = MassClimate$Date, Bdate = Mass$Date,
-                    baseline = lm(Mass$Mass~1), furthest = 16, closest = 15,
+                    baseline = lm(Mass ~ 1, data = Mass), furthest = 1, closest = 0,
                     stat = "mean", func = "lin",
                     type = "variable", Cmissing = FALSE, Cinterval = "week")
   
@@ -45,7 +45,7 @@ test_that("Cinterval M works", {
   data(MassClimate, envir = environment())
   
   test <- singlewin(Xvar = MassClimate$Temp, Cdate = MassClimate$Date, Bdate = Mass$Date,
-                    baseline = lm(Mass$Mass~1), furthest = 16, closest = 15,
+                    baseline = lm(Mass ~ 1, data = Mass), furthest = 1, closest = 0,
                     stat = "mean", func = "lin",
                     type = "variable", Cmissing = FALSE, Cinterval = "month")
   
