@@ -36,17 +36,20 @@ plotbest <- function(Dataset, BestModel, BestModelData){
 names(BestModelData)[1] <- "Yvar"
     
 if(is.null(BestModelData$WGdev) == FALSE){
-  ggplot(BestModelData, aes(y = Yvar, x = climate))+
-    geom_point(size = 1, alpha = 0.5)+
-    geom_abline(intercept = coef(BestModel)[1], slope = coef(BestModel)[2], colour = "red")+
-    geom_abline(intercept = coef(BestModel)[1], slope = coef(BestModel)[3], colour = "blue")+
-    theme_classic() +
-    theme(panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-          axis.line = element_line(size = 0.25, colour = "black"),
-          plot.title = element_text(size = 18)) +
-    ggtitle("Output of best model") +
-    ylab("Biological variable")
+  with(BestModelData, {
+    ggplot(BestModelData, aes(y = Yvar, x = climate))+
+      geom_point(size = 1, alpha = 0.5)+
+      geom_abline(intercept = coef(BestModel)[1], slope = coef(BestModel)[2], colour = "red")+
+      geom_abline(intercept = coef(BestModel)[1], slope = coef(BestModel)[3], colour = "blue")+
+      theme_classic() +
+      theme(panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            axis.line = element_line(size = 0.25, colour = "black"),
+            plot.title = element_text(size = 18)) +
+      ggtitle("Output of best model") +
+      ylab("Biological variable")
+  }
+  )
 } else {
   if (Dataset$Function[1] == "log"){
     names(BestModelData)[(ncol(BestModelData)-1)] <- "climate"
