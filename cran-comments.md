@@ -5,8 +5,8 @@ output: html_document
 ---
 
 ## Test environments
+* 
 * win-builder (devel and release)
-* OS X install (version), R.
 
 ## R CMD check results
 
