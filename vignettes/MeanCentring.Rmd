@@ -19,6 +19,7 @@ Often when we carry out climate window analysis we possess large biological data
 
 For example, let's consider we find a strong climate window showing a positive relationship between temperature and a animal body mass. As our data spans multiple years  
 
+![Image](https://github.com/LiamDBailey/climwin/blob/master/images/Centring.png)
 
 
 
