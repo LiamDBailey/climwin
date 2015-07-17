@@ -9,8 +9,8 @@ singlewin(Xvar, Cdate, Bdate, baseline, furthest, closest, stat, func, type,
   upper = NA, lower = NA, thresh = FALSE, centre = NULL)
 }
 \arguments{
-\item{Xvar}{The climate variable of interest. Please specify the parent
-environment and variable (e.g. Climate$Temp).}
+\item{Xvar}{A list object containing all climate variables of interest.
+Please specify the parent environment and variable name (e.g. Climate$Temp).}
 
 \item{Cdate}{The climate date variable (dd/mm/yyyy). Please specify the parent
 environment and variable name (e.g. Climate$Date).}

@@ -39,7 +39,7 @@ plotbetas <- function(Dataset, plotallenv, plotall = FALSE){
         theme(panel.grid.major = element_blank(),
               panel.grid.minor = element_blank(),
               axis.line = element_line(size = 0.25, colour = "black"),
-              plot.title = element_text(size = 18),
+              plot.title = element_text(size = 16),
               legend.position = c(0.75,0.3)) +
         ggtitle("Beta linear") +
         ylab("Window open") +
@@ -57,7 +57,7 @@ plotbetas <- function(Dataset, plotallenv, plotall = FALSE){
         theme(panel.grid.major = element_blank(),
               panel.grid.minor = element_blank(),
               axis.line = element_line(size = 0.25, colour = "black"),
-              plot.title = element_text(size = 18),
+              plot.title = element_text(size = 16),
               legend.position = c(0.75,0.3)) +
         ggtitle("Beta linear") +
         ylab("Window open") +
@@ -70,7 +70,7 @@ plotbetas <- function(Dataset, plotallenv, plotall = FALSE){
         theme(panel.grid.major = element_blank(),
               panel.grid.minor = element_blank(),
               axis.line = element_line(size = 0.25, colour = "black"),
-              plot.title = element_text(size = 18),
+              plot.title = element_text(size = 16),
               legend.position = c(0.75, 0.3)) +
         ggtitle("Beta quadratic") +
         ylab("Window open") +
@@ -89,7 +89,7 @@ plotbetas <- function(Dataset, plotallenv, plotall = FALSE){
         theme(panel.grid.major = element_blank(),
               panel.grid.minor = element_blank(),
               axis.line = element_line(size = 0.25, colour = "black"),
-              plot.title = element_text(size = 18),
+              plot.title = element_text(size = 16),
               legend.position = c(0.75,0.3)) +
         ggtitle("Beta linear") +
         ylab("Window open") +
@@ -102,7 +102,7 @@ plotbetas <- function(Dataset, plotallenv, plotall = FALSE){
           theme(panel.grid.major = element_blank(),
                 panel.grid.minor = element_blank(),
                 axis.line = element_line(size = 0.25, colour = "black"),
-                plot.title = element_text(size = 18),
+                plot.title = element_text(size = 16),
                 legend.position = c(0.75, 0.3)) +
           ggtitle("Beta quadratic") +
           ylab("Window open") +
@@ -115,7 +115,7 @@ plotbetas <- function(Dataset, plotallenv, plotall = FALSE){
           theme(panel.grid.major = element_blank(),
                 panel.grid.minor = element_blank(),
                 axis.line = element_line(size = 0.25, colour = "black"),
-                plot.title = element_text(size = 18),
+                plot.title = element_text(size = 16),
                 legend.position = c(0.75, 0.3)) +
           ggtitle("Beta cubic") +
           ylab("Window open") +
@@ -135,7 +135,7 @@ plotbetas <- function(Dataset, plotallenv, plotall = FALSE){
         theme(panel.grid.major = element_blank(),
               panel.grid.minor = element_blank(),
               axis.line = element_line(size = 0.25, colour = "black"),
-              plot.title = element_text(size = 18),
+              plot.title = element_text(size = 16),
               legend.position = c(0.75,0.3)) +
         ggtitle("Within group mean coefficient") +
         ylab("Window open") +
@@ -148,7 +148,7 @@ plotbetas <- function(Dataset, plotallenv, plotall = FALSE){
         theme(panel.grid.major = element_blank(),
               panel.grid.minor = element_blank(),
               axis.line = element_line(size = 0.25, colour = "black"),
-              plot.title = element_text(size = 18),
+              plot.title = element_text(size = 16),
               legend.position = c(0.75,0.3)) +
         ggtitle("Within group deviation coefficient") +
         ylab("Window open") +

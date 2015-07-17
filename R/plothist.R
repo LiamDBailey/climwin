@@ -52,8 +52,8 @@ plothist <- function(Dataset, DatasetRand = NULL, HISTQ = 0.99){
             panel.grid.minor = element_blank(),
             axis.line = element_line(size = 0.25, colour = "black"),
             legend.position = "none",
-            plot.title = element_text(size = 18))+
-      ggtitle(expression(paste("Histogram of ", Delta,"AICc for all models")))+
+            plot.title = element_text(size = 16))+
+      ggtitle(expression(paste("Histogram of ", Delta,"AICc")))+
       ylab("Proportion")+
       xlab(expression(paste(Delta, "AICc (compared to null model)")))
     }
@@ -67,9 +67,9 @@ plothist <- function(Dataset, DatasetRand = NULL, HISTQ = 0.99){
             panel.grid.minor = element_blank(),
             axis.line = element_line(size = 0.25, colour = "black"),
             legend.position = "none",
-            plot.title = element_text(size = 18))+
+            plot.title = element_text(size = 16))+
       facet_wrap(~Randomised, nrow = 2)+
-      ggtitle(expression(paste("Histogram of ", Delta,"AICc for all models")))+
+      ggtitle(expression(paste("Histogram of ", Delta,"AICc")))+
       geom_vline(data = vline.data, aes(xintercept = y), linetype = "dashed", colour = "red")+
       ylab("Proportion")+
       xlab(expression(paste(Delta,"AICc (compared to null model)")))})

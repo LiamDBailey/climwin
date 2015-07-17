@@ -26,7 +26,7 @@ with(Dataset, {
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
           axis.line = element_line(size=0.25, colour = "black"),
-          plot.title = element_text(size = 18),
+          plot.title = element_text(size = 16),
           legend.position = c(0.75, 0.3))+
     ggtitle(expression(paste(Delta, "AICc (compared to null model)")))+
     ylab("Window open")+

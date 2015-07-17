@@ -4,8 +4,8 @@
 #'to help determine the chance of obtaining an observed result at random.
 #'@param repeats The number of times that data will be randomised and analysed 
 #'  for climate windows.
-#'@param Xvar The climate variable of interest. Please specify the parent 
-#'  environment and variable (e.g. Climate$Temp).
+#'@param Xvar A list object containing all climate variables of interest. 
+#'  Please specify the parent environment and variable name (e.g. Climate$Temp).
 #'@param Cdate The climate date variable (dd/mm/yyyy). Please specify the parent
 #'  environment and variable name (e.g. Climate$Date).
 #'@param Bdate The biological date variable (dd/mm/yyyy). Please specify the 
@@ -82,6 +82,9 @@ randwin <- function(repeats = 1, Xvar, Cdate, Bdate, baseline,
                     func, type, cutoff.day, cutoff.month,
                     Cmissing = FALSE, Cinterval = "day",
                     upper = NA, lower = NA, thresh = FALSE, centre = NULL){
+  
+  Xvar = Xvar[[1]]
+  
   for (r in 1:repeats){
     print (c("randomization number ", r))
     BdateNew        <- sample(Bdate)

@@ -38,15 +38,15 @@ plotwin <- function(Dataset, CW = 0.95){
          scale_y_continuous(limits = c(min(Dataset$WindowClose), max(Dataset$WindowClose)))+
          geom_boxplot(width = 0.5)+
          geom_text(data = p_meds, aes(x = variable, y = value, label = value),
-                   size = 7, vjust = -2.2) +
+                   size = 5, vjust = -1.9) +
          coord_flip()+
          theme_classic()+
          theme(panel.grid.major = element_blank(),
                panel.grid.minor = element_blank(),
                axis.line = element_line(size = 0.25, colour = "black"),
                axis.text.y = element_text(angle = 90, hjust = 0.5,size = 10),
-               plot.title = element_text(size = 18))+
-         ggtitle(paste("Climate window range for top ", (CW*100), "% of model weights"))+
+               plot.title = element_text(size = 16))+
+         ggtitle(paste("Climate window range for top \n", (CW*100), "% of model weights"))+
          xlab("")+
          ylab("Climate window")
 }

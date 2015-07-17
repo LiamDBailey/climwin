@@ -45,7 +45,7 @@ if(is.null(BestModelData$WGdev) == FALSE){
       theme(panel.grid.major = element_blank(),
             panel.grid.minor = element_blank(),
             axis.line = element_line(size = 0.25, colour = "black"),
-            plot.title = element_text(size = 18)) +
+            plot.title = element_text(size = 16)) +
       ggtitle("Output of best model") +
       ylab("Biological variable")
   }
@@ -73,7 +73,7 @@ if(is.null(BestModelData$WGdev) == FALSE){
           theme(panel.grid.major = element_blank(),
                 panel.grid.minor = element_blank(),
                 axis.line = element_line(size = 0.25, colour = "black"),
-                plot.title = element_text(size = 18)) +
+                plot.title = element_text(size = 16)) +
           ggtitle("Output of best model") +
           ylab("Biological variable") +    
           if (Dataset$Function[1] == "log"){
@@ -120,7 +120,7 @@ if(is.null(BestModelData$WGdev) == FALSE){
           theme(panel.grid.major = element_blank(),
                 panel.grid.minor = element_blank(),
                 axis.line = element_line(size = 0.25, colour = "black"),
-                plot.title = element_text(size = 18)) +
+                plot.title = element_text(size = 16)) +
           ggtitle("Output of best model") +
           ylab("Biological variable") +    
           if (Dataset$Function[1] == "log"){
@@ -146,7 +146,7 @@ if(is.null(BestModelData$WGdev) == FALSE){
           theme(panel.grid.major = element_blank(),
                 panel.grid.minor = element_blank(),
                 axis.line = element_line(size = 0.25, colour = "black"),
-                plot.title = element_text(size = 18)) +
+                plot.title = element_text(size = 16)) +
           ggtitle("Output of best model") +
           ylab("Biological variable") +    
           if (Dataset$Function[1] == "log"){
@@ -193,7 +193,7 @@ if(is.null(BestModelData$WGdev) == FALSE){
           theme(panel.grid.major = element_blank(),
                 panel.grid.minor = element_blank(),
                 axis.line = element_line(size = 0.25, colour = "black"),
-                plot.title = element_text(size = 18)) +
+                plot.title = element_text(size = 16)) +
           ggtitle("Output of best model") +
           ylab("Biological variable") +    
           if (Dataset$Function[1] == "log"){

@@ -12,8 +12,8 @@ randwin(repeats = 1, Xvar, Cdate, Bdate, baseline, furthest, closest, stat,
 \item{repeats}{The number of times that data will be randomised and analysed
 for climate windows.}
 
-\item{Xvar}{The climate variable of interest. Please specify the parent
-environment and variable (e.g. Climate$Temp).}
+\item{Xvar}{A list object containing all climate variables of interest.
+Please specify the parent environment and variable name (e.g. Climate$Temp).}
 
 \item{Cdate}{The climate date variable (dd/mm/yyyy). Please specify the parent
 environment and variable name (e.g. Climate$Date).}

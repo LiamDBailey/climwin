@@ -1,8 +1,8 @@
 #'Fit a single climate window
 #'
 #'Fit a single climate window with a known start and end time.
-#'@param Xvar The climate variable of interest. Please specify the parent 
-#'  environment and variable (e.g. Climate$Temp).
+#'@param Xvar A list object containing all climate variables of interest. 
+#'  Please specify the parent environment and variable name (e.g. Climate$Temp).
 #'@param Cdate The climate date variable (dd/mm/yyyy). Please specify the parent
 #'  environment and variable name (e.g. Climate$Date).
 #'@param Bdate The biological date variable (dd/mm/yyyy). Please specify the 
@@ -91,6 +91,8 @@ singlewin <- function(Xvar, Cdate, Bdate, baseline,
                       Cmissing = FALSE, Cinterval = "day",
                       upper = NA, lower = NA, thresh = FALSE,
                       centre = NULL){
+  
+  Xvar = Xvar[[1]]
   
   if(stat == "slope" & func == "log" || stat == "slope" & func == "inv"){
     stop("stat = slope cannot be used with func = LOG or I as negative values may be present")
