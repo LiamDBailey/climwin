@@ -10,4 +10,8 @@ To install:
 * latest released version: `install.packages("climwin")`
 
 
-Detailed examples for both climate window analysis and plotting are provided in the package help documentation. See `library(help = "climwin")` once installed for more detail.
+How to use climwin:
+
+Examples for both climate window analysis and plotting are provided in the package help documentation. See `library(help = "climwin")` once installed for more detail.
+
+For more detailed insight on how to use climwin to investigate climate data see our in-depth vignette using `vignette("climwin")`.
