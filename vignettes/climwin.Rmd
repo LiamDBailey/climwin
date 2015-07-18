@@ -50,7 +50,7 @@ We want to understand the relationship between temperature and chick mass, so we
 | 06/06/2014  |    23       |
 | 07/06/2014  |    21       |
 
-As is often the case, we have no prior knowledge to help us select the best climate window. To overcome this issue, `climatewin` will test all possible windows for us. In this case, we may start by testing the effect of average temperature 1-2 days before. `climatewin` will calculate the corresponding average temperature for each biological record and create a new combined dataset.
+As is often the case, we have no prior knowledge to help us select the best climate window. To overcome this issue, `climatewin` will test all possible windows for us. In this case, we may start by testing the effect of average temperature 1-2 days before hatching. `climatewin` will calculate the corresponding average temperature for each biological record and create a new combined dataset.
 
 | Date        | Mass (g) | Temperature [1 - 2 days] | 
 |:------------|:---------|:-------------------------|
@@ -110,7 +110,7 @@ The parameter baseline determines the model structure for the null model. The st
 
 `baseline = lm(Mass ~ 1, data = Mass)`
 
-Climate data from each tested climate window will be added to this baseline model, to allow for a direct comparison between the null model and each climate window.
+Climate data from each tested climate window will be added as a predictor to this baseline model, to allow for a direct comparison between the null model and each climate window.
 
 
 **cinterval**
@@ -163,10 +163,10 @@ Although the relationship between climate and our biological response may often 
 
 After choosing each of our parameter values, we can finally input our choices into the `climatewin` function.
 
-The below `climatewin` syntax will test the linear effect of mean temperature on Mass across all windows between 0 and 100 days before May 20th.
+The below `climatewin` syntax will test the linear effect of mean temperature on mass across all windows between 0 and 100 days before May 20th.
 
 *NOTE: Analysis with climwin can require large amounts of computational power. Please be patient with the results.*
-```{r, eval = FALSE}
+```{r}
 library(climwin)
 ```
 
@@ -259,20 +259,19 @@ We have designed 6 different plotting functions to help users visualise and inte
 
 As a first step, we can look at the distribution of delta AICc values across all tested climate windows. In the below plot, blue regions represent climate windows with limited strength (AICc values similar to the null model) while red regions show strong models.
 
-In our `Mass` example, we can see an obvious region of strong windows around the top left of the graph. This seems to suggest that there is a clear area of sensitivity.
+In our `Mass` example, we can see an obvious region of strong windows around the left of the graph. This seems to suggest that there is a clear area of sensitivity.
 
 ```{r, fig.width = 4, fig.height = 4}
 
-library(climwin)
 plotdelta(dataset = MassOutput)
 
 ```
 
 ### Plot model weights
 
-Another way to visualise the delta AICc data is through the use of model weights (Burnham, Anderson & Huyvaert 2011 [source](http://link.springer.com/article/10.1007/s00265-010-1029-6)). In short, the higher a model weight value the greater confidence we have that this model contains the true 'best' model. While our top climate window is the most likely *single* window to best explain the data, our confidence that this top window represents the true 'best' model may still be low.
+Another way to visualise the delta AICc data is through the use of model weights (Burnham, Anderson & Huyvaert 2011 [source](http://link.springer.com/article/10.1007/s00265-010-1029-6)). In short, the higher a model weight value the greater confidence we have that this model is the true 'best' model. While our top climate window is the most likely *single* window to best explain the data, our confidence that this top window represents the true 'best' model may still be low.
 
-If we sum the weights of multiple models, we can now be more confident that we encompass the true best model, but we are less sure of its exact location. In our model weights plot we shade all models that make up the top 95% of model weights. Therefore, we can be 95% confident that the true 'best' model falls within the shaded region. In our example using the `Mass` dataset, we can see that the top 95% of model weights falls within a small region roughly corresponding to the peak in delta AICc seen above. In fact, we can be 95% sure that the best climate window falls within only 7% of the total fitted models.
+If we sum the weights of multiple models, we can now be more confident that we encompass the true best model, but we are less sure of its exact location. In our model weights plot we shade all models that make up the top 95% of model weights. Therefore, we can be 95% confident that the true 'best' model falls within the shaded region. In our example using the `Mass` dataset, we can see that the top 95% of model weights falls within a small region roughly corresponding to the peak in delta AICc seen above. In fact, we can be 95% sure that the best climate window falls within only 7% of the total fitted models. This result suggests that our results are not produed by chance.
 
 ```{r, fig.width = 4, fig.height = 4}
 
@@ -332,9 +331,9 @@ plotwin(dataset = MassOutput)
 
 ### Best model plot
 
-Although the above plots give us strong confidence that our results represent a real period of climate sensitivity, we have not considered how well climate within this period actually explains variation in the biological data. Although temperature March and April explains variation in mass better than temperature at other points in time, temperature over this period may still not explain variation in the biological data that well.
+Although the above plots give us strong confidence that our results represent a real period of climate sensitivity, we have not considered how well climate within this period actually explains variation in the biological data. Although temperature in March and April explains variation in mass better than at other points in time, temperature over this period may still not explain variation in the biological data that well.
 
-Using the `plotbest` function, we can plot our best model over the biological data. Examining this plot can help us determine whether it may be more appropriate to test  alternative relationships of climate (e.g. quadratic or cubic) by adjusting the parameter func.
+Using the `plotbest` function, we can plot our best model over the biological data. Examining this plot can help us determine whether it may be more appropriate to test alternative relationships of climate (e.g. quadratic or cubic) by adjusting the parameter *func*.
 
 While it is easy to save the Dataset output from the `climatewin` function, the BestModel object can often be lost when we start a new R session. To overcome this issue, the `singlewin` function allows you to generate BestModel and BestModelData for a single climate window.
 
@@ -421,7 +420,7 @@ MassWin2$combos
 |3 |   Temp |fixed |max  |quad |
 |4 |   Temp |fixed |mean |quad |
 
-Using this combos list, we can extract information on each of our tested combinations, as each row in the `combos` table corresponds to a list item in our object MassWin2. For example, to the BestModel object of the quadratic relationship using maximum temperature (3rd row) would be called using the following code:
+Using this combos list, we can extract information on each of our tested combinations, as each row in the `combos` table corresponds to a list item in our object MassWin2. For example, the BestModel object of the quadratic relationship using maximum temperature (3rd row) would be called using the following code:
 
 ```{r, eval = FALSE}
 
@@ -440,6 +439,6 @@ Coefficients:
 
 ******************************
 
-This covers the basic functions of `climwin`. For more advanced features please see additional vignettes provided with this package. To ask additional questions or report bugs please e-mail:
+This covers the basic functions of `climwin`. For more advanced features additional vignettes will be provided with future updates. To ask additional questions or report bugs please e-mail:
 
 liam.bailey@anu.edu.au
