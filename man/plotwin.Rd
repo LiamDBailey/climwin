@@ -4,18 +4,18 @@
 \alias{plotwin}
 \title{Plot the opening and closing point of best climate windows}
 \usage{
-plotwin(Dataset, CW = 0.95)
+plotwin(dataset, cw = 0.95)
 }
 \arguments{
-\item{Dataset}{A dataframe containing information on all fitted climate
+\item{dataset}{A dataframe containing information on all fitted climate
 windows. Output from \code{\link{climatewin}}.}
 
-\item{CW}{Cumulative model weight used to subset the group of best models.}
+\item{cw}{Cumulative model weight used to subset the group of best models.}
 }
 \value{
 Creates two boxplots showing the opening and closing point for a subset
  of best climate windows. Best climate windows make up the
- cumulative model weight equivalent to the value of CW.
+ cumulative model weight equivalent to the value of cw.
 }
 \description{
 Visualise the opening and closing point for a subset of best climate windows.
@@ -25,7 +25,7 @@ Visualise the opening and closing point for a subset of best climate windows.
 
 data(MassOutput)
 
-plotwin(Dataset = MassOutput, CW = 0.95)
+plotwin(dataset = MassOutput, cw = 0.95)
 }
 \author{
 Liam D. Bailey and Martijn van de Pol

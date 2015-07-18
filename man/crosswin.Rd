@@ -4,27 +4,27 @@
 \alias{crosswin}
 \title{Test the correlation between two climate variables}
 \usage{
-crosswin(Xvar, Xvar2, Cdate, Bdate, furthest, closest, stat, stat2, type,
-  cutoff.day, cutoff.month, Cinterval = "day", Cmissing = FALSE)
+crosswin(xvar, xvar2, cdate, bdate, furthest, closest, stat, stat2, type,
+  cutoff.day, cutoff.month, cinterval = "day", cmissing = FALSE)
 }
 \arguments{
-\item{Xvar}{The first climate variable of interest. Please specify the parent
+\item{xvar}{The first climate variable of interest. Please specify the parent
 environment and variable name (e.g. Climate$Temp).}
 
-\item{Xvar2}{The second climate variable of interest. Please specify the parent
+\item{xvar2}{The second climate variable of interest. Please specify the parent
 environment and variable name (e.g. Climate$Temp).}
 
-\item{Cdate}{The climate date variable (dd/mm/yyyy). Please specify the parent
+\item{cdate}{The climate date variable (dd/mm/yyyy). Please specify the parent
 environment and variable name (e.g. Climate$Date).}
 
-\item{Bdate}{The biological date variable (dd/mm/yyyy). Please specify the
+\item{bdate}{The biological date variable (dd/mm/yyyy). Please specify the
 parent environment and variable name (e.g. Biol$Date).}
 
-\item{furthest}{The furthest number of time intervals (set by Cinterval) back
+\item{furthest}{The furthest number of time intervals (set by cinterval) back
 from the cutoff date or biological record that will be included in the
 climate window search.}
 
-\item{closest}{The closest number of time intervals (set by Cinterval) back
+\item{closest}{The closest number of time intervals (set by cinterval) back
 from the cutoff date or biological record that will be included in the
 climate window search.}
 
@@ -33,7 +33,7 @@ currently use basic R statistics (e.g. mean, min), as well as slope.
 Additional aggregate statistics can be created using the format function(x)
 (...). See FUN in \code{\link{apply}} for more detail.}
 
-\item{stat2}{Second aggregate statistic used to analyse climate data (Xvar2). Can
+\item{stat2}{Second aggregate statistic used to analyse climate data (xvar2). Can
 currently use basic R statistics (e.g. mean, min), as well as slope.
 Additional aggregate statistics can be created using the format function(x)
 (...). See FUN in \code{\link{apply}} for more detail.}
@@ -45,12 +45,12 @@ Additional aggregate statistics can be created using the format function(x)
 \item{cutoff.day,cutoff.month}{If type is "fixed", the day and month of the year
 from which the fixed window analysis will start.}
 
-\item{Cinterval}{The resolution at which climate window analysis will be
+\item{cinterval}{The resolution at which climate window analysis will be
 conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the units
 of parameters 'furthest' and 'closest' will differ depending on the choice
-of Cinterval}
+of cinterval}
 
-\item{Cmissing}{TRUE or FALSE, determines what should be done if there are
+\item{cmissing}{TRUE or FALSE, determines what should be done if there are
 missing climate data. If FALSE, the function will not run if missing climate
 data is encountered. If TRUE, any records affected by missing climate data
 will be removed from climate window analysis.}
@@ -70,11 +70,12 @@ windows.
 data(Mass)
 data(MassClimate)
 
-cross <- crosswin(Xvar = MassClimate$Temp, Xvar2 = MassClimate$Rain,
-                Cdate = MassClimate$Date, Bdate = Mass$Date,
-                furthest = 365, closest = 0,
-                stat = "mean", stat2 = "mean", type = "variable",
-                Cmissing = FALSE, Cinterval = "day")
+cross <- crosswin(xvar = list(Temp = MassClimate$Temp),
+                 xvar2 = list(Rain = MassClimate$Rain),
+                 cdate = MassClimate$Date, bdate = Mass$Date,
+                 furthest = 365, closest = 0,
+                 stat = "mean", stat2 = "mean", type = "variable",
+                 cmissing = FALSE, cinterval = "day")
 
 # View the output
 head(cross)

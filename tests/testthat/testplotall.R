@@ -8,13 +8,13 @@ test_that("plotall produces a graph when all variables provided", {
   data(MassOutput, envir = environment())
   data(MassRand, envir = environment())
   
-  single <- singlewin(Xvar = MassClimate$Temp, Cdate = MassClimate$Date, Bdate = Mass$Date,
-                    baseline = lm(Mass ~ 1, data = Mass), furthest = 72, closest = 15,
-                    stat = "mean", func = "lin",
-                    type = "variable", Cmissing = FALSE, Cinterval = "day")
+  single <- singlewin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date,
+                      baseline = lm(Mass ~ 1, data = Mass), furthest = 72, closest = 15,
+                      stat = "mean", func = "lin",
+                      type = "variable", cmissing = FALSE, cinterval = "day")
   
-  plotall(Dataset = MassOutput, DatasetRand  = MassRand, BestModel = single[[1]],
-          BestModelData = single[[2]], CW1 = 0.95, CW2 = 0.5, CW3 = 0.25, HISTQ = 0.99)
+  plotall(dataset = MassOutput, datasetrand  = MassRand, bestmodel = single[[1]],
+          bestmodeldata = single[[2]], cw1 = 0.95, cw2 = 0.5, cw3 = 0.25, histq = 0.99)
   
 })
 
@@ -25,13 +25,13 @@ test_that("plotall produces a graph when datasetrand removed", {
   data(MassOutput, envir = environment())
   data(MassRand, envir = environment())
   
-  single <- singlewin(Xvar = MassClimate$Temp, Cdate = MassClimate$Date, Bdate = Mass$Date,
+  single <- singlewin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date,
                       baseline = lm(Mass$Mass~1), furthest = 72, closest = 15,
                       stat = "mean", func = "lin",
-                      type = "variable", Cmissing = FALSE, Cinterval = "day")
+                      type = "variable", cmissing = FALSE, cinterval = "day")
   
-  plotall(Dataset = MassOutput, BestModel = single[[1]],
-          BestModelData = single[[2]], CW1 = 0.95, CW2 = 0.5, CW3 = 0.25, HISTQ = 0.99)
+  plotall(dataset = MassOutput, bestmodel = single[[1]],
+          bestmodeldata = single[[2]], cw1 = 0.95, cw2 = 0.5, cw3 = 0.25, histq = 0.99)
   
 })
 
@@ -42,12 +42,12 @@ test_that("plotall produces a graph when bestmodel removed", {
   data(MassOutput, envir = environment())
   data(MassRand, envir = environment())
   
-  single <- singlewin(Xvar = MassClimate$Temp, Cdate = MassClimate$Date, Bdate = Mass$Date,
+  single <- singlewin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date,
                       baseline = lm(Mass$Mass~1), furthest = 72, closest = 15,
                       stat = "mean", func = "lin",
-                      type = "variable", Cmissing = FALSE, Cinterval = "day")
+                      type = "variable", cmissing = FALSE, cinterval = "day")
   
-  plotall(Dataset = MassOutput, DatasetRand  = MassRand,
-          BestModelData = single[[2]], CW1 = 0.95, CW2 = 0.5, CW3 = 0.25, HISTQ = 0.99)
+  plotall(dataset = MassOutput, datasetrand  = MassRand,
+          bestmodeldata = single[[2]], cw1 = 0.95, cw2 = 0.5, cw3 = 0.25, histq = 0.99)
   
 })

@@ -86,22 +86,22 @@ To start using `climatewin` it's important to first understand the basic paramet
 For this example, we will use the `Mass` and `MassClimate` datasets from the `climwin` package.
 
 
-**Xvar**
+**xvar**
 
-To begin, we need to determine the predictor variable which we want to study. The parameter Xvar is a list object containing our variable of interest (e.g. Temperature, Rainfall). While we will focus here on climate, it is possible to apply our `climatewin` methodology with non-climatic predictors.
+To begin, we need to determine the predictor variable which we want to study. The parameter xvar is a list object containing our variable of interest (e.g. Temperature, Rainfall). While we will focus here on climate, it is possible to apply our `climatewin` methodology with non-climatic predictors.
 
-`Xvar = list(Temp = MassClimate$Temperature)`
+`xvar = list(Temp = MassClimate$Temperature)`
 
 
-**Cdate/Bdate**
+**cdate/bdate**
 
-Once we have established our predictor variable, we next need to tell `climatewin` the location of our date data. These two parameters contain the date variable for both the climate dataset (Cdate) and biological dataset (Bdate).
+Once we have established our predictor variable, we next need to tell `climatewin` the location of our date data. These two parameters contain the date variable for both the climate dataset (cdate) and biological dataset (bdate).
 
 *NOTE: These date variables should be stored in a dd/mm/yyyy format*
 
-`Cdate = MassClimate$Date`
+`cdate = MassClimate$Date`
 
-`Bdate = Mass$Date`
+`bdate = Mass$Date`
 
 
 **baseline**
@@ -113,17 +113,17 @@ The parameter baseline determines the model structure for the null model. The st
 Climate data from each tested climate window will be added to this baseline model, to allow for a direct comparison between the null model and each climate window.
 
 
-**Cinterval**
+**cinterval**
 
-Ideally, our predictive data will be available at a resolution of days. However, in some circumstances this may not be possible, especially when considering non-climatic data. With this in mind, Cinterval allows users to adjust the resolution of analysis to days, weeks or months. Note that the choice of Cinterval will impact our interpretation of parameters furthest and closest (see below). In our current example, daily data is available and so a resolution of days will be used.
+Ideally, our predictive data will be available at a resolution of days. However, in some circumstances this may not be possible, especially when considering non-climatic data. With this in mind, cinterval allows users to adjust the resolution of analysis to days, weeks or months. Note that the choice of cinterval will impact our interpretation of parameters furthest and closest (see below). In our current example, daily data is available and so a resolution of days will be used.
 
-`Cinterval = "day"`
+`cinterval = "day"`
 
 
 
 **furthest/closest**
 
-While our above example used a small dataset and tested a limited number of climate windows, the number of tested climate windows can be much larger, set by the parameters furthest and closest. These parameters set the upper and lower limits for tested climate windows. The values of furthest and closest will correspond to the resolution chosen in parameter Cinterval. In this example we are interested in testing all possible climate windows anywhere up to 100 days before the biological record.
+While our above example used a small dataset and tested a limited number of climate windows, the number of tested climate windows can be much larger, set by the parameters furthest and closest. These parameters set the upper and lower limits for tested climate windows. The values of furthest and closest will correspond to the resolution chosen in parameter cinterval. In this example we are interested in testing all possible climate windows anywhere up to 100 days before the biological record.
 
 `furthest = 100`
 
@@ -172,15 +172,15 @@ library(climwin)
 
 ```{r, eval = FALSE}
 
-MassWin <- climatewin(Xvar = list(Temp = MassClimate$Temp),
-                       Cdate = MassClimate$Date,
-                       Bdate = Mass$Date,
-                       baseline = lm(Mass ~ 1, data = Mass),
-                       Cinterval = "day",
-                       furthest = 100, closest = 0,
-                       type = "fixed", cutoff.day = 20, cutoff.month = 05,
-                       stat = "mean",
-                       func = "lin")
+MassWin <- climatewin(xvar = list(Temp = MassClimate$Temp),
+                      cdate = MassClimate$Date,
+                      bdate = Mass$Date,
+                      baseline = lm(Mass ~ 1, data = Mass),
+                      cinterval = "day",
+                      furthest = 100, closest = 0,
+                      type = "fixed", cutoff.day = 20, cutoff.month = 05,
+                      stat = "mean",
+                      func = "lin")
                        
 ```
 
@@ -263,8 +263,8 @@ In our `Mass` example, we can see an obvious region of strong windows around the
 
 ```{r, fig.width = 4, fig.height = 4}
 
-devtools::load_all("climwin")
-plotdelta(Dataset = MassOutput)
+library(climwin)
+plotdelta(dataset = MassOutput)
 
 ```
 
@@ -276,7 +276,7 @@ If we sum the weights of multiple models, we can now be more confident that we e
 
 ```{r, fig.width = 4, fig.height = 4}
 
-plotweights(Dataset = MassOutput)
+plotweights(dataset = MassOutput)
 
 ```
 
@@ -286,7 +286,7 @@ While we are often interested in estimating the location of the best climate win
 
 ```{r, fig.width = 4, fig.height = 4}
 
-plotbetas(Dataset = MassOutput)
+plotbetas(dataset = MassOutput)
 
 ```
 
@@ -297,11 +297,11 @@ So far both our plots of delta AICc and model weights seem to suggest that there
 ```{r, eval = FALSE}
 
 MassRand <- randwin(repeats = 5,
-                    Xvar = list(Temp = MassClimate$Temp),
-                    Cdate = MassClimate$Date,
-                    Bdate = Mass$Date,
+                    xvar = list(Temp = MassClimate$Temp),
+                    cdate = MassClimate$Date,
+                    bdate = Mass$Date,
                     baseline = lm(Mass ~ 1, data = Mass),
-                    Cinterval = "day",
+                    cinterval = "day",
                     furthest = 100, closest = 0,
                     type = "fixed", cutoff.day = 20, cutoff.month = 05,
                     stat = "mean",
@@ -314,7 +314,7 @@ As we can see below, the distribution of delta AICc values in the real data (top
 
 ```{r, fig.width = 4, fig.height = 4}
 
-plothist(Dataset = MassOutput, DatasetRand = MassRand)
+plothist(dataset = MassOutput, datasetrand = MassRand)
 
 ```
 
@@ -326,7 +326,7 @@ In the below example, the median start and end values of the top models correspo
 
 ```{r, fig.width = 4, fig.height = 4}
 
-plotwin(Dataset = MassOutput)
+plotwin(dataset = MassOutput)
 
 ```
 
@@ -340,11 +340,11 @@ While it is easy to save the Dataset output from the `climatewin` function, the 
 
 ```{r}
 
-MassSingle <- singlewin(Xvar = list(Temp = MassClimate$Temp),
-                        Cdate = MassClimate$Date,
-                        Bdate = Mass$Date,
+MassSingle <- singlewin(xvar = list(Temp = MassClimate$Temp),
+                        cdate = MassClimate$Date,
+                        bdate = Mass$Date,
                         baseline = lm(Mass ~ 1, data = Mass),
-                        Cinterval = "day",
+                        cinterval = "day",
                         furthest = 72, closest = 15,
                         type = "fixed", cutoff.day = 20, cutoff.month = 05,
                         stat = "mean",
@@ -357,9 +357,9 @@ We can use the output from the singlewin function to plot the best data.
 
 ```{r, fig.width = 4, fig.height = 4}
 
-plotbest(Dataset = MassOutput,
-         BestModel = MassSingle$BestModel, 
-         BestModelData = MassSingle$BestModelData)
+plotbest(dataset = MassOutput,
+         bestmodel = MassSingle$BestModel, 
+         bestmodeldata = MassSingle$BestModelData)
 
 ```
 
@@ -369,10 +369,10 @@ While each of these plots provides useful information for the user, they are bes
 
 ```{r, fig.width = 10, fig.height = 7.5}
 
-plotall(Dataset = MassOutput,
-        DatasetRand = MassRand,
-        BestModel = MassSingle$BestModel, 
-        BestModelData = MassSingle$BestModelData)
+plotall(dataset = MassOutput,
+        datasetrand = MassRand,
+        bestmodel = MassSingle$BestModel, 
+        bestmodeldata = MassSingle$BestModelData)
 
 ```
 
@@ -394,11 +394,11 @@ So our final function would be:
 
 ```{r, eval = FALSE}
 
-MassWin2 <- climatewin(Xvar = list(Temp = MassClimate$Temp),
-                       Cdate = MassClimate$Date,
-                       Bdate = Mass$Date,
+MassWin2 <- climatewin(xvar = list(Temp = MassClimate$Temp),
+                       cdate = MassClimate$Date,
+                       bdate = Mass$Date,
                        baseline = lm(Mass ~ 1, data = Mass),
-                       Cinterval = "day",
+                       cinterval = "day",
                        furthest = 100, closest = 0,
                        type = "fixed", cutoff.day = 20, cutoff.month = 05,
                        stat = c("max", "mean"),
@@ -440,6 +440,6 @@ Coefficients:
 
 ******************************
 
-This covers the basic functions of `climwin`. For more advanced features please see additional vignettes provided with this package. To ask additional questions, report bugs, or simply provide kind words of encouragement please e-mail:
+This covers the basic functions of `climwin`. For more advanced features please see additional vignettes provided with this package. To ask additional questions or report bugs please e-mail:
 
 liam.bailey@anu.edu.au

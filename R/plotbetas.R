@@ -2,7 +2,7 @@
 #' 
 #'Create colour plots of model beta estimates. Will include quadratic and cubic
 #'beta estimates where appropriate.
-#'@param Dataset A dataframe containing information on all fitted climate 
+#'@param dataset A dataframe containing information on all fitted climate 
 #' windows. Output from \code{\link{climatewin}}.
 #'@param plotall Used in conjunction with function \code{\link{plotall}}. 
 #' Should not be changed manually.
@@ -17,22 +17,17 @@
 #' 
 #'data(MassOutput)
 #'
-#'plotbetas(Dataset = MassOutput)
+#'plotbetas(dataset = MassOutput)
 #' 
 #'@import ggplot2
 #'@import gridExtra
 #'@export
 
-
-#LAST EDITED: 18/02/2015
-#EDITED BY: LIAM
-#NOTES: TIDY CODE
-
-plotbetas <- function(Dataset, plotallenv, plotall = FALSE){
+plotbetas <- function(dataset, plotallenv, plotall = FALSE){
   
-  with(Dataset, {
-    if(Dataset$Function[1] == "lin" || Dataset$Function[1] == "log" || Dataset$Function[1] == "inv"){
-      BETA <- ggplot(Dataset, aes(x = WindowClose, y = WindowOpen, z = ModelBeta)) +
+  with(dataset, {
+    if(dataset$Function[1] == "lin" || dataset$Function[1] == "log" || dataset$Function[1] == "inv"){
+      beta <-ggplot(dataset, aes(x = WindowClose, y = WindowOpen, z = ModelBeta)) +
         geom_tile(aes(fill = ModelBeta)) +
         scale_fill_gradientn(colours = c("red", "yellow", "blue"), name = "") +
         theme_classic() +
@@ -45,12 +40,12 @@ plotbetas <- function(Dataset, plotallenv, plotall = FALSE){
         ylab("Window open") +
         xlab("Window close")
       if(plotall == TRUE){
-        plotallenv$BETA <- BETA
+        plotallenv$beta <-beta
       } else {
-        BETA
+        beta
       }
-    } else if(Dataset$Function[1] == "quad"){
-      BETA <- ggplot(Dataset, aes(x = WindowClose, y = WindowOpen, z = ModelBeta)) +
+    } else if(dataset$Function[1] == "quad"){
+      beta <-ggplot(dataset, aes(x = WindowClose, y = WindowOpen, z = ModelBeta)) +
         geom_tile(aes(fill = ModelBeta)) +
         scale_fill_gradientn(colours = c("red", "yellow", "blue"), name = "") +
         theme_classic() +
@@ -63,7 +58,7 @@ plotbetas <- function(Dataset, plotallenv, plotall = FALSE){
         ylab("Window open") +
         xlab("Window close")
       
-      BETA2 <- ggplot(Dataset, aes(x = WindowClose, y = WindowOpen, z = ModelBetaQ)) +
+      beta2 <- ggplot(dataset, aes(x = WindowClose, y = WindowOpen, z = ModelBetaQ)) +
         geom_tile(aes(fill = ModelBetaQ)) +
         scale_fill_gradientn(colours = c("red", "yellow", "blue"), name = "") +
         theme_classic() +
@@ -76,13 +71,13 @@ plotbetas <- function(Dataset, plotallenv, plotall = FALSE){
         ylab("Window open") +
         xlab("Window close")
       if(plotall == TRUE){
-        plotallenv$BETA  <- BETA
-        plotallenv$BETA2 <- BETA2
+        plotallenv$beta  <- beta
+        plotallenv$beta2 <- beta2
       } else {
-        grid.arrange(BETA, BETA2, nrow = 1)
+        grid.arrange(beta, beta2, nrow = 1)
       }
-    } else if(Dataset$Function[1] == "cub"){
-      BETA <- ggplot(Dataset, aes(x = WindowClose, y = WindowOpen, z = ModelBeta)) +
+    } else if(dataset$Function[1] == "cub"){
+      beta <-ggplot(dataset, aes(x = WindowClose, y = WindowOpen, z = ModelBeta)) +
         geom_tile(aes(fill = ModelBeta)) +
         scale_fill_gradientn(colours = c("red", "yellow", "blue"), name = "") +
         theme_classic() +
@@ -95,7 +90,7 @@ plotbetas <- function(Dataset, plotallenv, plotall = FALSE){
         ylab("Window open") +
         xlab("Window close")
       
-        BETA2 <- ggplot(Dataset, aes(x = WindowClose, y = WindowOpen, z = ModelBetaQ)) +
+        beta2 <- ggplot(dataset, aes(x = WindowClose, y = WindowOpen, z = ModelBetaQ)) +
           geom_tile(aes(fill = ModelBetaQ)) +
           scale_fill_gradientn(colours = c("red", "yellow", "blue"), name = "") +
           theme_classic() +
@@ -108,7 +103,7 @@ plotbetas <- function(Dataset, plotallenv, plotall = FALSE){
           ylab("Window open") +
           xlab("Window close")
         
-        BETA3 <- ggplot(Dataset, aes(x = WindowClose, y = WindowOpen, z = ModelBetaC)) +
+        beta3 <- ggplot(dataset, aes(x = WindowClose, y = WindowOpen, z = ModelBetaC)) +
           geom_tile(aes(fill = ModelBetaC)) +
           scale_fill_gradientn(colours = c("red", "yellow", "blue"), name = "")+
           theme_classic() +
@@ -121,14 +116,14 @@ plotbetas <- function(Dataset, plotallenv, plotall = FALSE){
           ylab("Window open") +
           xlab("Window close")
       if(plotall == TRUE){
-        plotallenv$BETA  <- BETA
-        plotallenv$BETA2 <- BETA2
-        plotallenv$BETA3 <- BETA3
+        plotallenv$beta  <- beta
+        plotallenv$beta2 <- beta2
+        plotallenv$beta3 <- beta3
       } else {
-        grid.arrange(BETA, BETA2, BETA3, nrow = 1)
+        grid.arrange(beta, beta2, beta3, nrow = 1)
       }      
-    } else if(Dataset$Function[1] == "centre"){
-      WGMEAN <- ggplot(Dataset, aes(x = WindowClose, y = WindowOpen, z = WithinGrpMean)) +
+    } else if(dataset$Function[1] == "centre"){
+      wgmean <- ggplot(dataset, aes(x = WindowClose, y = WindowOpen, z = WithinGrpMean)) +
         geom_tile(aes(fill = WithinGrpMean)) +
         scale_fill_gradientn(colours = c("red", "yellow", "blue"), name = "") +
         theme_classic() +
@@ -141,7 +136,7 @@ plotbetas <- function(Dataset, plotallenv, plotall = FALSE){
         ylab("Window open") +
         xlab("Window close")
       
-      WGDEV <- ggplot(Dataset, aes(x = WindowClose, y = WindowOpen, z = WithinGrpDev)) +
+      wgdev <- ggplot(dataset, aes(x = WindowClose, y = WindowOpen, z = WithinGrpDev)) +
         geom_tile(aes(fill = WithinGrpDev)) +
         scale_fill_gradientn(colours = c("red", "yellow", "blue"), name = "") +
         theme_classic() +
@@ -155,10 +150,10 @@ plotbetas <- function(Dataset, plotallenv, plotall = FALSE){
         xlab("Window close")
       
       if(plotall == TRUE){
-        plotallenv$WGMEAN <- WGMEAN
-        plotallenv$WGDEV  <- WGDEV
+        plotallenv$wgmean <- wgmean
+        plotallenv$wgdev  <- wgdev
       } else {
-        grid.arrange(WGMEAN, WGDEV, nrow = 1)
+        grid.arrange(wgmean, wgdev, nrow = 1)
       }
     }
   }

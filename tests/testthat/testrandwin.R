@@ -14,17 +14,18 @@ test_that("Check randwin output", {
   closest = 1
   stat = "max"
   
-  rand <- randwin(repeats = 1, Xvar = MassClimate$Temp, Cdate = MassClimate$Date, Bdate = Mass$Date, 
-                  baseline = lm(Mass ~ 1, data = Mass), furthest = 2, closest = 1, 
-                  type = "variable", stat = "max", func = "lin", Cmissing = FALSE)
+  rand <- randwin(repeats = 1, xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, 
+                  bdate = Mass$Date, baseline = lm(Mass ~ 1, data = Mass), 
+                  furthest = 2, closest = 1, 
+                  type = "variable", stat = "max", func = "lin", cmissing = FALSE)
   
   duration  <- (furthest - closest) + 1
-  MaxMODNO  <- (duration * (duration + 1)) / 2
+  maxmodno  <- (duration * (duration + 1)) / 2
   
   expect_true(is.data.frame(rand))
   expect_equal(length(which(is.na(rand[, 4]))), 0)
   expect_true(ncol(rand) >= 15)
-  expect_equal(MaxMODNO, nrow(subset(rand, Repeat == 1)))
+  expect_equal(maxmodno, nrow(subset(rand, Repeat == 1)))
   expect_true((rand["Randomised"])[1,] == "yes")
   
 })

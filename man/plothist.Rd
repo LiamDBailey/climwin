@@ -4,25 +4,25 @@
 \alias{plothist}
 \title{Create a histogram of deltaAICc values}
 \usage{
-plothist(Dataset, DatasetRand = NULL, HISTQ = 0.99)
+plothist(dataset, datasetrand = NULL, histq = 0.99)
 }
 \arguments{
-\item{Dataset}{A dataframe containing information on all fitted climate
+\item{dataset}{A dataframe containing information on all fitted climate
 windows. Output from \code{\link{climatewin}}.}
 
-\item{DatasetRand}{A dataframe containing information on all fitted climate
+\item{datasetrand}{A dataframe containing information on all fitted climate
 windows using randomised data. Output from \code{\link{randwin}}.}
 
-\item{HISTQ}{If DatasetRand is provided. The quantile of the randomised data
+\item{histq}{If datasetrand is provided. The quantile of the randomised data
 that will be compared to non-randomised data. Used to determine the
 likelihood of finding a climate window model of a given deltaAICc value at
 random.}
 }
 \value{
-If DatasetRand is provided, plothist will return two stacked histograms
+If datasetrand is provided, plothist will return two stacked histograms
  to compare the deltaAICc of non-randomised and randomised data. This can
  help determine the likelihood of obtaining a deltaAICc value of fitted
- climate windows at random. Without DatasetRand, plotall will create a single
+ climate windows at random. Without datasetrand, plotall will create a single
  histogram of deltaAICc values for all fitted climate windows.
 }
 \description{
@@ -35,13 +35,13 @@ with randomised data if provided.
 data(MassOutput)
 data(MassRand)
 
-plothist(Dataset = MassOutput, DatasetRand = MassRand, HISTQ = 0.95)
+plothist(dataset = MassOutput, datasetrand = MassRand, histq = 0.95)
 
 # Plot deltaAICc when no randomised data is provided
 
 data(MassOutput)
 
-plothist(Dataset = MassOutput)
+plothist(dataset = MassOutput)
 }
 \author{
 Liam D. Bailey and Martijn van de Pol

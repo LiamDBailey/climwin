@@ -4,29 +4,29 @@
 \alias{weightwin}
 \title{Find a weighted climate window}
 \usage{
-weightwin(Xvar, Cdate, Bdate, baseline, furthest, closest, func = "lin",
-  type = "fixed", cutoff.day, cutoff.month, WeightFunction = "week",
-  Cinterval = "day", par = c(3, 0.2, 0), control = list(ndeps = c(0.01,
+weightwin(xvar, cdate, bdate, baseline, furthest, closest, func = "lin",
+  type = "fixed", cutoff.day, cutoff.month, weightfunc = "W",
+  cinterval = "day", par = c(3, 0.2, 0), control = list(ndeps = c(0.01,
   0.01, 0.01)), method = "L-BFGS-B")
 }
 \arguments{
-\item{Xvar}{The climate variable of interest. Please specify the parent
-environment and variable name (e.g. Climate$Temp).}
+\item{xvar}{A list object containing all climate variables of interest.
+Please specify the parent environment and variable name (e.g. Climate$Temp).}
 
-\item{Cdate}{The climate date variable. Please specify the parent environment
+\item{cdate}{The climate date variable. Please specify the parent environment
 and variable name (e.g. Climate$Date).}
 
-\item{Bdate}{The biological date variable. Please specify the parent
+\item{bdate}{The biological date variable. Please specify the parent
 environment and variable name (e.g. Biol$Date).}
 
 \item{baseline}{The baseline model structure used for testing correlation.
 Currently known to support lm, lme, glm and glmer objects.}
 
-\item{furthest}{The furthest number of time intervals (set by Cinterval)
+\item{furthest}{The furthest number of time intervals (set by cinterval)
 back from the cutoff date or biological record that will be included in
 the climate window search.}
 
-\item{closest}{The closest number of time intervals (set by Cinterval) back
+\item{closest}{The closest number of time intervals (set by cinterval) back
 from the cutoff date or biological record that will be included in the
 climate window search.}
 
@@ -40,13 +40,13 @@ linear ("lin"), quadratic ("quad"), cubic ("cub"), inverse ("inv") or log ("log"
 \item{cutoff.day,cutoff.month}{If type is "fixed", the day and month of the year
 from which the fixed window analysis will start.}
 
-\item{WeightFunction}{The distribution to be used for optimisation. Can be
-either a Weibull ("week") or Generalised Extreme Value distribution ("G").}
+\item{weightfunc}{The distribution to be used for optimisation. Can be
+either a Weibull ("W") or Generalised Extreme Value distribution ("G").}
 
-\item{Cinterval}{The resolution at which the climate window analysis will be
+\item{cinterval}{The resolution at which the climate window analysis will be
 conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the units
 of parameters 'furthest' and 'closest' will differ depending on the choice
-of Cinterval.}
+of cinterval.}
 
 \item{par}{Shape, scale and location parameters of the Weibull of GEV weight
 function used as start weight function. For Weibull : Shape and scale
@@ -107,14 +107,15 @@ data(OffspringClimate)
 # Fit a quadratic term for the mean weighted climate (func="quad")
 # in a Poisson regression (offspring number ranges 0-3)
 # Test a variable window (type = "fixed")
-# Test at the resolution of days (Cinterval="day")
-# Uses a Weibull weight function (WeightFunction="week")
+# Test at the resolution of days (cinterval="day")
+# Uses a Weibull weight function (weightfunc="week")
 
-weight <- weightwin(Xvar = OffspringClimate$Temperature, Cdate = OffspringClimate$Date,
-                   Bdate = Offspring$Date,
+weight <- weightwin(xvar = list(Temp = OffspringClimate$Temperature),
+                   cdate = OffspringClimate$Date,
+                   bdate = Offspring$Date,
                    baseline = glm(Offspring ~ 1, family = poisson, data = Offspring),
                    furthest = 365, closest = 0, func = "quad",
-                   type = "variable", WeightFunction = "week", Cinterval = "day",
+                   type = "variable", weightfunc = "W", cinterval = "day",
                    par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)),
                    method = "L-BFGS-B")
 

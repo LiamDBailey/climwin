@@ -4,18 +4,18 @@
 #'to help determine the chance of obtaining an observed result at random.
 #'@param repeats The number of times that data will be randomised and analysed 
 #'  for climate windows.
-#'@param Xvar A list object containing all climate variables of interest. 
+#'@param xvar A list object containing all climate variables of interest. 
 #'  Please specify the parent environment and variable name (e.g. Climate$Temp).
-#'@param Cdate The climate date variable (dd/mm/yyyy). Please specify the parent
+#'@param cdate The climate date variable (dd/mm/yyyy). Please specify the parent
 #'  environment and variable name (e.g. Climate$Date).
-#'@param Bdate The biological date variable (dd/mm/yyyy). Please specify the 
+#'@param bdate The biological date variable (dd/mm/yyyy). Please specify the 
 #'  parent environment and variable name (e.g. Biol$Date).
 #'@param baseline The baseline model structure used for testing correlation. 
 #'  Currently known to support lm, glm, lmer and glmer objects.
-#'@param furthest The furthest number of time intervals (set by Cinterval) back 
+#'@param furthest The furthest number of time intervals (set by cinterval) back 
 #'  from the cutoff date or biological record that will be included in the 
 #'  climate window search.
-#'@param closest The closest number of time intervals (set by Cinterval) back 
+#'@param closest The closest number of time intervals (set by cinterval) back 
 #'  from the cutoff date or biological record that will be included in the 
 #'  climate window search.
 #'@param stat The aggregate statistic used to analyse the climate data. Can 
@@ -29,14 +29,14 @@
 #'  measured) or fixed (i.e. number of days before a set point in time).
 #'@param cutoff.day,cutoff.month If type is "fixed", the day and month of the 
 #'  year from which the fixed window analysis will start.
-#'@param Cmissing TRUE or FALSE, determines what should be done if there are 
+#'@param cmissing TRUE or FALSE, determines what should be done if there are 
 #'  missing climate data. If FALSE, the function will not run if missing 
 #'  climate data is encountered. If TRUE, any records affected by missing 
 #'  climate data will be removed from climate window analysis.
-#'@param Cinterval The resolution at which climate window analysis will be 
+#'@param cinterval The resolution at which climate window analysis will be 
 #'  conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the units
 #'  of parameters 'furthest' and 'closest' will differ depending on the choice
-#'  of Cinterval.
+#'  of cinterval.
 #'@param upper Cut-off values used to determine growing degree days or positive 
 #'  climate thresholds (depending on parameter thresh). Note that when values
 #'  of lower and upper are both provided, climatewin will instead calculate an 
@@ -63,12 +63,13 @@
 #'# Randomise data twice
 #'# Note all other parameters are fitted in the same way as the climatewin function.
 #' 
-#'rand <- randwin(repeats = 2, Xvar = MassClimate$Temp, 
-#'                Cdate = MassClimate$Date, Bdate = Mass$Date,
-#'                baseline = lm(Mass ~ 1, data = Mass), furthest = 100, closest = 0,
+#'rand <- randwin(repeats = 2, xvar = list(Temp = MassClimate$Temp), 
+#'                cdate = MassClimate$Date, bdate = Mass$Date,
+#'                baseline = lm(Mass ~ 1, data = Mass), 
+#'                furthest = 100, closest = 0,
 #'                stat = "mean", func = "lin", type = "fixed", 
 #'                cutoff.day = 20, cutoff.month = 5,
-#'                Cmissing = FALSE, Cinterval = "day")
+#'                cmissing = FALSE, cinterval = "day")
 #'                 
 #'# View output #
 #' 
@@ -77,31 +78,33 @@
 #'
 #'@export
 
-randwin <- function(repeats = 1, Xvar, Cdate, Bdate, baseline, 
+randwin <- function(repeats = 1, xvar, cdate, bdate, baseline, 
                     furthest, closest, stat,  
                     func, type, cutoff.day, cutoff.month,
-                    Cmissing = FALSE, Cinterval = "day",
+                    cmissing = FALSE, cinterval = "day",
                     upper = NA, lower = NA, thresh = FALSE, centre = NULL){
   
-  Xvar = Xvar[[1]]
+  xvar = xvar[[1]]
   
   for (r in 1:repeats){
     print (c("randomization number ", r))
-    BdateNew        <- sample(Bdate)
-    WindowOutputRep <- basewin(Xvar = Xvar, Cdate = Cdate, Bdate = BdateNew, 
-                               baseline = baseline, furthest = furthest,
-                               closest = closest, stat = stat, 
-                               func = func, type = type,
-                               cutoff.day = cutoff.day, cutoff.month = cutoff.month,
-                               nrandom = repeats, Cmissing = Cmissing, Cinterval = Cinterval,
-                               upper = upper, lower = lower, thresh = thresh, centre = centre)
-    WindowOutputRep$Repeat <- r
+    bdateNew        <- sample(bdate)
+    outputrep <- basewin(xvar = xvar, cdate = cdate, bdate = bdateNew, 
+                         baseline = baseline, furthest = furthest,
+                         closest = closest, stat = stat, 
+                         func = func, type = type,
+                         cutoff.day = cutoff.day, cutoff.month = cutoff.month,
+                         nrandom = repeats, cmissing = cmissing, cinterval = cinterval,
+                         upper = upper, lower = lower, thresh = thresh, centre = centre)
+    
+    outputrep$Repeat <- r
+    
     if(r == 1){ 
-      WindowOutputRand <- WindowOutputRep 
+      outputrand <- outputrep 
     } else { 
-      WindowOutputRand <- rbind(WindowOutputRand, WindowOutputRep)
+      outputrand <- rbind(outputrand, outputrep)
     }
-    rm(WindowOutputRep)
+    rm(outputrep)
   }
-  return(as.data.frame(WindowOutputRand))
+  return(as.data.frame(outputrand))
 } 

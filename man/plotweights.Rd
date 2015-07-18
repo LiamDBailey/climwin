@@ -4,13 +4,13 @@
 \alias{plotweights}
 \title{Plot distribution of model weights}
 \usage{
-plotweights(Dataset, CW1 = 0.95, CW2 = 0.5, CW3 = 0.25)
+plotweights(dataset, cw1 = 0.95, cw2 = 0.5, cw3 = 0.25)
 }
 \arguments{
-\item{Dataset}{A dataframe containing information on all fitted climate
+\item{dataset}{A dataframe containing information on all fitted climate
 windows. Output from \code{\link{climatewin}}.}
 
-\item{CW1,CW2,CW3}{Cumulative weight levels used to visualise model weight
+\item{cw1,cw2,cw3}{Cumulative weight levels used to visualise model weight
 distribution. Cumulative weights represent the chance that the best model is
 contained within a set. For example, there is a 95 percent chance that the best
 climate window model is contained within the cumulative weight level of
@@ -18,7 +18,7 @@ climate window model is contained within the cumulative weight level of
 }
 \value{
 Returns a plot showing the distribution of cumulative model
- weights. Levels determined by parameters CW1,CW2 and CW3.
+ weights. Levels determined by parameters cw1,cw2 and cw3.
 }
 \description{
 Create a plot showing the distribution of cumulative model weights for
@@ -29,7 +29,7 @@ all fitted climate windows.
 
 data(MassOutput)
 
-plotweights(Dataset = MassOutput, CW1 = 0.95, CW2 = 0.75, CW3 = 0.25)
+plotweights(dataset = MassOutput, cw1 = 0.95, cw2 = 0.75, cw3 = 0.25)
 }
 \author{
 Liam D. Bailey and Martijn van de Pol

@@ -1,18 +1,18 @@
 #'Fit a single climate window
 #'
 #'Fit a single climate window with a known start and end time.
-#'@param Xvar A list object containing all climate variables of interest. 
+#'@param xvar A list object containing all climate variables of interest. 
 #'  Please specify the parent environment and variable name (e.g. Climate$Temp).
-#'@param Cdate The climate date variable (dd/mm/yyyy). Please specify the parent
+#'@param cdate The climate date variable (dd/mm/yyyy). Please specify the parent
 #'  environment and variable name (e.g. Climate$Date).
-#'@param Bdate The biological date variable (dd/mm/yyyy). Please specify the 
+#'@param bdate The biological date variable (dd/mm/yyyy). Please specify the 
 #'  parent environment and variable name (e.g. Biol$Date).
 #'@param baseline The baseline model structure used for testing correlation. 
 #'  Currently known to support lm, glm, lmer and glmer objects.
-#'@param furthest The furthest number of time intervals (set by Cinterval) back 
+#'@param furthest The furthest number of time intervals (set by cinterval) back 
 #'  from the cutoff date or biological record that will be included in the 
 #'  climate window search.
-#'@param closest The closest number of time intervals (set by Cinterval) back 
+#'@param closest The closest number of time intervals (set by cinterval) back 
 #'  from the cutoff date or biological record that will be included in the 
 #'  climate window search.
 #'@param stat The aggregate statistic used to analyse the climate data. Can 
@@ -26,14 +26,14 @@
 #'  measured) or fixed (i.e. number of days before a set point in time).
 #'@param cutoff.day,cutoff.month If type is "fixed", the day and month of the 
 #'  year from which the fixed window analysis will start.
-#'@param Cmissing TRUE or FALSE, determines what should be done if there are 
+#'@param cmissing TRUE or FALSE, determines what should be done if there are 
 #'  missing climate data. If FALSE, the function will not run if missing 
 #'  climate data is encountered. If TRUE, any records affected by missing 
 #'  climate data will be removed from climate window analysis.
-#'@param Cinterval The resolution at which climate window analysis will be 
+#'@param cinterval The resolution at which climate window analysis will be 
 #'  conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the units
 #'  of parameters 'furthest' and 'closest' will differ depending on the choice
-#'  of Cinterval.
+#'  of cinterval.
 #'@param upper Cut-off values used to determine growing degree days or positive 
 #'  climate thresholds (depending on parameter thresh). Note that when values
 #'  of lower and upper are both provided, climatewin will instead calculate an 
@@ -69,11 +69,13 @@
 #'# Fit a linear term for the mean climate
 #'# Fit climate windows at the resolution of days
 #'
-#'single <- singlewin(Xvar = MassClimate$Temp, Cdate = MassClimate$Date, Bdate = Mass$Date,
-#'                    baseline = lm(Mass ~ 1, data = Mass), furthest = 72, closest = 15,
+#'single <- singlewin(xvar = list(Temp = MassClimate$Temp), 
+#'                    cdate = MassClimate$Date, bdate = Mass$Date,
+#'                    baseline = lm(Mass ~ 1, data = Mass), 
+#'                    furthest = 72, closest = 15,
 #'                    stat = "mean", func = "lin",
 #'                    type = "fixed", cutoff.day = 20, cutoff.month = 5,
-#'                    Cmissing = FALSE, Cinterval = "day")
+#'                    cmissing = FALSE, cinterval = "day")
 #'                
 #'##View data##
 #'single$BestModel
@@ -85,14 +87,14 @@
 #'@importFrom lubridate month
 #'@export
 
-singlewin <- function(Xvar, Cdate, Bdate, baseline, 
+singlewin <- function(xvar, cdate, bdate, baseline, 
                       furthest, closest, stat, func, 
                       type, cutoff.day, cutoff.month, 
-                      Cmissing = FALSE, Cinterval = "day",
+                      cmissing = FALSE, cinterval = "day",
                       upper = NA, lower = NA, thresh = FALSE,
                       centre = NULL){
   
-  Xvar = Xvar[[1]]
+  xvar = xvar[[1]]
   
   if(stat == "slope" & func == "log" || stat == "slope" & func == "inv"){
     stop("stat = slope cannot be used with func = LOG or I as negative values may be present")
@@ -100,88 +102,88 @@ singlewin <- function(Xvar, Cdate, Bdate, baseline,
   
   duration  <- (furthest - closest) + 1
   
-  Bdate  <- as.Date(Bdate, format = "%d/%m/%Y") # Convert the date variables into the R date format
-  Cdate2 <- seq(min(as.Date(Cdate, format = "%d/%m/%Y")), max(as.Date(Cdate, format = "%d/%m/%Y")), "days") # Convert the date variables into the R date format
-  Cdate  <- as.Date(Cdate, format = "%d/%m/%Y")
+  bdate  <- as.Date(bdate, format = "%d/%m/%Y") # Convert the date variables into the R date format
+  cdate2 <- seq(min(as.Date(cdate, format = "%d/%m/%Y")), max(as.Date(cdate, format = "%d/%m/%Y")), "days") # Convert the date variables into the R date format
+  cdate  <- as.Date(cdate, format = "%d/%m/%Y")
   
-  if(min(Cdate) > min(Bdate)){
+  if(min(cdate) > min(bdate)){
     stop("Climate data does not cover all years of biological data. Please increase range of climate data")
   }
   
-  Xvar <- Xvar[match(Cdate2, Cdate)]
+  xvar <- xvar[match(cdate2, cdate)]
   
-  CIntNo     <- as.numeric(Cdate2) - min(as.numeric(Cdate2)) + 1   # atrribute daynumbers for both datafiles with first date in CLimateData set to CIntNo 1
-  RealBIntNo <- as.numeric(Bdate) - min(as.numeric(Cdate2)) + 1
+  cintno     <- as.numeric(cdate2) - min(as.numeric(cdate2)) + 1   # atrribute daynumbers for both datafiles with first date in CLimateData set to cintno 1
+  realbintno <- as.numeric(bdate) - min(as.numeric(cdate2)) + 1
   
-  if (length(CIntNo) != length(unique(CIntNo))){
+  if (length(cintno) != length(unique(cintno))){
     stop ("There are duplicate dayrecords in climate data")
   }
   
-  if (Cinterval != "day" && Cinterval != "week" && Cinterval != "month"){
-    stop("Cinterval should be either day, week or month")
+  if (cinterval != "day" && cinterval != "week" && cinterval != "month"){
+    stop("cinterval should be either day, week or month")
   }
   
-  if(Cinterval == "day"){  
+  if(cinterval == "day"){  
     if(type == "fixed"){   
-      BIntNo            <- as.numeric(as.Date(paste(cutoff.day, cutoff.month, year(Bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(Cdate2)) + 1 
-      wrongyear         <- which(BIntNo < RealBIntNo)
-      BIntNo[wrongyear] <- (as.numeric(as.Date(paste(cutoff.day, cutoff.month, (year(Bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(Cdate2)) + 1)
+      bintno            <- as.numeric(as.Date(paste(cutoff.day, cutoff.month, year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1 
+      wrongyear         <- which(bintno < realbintno)
+      bintno[wrongyear] <- (as.numeric(as.Date(paste(cutoff.day, cutoff.month, (year(bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1)
     } else {
-      BIntNo <- RealBIntNo
+      bintno <- realbintno
     }
-  } else if (Cinterval == "week"){
-    CIntNo     <- ceiling((as.numeric(Cdate2) - min(as.numeric(Cdate2)) + 1) / 7)   # atrribute weeknumbers for both datafiles with first week in CLimateData set to CIntNo 1
-    RealBIntNo <- ceiling((as.numeric(Bdate) - min(as.numeric(Cdate2)) + 1) / 7)
-    NewClim    <- data.frame("CIntNo" = CIntNo, "Xvar" = Xvar)
-    NewClim2   <- melt(NewClim, id = "CIntNo")
-    NewClim3   <- cast(NewClim2, CIntNo~variable, mean)
-    CIntNo     <- NewClim3$CIntNo
-    Xvar       <- NewClim3$Xvar
+  } else if (cinterval == "week"){
+    cintno     <- ceiling((as.numeric(cdate2) - min(as.numeric(cdate2)) + 1) / 7)   # atrribute weeknumbers for both datafiles with first week in CLimateData set to cintno 1
+    realbintno <- ceiling((as.numeric(bdate) - min(as.numeric(cdate2)) + 1) / 7)
+    newclim    <- data.frame("cintno" = cintno, "xvar" = xvar)
+    newclim2   <- melt(newclim, id = "cintno")
+    newclim3   <- cast(newclim2, cintno~variable, mean)
+    cintno     <- newclim3$cintno
+    xvar       <- newclim3$xvar
     if (type == "fixed"){ 
-      BIntNo            <- ceiling((as.numeric(as.Date(paste(cutoff.day, cutoff.month, year(Bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(Cdate2)) + 1) / 7) 
-      wrongyear         <- which(BIntNo < RealBIntNo)
-      BIntNo[wrongyear] <- ceiling((as.numeric(as.Date(paste(cutoff.day, cutoff.month, (year(Bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(Cdate2)) + 1) / 7)
+      bintno            <- ceiling((as.numeric(as.Date(paste(cutoff.day, cutoff.month, year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1) / 7) 
+      wrongyear         <- which(bintno < realbintno)
+      bintno[wrongyear] <- ceiling((as.numeric(as.Date(paste(cutoff.day, cutoff.month, (year(bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1) / 7)
     } else {
-      BIntNo <- RealBIntNo
+      bintno <- realbintno
     }
-  } else if (Cinterval == "month"){ 
-    Cmonth     <- month(Cdate2)
-    Cyear      <- year(Cdate2) - min(year(Cdate2))
-    CIntNo     <- Cmonth + 12 * Cyear
-    RealBIntNo <- month(Bdate) + 12 * (year(Bdate) - min(year(Cdate2)))
-    NewClim    <- data.frame("CIntNo" = CIntNo, "Xvar" = Xvar)
-    NewClim2   <- melt(NewClim, id = "CIntNo")
-    NewClim3   <- cast(NewClim2, CIntNo~variable, mean)
-    CIntNo     <- NewClim3$CIntNo
-    Xvar       <- NewClim3$Xvar
+  } else if (cinterval == "month"){ 
+    cmonth     <- month(cdate2)
+    cyear      <- year(cdate2) - min(year(cdate2))
+    cintno     <- cmonth + 12 * cyear
+    realbintno <- month(bdate) + 12 * (year(bdate) - min(year(cdate2)))
+    newclim    <- data.frame("cintno" = cintno, "xvar" = xvar)
+    newclim2   <- melt(newclim, id = "cintno")
+    newclim3   <- cast(newclim2, cintno ~ variable, mean)
+    cintno     <- newclim3$cintno
+    xvar       <- newclim3$xvar
     if (type == "fixed"){ 
-      BIntNo            <- cutoff.month + 12 * (year(Bdate) - min(year(Cdate2)))
-      wrongyear         <- which(BIntNo < RealBIntNo)
-      BIntNo[wrongyear] <- cutoff.month + 12 * (year(Bdate[wrongyear]) + 1 - min(year(Cdate2)))
+      bintno            <- cutoff.month + 12 * (year(bdate) - min(year(cdate2)))
+      wrongyear         <- which(bintno < realbintno)
+      bintno[wrongyear] <- cutoff.month + 12 * (year(bdate[wrongyear]) + 1 - min(year(cdate2)))
     } else {
-      BIntNo <- RealBIntNo
+      bintno <- realbintno
     }
   }
   
-  if(Cinterval == "day"){
-    if((min(BIntNo) - furthest) < min(CIntNo)){
+  if(cinterval == "day"){
+    if((min(bintno) - furthest) < min(cintno)){
       stop("You do not have enough climate data to search that far back. Please adjust the value of furthest or add additional climate data.")
     }
   }
 
-  if(Cinterval == "week"){
-    if((min(BIntNo) - furthest*7) < min(CIntNo)){
+  if(cinterval == "week"){
+    if((min(bintno) - furthest * 7) < min(cintno)){
       stop("You do not have enough climate data to search that far back. Please adjust the value of furthest or add additional climate data.")
     }
   }
   
-  if(Cinterval == "month"){
-    if((as.numeric(min(as.Date(Bdate, format = "%d/%m/%Y")) - months(furthest)) - (as.numeric(min(as.Date(Cdate, format = "%d/%m/%Y"))))) <= 0){
+  if(cinterval == "month"){
+    if((as.numeric(min(as.Date(bdate, format = "%d/%m/%Y")) - months(furthest)) - (as.numeric(min(as.Date(cdate, format = "%d/%m/%Y"))))) <= 0){
       stop("You do not have enough climate data to search that far back. Please adjust the value of furthest or add additional climate data.")
     }
   }
   
-  if(max(BIntNo) > max(CIntNo)){
+  if(max(bintno) > max(cintno)){
     if(type == "fixed"){
       stop("You need more recent biological data. This error may be caused by your choice of cutoff.day/cutoff.month")
     } else {
@@ -191,78 +193,78 @@ singlewin <- function(Xvar, Cdate, Bdate, baseline,
   
   baseline  <- update(baseline, .~.)
   nullmodel <- AICc(baseline)  
-  MODLIST   <- list()   # dataframes to store ouput
-  CMatrix   <- matrix(ncol = (duration), nrow = length(Bdate))
+  modlist   <- list()   # dataframes to store ouput
+  cmatrix   <- matrix(ncol = (duration), nrow = length(bdate))
   
   modeldat      <- model.frame(baseline)
-  modeldat$Yvar <- modeldat[, 1]
+  modeldat$yvar <- modeldat[, 1]
   
   if(is.null(centre) == FALSE){
     func = "centre"
   }
   
-  if(length(modeldat$Yvar) != length(Bdate)){
+  if(length(modeldat$yvar) != length(bdate)){
     stop("NA values present in biological response. Please remove NA values")
   }
   
   if(is.na(upper) == FALSE && is.na(lower) == TRUE){
     if(thresh == TRUE){
-      Xvar <- ifelse(Xvar > upper, 1, 0)
+      xvar <- ifelse(xvar > upper, 1, 0)
     } else {
-      Xvar <- ifelse(Xvar > upper, Xvar, 0)
+      xvar <- ifelse(xvar > upper, xvar, 0)
     }
   }
   
   
   if(is.na(lower) == FALSE && is.na(upper) == TRUE){
     if(thresh == TRUE){
-      Xvar <- ifelse(Xvar < lower, 1, 0)
+      xvar <- ifelse(xvar < lower, 1, 0)
     } else {
-      Xvar <- ifelse(Xvar < lower, Xvar, 0)
+      xvar <- ifelse(xvar < lower, xvar, 0)
     }
   }
   
   if(is.na(lower) == FALSE && is.na(upper) == FALSE){
     if(thresh == TRUE){
-      Xvar <- ifelse(Xvar > lower & Xvar < upper, 1, 0)
+      xvar <- ifelse(xvar > lower & xvar < upper, 1, 0)
     } else {
-      Xvar <- ifelse(Xvar > lower & Xvar < upper, Xvar - lower, 0)
+      xvar <- ifelse(xvar > lower & xvar < upper, xvar - lower, 0)
     } 
   }  
   
-  for (i in 1:length(Bdate)){
+  for (i in 1:length(bdate)){
     for (j in closest:furthest){
       k <- j - closest + 1
-      CMatrix[i, k] <- Xvar[which(CIntNo == BIntNo[i] - j)]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
+      cmatrix[i, k] <- xvar[which(cintno == bintno[i] - j)]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
     }
   }
   
-  if (Cmissing == FALSE && length(which(is.na(CMatrix))) > 0){
-    if(Cinterval == "day"){
-      .GlobalEnv$Missing <- as.Date(CIntNo[is.na(Xvar)], origin = min(as.Date(Cdate, format = "%d/%m/%Y")) - 1)
+  if (cmissing == FALSE && length(which(is.na(cmatrix))) > 0){
+    if(cinterval == "day"){
+      .GlobalEnv$missing <- as.Date(cintno[is.na(xvar)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1)
     }
-    if(Cinterval == "month"){
-      .GlobalEnv$Missing <- c(paste("Month:", month(as.Date(CIntNo[is.na(Xvar)], origin = min(as.Date(Cdate, format = "%d/%m/%Y")) - 1)),
-                                    "Year:", year(as.Date(CIntNo[is.na(Xvar)], origin = min(as.Date(Cdate, format = "%d/%m/%Y")) - 1))))
+    if(cinterval == "month"){
+      .GlobalEnv$missing <- c(paste("Month:", month(as.Date(cintno[is.na(xvar)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1)),
+                                    "Year:", year(as.Date(cintno[is.na(xvar)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1))))
     }
-    if(Cinterval == "week"){
-      .GlobalEnv$Missing <- c(paste("Week:", month(as.Date(CIntNo[is.na(Xvar)], origin = min(as.Date(Cdate, format = "%d/%m/%Y")) - 1)),
-                                    "Year:", year(as.Date(CIntNo[is.na(Xvar)], origin = min(as.Date(Cdate, format = "%d/%m/%Y")) - 1))))
+    if(cinterval == "week"){
+      .GlobalEnv$missing <- c(paste("Week:", month(as.Date(cintno[is.na(xvar)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1)),
+                                    "Year:", year(as.Date(cintno[is.na(xvar)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1))))
     }
-    stop(c("Climate data should not contain NA values: ", length(.GlobalEnv$Missing),
-           " NA value(s) found. Please add missing climate data or set Cmissing=TRUE.
-           See object Missing for all missing climate data"))
+    stop(c("Climate data should not contain NA values: ", length(.GlobalEnv$missing),
+           " NA value(s) found. Please add missing climate data or set cmissing = TRUE.
+           See object missing for all missing climate data"))
   }
   
-  if (Cmissing == TRUE && length(which(is.na(CMatrix))) > 0){
-    modeldat      <- modeldat[complete.cases(CMatrix), ]
-    baseline      <- update(baseline, Yvar~., data = modeldat)
-    CMatrix       <- CMatrix[complete.cases(CMatrix), ]
+  if (cmissing == TRUE && length(which(is.na(cmatrix))) > 0){
+    modeldat      <- modeldat[complete.cases(cmatrix), ]
+    baseline      <- update(baseline, yvar~., data = modeldat)
+    cmatrix       <- cmatrix[complete.cases(cmatrix), ]
   }
   
   modeldat           <- model.frame(baseline)
-  modeldat$Yvar      <- modeldat[, 1]
-  modeldat$climate   <- matrix(ncol = 1, nrow = nrow(CMatrix), seq(from = 1, to = nrow(CMatrix), by = 1))
+  modeldat$yvar      <- modeldat[, 1]
+  modeldat$climate   <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
   
   if(is.null(weights(baseline)) == FALSE){
     if(class(baseline)[1] == "glm" & sum(weights(baseline)) == nrow(model.frame(baseline)) || class(baseline)[1] == "lmerMod" & sum(weights(baseline)) == nrow(model.frame(baseline))){
@@ -273,19 +275,19 @@ singlewin <- function(Xvar, Cdate, Bdate, baseline,
   }
   
   if (func == "lin"){
-    modeloutput <- update(baseline, Yvar~. + climate, data = modeldat)
+    modeloutput <- update(baseline, yvar~. + climate, data = modeldat)
   } else if (func == "quad") {
-    modeloutput <- update(baseline, Yvar~. + climate + I(climate ^ 2), data = modeldat)
+    modeloutput <- update(baseline, yvar~. + climate + I(climate ^ 2), data = modeldat)
   } else if (func == "cub") {
-    modeloutput <- update(baseline, Yvar~. + climate + I(climate ^ 2) + I(climate ^ 3), data = modeldat)
+    modeloutput <- update(baseline, yvar~. + climate + I(climate ^ 2) + I(climate ^ 3), data = modeldat)
   } else if (func == "log") {
-    modeloutput <- update(baseline, Yvar~. + log(climate), data = modeldat)
+    modeloutput <- update(baseline, yvar~. + log(climate), data = modeldat)
   } else if (func == "inv") {
-    modeloutput <- update (baseline, Yvar~. + I(climate ^ -1), data = modeldat)
+    modeloutput <- update (baseline, yvar~. + I(climate ^ -1), data = modeldat)
   } else if (func == "centre"){
-    modeldat$WGdev  <- matrix(ncol = 1, nrow = nrow(CMatrix), seq(from = 1, to = nrow(CMatrix), by = 1))
-    modeldat$WGmean <- matrix(ncol = 1, nrow = nrow(CMatrix), seq(from = 1, to = nrow(CMatrix), by = 1))
-    modeloutput <- update (baseline, Yvar ~. + WGdev + WGmean, data = modeldat)
+    modeldat$wgdev  <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
+    modeldat$wgmean <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
+    modeloutput <- update (baseline, yvar ~. + wgdev + wgmean, data = modeldat)
   } else {
     print("Define func")
   }
@@ -296,14 +298,14 @@ singlewin <- function(Xvar, Cdate, Bdate, baseline,
 
   #Save the best model output
   if (stat == "slope"){
-    time               <- seq(1, n, 1)
-    modeldat$climate <- apply(CMatrix, 1, FUN = function(x) coef(lm(x ~ time))[2])
+    time             <- seq(1, n, 1)
+    modeldat$climate <- apply(cmatrix, 1, FUN = function(x) coef(lm(x ~ time))[2])
   } else {
-    ifelse(n == 1, modeldat$climate <- CMatrix, modeldat$climate <- apply(CMatrix, 1, FUN = stat))
+    ifelse(n == 1, modeldat$climate <- cmatrix, modeldat$climate <- apply(cmatrix, 1, FUN = stat))
   }
   if(is.null(centre) == FALSE){
-    modeldat$WGdev  <- WGdev(modeldat$climate, centre)
-    modeldat$WGmean <- WGmean(modeldat$climate, centre)
+    modeldat$WGdev  <- wgdev(modeldat$climate, centre)
+    modeldat$WGmean <- wgmean(modeldat$climate, centre)
     LocalBestModel  <- update(modeloutput, .~., data = modeldat)
   } else {
     LocalBestModel <- update(modeloutput, .~.)

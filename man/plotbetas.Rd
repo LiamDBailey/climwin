@@ -4,10 +4,10 @@
 \alias{plotbetas}
 \title{Plot model beta estimates}
 \usage{
-plotbetas(Dataset, plotallenv, plotall = FALSE)
+plotbetas(dataset, plotallenv, plotall = FALSE)
 }
 \arguments{
-\item{Dataset}{A dataframe containing information on all fitted climate
+\item{dataset}{A dataframe containing information on all fitted climate
 windows. Output from \code{\link{climatewin}}.}
 
 \item{plotallenv}{Used in conjunction with function \code{\link{plotall}}.
@@ -30,7 +30,7 @@ beta estimates where appropriate.
 
 data(MassOutput)
 
-plotbetas(Dataset = MassOutput)
+plotbetas(dataset = MassOutput)
 }
 \author{
 Liam D. Bailey and Martijn van de Pol

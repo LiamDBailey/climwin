@@ -1,7 +1,7 @@
 #' Plot deltaAICc of models
 #' 
 #'Create a colour plot of model deltaAICc values.
-#'@param Dataset A dataframe containing information on all fitted climate 
+#'@param dataset A dataframe containing information on all fitted climate 
 #' windows. Output from \code{\link{climatewin}}.
 #'@return Returns a colour plot of model deltaAICc values (larger negative
 #' values indicate stronger models). DeltaAICc is the difference between AICc
@@ -12,14 +12,14 @@
 #' 
 #'data(MassOutput)
 #' 
-#'plotdelta(Dataset = MassOutput)
+#'plotdelta(dataset = MassOutput)
 #'@import ggplot2
 #'@export
 
-plotdelta <- function(Dataset){
+plotdelta <- function(dataset){
   
-with(Dataset, {
-  ggplot(Dataset, aes(x = WindowClose, y = WindowOpen, z = deltaAICc))+
+with(dataset, {
+  ggplot(dataset, aes(x = WindowClose, y = WindowOpen, z = deltaAICc))+
     geom_tile(aes(fill = deltaAICc))+
     scale_fill_gradientn(colours = c("red", "yellow", "blue"), name = "")+
     theme_classic()+

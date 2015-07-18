@@ -6,19 +6,19 @@
 #'when the data were recorded (dd/mm/yyyy) and a response variable column.
 #'
 #'Note that climatewin allows you to test multiple possible parameters with the
-#'same code (e.g. func, stat, Xvar). See examples for more detail.
-#'@param Xvar A list object containing all climate variables of interest. 
-#'  Please specify the parent environment and variable name (e.g. Climate$Temp).
-#'@param Cdate The climate date variable (dd/mm/yyyy). Please specify the 
-#'  parent environment and variable name (e.g. Climate$Date).
-#'@param Bdate The biological date variable (dd/mm/yyyy). Please specify the 
+#'same code (e.g. func, stat, xvar). See examples for more detail.
+#'@param xvar A list object containing all climate variables of interest. 
+#'  Please specify the parent environment and variable name (e.g. climate$Temp).
+#'@param cdate The climate date variable (dd/mm/yyyy). Please specify the 
+#'  parent environment and variable name (e.g. climate$Date).
+#'@param bdate The biological date variable (dd/mm/yyyy). Please specify the 
 #'  parent environment and variable name (e.g. Biol$Date).
 #'@param baseline The baseline model structure used for model testing. 
 #'  Currently known to support lm, glm, lmer and glmer objects.
-#'@param furthest The furthest number of time intervals (set by Cinterval) 
+#'@param furthest The furthest number of time intervals (set by cinterval) 
 #'  back from the cutoff date or biological record that will be included in
 #'  the climate window search.
-#'@param closest The closest number of time intervals (set by Cinterval) back 
+#'@param closest The closest number of time intervals (set by cinterval) back 
 #'  from the cutoff date or biological record that will be included in the
 #'  climate window search.
 #'@param stat The aggregate statistics used to analyse the climate data. Can 
@@ -32,15 +32,15 @@
 #'  measured) or fixed (i.e. number of days before a set point in time).
 #'@param cutoff.day,cutoff.month If type is "fixed", the day and month of the 
 #'  year from which the fixed window analysis will start.
-#'@param Cmissing TRUE or FALSE, determines what should be done if there are 
+#'@param cmissing TRUE or FALSE, determines what should be done if there are 
 #'  missing climate data. If FALSE, the function will not run if missing 
 #'  climate data is encountered. If TRUE, any records affected by missing 
 #'  climate data will be removed from climate window analysis.
-#'@param Cinterval The resolution at which climate window analysis will be 
+#'@param cinterval The resolution at which climate window analysis will be 
 #'  conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the units
 #'  of parameters 'furthest' and 'closest' will differ depending on the choice
-#'  of Cinterval.
-#'@param CVK The number of folds used for k-fold cross validation. By default
+#'  of cinterval.
+#'@param cvk The number of folds used for k-fold cross validation. By default
 #'  this value is set to 0, so no cross validation occurs. Value should be a
 #'  minimum of 2 for cross validation to occur.
 #'@param upper Cut-off values used to determine growing degree days or positive 
@@ -90,13 +90,13 @@
 #'
 #'# Test both linear and quadratic functions with climate variable temperature
 #'
-#'OffspringWin <- climatewin(Xvar = list(Temp = OffspringClimate$Temperature), 
-#'                           Cdate = OffspringClimate$Date, 
-#'                           Bdate = Offspring$Date, 
+#'OffspringWin <- climatewin(xvar = list(Temp = OffspringClimate$Temperature), 
+#'                           cdate = OffspringClimate$Date, 
+#'                           bdate = Offspring$Date, 
 #'                           baseline = glm(Offspring ~ 1, data = Offspring, family = poisson),
 #'                           furthest = 150, closest = 0, 
 #'                           type = "variables", stat = "mean", 
-#'                           func = c("lin", "quad"), Cmissing = FALSE, Cinterval = "day")
+#'                           func = c("lin", "quad"), cmissing = FALSE, cinterval = "day")
 #'
 #'# Examine tested combinations
 #'  
@@ -126,14 +126,14 @@
 #'# Test for climate windows between 100 and 0 days ago (furthest = 100, closest = 0)
 #'# Test both mean and max aggregate statistics (stat = c("mean", "max"))
 #'# Fit a linear term (func = "lin")
-#'# Test at the resolution of days (Cinterval = "day")
+#'# Test at the resolution of days (cinterval = "day")
 #'  
-#'MassWin <- climatewin(Xvar = list(Temp = MassClimate$Temp), Cdate = MassClimate$Date, 
-#'                      Bdate = Mass$Date, baseline = lm(Mass ~ 1, data = Mass),
+#'MassWin <- climatewin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, 
+#'                      bdate = Mass$Date, baseline = lm(Mass ~ 1, data = Mass),
 #'                      furthest = 100, closest = 0,
 #'                      stat = c("mean", "max"), func = "lin",
 #'                      type = "fixed", cutoff.day = 20, cutoff.month = 5,
-#'                      Cmissing = FALSE, Cinterval = "day")
+#'                      cmissing = FALSE, cinterval = "day")
 #'                        
 #'# Examine tested combinations
 #'  
@@ -153,38 +153,38 @@
 #'  
 #'@export
 
-climatewin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest, 
+climatewin <- function(xvar, cdate, bdate, baseline, furthest, closest, 
                        type, cutoff.day, cutoff.month, stat = "mean", func = "lin",
-                       Cmissing = FALSE, Cinterval = "day", CVK = 0,
+                       cmissing = FALSE, cinterval = "day", cvk = 0,
                        upper = NA, lower = NA, thresh = FALSE, centre = NULL){
   
-  #Make Xvar a list where the name of list object is the climate variable (e.g. Rain, Temp)
-  if(is.list(Xvar) == FALSE){
-    stop("Xvar should be an object of type list")
+  #Make xvar a list where the name of list object is the climate variable (e.g. Rain, Temp)
+  if (is.list(xvar) == FALSE){
+    stop("xvar should be an object of type list")
   }
 
-  if(is.null(names(Xvar)) == TRUE){
-    numbers <- seq(1, length(Xvar), 1)
-    for(Xname in 1:length(Xvar)){
-      names(Xvar)[Xname] = paste("climate", numbers[Xname])
+  if (is.null(names(xvar)) == TRUE){
+    numbers <- seq(1, length(xvar), 1)
+    for (xname in 1:length(xvar)){
+      names(xvar)[xname] = paste("climate", numbers[xname])
     }
   }
   
-  if(is.na(upper) == FALSE && is.na(lower) == FALSE){
-    combos <- expand.grid(list(upper = upper, lower = lower))
-    combos <- combos[which(combos$upper >= combos$lower), ]
-    allcombos <- expand.grid(list(Climate = names(Xvar), Type = type, Stat = stat, func = func, gg = c(1:nrow(combos)), Thresh = thresh))
-    allcombos <- cbind(allcombos, combos[allcombos$gg, ], deparse.level = 2)
+  if (is.na(upper) == FALSE && is.na(lower) == FALSE){
+    combos       <- expand.grid(list(upper = upper, lower = lower))
+    combos       <- combos[which(combos$upper >= combos$lower), ]
+    allcombos    <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func, gg = c(1:nrow(combos)), thresh = thresh))
+    allcombos    <- cbind(allcombos, combos[allcombos$gg, ], deparse.level = 2)
+    threshlevel  <- "two"
     allcombos$gg <- NULL
-    threshlevel <- "two"
-  } else if(is.na(upper) == FALSE && is.na(lower) == TRUE){
-    allcombos <- expand.grid(list(Climate = names(Xvar), Type = type, Stat = stat, func = func, upper = upper, Thresh = thresh))
+  } else if (is.na(upper) == FALSE && is.na(lower) == TRUE){
+    allcombos   <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func, upper = upper, thresh = thresh))
     threshlevel <- "upper"
-  } else if(is.na(upper) == TRUE && is.na(lower) == FALSE){
-    allcombos <- expand.grid(list(Climate = names(Xvar), Type = type, Stat = stat, func = func, lower = lower, Thresh = thresh))
+  } else if (is.na(upper) == TRUE && is.na(lower) == FALSE){
+    allcombos   <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func, lower = lower, thresh = thresh))
     threshlevel <- "lower"
-  } else if(is.na(upper) == TRUE && is.na(lower) == TRUE){
-    allcombos <- expand.grid(list(Climate = names(Xvar), Type = type, Stat = stat, func = func))
+  } else if (is.na(upper) == TRUE && is.na(lower) == TRUE){
+    allcombos   <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func))
     threshlevel <- "none"
   }
   
@@ -193,14 +193,14 @@ climatewin <- function(Xvar, Cdate, Bdate, baseline, furthest, closest,
   print(allcombos)
   
   combined <- list()
-  for(combo in 1:nrow(allcombos)){
-    runs <- basewin(Xvar = Xvar[[paste(allcombos[combo, 1])]], Cdate = Cdate, Bdate = Bdate, baseline = baseline,
+  for (combo in 1:nrow(allcombos)){
+    runs <- basewin(xvar = xvar[[paste(allcombos[combo, 1])]], cdate = cdate, bdate = bdate, baseline = baseline,
                     furthest = furthest, closest = closest, type = paste(allcombos[combo, 2]), cutoff.day = cutoff.day,
                     cutoff.month = cutoff.month, stat = paste(allcombos[combo, 3]), func = paste(allcombos[combo, 4]),
-                    Cmissing = Cmissing, Cinterval = Cinterval, CVK = CVK, 
+                    cmissing = cmissing, cinterval = cinterval, cvk = cvk, 
                     upper = ifelse(threshlevel == "two" || threshlevel == "upper", allcombos$upper[combo], NA),
                     lower = ifelse(threshlevel == "two" || threshlevel == "lower", allcombos$lower[combo], NA),
-                    thresh = paste(allcombos$Thresh[combo]), centre = centre)
+                    thresh = paste(allcombos$thresh[combo]), centre = centre)
     combined[[combo]] <- runs
   }
   combined <- c(combined, combos = list(allcombos))

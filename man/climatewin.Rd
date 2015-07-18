@@ -4,29 +4,29 @@
 \alias{climatewin}
 \title{Test for a climate windows in data.}
 \usage{
-climatewin(Xvar, Cdate, Bdate, baseline, furthest, closest, type, cutoff.day,
-  cutoff.month, stat = "mean", func = "lin", Cmissing = FALSE,
-  Cinterval = "day", CVK = 0, upper = NA, lower = NA, thresh = FALSE,
+climatewin(xvar, cdate, bdate, baseline, furthest, closest, type, cutoff.day,
+  cutoff.month, stat = "mean", func = "lin", cmissing = FALSE,
+  cinterval = "day", cvk = 0, upper = NA, lower = NA, thresh = FALSE,
   centre = NULL)
 }
 \arguments{
-\item{Xvar}{A list object containing all climate variables of interest.
-Please specify the parent environment and variable name (e.g. Climate$Temp).}
+\item{xvar}{A list object containing all climate variables of interest.
+Please specify the parent environment and variable name (e.g. climate$Temp).}
 
-\item{Cdate}{The climate date variable (dd/mm/yyyy). Please specify the
-parent environment and variable name (e.g. Climate$Date).}
+\item{cdate}{The climate date variable (dd/mm/yyyy). Please specify the
+parent environment and variable name (e.g. climate$Date).}
 
-\item{Bdate}{The biological date variable (dd/mm/yyyy). Please specify the
+\item{bdate}{The biological date variable (dd/mm/yyyy). Please specify the
 parent environment and variable name (e.g. Biol$Date).}
 
 \item{baseline}{The baseline model structure used for model testing.
 Currently known to support lm, glm, lmer and glmer objects.}
 
-\item{furthest}{The furthest number of time intervals (set by Cinterval)
+\item{furthest}{The furthest number of time intervals (set by cinterval)
 back from the cutoff date or biological record that will be included in
 the climate window search.}
 
-\item{closest}{The closest number of time intervals (set by Cinterval) back
+\item{closest}{The closest number of time intervals (set by cinterval) back
 from the cutoff date or biological record that will be included in the
 climate window search.}
 
@@ -45,17 +45,17 @@ function(x) (...). See FUN in \code{\link{apply}} for more detail.}
 \item{func}{The functions used to fit the climate variable. Can be linear
 ("lin"), quadratic ("quad"), cubic ("cub"), inverse ("inv") or log ("log").}
 
-\item{Cmissing}{TRUE or FALSE, determines what should be done if there are
+\item{cmissing}{TRUE or FALSE, determines what should be done if there are
 missing climate data. If FALSE, the function will not run if missing
 climate data is encountered. If TRUE, any records affected by missing
 climate data will be removed from climate window analysis.}
 
-\item{Cinterval}{The resolution at which climate window analysis will be
+\item{cinterval}{The resolution at which climate window analysis will be
 conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the units
 of parameters 'furthest' and 'closest' will differ depending on the choice
-of Cinterval.}
+of cinterval.}
 
-\item{CVK}{The number of folds used for k-fold cross validation. By default
+\item{cvk}{The number of folds used for k-fold cross validation. By default
 this value is set to 0, so no cross validation occurs. Value should be a
 minimum of 2 for cross validation to occur.}
 
@@ -99,7 +99,7 @@ when the data were recorded (dd/mm/yyyy) and a response variable column.
 }
 \details{
 Note that climatewin allows you to test multiple possible parameters with the
-same code (e.g. func, stat, Xvar). See examples for more detail.
+same code (e.g. func, stat, xvar). See examples for more detail.
 }
 \examples{
 \dontrun{
@@ -115,13 +115,13 @@ data(OffspringClimate)
 
 # Test both linear and quadratic functions with climate variable temperature
 
-OffspringWin <- climatewin(Xvar = list(Temp = OffspringClimate$Temperature),
-                          Cdate = OffspringClimate$Date,
-                          Bdate = Offspring$Date,
+OffspringWin <- climatewin(xvar = list(Temp = OffspringClimate$Temperature),
+                          cdate = OffspringClimate$Date,
+                          bdate = Offspring$Date,
                           baseline = glm(Offspring ~ 1, data = Offspring, family = poisson),
                           furthest = 150, closest = 0,
                           type = "variables", stat = "mean",
-                          func = c("lin", "quad"), Cmissing = FALSE, Cinterval = "day")
+                          func = c("lin", "quad"), cmissing = FALSE, cinterval = "day")
 
 # Examine tested combinations
 
@@ -151,14 +151,14 @@ data(MassClimate)
 # Test for climate windows between 100 and 0 days ago (furthest = 100, closest = 0)
 # Test both mean and max aggregate statistics (stat = c("mean", "max"))
 # Fit a linear term (func = "lin")
-# Test at the resolution of days (Cinterval = "day")
+# Test at the resolution of days (cinterval = "day")
 
-MassWin <- climatewin(Xvar = list(Temp = MassClimate$Temp), Cdate = MassClimate$Date,
-                     Bdate = Mass$Date, baseline = lm(Mass ~ 1, data = Mass),
+MassWin <- climatewin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date,
+                     bdate = Mass$Date, baseline = lm(Mass ~ 1, data = Mass),
                      furthest = 100, closest = 0,
                      stat = c("mean", "max"), func = "lin",
                      type = "fixed", cutoff.day = 20, cutoff.month = 5,
-                     Cmissing = FALSE, Cinterval = "day")
+                     cmissing = FALSE, cinterval = "day")
 
 # Examine tested combinations
 

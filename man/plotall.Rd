@@ -4,33 +4,33 @@
 \alias{plotall}
 \title{Visualise climate window data}
 \usage{
-plotall(Dataset, DatasetRand = NULL, BestModel = NULL,
-  BestModelData = NULL, CW1 = 0.95, CW2 = 0.5, CW3 = 0.25,
-  HISTQ = 0.99, Title = NULL)
+plotall(dataset, datasetrand = NULL, bestmodel = NULL,
+  bestmodeldata = NULL, cw1 = 0.95, cw2 = 0.5, cw3 = 0.25,
+  histq = 0.99, title = NULL)
 }
 \arguments{
-\item{Dataset}{A dataframe containing information on all fitted climate
+\item{dataset}{A dataframe containing information on all fitted climate
 windows. Output from \code{\link{climatewin}}.}
 
-\item{DatasetRand}{A dataframe containing information on all fitted climate
+\item{datasetrand}{A dataframe containing information on all fitted climate
 windows using randomised data. Output from \code{\link{randwin}}.}
 
-\item{BestModel}{A model object. The strongest climate window model. Returned
+\item{bestmodel}{A model object. The strongest climate window model. Returned
 from \code{\link{singlewin}} or \code{\link{climatewin}}.}
 
-\item{BestModelData}{A dataframe containing the biological and climate data
+\item{bestmodeldata}{A dataframe containing the biological and climate data
 used to fit the strongest climate window model. Output from
 \code{\link{singlewin}} or \code{\link{climatewin}}.}
 
-\item{CW1,CW2,CW3}{Cumulative weight levels used to visualise model weight
+\item{cw1,cw2,cw3}{Cumulative weight levels used to visualise model weight
 distribution. See \code{\link{plotweights}} for more detail.}
 
-\item{HISTQ}{If DatasetRand is provided. The quantile of the randomised data
+\item{histq}{If datasetrand is provided. The quantile of the randomised data
 to be compared with non-randomised data. Can be used to determine the
 likelihood of finding a climate window model of a given deltaAICc value by
 chance.}
 
-\item{Title}{Title of the plot panel.}
+\item{title}{Title of the plot panel.}
 }
 \value{
 Will return a panel of 6-8 plots:
@@ -42,26 +42,26 @@ Will return a panel of 6-8 plots:
  no climate data.
 
  \item Model weight: A plot showing the distribution of cumulative
- model weights. Gradient levels determined by parameters CW1, CW2 and CW3.
+ model weights. Gradient levels determined by parameters cw1, cw2 and cw3.
  Darker areas have a higher chance of containing the best climate window.
 
  \item Model betas: A colour plot of model beta estimates. Where applicable,
  2nd order coefficients (quadratic) and 3rd order coefficients (cubic) will
  be plotted separately.
 
- \item Histogram(s): If DatasetRand is provided, plotall will create two
+ \item Histogram(s): If datasetrand is provided, plotall will create two
  stacked histograms to compare the deltaAICc of non-randomised and randomised
  data. This can help determine the likelihood of obtaining a deltaAICc value
- for a fitted climate window model at random. Without DatasetRand, plotall
+ for a fitted climate window model at random. Without datasetrand, plotall
  will create a single histogram of deltaAICc values for all fitted climate
  windows.
 
  \item Boxplots: Two boxplots showing the opening and closing day for a
  subset of best climate windows. Best climate windows make up the
- cumulative model weight equivalent to the largest value of CW1, CW2 and CW3.
+ cumulative model weight equivalent to the largest value of cw1, cw2 and cw3.
  Values above boxplots represent the median values.
 
- \item Best Model: If BestModel and BestModelData are provided, plotall will
+ \item Best Model: If bestmodel and bestmodeldata are provided, plotall will
  create a scatterplot to show the fit of the best model through the data. }
 }
 \description{
@@ -74,15 +74,17 @@ data(MassOutput)
 data(Mass)
 data(MassClimate)
 
-single <- singlewin(Xvar = MassClimate$Temp, Cdate = MassClimate$Date, Bdate = Mass$Date,
-                   baseline = lm(Mass ~ 1, data = Mass), furthest = 72, closest = 15,
+single <- singlewin(xvar = list(Temp = MassClimate$Temp),
+                   cdate = MassClimate$Date, bdate = Mass$Date,
+                   baseline = lm(Mass ~ 1, data = Mass),
+                   furthest = 72, closest = 15,
                    stat = "mean", func = "lin",
                    type = "fixed", cutoff.day = 20, cutoff.month = 5,
-                   Cmissing = FALSE, Cinterval = "day")
+                   cmissing = FALSE, cinterval = "day")
 
-plotall(Dataset = MassOutput, BestModel = single$BestModel,
-       BestModelData = single$BestModelData,
-       CW1 = 0.95, CW2 = 0.5, CW3 = 0.25, HISTQ = 0.99, Title = "Mass")
+plotall(dataset = MassOutput, bestmodel = single$bestmodel,
+       bestmodeldata = single$bestmodeldata,
+       cw1 = 0.95, cw2 = 0.5, cw3 = 0.25, histq = 0.99, title = "Mass")
 }
 \author{
 Liam D. Bailey and Martijn van de Pol

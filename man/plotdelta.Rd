@@ -4,10 +4,10 @@
 \alias{plotdelta}
 \title{Plot deltaAICc of models}
 \usage{
-plotdelta(Dataset)
+plotdelta(dataset)
 }
 \arguments{
-\item{Dataset}{A dataframe containing information on all fitted climate
+\item{dataset}{A dataframe containing information on all fitted climate
 windows. Output from \code{\link{climatewin}}.}
 }
 \value{
@@ -23,7 +23,7 @@ Create a colour plot of model deltaAICc values.
 
 data(MassOutput)
 
-plotdelta(Dataset = MassOutput)
+plotdelta(dataset = MassOutput)
 }
 \author{
 Liam D. Bailey and Martijn van de Pol

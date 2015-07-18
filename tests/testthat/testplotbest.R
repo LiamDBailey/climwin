@@ -7,13 +7,14 @@ test_that("plotbest produces a graph", {
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
   
-  single <- singlewin(Xvar = MassClimate$Temp, Cdate = MassClimate$Date, Bdate = Mass$Date,
+  single <- singlewin(xvar = list(Temp = MassClimate$Temp), 
+                      cdate = MassClimate$Date, bdate = Mass$Date,
                       baseline = lm(Mass$Mass ~ 1),furthest = 72, closest = 15,
                       stat = "max", func = "lin",
-                      type = "variable", Cmissing = FALSE, Cinterval = "day")
+                      type = "variable", cmissing = FALSE, cinterval = "day")
   
-  test <- plotbest(Dataset = MassOutput, BestModel = single[[1]],
-           BestModelData = single[[2]])
+  test <- plotbest(dataset = MassOutput, bestmodel = single[[1]],
+           bestmodeldata = single[[2]])
   
   expect_true(attr(test, "class")[1] == "gg")
   

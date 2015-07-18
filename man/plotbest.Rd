@@ -4,16 +4,16 @@
 \alias{plotbest}
 \title{Visualise the best climate window}
 \usage{
-plotbest(Dataset, BestModel, BestModelData)
+plotbest(dataset, bestmodel, bestmodeldata)
 }
 \arguments{
-\item{Dataset}{A dataframe containing information on all fitted climate
+\item{dataset}{A dataframe containing information on all fitted climate
 windows. Output from \code{\link{climatewin}}.}
 
-\item{BestModel}{A model object. The strongest climate window model. Output
+\item{bestmodel}{A model object. The strongest climate window model. Output
 from \code{\link{singlewin}} or \code{\link{climatewin}}.}
 
-\item{BestModelData}{A dataframe with the data used to
+\item{bestmodeldata}{A dataframe with the data used to
 fit the strongest climate window model. Output from \code{\link{singlewin}}
 or \code{\link{climatewin}}.}
 }
@@ -32,14 +32,16 @@ data(MassOutput)
 data(Mass)
 data(MassClimate)
 
-single <- singlewin(Xvar = MassClimate$Temp, Cdate = MassClimate$Date, Bdate = Mass$Date,
-                   baseline = lm(Mass ~ 1, data = Mass),furthest = 72, closest = 15,
+single <- singlewin(xvar = list(Temp = MassClimate$Temp),
+                   cdate = MassClimate$Date, bdate = Mass$Date,
+                   baseline = lm(Mass ~ 1, data = Mass),
+                   furthest = 72, closest = 15,
                    stat = "mean", func = "lin",
                    type = "fixed", cutoff.day = 20, cutoff.month = 5,
-                   Cmissing = FALSE, Cinterval = "day")
+                   cmissing = FALSE, cinterval = "day")
 
-plotbest(Dataset = MassOutput, BestModel = single$BestModel,
-        BestModelData = single$BestModelData)
+plotbest(dataset = MassOutput, bestmodel = single$BestModel,
+        bestmodeldata = single$BestModelData)
 }
 \author{
 Liam D. Bailey and Martijn van de Pol

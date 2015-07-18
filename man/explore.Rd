@@ -4,7 +4,7 @@
 \alias{explore}
 \title{Visualise the weight distribution for given parameter values}
 \usage{
-explore(shape = 1, scale = 1, loc = 0, WeightFunction = "W")
+explore(shape = 1, scale = 1, loc = 0, weightfunc = "W")
 }
 \arguments{
 \item{shape}{A parameter that determines the shape of the distribution.
@@ -16,7 +16,7 @@ Should be greater than 0.}
 \item{loc}{A parameter that determines the location of the distribution.
 Should be less than or equal to 0.}
 
-\item{WeightFunction}{Choose whether to use a weibull ("W") or GEV ("G")
+\item{weightfunc}{Choose whether to use a weibull ("W") or GEV ("G")
 distribution.}
 }
 \value{
@@ -32,11 +32,11 @@ initial parameter values for \code{\link{weightwin}}.
 \examples{
 # Test a weibull distribution
 
-explore(shape = 3, scale = 0.2, loc = 0, WeightFunction = "W")
+explore(shape = 3, scale = 0.2, loc = 0, weightfunc = "W")
 
 # Test a GEV distribution
 
-explore(shape = 3, scale = 5, loc = -5, WeightFunction = "G")
+explore(shape = 3, scale = 5, loc = -5, weightfunc = "G")
 }
 \author{
 Martijn van de Pol and Liam D. Bailey

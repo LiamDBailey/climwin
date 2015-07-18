@@ -9,7 +9,7 @@
 #' Should be greater than 0.
 #'@param loc A parameter that determines the location of the distribution. 
 #' Should be less than or equal to 0.
-#'@param WeightFunction Choose whether to use a weibull ("W") or GEV ("G")
+#'@param weightfunc Choose whether to use a weibull ("W") or GEV ("G")
 #' distribution.
 #'@return ExploreWeight will return an example plot of the distribution using
 #' given parameter values. This can be used to select the initial parameter 
@@ -18,23 +18,23 @@
 #'@examples
 #'# Test a weibull distribution
 #'
-#'explore(shape = 3, scale = 0.2, loc = 0, WeightFunction = "W")
+#'explore(shape = 3, scale = 0.2, loc = 0, weightfunc = "W")
 #'
 #'# Test a GEV distribution
 #'
-#'explore(shape = 3, scale = 5, loc = -5, WeightFunction = "G")
+#'explore(shape = 3, scale = 5, loc = -5, weightfunc = "G")
 #'
 #'@export
 
 
 
-explore <- function(shape = 1, scale = 1, loc = 0, WeightFunction = "W"){
+explore <- function(shape = 1, scale = 1, loc = 0, weightfunc = "W"){
   par(mfrow = c(1, 1))
   duration <- 365
   j        <- seq(1:duration) / duration
   k        <- seq(-10, 10, by = (2 * 10 / duration))
   
-  if (WeightFunction == "W"){
+  if (weightfunc == "W"){
     if (shape <= 0){
       stop("Weibull shape parameter should be >0")
     }
@@ -58,7 +58,7 @@ explore <- function(shape = 1, scale = 1, loc = 0, WeightFunction = "W"){
     plot((weight / sum(weight)), type = "l", ylab = "weight", xlab = "timesteps", main = title, xaxt = 'n')
   }
   
-  if (WeightFunction == "G"){
+  if (weightfunc == "G"){
     if (scale <= 0){
       stop("GEV scale parameter should be >0")
     }

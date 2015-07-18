@@ -4,28 +4,28 @@
 \alias{singlewin}
 \title{Fit a single climate window}
 \usage{
-singlewin(Xvar, Cdate, Bdate, baseline, furthest, closest, stat, func, type,
-  cutoff.day, cutoff.month, Cmissing = FALSE, Cinterval = "day",
+singlewin(xvar, cdate, bdate, baseline, furthest, closest, stat, func, type,
+  cutoff.day, cutoff.month, cmissing = FALSE, cinterval = "day",
   upper = NA, lower = NA, thresh = FALSE, centre = NULL)
 }
 \arguments{
-\item{Xvar}{A list object containing all climate variables of interest.
+\item{xvar}{A list object containing all climate variables of interest.
 Please specify the parent environment and variable name (e.g. Climate$Temp).}
 
-\item{Cdate}{The climate date variable (dd/mm/yyyy). Please specify the parent
+\item{cdate}{The climate date variable (dd/mm/yyyy). Please specify the parent
 environment and variable name (e.g. Climate$Date).}
 
-\item{Bdate}{The biological date variable (dd/mm/yyyy). Please specify the
+\item{bdate}{The biological date variable (dd/mm/yyyy). Please specify the
 parent environment and variable name (e.g. Biol$Date).}
 
 \item{baseline}{The baseline model structure used for testing correlation.
 Currently known to support lm, glm, lmer and glmer objects.}
 
-\item{furthest}{The furthest number of time intervals (set by Cinterval) back
+\item{furthest}{The furthest number of time intervals (set by cinterval) back
 from the cutoff date or biological record that will be included in the
 climate window search.}
 
-\item{closest}{The closest number of time intervals (set by Cinterval) back
+\item{closest}{The closest number of time intervals (set by cinterval) back
 from the cutoff date or biological record that will be included in the
 climate window search.}
 
@@ -44,15 +44,15 @@ measured) or fixed (i.e. number of days before a set point in time).}
 \item{cutoff.day,cutoff.month}{If type is "fixed", the day and month of the
 year from which the fixed window analysis will start.}
 
-\item{Cmissing}{TRUE or FALSE, determines what should be done if there are
+\item{cmissing}{TRUE or FALSE, determines what should be done if there are
 missing climate data. If FALSE, the function will not run if missing
 climate data is encountered. If TRUE, any records affected by missing
 climate data will be removed from climate window analysis.}
 
-\item{Cinterval}{The resolution at which climate window analysis will be
+\item{cinterval}{The resolution at which climate window analysis will be
 conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the units
 of parameters 'furthest' and 'closest' will differ depending on the choice
-of Cinterval.}
+of cinterval.}
 
 \item{upper}{Cut-off values used to determine growing degree days or positive
 climate thresholds (depending on parameter thresh). Note that when values
@@ -96,11 +96,13 @@ data(MassClimate)
 # Fit a linear term for the mean climate
 # Fit climate windows at the resolution of days
 
-single <- singlewin(Xvar = MassClimate$Temp, Cdate = MassClimate$Date, Bdate = Mass$Date,
-                   baseline = lm(Mass ~ 1, data = Mass), furthest = 72, closest = 15,
+single <- singlewin(xvar = list(Temp = MassClimate$Temp),
+                   cdate = MassClimate$Date, bdate = Mass$Date,
+                   baseline = lm(Mass ~ 1, data = Mass),
+                   furthest = 72, closest = 15,
                    stat = "mean", func = "lin",
                    type = "fixed", cutoff.day = 20, cutoff.month = 5,
-                   Cmissing = FALSE, Cinterval = "day")
+                   cmissing = FALSE, cinterval = "day")
 
 ##View data##
 single$BestModel
