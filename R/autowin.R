@@ -96,7 +96,7 @@ autowin <- function(reference, xvar, cdate, bdate, baseline, furthest,
                     lower = NA, thresh = FALSE, centre = NULL){
   
   xvar = xvar[[1]]
-  
+
   print("Initialising, please wait...")
   
   if (stat == "slope" & func == "log" || stat == "slope" & func == "inv"){
@@ -206,11 +206,11 @@ autowin <- function(reference, xvar, cdate, bdate, baseline, furthest,
 
   modeldat           <- model.frame(baseline)
   modeldat$yvar      <- modeldat[, 1]
-  modeldat$climate   <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
+  modeldat$climate   <- seq(1, nrow(modeldat), 1)
   
   if (is.null(weights(baseline)) == FALSE){
     modeldat$modweights <- weights(baseline)
-    baseline            <- update(baseline, .~., weights = modweights, data = modeldat)
+    baseline            <- update(baseline, .~., weights = modeldat$modweights, data = modeldat)
   }
   
   if (func == "lin"){

@@ -118,10 +118,10 @@ basewin <- function(xvar, cdate, bdate, baseline, furthest, closest,
   modeldat$climate <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
   
   if (is.null(weights(baseline)) == FALSE){
-    if (class(baseline)[1] == "glm" & sum(weights(baseline)) == nrow(model.frame(baseline)) || class(baseline)[1] == "lmerMod" & sum(weights(baseline)) == nrow(model.frame(baseline))){
+    if (class(baseline)[1] == "glm" & sum(weights(baseline)) == nrow(model.frame(baseline)) || attr(class(baseline), "package") == "lme4" & sum(weights(baseline)) == nrow(model.frame(baseline))){
     } else {
-      modeldat$modweights <- weights(baseline)
-     baseline <- update(baseline, .~., weights = modweights, data = modeldat)
+     modeldat$modweights <- weights(baseline)
+     baseline <- update(baseline, .~., weights = modeldat$modweights, data = modeldat)
     }
   }
   

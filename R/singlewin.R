@@ -270,7 +270,7 @@ singlewin <- function(xvar, cdate, bdate, baseline,
     if(class(baseline)[1] == "glm" & sum(weights(baseline)) == nrow(model.frame(baseline)) || class(baseline)[1] == "lmerMod" & sum(weights(baseline)) == nrow(model.frame(baseline))){
     } else {
       modeldat$modweights <- weights(baseline)
-      baseline <- update(baseline, .~., weights = modweights, data = modeldat)
+      baseline <- update(baseline, .~., weights = modeldat$modweights, data = modeldat)
     }
   }
   
