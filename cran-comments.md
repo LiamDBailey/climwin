@@ -12,14 +12,7 @@ output: html_document
 
 There were no ERRORs or WARNINGs.
 
-There were 2 NOTEs:
-
-* checking R code for possible problems ... NOTE
-autowin: no visible binding for global variable 'modweights'
-basewin: no visible binding for global variable 'modweights'
-singlewin: no visible binding for global variable 'modweights'
-
-Note caused by environment searching patterns in function update().
+There was 1 NOTE:
 
 * checking package dependencies ... NOTE
   No repository set, so cyclic dependency check skipped
