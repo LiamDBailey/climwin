@@ -293,8 +293,8 @@ basewin <- function(xvar, cdate, bdate, baseline, furthest, closest,
     modlist$Function <- func
   }
   
-  modlist$Furthest     <- furthest
-  modlist$Closest      <- closest
+  modlist$furthest     <- furthest
+  modlist$closest      <- closest
   modlist$Statistics   <- stat
   modlist$Type         <- type
   modlist$K            <- cvk
