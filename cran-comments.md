@@ -10,6 +10,8 @@ output: html_document
 
 ## R CMD check results
 
+We discovered a serious bug in our code making it unworkable. The bug has now been fixed. Sorry for the upload so soon after our last.
+
 There were no ERRORs or WARNINGs.
 
 There was 1 NOTE:
