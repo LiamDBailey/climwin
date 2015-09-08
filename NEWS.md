@@ -1,3 +1,7 @@
+# climwin 0.1.2
+
+Fixed bug causing convergence issues when using cross-validation.
+
 # climwin 0.1.1
 
 Fixed serious bug causing an error in 'plotwin' and 'plotall'. Naming mismatch in the 'closest' column in climatewin$Dataset. Column name changes from Closest to closest.
