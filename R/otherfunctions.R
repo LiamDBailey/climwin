@@ -187,15 +187,15 @@ basewin <- function(xvar, cdate, bdate, baseline, furthest, closest,
               test$predictionsbaseline <- predict(baselinecv, newdata = test, allow.new.levels = TRUE) # Test the output of the null models fitted using the test data
               
               num        <- length(test$predictions) # Determine the length of the test dataset
-              p          <- n - df.residual(modeloutputcv)  # Determine df for the climate model
+              p          <- num - df.residual(modeloutputcv)  # Determine df for the climate model
               mse        <- sum((test$predictions - test[, 1]) ^ 2) / num
-              p_baseline <- n - df.residual(baselinecv)  # Determine df for the baseline model
+              p_baseline <- num - df.residual(baselinecv)  # Determine df for the baseline model
               #calculate mean standard errors for climate model
               #calc mse only works non-categorical yvars, e.g. normal, biNAry, count data 
               mse_baseline <- sum((test$predictionsbaseline - test[, 1]) ^ 2) / num
               #calculate mean standard errors for null model
-              AICc_cv          <- n * log(mse) + (2 * p * (p + 1)) / (num - p - 1)
-              AICc_cv_baseline <- n * log(mse_baseline) + (2 * p_baseline * (p_baseline + 1)) / (num - p_baseline - 1)
+              AICc_cv          <- num * log(mse) + (2 * p * (p + 1)) / (num - p - 1)
+              AICc_cv_baseline <- num * log(mse_baseline) + (2 * p_baseline * (p_baseline + 1)) / (num - p_baseline - 1)
               #Calculate AICc values for climate and baseline models
               #rmse_corrected<-sqrt(sum((test$predictions-test[,1])^2)/modeloutputcv$df[1])
               ifelse (k == 1, AICc_cvtotal <- AICc_cv, AICc_cvtotal <- AICc_cvtotal + AICc_cv)              
