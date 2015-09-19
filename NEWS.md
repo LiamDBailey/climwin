@@ -1,6 +1,6 @@
 # climwin 0.1.2
 
-Fixed bug causing convergence issues when using cross-validation.
+Fixed bug which caused convergence issues using cross-validation.
 
 # climwin 0.1.1
 
