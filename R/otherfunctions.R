@@ -627,3 +627,20 @@ medwin <- function(dataset, cw = 0.95){
   
   return(list("Median Window Open" = median(wo$value), "Median Window Close" = median(wc$value)))
 }
+
+##################################################################################
+
+merge_results <- function(dataset1, dataset2){
+  
+  new_combos <- rbind(dataset1$combos, dataset2$combos)
+  rownames(new_combos) <- seq(length = nrow(new_combos))
+  
+  dataset1[[length(dataset1)]] <- NULL
+  dataset2[[length(dataset2)]] <- NULL
+  
+  new_dataset <- c(dataset1, dataset2)
+  new_dataset$combos <- new_combos
+  
+  return(new_dataset)
+  
+}
