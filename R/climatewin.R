@@ -192,6 +192,8 @@ climatewin <- function(xvar, cdate, bdate, baseline, furthest, closest,
   print("All combinations to be tested...")
   print(allcombos)
   
+  allcombos <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func, beta = NA, AIC = NA))
+  
   combined <- list()
   for (combo in 1:nrow(allcombos)){
     runs <- basewin(xvar = xvar[[paste(allcombos[combo, 1])]], cdate = cdate, bdate = bdate, baseline = baseline,
@@ -201,7 +203,9 @@ climatewin <- function(xvar, cdate, bdate, baseline, furthest, closest,
                     upper = ifelse(threshlevel == "two" || threshlevel == "upper", allcombos$upper[combo], NA),
                     lower = ifelse(threshlevel == "two" || threshlevel == "lower", allcombos$lower[combo], NA),
                     thresh = paste(allcombos$thresh[combo]), centre = centre)
-    combined[[combo]] <- runs
+    combined[[combo]]     <- runs
+    allcombos$beta[combo] <- runs$Dataset$ModelBeta[1]
+    allcombos$AIC[combo]  <- runs$Dataset$deltaAICc[1]
   }
   combined <- c(combined, combos = list(allcombos))
   return(combined)
