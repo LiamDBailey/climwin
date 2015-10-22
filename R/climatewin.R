@@ -202,24 +202,25 @@ climatewin <- function(xvar, cdate, bdate, baseline, furthest, closest,
                     upper = ifelse(threshlevel == "two" || threshlevel == "upper", allcombos$upper[combo], NA),
                     lower = ifelse(threshlevel == "two" || threshlevel == "lower", allcombos$lower[combo], NA),
                     thresh = paste(allcombos$thresh[combo]), centre = centre)
-    combined[[combo]]           <- runs
+    combined[[combo]]            <- runs
     allcombos$AIC[combo]         <- runs$Dataset$deltaAICc[1]
     allcombos$WindowOpen[combo]  <- runs$Dataset$WindowOpen[1]
     allcombos$WindowClose[combo] <- runs$Dataset$WindowClose[1]
-    allcombos$betaL[combo]      <- runs$Dataset$ModelBeta[1]
+    allcombos$betaL[combo]       <- runs$Dataset$ModelBeta[1]
     if(length(which("quad" == levels(allcombos$func))) > 0){
-      allcombos$betaQ[combo]    <- runs$Dataset$ModelBetaQ[1]
+      allcombos$betaQ[combo]   <- runs$Dataset$ModelBetaQ[1]
     }
     if(length(which("cub" == levels(allcombos$func))) > 0){
-      allcombos$betaC[combo]    <- runs$Dataset$ModelBetaC[1]
+      allcombos$betaC[combo]   <- runs$Dataset$ModelBetaC[1]
     }
     if(length(which("inv" == levels(allcombos$func))) > 0){
-      allcombos$betaInv[combo]    <- runs$Dataset$ModelBeta[1]
+      allcombos$betaInv[combo] <- runs$Dataset$ModelBeta[1]
     }
     if(length(which("log" == levels(allcombos$func))) > 0){
-      allcombos$betaLog[combo]    <- runs$Dataset$ModelBeta[1]
+      allcombos$betaLog[combo] <- runs$Dataset$ModelBeta[1]
     }
   }
+  allcombos <- cbind(response = colnames(model.frame(baseline))[1], allcombos)
   combined <- c(combined, combos = list(allcombos))
   return(combined)
 }
