@@ -632,7 +632,7 @@ medwin <- function(dataset, cw = 0.95){
 
 merge_results <- function(dataset1, dataset2){
   
-  new_combos <- rbind(dataset1$combos, dataset2$combos)
+  new_combos <- rbind.fill(dataset1$combos, dataset2$combos)
   rownames(new_combos) <- seq(length = nrow(new_combos))
   
   dataset1[[length(dataset1)]] <- NULL

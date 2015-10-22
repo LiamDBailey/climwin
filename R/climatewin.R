@@ -71,6 +71,7 @@
 #'  tested sets of climate window parameters. 
 #'@author Liam D. Bailey and Martijn van de Pol
 #'@importFrom MuMIn AICc
+#'@importFrom plyr rbind.fill
 #'@import lme4
 #'@import stats
 #'@import utils
@@ -178,10 +179,10 @@ climatewin <- function(xvar, cdate, bdate, baseline, furthest, closest,
     threshlevel  <- "two"
     allcombos$gg <- NULL
   } else if (is.na(upper) == FALSE && is.na(lower) == TRUE){
-    allcombos   <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func, upper = upper, thresh = thresh))
+    allcombos   <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func, upper = upper, lower = lower, thresh = thresh))
     threshlevel <- "upper"
   } else if (is.na(upper) == TRUE && is.na(lower) == FALSE){
-    allcombos   <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func, lower = lower, thresh = thresh))
+    allcombos   <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func, upper = upper, lower = lower, thresh = thresh))
     threshlevel <- "lower"
   } else if (is.na(upper) == TRUE && is.na(lower) == TRUE){
     allcombos   <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func))
@@ -192,8 +193,6 @@ climatewin <- function(xvar, cdate, bdate, baseline, furthest, closest,
   print("All combinations to be tested...")
   print(allcombos)
   
-  allcombos <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func, beta = NA, AIC = NA))
-  
   combined <- list()
   for (combo in 1:nrow(allcombos)){
     runs <- basewin(xvar = xvar[[paste(allcombos[combo, 1])]], cdate = cdate, bdate = bdate, baseline = baseline,
@@ -203,9 +202,23 @@ climatewin <- function(xvar, cdate, bdate, baseline, furthest, closest,
                     upper = ifelse(threshlevel == "two" || threshlevel == "upper", allcombos$upper[combo], NA),
                     lower = ifelse(threshlevel == "two" || threshlevel == "lower", allcombos$lower[combo], NA),
                     thresh = paste(allcombos$thresh[combo]), centre = centre)
-    combined[[combo]]     <- runs
-    allcombos$beta[combo] <- runs$Dataset$ModelBeta[1]
-    allcombos$AIC[combo]  <- runs$Dataset$deltaAICc[1]
+    combined[[combo]]           <- runs
+    allcombos$AIC[combo]         <- runs$Dataset$deltaAICc[1]
+    allcombos$WindowOpen[combo]  <- runs$Dataset$WindowOpen[1]
+    allcombos$WindowClose[combo] <- runs$Dataset$WindowClose[1]
+    allcombos$betaL[combo]      <- runs$Dataset$ModelBeta[1]
+    if(length(which("quad" == levels(allcombos$func))) > 0){
+      allcombos$betaQ[combo]    <- runs$Dataset$ModelBetaQ[1]
+    }
+    if(length(which("cub" == levels(allcombos$func))) > 0){
+      allcombos$betaC[combo]    <- runs$Dataset$ModelBetaC[1]
+    }
+    if(length(which("inv" == levels(allcombos$func))) > 0){
+      allcombos$betaInv[combo]    <- runs$Dataset$ModelBeta[1]
+    }
+    if(length(which("log" == levels(allcombos$func))) > 0){
+      allcombos$betaLog[combo]    <- runs$Dataset$ModelBeta[1]
+    }
   }
   combined <- c(combined, combos = list(allcombos))
   return(combined)
