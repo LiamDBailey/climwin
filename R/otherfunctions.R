@@ -602,7 +602,7 @@ skim <- function(winoutput, duration, cutoff) {
   winoutput$Duration <- winoutput$WindowOpen - winoutput$WindowClose
   winoutput$Filter   <- winoutput$WindowOpen * 0
   winoutput$Filter[which(winoutput$WindowOpen >= cutoff &  winoutput$WindowClose >= cutoff & winoutput$Duration < duration)] <- 1
-  winoutput<-subset(winoutput, winoutput$filter == 0)
+  winoutput<-subset(winoutput, winoutput$Filter == 0)
   return(winoutput)
 }
 
