@@ -1,5 +1,5 @@
 #Basewin function that is combined with manywin to test multiple climate window characteristics
-basewin <- function(xvar, cdate, bdate, baseline, furthest, closest, 
+basewin <- function(exclude, xvar, cdate, bdate, baseline, furthest, closest, 
                     type, cutoff.day, cutoff.month, stat = "mean", func = "lin",
                     cmissing = FALSE, cinterval = "day",  nrandom = 0, cvk = 0,
                     upper = NA, lower = NA, thresh = FALSE, centre = NULL){
@@ -149,10 +149,13 @@ basewin <- function(xvar, cdate, bdate, baseline, furthest, closest,
   
   pb <- txtProgressBar(min = 0, max = maxmodno, style = 3, char = "|")
   
-  #CREATE A FOR LOOp TO FIT DIFFEREnT CLIMATE WInDOWS#
+  #CREATE A FOR LOOP TO FIT DIFFERENT CLIMATE WINDOWS#
   for (m in closest:furthest){
     for (n in 1:duration){
-      if ( (m - n) >= (closest - 1)){  # do not use windows that overshoot the closest possible day in window   
+        if (length(exclude) == 2 && m >= exclude[2] & (m-n) >= exclude[2] & n <= exclude[1]){
+          next
+        }
+      if ( (m - n) >= (closest - 1)){  # do not use windows that overshoot the closest possible day in window
         if (stat != "slope" || n > 1){
           windowopen  <- m - closest + 1
           windowclose <- windowopen - n + 1

@@ -7,6 +7,10 @@
 #'
 #'Note that climatewin allows you to test multiple possible parameters with the
 #'same code (e.g. func, stat, xvar). See examples for more detail.
+#'@param exclude Two values (distance and duration) which allow users
+#'  to exclude short-duration long-lag climate windows from analysis (e.g., 
+#'  windows with a duration of 10 days which occur over a month ago).
+#'  These windows are often considered to be biologically implausible.
 #'@param xvar A list object containing all climate variables of interest. 
 #'  Please specify the parent environment and variable name (e.g. climate$Temp).
 #'@param cdate The climate date variable (dd/mm/yyyy). Please specify the 
@@ -154,7 +158,7 @@
 #'  
 #'@export
 
-climatewin <- function(xvar, cdate, bdate, baseline, furthest, closest, 
+climatewin <- function(exclude = NA, xvar, cdate, bdate, baseline, furthest, closest, 
                        type, cutoff.day, cutoff.month, stat = "mean", func = "lin",
                        cmissing = FALSE, cinterval = "day", cvk = 0,
                        upper = NA, lower = NA, thresh = FALSE, centre = NULL){
@@ -195,7 +199,7 @@ climatewin <- function(xvar, cdate, bdate, baseline, furthest, closest,
   
   combined <- list()
   for (combo in 1:nrow(allcombos)){
-    runs <- basewin(xvar = xvar[[paste(allcombos[combo, 1])]], cdate = cdate, bdate = bdate, baseline = baseline,
+    runs <- basewin(exclude = exclude, xvar = xvar[[paste(allcombos[combo, 1])]], cdate = cdate, bdate = bdate, baseline = baseline,
                     furthest = furthest, closest = closest, type = paste(allcombos[combo, 2]), cutoff.day = cutoff.day,
                     cutoff.month = cutoff.month, stat = paste(allcombos[combo, 3]), func = paste(allcombos[combo, 4]),
                     cmissing = cmissing, cinterval = cinterval, cvk = cvk, 

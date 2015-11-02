@@ -4,12 +4,17 @@
 \alias{climatewin}
 \title{Test for a climate windows in data.}
 \usage{
-climatewin(xvar, cdate, bdate, baseline, furthest, closest, type, cutoff.day,
-  cutoff.month, stat = "mean", func = "lin", cmissing = FALSE,
-  cinterval = "day", cvk = 0, upper = NA, lower = NA, thresh = FALSE,
-  centre = NULL)
+climatewin(exclude = NA, xvar, cdate, bdate, baseline, furthest, closest,
+  type, cutoff.day, cutoff.month, stat = "mean", func = "lin",
+  cmissing = FALSE, cinterval = "day", cvk = 0, upper = NA,
+  lower = NA, thresh = FALSE, centre = NULL)
 }
 \arguments{
+\item{exclude}{Two values (distance and duration) which allow users
+to exclude short-duration long-lag climate windows from analysis (e.g.,
+windows with a duration of 10 days which occur over a month ago).
+These windows are often considered to be biologically implausible.}
+
 \item{xvar}{A list object containing all climate variables of interest.
 Please specify the parent environment and variable name (e.g. climate$Temp).}
 
