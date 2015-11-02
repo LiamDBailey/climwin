@@ -1,3 +1,7 @@
+# climwin 0.1.3
+
+Added 'exclude' parameter to the climatewin and randwin functions.
+
 # climwin 0.1.2
 
 Fixed bug which caused convergence issues using cross-validation.
