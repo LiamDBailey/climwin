@@ -7,6 +7,10 @@
 #'
 #'Note that climatewin allows you to test multiple possible parameters with the
 #'same code (e.g. func, stat, xvar). See examples for more detail.
+#'@param exclude Two values (distance and duration) which allow users
+#'  to exclude short-duration long-lag climate windows from analysis (e.g., 
+#'  windows with a duration of 10 days which occur over a month ago).
+#'  These windows are often considered to be biologically implausible.
 #'@param xvar A list object containing all climate variables of interest. 
 #'  Please specify the parent environment and variable name (e.g. climate$Temp).
 #'@param cdate The climate date variable (dd/mm/yyyy). Please specify the 
@@ -55,7 +59,10 @@
 #'  lower to calculate binary climate data (thresh = TRUE), or to use for
 #'  growing degree days (thresh = FALSE).
 #'@param centre Variable used for mean centring (e.g. Year, Site, Individual).
-#'  Please specify the parent environment and variable name (e.g. Biol$Year).     
+#'  Please specify the parent environment and variable name (e.g. Biol$Year).
+#'@param centre_var Specifies whether one is interested in fitting models with
+#'  a within-group deviance parameter ("dev"), within-group mean parameter ("mean"),
+#'  or both.      
 #'@return Will return a list with an output for each tested set of climate
 #'  window parameters. Each list item contains three objects:
 #'  
@@ -70,13 +77,13 @@
 #'  In addition, the returned list includes an object 'combos', a summary of all
 #'  tested sets of climate window parameters. 
 #'@author Liam D. Bailey and Martijn van de Pol
-#'@importFrom MuMIn AICc
-#'@importFrom plyr rbind.fill
 #'@import lme4
 #'@import stats
 #'@import utils
 #'@import graphics
-#'@importFrom lubridate weeks  
+#'@importFrom plyr rbind.fill
+#'@importFrom lubridate weeks
+#'@importFrom MuMIn AICc  
 #'@examples
 #'\dontrun{
 #'##EXAMPLE 1## 
@@ -154,11 +161,16 @@
 #'  
 #'@export
 
-climatewin <- function(xvar, cdate, bdate, baseline, furthest, closest, 
+climatewin <- function(exclude = NA, xvar, cdate, bdate, baseline, furthest, closest, 
                        type, cutoff.day, cutoff.month, stat = "mean", func = "lin",
                        cmissing = FALSE, cinterval = "day", cvk = 0,
-                       upper = NA, lower = NA, thresh = FALSE, centre = NULL){
+                       upper = NA, lower = NA, thresh = FALSE, centre = NULL, centre_var = "both"){
   
+  #Create a centre function that over-rides quadratics etc. when centre != NULL
+  if(is.null(centre) == FALSE){
+    func = "centre"
+  }
+    
   #Make xvar a list where the name of list object is the climate variable (e.g. Rain, Temp)
   if (is.list(xvar) == FALSE){
     stop("xvar should be an object of type list")
@@ -195,29 +207,47 @@ climatewin <- function(xvar, cdate, bdate, baseline, furthest, closest,
   
   combined <- list()
   for (combo in 1:nrow(allcombos)){
-    runs <- basewin(xvar = xvar[[paste(allcombos[combo, 1])]], cdate = cdate, bdate = bdate, baseline = baseline,
+    runs <- basewin(exclude = exclude, xvar = xvar[[paste(allcombos[combo, 1])]], cdate = cdate, bdate = bdate, baseline = baseline,
                     furthest = furthest, closest = closest, type = paste(allcombos[combo, 2]), cutoff.day = cutoff.day,
                     cutoff.month = cutoff.month, stat = paste(allcombos[combo, 3]), func = paste(allcombos[combo, 4]),
                     cmissing = cmissing, cinterval = cinterval, cvk = cvk, 
                     upper = ifelse(threshlevel == "two" || threshlevel == "upper", allcombos$upper[combo], NA),
                     lower = ifelse(threshlevel == "two" || threshlevel == "lower", allcombos$lower[combo], NA),
-                    thresh = paste(allcombos$thresh[combo]), centre = centre)
+                    thresh = paste(allcombos$thresh[combo]), centre = centre, centre_var = centre_var)
     combined[[combo]]            <- runs
-    allcombos$AIC[combo]         <- runs$Dataset$deltaAICc[1]
+    allcombos$Type               <- runs$Dataset$Type[1]
+    allcombos$AIC[combo]         <- round(runs$Dataset$deltaAICc[1], digits = 2)
     allcombos$WindowOpen[combo]  <- runs$Dataset$WindowOpen[1]
     allcombos$WindowClose[combo] <- runs$Dataset$WindowClose[1]
-    allcombos$betaL[combo]       <- runs$Dataset$ModelBeta[1]
+    if(length(which("lin" == levels(allcombos$func))) >0){
+      allcombos$betaL[combo] <- round(runs$Dataset$ModelBeta[1], digits = 2)
+    }
+    if(allcombos$func[1] == "centre"){
+      if(centre_var == "both"){
+        allcombos$WithinGrpMean <- round(runs$Dataset$WithinGrpMean[1], digits = 2)
+        allcombos$WithinGrpDev  <- round(runs$Dataset$WithinGrpDev[1], digits = 2)
+      }
+      if(centre_var == "dev"){
+        allcombos$WithinGrpDev  <- round(runs$Dataset$WithinGrpDev[1], digits = 2)
+      }
+      if(centre_var == "mean"){
+        allcombos$WithinGrpMean <- round(runs$Dataset$WithinGrpMean[1], digits = 2)
+      }
+    }
     if(length(which("quad" == levels(allcombos$func))) > 0){
-      allcombos$betaQ[combo]   <- runs$Dataset$ModelBetaQ[1]
+      allcombos$betaL[combo]   <- round(runs$Dataset$ModelBeta[1], digits = 2)
+      allcombos$betaQ[combo]   <- round(runs$Dataset$ModelBetaQ[1], digits = 2)
     }
     if(length(which("cub" == levels(allcombos$func))) > 0){
-      allcombos$betaC[combo]   <- runs$Dataset$ModelBetaC[1]
+      allcombos$betaL[combo]   <- round(runs$Dataset$ModelBeta[1], digits = 2)
+      allcombos$betaQ[combo]   <- round(runs$Dataset$ModelBetaQ[1], digits = 2)
+      allcombos$betaC[combo]   <- round(runs$Dataset$ModelBetaC[1], digits = 2)
     }
     if(length(which("inv" == levels(allcombos$func))) > 0){
-      allcombos$betaInv[combo] <- runs$Dataset$ModelBeta[1]
+      allcombos$betaInv[combo] <- round(runs$Dataset$ModelBeta[1], digits = 2)
     }
     if(length(which("log" == levels(allcombos$func))) > 0){
-      allcombos$betaLog[combo] <- runs$Dataset$ModelBeta[1]
+      allcombos$betaLog[combo] <- round(runs$Dataset$ModelBeta[1], digits = 2)
     }
   }
   allcombos <- cbind(response = colnames(model.frame(baseline))[1], allcombos)

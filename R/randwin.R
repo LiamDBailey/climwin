@@ -2,6 +2,10 @@
 #'
 #'Will randomise biological data and carry out a climate window analysis. Used
 #'to help determine the chance of obtaining an observed result at random.
+#'@param exclude Two values (distance and duration) which allow users
+#'  to exclude short-duration long-lag climate windows from analysis (e.g., 
+#'  windows with a duration of 10 days which occur over a month ago).
+#'  These windows are often considered to be biologically implausible.
 #'@param repeats The number of times that data will be randomised and analysed 
 #'  for climate windows.
 #'@param xvar A list object containing all climate variables of interest. 
@@ -78,7 +82,7 @@
 #'
 #'@export
 
-randwin <- function(repeats = 1, xvar, cdate, bdate, baseline, 
+randwin <- function(exclude = NA, repeats = 1, xvar, cdate, bdate, baseline, 
                     furthest, closest, stat,  
                     func, type, cutoff.day, cutoff.month,
                     cmissing = FALSE, cinterval = "day",
@@ -89,7 +93,7 @@ randwin <- function(repeats = 1, xvar, cdate, bdate, baseline,
   for (r in 1:repeats){
     print (c("randomization number ", r))
     bdateNew        <- sample(bdate)
-    outputrep <- basewin(xvar = xvar, cdate = cdate, bdate = bdateNew, 
+    outputrep <- basewin(exclude = exclude, xvar = xvar, cdate = cdate, bdate = bdateNew, 
                          baseline = baseline, furthest = furthest,
                          closest = closest, stat = stat, 
                          func = func, type = type,

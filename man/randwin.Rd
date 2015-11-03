@@ -4,11 +4,17 @@
 \alias{randwin}
 \title{Climate window analysis for randomised data}
 \usage{
-randwin(repeats = 1, xvar, cdate, bdate, baseline, furthest, closest, stat,
-  func, type, cutoff.day, cutoff.month, cmissing = FALSE, cinterval = "day",
-  upper = NA, lower = NA, thresh = FALSE, centre = NULL)
+randwin(exclude = NA, repeats = 1, xvar, cdate, bdate, baseline, furthest,
+  closest, stat, func, type, cutoff.day, cutoff.month, cmissing = FALSE,
+  cinterval = "day", upper = NA, lower = NA, thresh = FALSE,
+  centre = NULL)
 }
 \arguments{
+\item{exclude}{Two values (distance and duration) which allow users
+to exclude short-duration long-lag climate windows from analysis (e.g.,
+windows with a duration of 10 days which occur over a month ago).
+These windows are often considered to be biologically implausible.}
+
 \item{repeats}{The number of times that data will be randomised and analysed
 for climate windows.}
 
