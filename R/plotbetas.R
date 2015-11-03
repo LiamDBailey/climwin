@@ -23,7 +23,7 @@
 #'@import gridExtra
 #'@export
 
-plotbetas <- function(dataset, plotallenv, plotall = FALSE){
+plotbetas <- function(dataset, arrow = FALSE, plotallenv, plotall = FALSE){
   
   with(dataset, {
     if(dataset$Function[1] == "lin" || dataset$Function[1] == "log" || dataset$Function[1] == "inv"){
@@ -39,6 +39,13 @@ plotbetas <- function(dataset, plotallenv, plotall = FALSE){
         ggtitle("Beta linear") +
         ylab("Window open") +
         xlab("Window close")
+      
+      if(arrow == TRUE){
+        beta <- beta +
+          geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = WindowOpen[1])) +
+          geom_segment(aes(x = 0, y = WindowOpen[1], xend = WindowClose[1], yend = WindowOpen[1]))
+      }
+      
       if(plotall == TRUE){
         plotallenv$beta <-beta
       } else {
@@ -70,6 +77,18 @@ plotbetas <- function(dataset, plotallenv, plotall = FALSE){
         ggtitle("Beta quadratic") +
         ylab("Window open") +
         xlab("Window close")
+      
+      if(arrow == TRUE){
+        beta <- beta +
+          geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = WindowOpen[1])) +
+          geom_segment(aes(x = 0, y = WindowOpen[1], xend = WindowClose[1], yend = WindowOpen[1]))
+        
+        beta2 <- beta2 +
+          geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = WindowOpen[1])) +
+          geom_segment(aes(x = 0, y = WindowOpen[1], xend = WindowClose[1], yend = WindowOpen[1]))
+        
+      }
+      
       if(plotall == TRUE){
         plotallenv$beta  <- beta
         plotallenv$beta2 <- beta2
@@ -115,6 +134,22 @@ plotbetas <- function(dataset, plotallenv, plotall = FALSE){
           ggtitle("Beta cubic") +
           ylab("Window open") +
           xlab("Window close")
+      
+      if(arrow == TRUE){
+        beta <- beta +
+          geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = WindowOpen[1])) +
+          geom_segment(aes(x = 0, y = WindowOpen[1], xend = WindowClose[1], yend = WindowOpen[1]))
+        
+        beta2 <- beta2 +
+          geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = WindowOpen[1])) +
+          geom_segment(aes(x = 0, y = WindowOpen[1], xend = WindowClose[1], yend = WindowOpen[1]))
+        
+        beta3 <- beta3 +
+          geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = WindowOpen[1])) +
+          geom_segment(aes(x = 0, y = WindowOpen[1], xend = WindowClose[1], yend = WindowOpen[1]))
+        
+      }      
+      
       if(plotall == TRUE){
         plotallenv$beta  <- beta
         plotallenv$beta2 <- beta2
@@ -149,12 +184,46 @@ plotbetas <- function(dataset, plotallenv, plotall = FALSE){
         ylab("Window open") +
         xlab("Window close")
       
-      if(plotall == TRUE){
-        plotallenv$wgmean <- wgmean
-        plotallenv$wgdev  <- wgdev
-      } else {
-        grid.arrange(wgmean, wgdev, nrow = 1)
+      if(arrow == TRUE){
+        
+        wgmean <- wgmean +
+          geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = WindowOpen[1])) +
+          geom_segment(aes(x = 0, y = WindowOpen[1], xend = WindowClose[1], yend = WindowOpen[1]))
+        
+        wgdev <- wgdev +
+          geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = WindowOpen[1])) +
+          geom_segment(aes(x = 0, y = WindowOpen[1], xend = WindowClose[1], yend = WindowOpen[1]))
+              
       }
+      
+      if(is.null(dataset$WithinGrpDev) == FALSE & is.null(dataset$WithinGrpMean) == FALSE){
+        
+        if(plotall == TRUE){
+          plotallenv$wgmean <- wgmean
+          plotallenv$wgdev  <- wgdev
+        } else {
+          grid.arrange(wgmean, wgdev, nrow = 1)
+        }
+        
+      } else if(is.null(dataset$WithinGrpDev) == TRUE){
+        
+        if(plotall == TRUE){
+          plotallenv$wgmean <- wgmean
+        } else {
+          grid.arrange(wgmean, nrow = 1)
+        }
+        
+      } else  if(is.null(dataset$WithinGrpMean) == TRUE){
+        
+        if(plotall == TRUE){
+          plotallenv$wgdev  <- wgdev
+        } else {
+          grid.arrange(wgdev, nrow = 1)
+        }
+        
+      }
+      
+
     }
   }
   )
