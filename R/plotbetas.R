@@ -42,8 +42,10 @@ plotbetas <- function(dataset, arrow = FALSE, plotallenv, plotall = FALSE){
       
       if(arrow == TRUE){
         beta <- beta +
-          geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = WindowOpen[1])) +
-          geom_segment(aes(x = 0, y = WindowOpen[1], xend = WindowClose[1], yend = WindowOpen[1]))
+          geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = (WindowOpen[1]-1)), 
+                       size = 1, arrow = grid::arrow(length = grid::unit(0.25, "cm"))) +
+          geom_segment(aes(x = 0, y = WindowOpen[1], xend = (WindowClose[1]-1), yend = WindowOpen[1]),
+                       size = 1, arrow = grid::arrow(length = grid::unit(0.25, "cm")))
       }
       
       if(plotall == TRUE){
@@ -80,13 +82,15 @@ plotbetas <- function(dataset, arrow = FALSE, plotallenv, plotall = FALSE){
       
       if(arrow == TRUE){
         beta <- beta +
-          geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = WindowOpen[1])) +
-          geom_segment(aes(x = 0, y = WindowOpen[1], xend = WindowClose[1], yend = WindowOpen[1]))
-        
+          geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = (WindowOpen[1]-1)), 
+                       size = 1, arrow = grid::arrow(length = grid::unit(0.25, "cm"))) +
+          geom_segment(aes(x = 0, y = WindowOpen[1], xend = (WindowClose[1]-1), yend = WindowOpen[1]),
+                       size = 1, arrow = grid::arrow(length = grid::unit(0.25, "cm")))        
         beta2 <- beta2 +
-          geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = WindowOpen[1])) +
-          geom_segment(aes(x = 0, y = WindowOpen[1], xend = WindowClose[1], yend = WindowOpen[1]))
-        
+          geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = (WindowOpen[1]-1)), 
+                       size = 1, arrow = grid::arrow(length = grid::unit(0.25, "cm"))) +
+          geom_segment(aes(x = 0, y = WindowOpen[1], xend = (WindowClose[1]-1), yend = WindowOpen[1]),
+                       size = 1, arrow = grid::arrow(length = grid::unit(0.25, "cm")))        
       }
       
       if(plotall == TRUE){
@@ -137,17 +141,20 @@ plotbetas <- function(dataset, arrow = FALSE, plotallenv, plotall = FALSE){
       
       if(arrow == TRUE){
         beta <- beta +
-          geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = WindowOpen[1])) +
-          geom_segment(aes(x = 0, y = WindowOpen[1], xend = WindowClose[1], yend = WindowOpen[1]))
-        
+          geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = (WindowOpen[1]-1)), 
+                       size = 1, arrow = grid::arrow(length = grid::unit(0.25, "cm"))) +
+          geom_segment(aes(x = 0, y = WindowOpen[1], xend = (WindowClose[1]-1), yend = WindowOpen[1]),
+                       size = 1, arrow = grid::arrow(length = grid::unit(0.25, "cm")))        
         beta2 <- beta2 +
-          geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = WindowOpen[1])) +
-          geom_segment(aes(x = 0, y = WindowOpen[1], xend = WindowClose[1], yend = WindowOpen[1]))
-        
+          geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = (WindowOpen[1]-1)), 
+                       size = 1, arrow = grid::arrow(length = grid::unit(0.25, "cm"))) +
+          geom_segment(aes(x = 0, y = WindowOpen[1], xend = (WindowClose[1]-1), yend = WindowOpen[1]),
+                       size = 1, arrow = grid::arrow(length = grid::unit(0.25, "cm")))        
         beta3 <- beta3 +
-          geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = WindowOpen[1])) +
-          geom_segment(aes(x = 0, y = WindowOpen[1], xend = WindowClose[1], yend = WindowOpen[1]))
-        
+          geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = (WindowOpen[1]-1)), 
+                       size = 1, arrow = grid::arrow(length = grid::unit(0.25, "cm"))) +
+          geom_segment(aes(x = 0, y = WindowOpen[1], xend = (WindowClose[1]-1), yend = WindowOpen[1]),
+                       size = 1, arrow = grid::arrow(length = grid::unit(0.25, "cm")))        
       }      
       
       if(plotall == TRUE){
@@ -187,13 +194,15 @@ plotbetas <- function(dataset, arrow = FALSE, plotallenv, plotall = FALSE){
       if(arrow == TRUE){
         
         wgmean <- wgmean +
-          geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = WindowOpen[1])) +
-          geom_segment(aes(x = 0, y = WindowOpen[1], xend = WindowClose[1], yend = WindowOpen[1]))
-        
+          geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = (WindowOpen[1]-1)), 
+                       size = 1, arrow = grid::arrow(length = grid::unit(0.25, "cm"))) +
+          geom_segment(aes(x = 0, y = WindowOpen[1], xend = (WindowClose[1]-1), yend = WindowOpen[1]),
+                       size = 1, arrow = grid::arrow(length = grid::unit(0.25, "cm")))        
         wgdev <- wgdev +
-          geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = WindowOpen[1])) +
-          geom_segment(aes(x = 0, y = WindowOpen[1], xend = WindowClose[1], yend = WindowOpen[1]))
-              
+          geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = (WindowOpen[1]-1)), 
+                       size = 1, arrow = grid::arrow(length = grid::unit(0.25, "cm"))) +
+          geom_segment(aes(x = 0, y = WindowOpen[1], xend = (WindowClose[1]-1), yend = WindowOpen[1]),
+                       size = 1, arrow = grid::arrow(length = grid::unit(0.25, "cm")))              
       }
       
       if(is.null(dataset$WithinGrpDev) == FALSE & is.null(dataset$WithinGrpMean) == FALSE){

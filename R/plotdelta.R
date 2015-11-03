@@ -54,8 +54,10 @@ with(dataset, {
       ggtitle(expression(paste(Delta, "AICc (compared to null model)")))+
       ylab("Window open") +
       xlab("Window close") +
-      geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = WindowOpen[1])) +
-      geom_segment(aes(x = 0, y = WindowOpen[1], xend = WindowClose[1], yend = WindowOpen[1]))
+      geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = (WindowOpen[1]-1)), 
+                   size = 1, arrow = grid::arrow(length = grid::unit(0.25, "cm"))) +
+      geom_segment(aes(x = 0, y = WindowOpen[1], xend = (WindowClose[1]-1), yend = WindowOpen[1]),
+                   size = 1, arrow = grid::arrow(length = grid::unit(0.25, "cm")))
     if(plotall == TRUE){
       plotallenv$delta <- ARR
     } else {
