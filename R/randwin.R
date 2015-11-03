@@ -82,7 +82,7 @@ randwin <- function(repeats = 1, xvar, cdate, bdate, baseline,
                     furthest, closest, stat,  
                     func, type, cutoff.day, cutoff.month,
                     cmissing = FALSE, cinterval = "day",
-                    upper = NA, lower = NA, thresh = FALSE, centre = NULL){
+                    upper = NA, lower = NA, thresh = FALSE, centre = NULL, cvk){
   
   xvar = xvar[[1]]
   
@@ -95,7 +95,7 @@ randwin <- function(repeats = 1, xvar, cdate, bdate, baseline,
                          func = func, type = type,
                          cutoff.day = cutoff.day, cutoff.month = cutoff.month,
                          nrandom = repeats, cmissing = cmissing, cinterval = cinterval,
-                         upper = upper, lower = lower, thresh = thresh, centre = centre)
+                         upper = upper, lower = lower, thresh = thresh, centre = centre, cvk=cvk)
     
     outputrep$Repeat <- r
     
