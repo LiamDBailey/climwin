@@ -83,11 +83,15 @@
 #'@export
 
 randwin <- function(exclude = NA, repeats = 1, xvar, cdate, bdate, baseline, 
-                    furthest, closest, stat,  
-                    func, type, refday,
+                    stat, limits, func, type, refday,
                     cmissing = FALSE, cinterval = "day",
                     upper = NA, lower = NA, thresh = FALSE, centre = NULL, cvk,
-                    cutoff.day = NULL, cutoff.month = NULL){
+                    cutoff.day = NULL, cutoff.month = NULL,
+                    furthest = NULL, closest = NULL){
+  
+  if(is.null(furthest) == FALSE & is.null(closest) == FALSE){
+    stop("furthest and closest are now redundant. Please use parameter 'limits'")
+  }
   
   xvar = xvar[[1]]
   
@@ -99,8 +103,7 @@ randwin <- function(exclude = NA, repeats = 1, xvar, cdate, bdate, baseline,
     print (c("randomization number ", r))
     bdateNew        <- sample(bdate)
     outputrep <- basewin(exclude = exclude, xvar = xvar, cdate = cdate, bdate = bdateNew, 
-                         baseline = baseline, furthest = furthest,
-                         closest = closest, stat = stat, 
+                         baseline = baseline, limits = limits, stat = stat, 
                          func = func, type = type,
                          refday = refday,
                          nrandom = repeats, cmissing = cmissing, cinterval = cinterval,

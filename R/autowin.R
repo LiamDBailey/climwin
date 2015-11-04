@@ -90,13 +90,17 @@
 #'        
 #'@export
 
-autowin <- function(reference, xvar, cdate, bdate, baseline, furthest, 
-                    closest,  stat, func, type, refday, 
+autowin <- function(reference, xvar, cdate, bdate, baseline, limits, stat, func, type, refday, 
                     cmissing = FALSE, cinterval = "day", upper = NA,
-                    lower = NA, thresh = FALSE, centre = NULL, cutoff.day = NULL, cutoff.month = NULL){
+                    lower = NA, thresh = FALSE, centre = NULL, cutoff.day = NULL, cutoff.month = NULL,
+                    furthest = NULL, closest = NULL){
   
   if(is.null(cutoff.day) == FALSE & is.null(cutoff.month) == FALSE){
     stop("cutoff.day and cutoff.month are now redundant. Please use parameter 'refday'")
+  }
+  
+  if(is.null(furthest) == FALSE & is.null(closest) == FALSE){
+    stop("furthest and closest are now redundant. Please use parameter 'limits'")
   }
   
   xvar = xvar[[1]]
@@ -108,24 +112,24 @@ autowin <- function(reference, xvar, cdate, bdate, baseline, furthest,
   }
   
   if (cinterval == "day"){
-    if ((min(as.Date(bdate, format = "%d/%m/%Y")) - furthest) < min(as.Date(cdate, format = "%d/%m/%Y"))){
-      stop("You do not have enough climate data to search that far back. Please adjust the value of furthest or add additional climate data.")
+    if ((min(as.Date(bdate, format = "%d/%m/%Y")) - limits[1]) < min(as.Date(cdate, format = "%d/%m/%Y"))){
+      stop("You do not have enough climate data to search that far back. Please adjust the value of limits or add additional climate data.")
      }
   }
   
   if (cinterval == "week"){
-    if ((min(as.Date(bdate, format = "%d/%m/%Y")) - lubridate::weeks(furthest)) < min(as.Date(cdate, format = "%d/%m/%Y"))){
-      stop("You do not have enough climate data to search that far back. Please adjust the value of furthest or add additional climate data.")
+    if ((min(as.Date(bdate, format = "%d/%m/%Y")) - lubridate::weeks(limits[1])) < min(as.Date(cdate, format = "%d/%m/%Y"))){
+      stop("You do not have enough climate data to search that far back. Please adjust the value of limits or add additional climate data.")
     }
   }
   
   if (cinterval == "month"){
-    if ((min(as.Date(bdate, format = "%d/%m/%Y")) - months(furthest)) < min(as.Date(cdate, format = "%d/%m/%Y"))){
-      stop("You do not have enough climate data to search that far back. Please adjust the value of furthest or add additional climate data.")
+    if ((min(as.Date(bdate, format = "%d/%m/%Y")) - months(limits[1])) < min(as.Date(cdate, format = "%d/%m/%Y"))){
+      stop("You do not have enough climate data to search that far back. Please adjust the value of limits or add additional climate data.")
     }
   }
   
-  duration   <- (furthest - closest) + 1
+  duration   <- (limits[1] - limits[2]) + 1
   maxmodno   <- (duration * (duration + 1)) / 2 
   cont       <- convertdate(bdate = bdate, cdate = cdate, xvar = xvar, 
                              cinterval = cinterval, type = type, 
@@ -163,8 +167,8 @@ autowin <- function(reference, xvar, cdate, bdate, baseline, furthest,
   # Create a matrix with the climate data from closest to furthest days
   # back from each biological record
   for (i in 1:length(bdate)){
-    for (j in closest:furthest){
-      k <- j - closest + 1
+    for (j in limits[2]:limits[1]){
+      k <- j - limits[2] + 1
       cmatrix[i, k] <- cont$xvar[which(cont$cintno == cont$bintno[i] - j)]    
     }
   }
@@ -233,11 +237,11 @@ autowin <- function(reference, xvar, cdate, bdate, baseline, furthest,
   
   pb <- txtProgressBar(min = 0, max = maxmodno, style = 3, char = "|")
   
-  for (m in closest:furthest){
+  for (m in limits[2]:limits[1]){
     for (n in 1:duration){
-      if ( (m - n) >= (closest - 1)){  # do not use windows that overshoot the closest possible day in window   
+      if ( (m - n) >= (limits[2] - 1)){  # do not use windows that overshoot the closest possible day in window   
         if (stat != "slope" || n > 1){
-          windowopen  <- m - closest + 1
+          windowopen  <- m - limits[2] + 1
           windowclose <- windowopen-n + 1
           if (stat == "slope"){ 
             time       <- seq(1, n, 1)
@@ -262,8 +266,8 @@ autowin <- function(reference, xvar, cdate, bdate, baseline, furthest,
     setTxtProgressBar(pb, modno - 1)
   }
   
-  modlist$Furthest    <- furthest
-  modlist$Closest     <- closest
+  modlist$Furthest    <- limits[1]
+  modlist$Closest     <- limits[2]
   modlist$Statistics  <- stat
   modlist$Functions   <- type
   

@@ -106,11 +106,16 @@
 #'@importFrom evd dgev
 #'@export
 
-weightwin <- function(xvar, cdate, bdate, baseline, furthest, closest, 
+weightwin <- function(xvar, cdate, bdate, baseline, limits, 
                       func = "lin", type = "fixed", refday, 
                       weightfunc = "W", cinterval = "day",
                       par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)), 
-                      method = "L-BFGS-B", cutoff.day = NULL, cutoff.month = NULL){
+                      method = "L-BFGS-B", cutoff.day = NULL, cutoff.month = NULL,
+                      furthest = NULL, closest = NULL){
+  
+  if(is.null(furthest) == FALSE & is.null(closest) == FALSE){
+    stop("furthest and closest are now redundant. Please use parameter 'limits'")
+  }
   
   if(is.null(cutoff.day) == FALSE & is.null(cutoff.month) == FALSE){
     stop("cutoff.day and cutoff.month are now redundant. Please use parameter 'refday'")
@@ -129,14 +134,14 @@ weightwin <- function(xvar, cdate, bdate, baseline, furthest, closest,
   par_shape    <- list()
   par_scale    <- list()
   par_location <- list()
-  duration     <- (furthest - closest) + 1
+  duration     <- (limits[1] - limits[2]) + 1
   cmatrix      <- matrix(ncol = (duration), nrow = length(bdate))
   baseline     <- update(baseline, .~.)
   nullmodel    <- AICc(baseline)
   
   for (i in 1:length(bdate)){
-    for (j in closest:furthest){
-      k <- j - closest + 1
+    for (j in limits[2]:limits[1]){
+      k <- j - limits[2] + 1
       cmatrix[i, k] <- xvar[match(cont$bintno[i] - j, cont$cintno)]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
     }
   }

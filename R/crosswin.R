@@ -68,12 +68,17 @@
 #EDITED BY: LIAM
 #NOTES: Tidy up code
 
-crosswin <- function(xvar, xvar2, cdate, bdate, furthest, closest, 
+crosswin <- function(xvar, xvar2, cdate, bdate, limits, 
                      stat, stat2, type, refday,
                      cinterval = "day", cmissing = FALSE,
-                     cutoff.day = NULL, cutoff.month = NULL){
+                     cutoff.day = NULL, cutoff.month = NULL,
+                     furthest = NULL, closest = NULL){
   
   print("Initialising, please wait...")
+  
+  if(is.null(furthest) == FALSE & is.null(closest) == FALSE){
+    stop("furthest and closest are now redundant. Please use parameter 'limits'")
+  }
   
   if(is.null(cutoff.day) == FALSE & is.null(cutoff.month) == FALSE){
     stop("cutoff.day and cutoff.month are now redundant. Please use parameter 'refday'")
@@ -82,7 +87,7 @@ crosswin <- function(xvar, xvar2, cdate, bdate, furthest, closest,
   xvar  <- xvar[[1]]
   xvar2 <- xvar2[[1]]
   
-  duration <- (furthest - closest) + 1
+  duration <- (limits[1] - limits[2]) + 1
   maxmodno <- (duration * (duration + 1))/2 
   cont     <- convertdate(bdate = bdate, cdate = cdate, xvar = xvar, xvar2 = xvar2, 
                             cinterval = cinterval, type = type, 
@@ -93,8 +98,8 @@ crosswin <- function(xvar, xvar2, cdate, bdate, furthest, closest,
   cmatrix2 <- matrix(ncol = (duration), nrow = length(bdate))  # matrix that stores the weather data for variable or fixed windows
   
   for (i in 1:length(bdate)){
-    for (j in closest:furthest){
-      k <- j - closest + 1
+    for (j in limits[2]:limits[1]){
+      k <- j - limits[2] + 1
       cmatrix1[i, k] <- cont$xvar[which(cont$cintn == cont$bintno[i] - j)]  #Create a matrix which contains the climate data from furthest to furthest from each biological record#
       cmatrix2[i, k] <- cont$xvar2[which(cont$cintno == cont$bintno[i] - j)]
     }
@@ -144,11 +149,11 @@ crosswin <- function(xvar, xvar2, cdate, bdate, furthest, closest,
   
   pb <- txtProgressBar(min = 0, max = maxmodno, style = 3, char = "|")
   
-  for (m in closest:furthest){
+  for (m in limits[2]:limits[1]){
     for (n in 1:duration){
-      if ( (m - n) >= (closest - 1)){  # do not use windows that overshoot the closest possible day in window   
+      if ( (m - n) >= (limits[2] - 1)){  # do not use windows that overshoot the closest possible day in window   
         if (stat != "slope" || stat2 != "slope" || n > 1){
-          windowopen  <- m - closest + 1
+          windowopen  <- m - limits[2] + 1
           windowclose <- windowopen - n + 1
           if (stat == "slope"){ 
             time <- seq(1, n, 1)
@@ -186,8 +191,8 @@ crosswin <- function(xvar, xvar2, cdate, bdate, furthest, closest,
     #Fill progress bar
     setTxtProgressBar(pb, modno - 1)
   }
-  modlist$Furthest    <- furthest
-  modlist$Closest     <- closest
+  modlist$Furthest    <- limits[1]
+  modlist$Closest     <- limits[2]
   modlist$Statistics  <- stat
   modlist$Statistics2 <- stat2
   modlist$Type        <- type
