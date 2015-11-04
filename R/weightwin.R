@@ -107,17 +107,22 @@
 #'@export
 
 weightwin <- function(xvar, cdate, bdate, baseline, furthest, closest, 
-                      func = "lin", type = "fixed", cutoff.day, cutoff.month, 
+                      func = "lin", type = "fixed", refday, 
                       weightfunc = "W", cinterval = "day",
                       par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)), 
-                      method = "L-BFGS-B"){
+                      method = "L-BFGS-B", cutoff.day = NULL, cutoff.month = NULL){
+  
+  if(is.null(cutoff.day) == FALSE & is.null(cutoff.month) == FALSE){
+    stop("cutoff.day and cutoff.month are now redundant. Please use parameter 'refday'")
+  }
   
   xvar = xvar[[1]]
   
   funcenv                 <- environment()
   cont                    <- convertdate(bdate = bdate, cdate = cdate, xvar = xvar, 
                                          cinterval = cinterval, type = type, 
-                                         cutoff.day = cutoff.day, cutoff.month = cutoff.month )   # create new climate dataframe with continuous daynumbers, leap days are not a problem 
+                                         refday = refday)   
+  # create new climate dataframe with continuous daynumbers, leap days are not a problem 
 
   modno        <- 1
   DAICc        <- list()

@@ -162,9 +162,14 @@
 #'@export
 
 climatewin <- function(exclude = NA, xvar, cdate, bdate, baseline, furthest, closest, 
-                       type, cutoff.day, cutoff.month, stat = "mean", func = "lin",
+                       type, refday, stat = "mean", func = "lin",
                        cmissing = FALSE, cinterval = "day", cvk = 0,
-                       upper = NA, lower = NA, thresh = FALSE, centre = NULL, centre_var = "both"){
+                       upper = NA, lower = NA, thresh = FALSE, centre = NULL, centre_var = "both",
+                       cutoff.day = NULL, cutoff.month = NULL){
+  
+  if(is.null(cutoff.day) == FALSE & is.null(cutoff.month) == FALSE){
+    stop("cutoff.day and cutoff.month are now redundant. Please use parameter 'refday'")
+  }
   
   #Create a centre function that over-rides quadratics etc. when centre != NULL
   if(is.null(centre) == FALSE){
@@ -208,8 +213,7 @@ climatewin <- function(exclude = NA, xvar, cdate, bdate, baseline, furthest, clo
   combined <- list()
   for (combo in 1:nrow(allcombos)){
     runs <- basewin(exclude = exclude, xvar = xvar[[paste(allcombos[combo, 1])]], cdate = cdate, bdate = bdate, baseline = baseline,
-                    furthest = furthest, closest = closest, type = paste(allcombos[combo, 2]), cutoff.day = cutoff.day,
-                    cutoff.month = cutoff.month, stat = paste(allcombos[combo, 3]), func = paste(allcombos[combo, 4]),
+                    furthest = furthest, closest = closest, type = paste(allcombos[combo, 2]), refday = refday, stat = paste(allcombos[combo, 3]), func = paste(allcombos[combo, 4]),
                     cmissing = cmissing, cinterval = cinterval, cvk = cvk, 
                     upper = ifelse(threshlevel == "two" || threshlevel == "upper", allcombos$upper[combo], NA),
                     lower = ifelse(threshlevel == "two" || threshlevel == "lower", allcombos$lower[combo], NA),

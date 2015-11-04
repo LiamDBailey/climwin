@@ -69,10 +69,15 @@
 #NOTES: Tidy up code
 
 crosswin <- function(xvar, xvar2, cdate, bdate, furthest, closest, 
-                     stat, stat2, type, cutoff.day, cutoff.month,
-                     cinterval = "day", cmissing = FALSE){
+                     stat, stat2, type, refday,
+                     cinterval = "day", cmissing = FALSE,
+                     cutoff.day = NULL, cutoff.month = NULL){
   
   print("Initialising, please wait...")
+  
+  if(is.null(cutoff.day) == FALSE & is.null(cutoff.month) == FALSE){
+    stop("cutoff.day and cutoff.month are now redundant. Please use parameter 'refday'")
+  }
   
   xvar  <- xvar[[1]]
   xvar2 <- xvar2[[1]]
@@ -81,7 +86,7 @@ crosswin <- function(xvar, xvar2, cdate, bdate, furthest, closest,
   maxmodno <- (duration * (duration + 1))/2 
   cont     <- convertdate(bdate = bdate, cdate = cdate, xvar = xvar, xvar2 = xvar2, 
                             cinterval = cinterval, type = type, 
-                            cutoff.day = cutoff.day, cutoff.month = cutoff.month, cross = TRUE)   # create new climate dataframe with continuous daynumbers, leap days are not a problem
+                            refday = refday, cross = TRUE)   # create new climate dataframe with continuous daynumbers, leap days are not a problem
   modno    <- 1  #Create a model number variable that will count up during the loop#
   modlist  <- list()   # dataframes to store ouput
   cmatrix1 <- matrix(ncol = (duration), nrow = length(bdate))  # matrix that stores the weather data for variable or fixed windows
@@ -188,8 +193,8 @@ crosswin <- function(xvar, xvar2, cdate, bdate, furthest, closest,
   modlist$Type        <- type
   
   if (type == "fixed"){
-    modlist$Cutoff.day   <- cutoff.day
-    modlist$Cutoff.month <- cutoff.month
+    modlist$Reference.day   <- refday[1]
+    modlist$Reference.month <- refday[2]
   }
   return(as.data.frame(modlist))
 }

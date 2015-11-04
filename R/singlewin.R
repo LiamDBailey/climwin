@@ -89,10 +89,14 @@
 
 singlewin <- function(xvar, cdate, bdate, baseline, 
                       furthest, closest, stat, func, 
-                      type, cutoff.day, cutoff.month, 
+                      type, refday, 
                       cmissing = FALSE, cinterval = "day",
                       upper = NA, lower = NA, thresh = FALSE,
-                      centre = NULL){
+                      centre = NULL, cutoff.day = NULL, cutoff.month = NULL){
+  
+  if(is.null(cutoff.day) == FALSE & is.null(cutoff.month) == FALSE){
+    stop("cutoff.day and cutoff.month are now redundant. Please use parameter 'refday'")
+  }
   
   xvar = xvar[[1]]
   
@@ -125,9 +129,9 @@ singlewin <- function(xvar, cdate, bdate, baseline,
   
   if(cinterval == "day"){  
     if(type == "fixed"){   
-      bintno            <- as.numeric(as.Date(paste(cutoff.day, cutoff.month, year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1 
+      bintno            <- as.numeric(as.Date(paste(refday[1], refday[2], year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1 
       wrongyear         <- which(bintno < realbintno)
-      bintno[wrongyear] <- (as.numeric(as.Date(paste(cutoff.day, cutoff.month, (year(bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1)
+      bintno[wrongyear] <- (as.numeric(as.Date(paste(refday[1], refday[2], (year(bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1)
     } else {
       bintno <- realbintno
     }
@@ -140,9 +144,9 @@ singlewin <- function(xvar, cdate, bdate, baseline,
     cintno     <- newclim3$cintno
     xvar       <- newclim3$xvar
     if (type == "fixed"){ 
-      bintno            <- ceiling((as.numeric(as.Date(paste(cutoff.day, cutoff.month, year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1) / 7) 
+      bintno            <- ceiling((as.numeric(as.Date(paste(refday[1], refday[2], year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1) / 7) 
       wrongyear         <- which(bintno < realbintno)
-      bintno[wrongyear] <- ceiling((as.numeric(as.Date(paste(cutoff.day, cutoff.month, (year(bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1) / 7)
+      bintno[wrongyear] <- ceiling((as.numeric(as.Date(paste(refday[1], refday[2], (year(bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1) / 7)
     } else {
       bintno <- realbintno
     }
@@ -157,9 +161,9 @@ singlewin <- function(xvar, cdate, bdate, baseline,
     cintno     <- newclim3$cintno
     xvar       <- newclim3$xvar
     if (type == "fixed"){ 
-      bintno            <- cutoff.month + 12 * (year(bdate) - min(year(cdate2)))
+      bintno            <- refday[2] + 12 * (year(bdate) - min(year(cdate2)))
       wrongyear         <- which(bintno < realbintno)
-      bintno[wrongyear] <- cutoff.month + 12 * (year(bdate[wrongyear]) + 1 - min(year(cdate2)))
+      bintno[wrongyear] <- refday[2] + 12 * (year(bdate[wrongyear]) + 1 - min(year(cdate2)))
     } else {
       bintno <- realbintno
     }
@@ -185,7 +189,7 @@ singlewin <- function(xvar, cdate, bdate, baseline,
   
   if(max(bintno) > max(cintno)){
     if(type == "fixed"){
-      stop("You need more recent biological data. This error may be caused by your choice of cutoff.day/cutoff.month")
+      stop("You need more recent biological data. This error may be caused by your choice of refday")
     } else {
       stop("You need more recent biological data")
     }

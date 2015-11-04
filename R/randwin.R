@@ -84,11 +84,16 @@
 
 randwin <- function(exclude = NA, repeats = 1, xvar, cdate, bdate, baseline, 
                     furthest, closest, stat,  
-                    func, type, cutoff.day, cutoff.month,
+                    func, type, refday,
                     cmissing = FALSE, cinterval = "day",
-                    upper = NA, lower = NA, thresh = FALSE, centre = NULL, cvk){
+                    upper = NA, lower = NA, thresh = FALSE, centre = NULL, cvk,
+                    cutoff.day = NULL, cutoff.month = NULL){
   
   xvar = xvar[[1]]
+  
+  if(is.null(cutoff.day) == FALSE & is.null(cutoff.month) == FALSE){
+    stop("cutoff.day and cutoff.month are now redundant. Please use parameter 'refday'")
+  }
   
   for (r in 1:repeats){
     print (c("randomization number ", r))
@@ -97,7 +102,7 @@ randwin <- function(exclude = NA, repeats = 1, xvar, cdate, bdate, baseline,
                          baseline = baseline, furthest = furthest,
                          closest = closest, stat = stat, 
                          func = func, type = type,
-                         cutoff.day = cutoff.day, cutoff.month = cutoff.month,
+                         refday = refday,
                          nrandom = repeats, cmissing = cmissing, cinterval = cinterval,
                          upper = upper, lower = lower, thresh = thresh, centre = centre, cvk=cvk)
     

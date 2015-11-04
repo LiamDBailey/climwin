@@ -91,9 +91,13 @@
 #'@export
 
 autowin <- function(reference, xvar, cdate, bdate, baseline, furthest, 
-                    closest,  stat, func, type, cutoff.day, cutoff.month, 
+                    closest,  stat, func, type, refday, 
                     cmissing = FALSE, cinterval = "day", upper = NA,
-                    lower = NA, thresh = FALSE, centre = NULL){
+                    lower = NA, thresh = FALSE, centre = NULL, cutoff.day = NULL, cutoff.month = NULL){
+  
+  if(is.null(cutoff.day) == FALSE & is.null(cutoff.month) == FALSE){
+    stop("cutoff.day and cutoff.month are now redundant. Please use parameter 'refday'")
+  }
   
   xvar = xvar[[1]]
 
@@ -125,7 +129,7 @@ autowin <- function(reference, xvar, cdate, bdate, baseline, furthest,
   maxmodno   <- (duration * (duration + 1)) / 2 
   cont       <- convertdate(bdate = bdate, cdate = cdate, xvar = xvar, 
                              cinterval = cinterval, type = type, 
-                             cutoff.day = cutoff.day, cutoff.month = cutoff.month)
+                             refday = refday)
   modno      <- 1
   modlist    <- list()
   cmatrix    <- matrix(ncol = (duration), nrow = length(bdate))
@@ -264,8 +268,8 @@ autowin <- function(reference, xvar, cdate, bdate, baseline, furthest,
   modlist$Functions   <- type
   
   if (type == TRUE){
-    modlist$cutoff.day   <- cutoff.day
-    modlist$cutoff.month <- cutoff.month 
+    modlist$Reference.day   <- refday[1]
+    modlist$Reference.month <- refday[2] 
   }
   
   local <- as.data.frame(modlist)

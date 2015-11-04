@@ -1,8 +1,9 @@
 #Basewin function that is combined with manywin to test multiple climate window characteristics
 basewin <- function(exclude, xvar, cdate, bdate, baseline, furthest, closest, 
-                    type, cutoff.day, cutoff.month, stat = "mean", func = "lin",
+                    type, stat = "mean", func = "lin", refday,
                     cmissing = FALSE, cinterval = "day",  nrandom = 0, cvk = 0,
                     upper = NA, lower = NA, thresh = FALSE, centre = NULL, centre_var = "both"){
+  
   print("Initialising, please wait...")
   
   if(is.null(centre) == FALSE){
@@ -20,7 +21,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, furthest, closest,
   maxmodno  <- (duration * (duration + 1))/2
   cont      <- convertdate(bdate = bdate, cdate = cdate, xvar = xvar, 
                            cinterval = cinterval, type = type, 
-                           cutoff.day = cutoff.day, cutoff.month = cutoff.month)   # create new climate dataframe with continuous daynumbers, leap days are not a problem
+                           refday = refday)   # create new climate dataframe with continuous daynumbers, leap days are not a problem
   
   if (cinterval == "day"){
     if ( (min(cont$bintno) - furthest) < min(cont$cintno)){
@@ -42,7 +43,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, furthest, closest,
   
   if (max(cont$bintno) > max(cont$cintno)){
     if (type == "fixed"){
-      stop("You need more recent biological data. This error may be caused by your choice of cutoff.day/cutoff.month")
+      stop("You need more recent biological data. This error may be caused by your choice of refday")
     } else {
       stop("You need more recent biological data")
     }
@@ -361,8 +362,8 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, furthest, closest,
   modlist$ModWeight    <- (exp(-0.5 * modlist$deltaAICc)) / sum(exp(-0.5 * modlist$deltaAICc))
   
   if (type == "fixed"){
-    modlist$Cutoff.day   <- cutoff.day
-    modlist$Cutoff.month <- cutoff.month
+    modlist$Reference.day   <- refday[1]
+    modlist$Reference.month <- refday[2]
   }
   
   if (nrandom == 0){
@@ -396,7 +397,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, furthest, closest,
 
 #Function to convert dates into day/week/month number
 convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type, 
-                        cutoff.day, cutoff.month, cross = FALSE){
+                        refday, cross = FALSE){
   
   bdate  <- as.Date(bdate, format = "%d/%m/%Y") # Convert the date variables into the R date format
   cdate2 <- seq(min(as.Date(cdate, format = "%d/%m/%Y")), max(as.Date(cdate, format = "%d/%m/%Y")), "days") # Convert the date variables into the R date format
@@ -426,9 +427,9 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
   if (cross == FALSE){
     if (cinterval == "day"){  
       if (type == "fixed"){   
-        bintno            <- as.numeric(as.Date(paste(cutoff.day, cutoff.month, year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1 
+        bintno            <- as.numeric(as.Date(paste(refday[1], refday[2], year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1 
         wrongyear         <- which(bintno < realbintno)
-        bintno[wrongyear] <- (as.numeric(as.Date(paste(cutoff.day, cutoff.month, (year(bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1)
+        bintno[wrongyear] <- (as.numeric(as.Date(paste(refday[1], refday[2], (year(bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1)
       } else {
         bintno <- realbintno
       }
@@ -441,9 +442,9 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       cintno     <- newclim3$cintno
       xvar       <- newclim3$xvar
       if (type == "fixed"){ 
-        bintno            <- ceiling((as.numeric(as.Date(paste(cutoff.day, cutoff.month, year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1) / 7) 
+        bintno            <- ceiling((as.numeric(as.Date(paste(refday[1], refday[2], year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1) / 7) 
         wrongyear         <- which(bintno < realbintno)
-        bintno[wrongyear] <- ceiling((as.numeric(as.Date(paste(cutoff.day, cutoff.month, (year(bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1) / 7)
+        bintno[wrongyear] <- ceiling((as.numeric(as.Date(paste(refday[1], refday[2], (year(bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1) / 7)
       } else {
         bintno <- realbintno
       }
@@ -458,9 +459,9 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       cintno     <- newclim3$cintno
       xvar       <- newclim3$xvar
       if (type == "fixed"){ 
-        bintno            <- cutoff.month + 12 * (year(bdate) - min(year(cdate2)))
+        bintno            <- refday[2] + 12 * (year(bdate) - min(year(cdate2)))
         wrongyear         <- which(bintno < realbintno)
-        bintno[wrongyear] <- cutoff.month + 12 * (year(bdate[wrongyear]) + 1 - min(year(cdate2)))
+        bintno[wrongyear] <- refday[2] + 12 * (year(bdate[wrongyear]) + 1 - min(year(cdate2)))
       } else {
         bintno <- realbintno
       }
@@ -468,9 +469,9 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
   } else {
     if (cinterval == "day"){  
       if (type == "fixed"){   
-        bintno            <- as.numeric(as.Date(paste(cutoff.day, cutoff.month, year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1 
+        bintno            <- as.numeric(as.Date(paste(refday[1], refday[2], year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1 
         wrongyear         <- which(bintno < realbintno)
-        bintno[wrongyear] <- (as.numeric(as.Date(paste(cutoff.day, cutoff.month, (year(bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1)
+        bintno[wrongyear] <- (as.numeric(as.Date(paste(refday[1], refday[2], (year(bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1)
       } else {
         bintno <- realbintno
       }    
@@ -484,9 +485,9 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       xvar       <- newclim3$xvar
       xvar2      <- newclim3$xvar2
       if (type == "fixed"){ 
-        bintno            <- ceiling((as.numeric(as.Date(paste(cutoff.day, cutoff.month, year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1) / 7) 
+        bintno            <- ceiling((as.numeric(as.Date(paste(refday[1], refday[2], year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1) / 7) 
         wrongyear         <- which(bintno < realbintno)
-        bintno[wrongyear] <- ceiling((as.numeric(as.Date(paste(cutoff.day, cutoff.month, (year(bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1) / 7)
+        bintno[wrongyear] <- ceiling((as.numeric(as.Date(paste(refday[1], refday[2], (year(bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1) / 7)
       } else {
         bintno <- realbintno
       }
@@ -502,9 +503,9 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       xvar       <- newclim3$xvar
       xvar2      <- newclim3$xvar2
       if (type == "fixed"){ 
-        bintno            <- cutoff.month + 12 * (year(bdate) - min(year(cdate2)))
+        bintno            <- refday[2] + 12 * (year(bdate) - min(year(cdate2)))
         wrongyear         <- which(bintno < realbintno)
-        bintno[wrongyear] <- cutoff.month + 12 * (year(bdate[wrongyear]) + 1 - min(year(cdate2)))
+        bintno[wrongyear] <- refday[2] + 12 * (year(bdate[wrongyear]) + 1 - min(year(cdate2)))
       } else {
         bintno <- realbintno
       }
