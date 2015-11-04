@@ -92,7 +92,7 @@
 
 autowin <- function(reference, xvar, cdate, bdate, baseline, limits, stat, func, type, refday, 
                     cmissing = FALSE, cinterval = "day", upper = NA,
-                    lower = NA, thresh = FALSE, centre = NULL, arrow = TRUE, 
+                    lower = NA, thresh = FALSE, centre = list(NULL, "both"), arrow = TRUE, 
                     cutoff.day = NULL, cutoff.month = NULL,
                     furthest = NULL, closest = NULL){
   

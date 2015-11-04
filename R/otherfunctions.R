@@ -189,7 +189,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, limits,
                  Consider adding a constant to climate data to remove these values")
           }
           
-          if (is.null(centre) == FALSE){
+          if (is.null(centre[[1]]) == FALSE){
             if(centre[[2]] == "both"){
               modeldat$wgdev  <- wgdev(modeldat$climate, centre[[1]])
               modeldat$wgmean <- wgmean(modeldat$climate, centre[[1]])
@@ -354,7 +354,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, limits,
             modeldat$climate <- apply(cmatrix[, windowclose:windowopen], 1, FUN = stat))
   }
   
-  if (is.null(centre) == FALSE){
+  if (is.null(centre[[1]]) == FALSE){
     if (centre[[2]] == "both"){
         modeldat$WGdev   <- wgdev(modeldat$climate, centre[[1]])
         modeldat$WGmean  <- wgmean(modeldat$climate, centre[[1]])

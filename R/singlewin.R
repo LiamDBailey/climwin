@@ -92,7 +92,7 @@ singlewin <- function(xvar, cdate, bdate, baseline,
                       type, refday, 
                       cmissing = FALSE, cinterval = "day",
                       upper = NA, lower = NA, thresh = FALSE,
-                      centre = c(NULL, "both"), cutoff.day = NULL, cutoff.month = NULL,
+                      centre = list(NULL, "both"), cutoff.day = NULL, cutoff.month = NULL,
                       furthest = NULL, closest = NULL){
   
   if(is.null(furthest) == FALSE & is.null(closest) == FALSE){
