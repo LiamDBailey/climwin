@@ -7,15 +7,15 @@ test_that("plotall produces a graph when all variables provided", {
   data(MassClimate, envir = environment())
   
   testdata <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
-                         baseline = lm(Mass ~ 1, data = Mass), furthest = 3, closest = 2, 
+                         baseline = lm(Mass ~ 1, data = Mass), limits = c(3, 2), 
                          type = "variable", stat = "max", func = "lin", cmissing = FALSE)
   
   testdatarand <- randwin(repeats = 2, xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
-                          baseline = lm(Mass ~ 1, data = Mass), furthest = 3, closest = 2, 
+                          baseline = lm(Mass ~ 1, data = Mass), limits = c(3, 2), 
                           type = "variable", stat = "max", func = "lin", cmissing = FALSE)
   
   single <- singlewin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date,
-                      baseline = lm(Mass ~ 1, data = Mass), furthest = 72, closest = 15,
+                      baseline = lm(Mass ~ 1, data = Mass), limits = c(72, 15),
                       stat = "mean", func = "lin",
                       type = "variable", cmissing = FALSE, cinterval = "day")
   
@@ -30,11 +30,11 @@ test_that("plotall produces a graph when datasetrand removed", {
   data(MassClimate, envir = environment())
   
   testdata <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
-                         baseline = lm(Mass ~ 1, data = Mass), furthest = 3, closest = 2, 
+                         baseline = lm(Mass ~ 1, data = Mass), limits = c(3, 2), 
                          type = "variable", stat = "max", func = "lin", cmissing = FALSE)
   
   single <- singlewin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date,
-                      baseline = lm(Mass ~ 1, data = Mass), furthest = 72, closest = 15,
+                      baseline = lm(Mass ~ 1, data = Mass), limits = c(72, 15),
                       stat = "mean", func = "lin",
                       type = "variable", cmissing = FALSE, cinterval = "day")
   
@@ -49,15 +49,15 @@ test_that("plotall produces a graph when bestmodel removed", {
   data(MassClimate, envir = environment())
   
   testdata <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
-                         baseline = lm(Mass ~ 1, data = Mass), furthest = 3, closest = 2, 
+                         baseline = lm(Mass ~ 1, data = Mass), limits = c(3, 2), 
                          type = "variable", stat = "max", func = "lin", cmissing = FALSE)
   
   testdatarand <- randwin(repeats = 2, xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
-                          baseline = lm(Mass ~ 1, data = Mass), furthest = 3, closest = 2, 
+                          baseline = lm(Mass ~ 1, data = Mass), limits = c(3, 2), 
                           type = "variable", stat = "max", func = "lin", cmissing = FALSE)
   
   single <- singlewin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date,
-                      baseline = lm(Mass ~ 1, data = Mass), furthest = 72, closest = 15,
+                      baseline = lm(Mass ~ 1, data = Mass), limits = c(72, 15),
                       stat = "mean", func = "lin",
                       type = "variable", cmissing = FALSE, cinterval = "day")
   

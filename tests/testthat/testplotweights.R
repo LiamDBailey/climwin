@@ -7,7 +7,7 @@ test_that("plotweights produces a graph", {
   data(MassClimate, envir = environment())
   
   testdata <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
-                         baseline = lm(Mass ~ 1, data = Mass), furthest = 3, closest = 2, 
+                         baseline = lm(Mass ~ 1, data = Mass), limits = c(3, 2), 
                          type = "variable", stat = "max", func = "lin", cmissing = FALSE)
   
   

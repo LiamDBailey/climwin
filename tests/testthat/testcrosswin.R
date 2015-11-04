@@ -12,7 +12,7 @@ test_that("crosswin produces output", {
   test <- crosswin(xvar = list(Temp = MassClimate$Temp), 
                    xvar2 = list(Rain = MassClimate$Rain), 
                    cdate = MassClimate$Date,
-                   bdate = Mass$Date, furthest = 2, closest = 1, 
+                   bdate = Mass$Date, limits = c(2, 1), 
                    stat = "max", stat2 = "max", type = "variable",
                    cmissing = FALSE, cinterval = "day")
   

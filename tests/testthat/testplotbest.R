@@ -8,12 +8,12 @@ test_that("plotbest produces a graph", {
   data(MassClimate, envir = environment())
   
   testdata <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
-                         baseline = lm(Mass ~ 1, data = Mass), furthest = 3, closest = 2, 
+                         baseline = lm(Mass ~ 1, data = Mass), limits = c(3, 2), 
                          type = "variable", stat = "max", func = "lin", cmissing = FALSE)
   
   single <- singlewin(xvar = list(Temp = MassClimate$Temp), 
                       cdate = MassClimate$Date, bdate = Mass$Date,
-                      baseline = lm(Mass$Mass ~ 1),furthest = 72, closest = 15,
+                      baseline = lm(Mass$Mass ~ 1), limits = c(72, 15),
                       stat = "max", func = "lin",
                       type = "variable", cmissing = FALSE, cinterval = "day")
   

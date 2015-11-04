@@ -12,7 +12,7 @@ test_that("singlewin creates an output", {
   
   test <- singlewin(xvar = list(Temp = MassClimate$Temp), 
                     cdate = MassClimate$Date, bdate = Mass$Date,
-                    baseline = lm(Mass$Mass~1), furthest = 72, closest = 15,
+                    baseline = lm(Mass$Mass~1), limits = c(72, 15),
                     stat = "mean", func = "lin",
                     type = "variable", cmissing = FALSE, cinterval = "day")
   
@@ -30,7 +30,7 @@ test_that("cinterval W works", {
   
   test <- singlewin(xvar = list(Temp = MassClimate$Temp), 
                     cdate = MassClimate$Date, bdate = Mass$Date,
-                    baseline = lm(Mass ~ 1, data = Mass), furthest = 1, closest = 0,
+                    baseline = lm(Mass ~ 1, data = Mass), limits = c(1, 0),
                     stat = "mean", func = "lin",
                     type = "variable", cmissing = FALSE, cinterval = "week")
   
@@ -48,7 +48,7 @@ test_that("cinterval M works", {
   
   test <- singlewin(xvar = list(Temp = MassClimate$Temp), 
                     cdate = MassClimate$Date, bdate = Mass$Date,
-                    baseline = lm(Mass ~ 1, data = Mass), furthest = 1, closest = 0,
+                    baseline = lm(Mass ~ 1, data = Mass), limits = c(1, 0),
                     stat = "mean", func = "lin",
                     type = "variable", cmissing = FALSE, cinterval = "month")
   
@@ -72,7 +72,7 @@ test_that("No errors return when cmissing TRUE and full dataset", {
   test <- singlewin(xvar = list(Temp = MassClimate$Temp), 
                     cdate = MassClimate$Date, bdate = Mass$Date, 
                     baseline = lm(Mass ~ 1, data = Mass), 
-                    furthest = 2, closest = 2, 
+                    limits = c(2, 2), 
                     type = "variable", stat = "max", 
                     func = "lin", cmissing = TRUE)
   
@@ -93,7 +93,7 @@ test_that("No errors return when cmissing TRUE with NAs", {
   test <- singlewin(xvar = list(Temp = MassClimate2$Temp), 
                     cdate = MassClimate2$Date, bdate = Mass$Date, 
                     baseline = lm(Mass ~ 1, data = Mass), 
-                    furthest = 2, closest = 0, 
+                    limits = c(2, 0), 
                     type = "variable", stat = "max", 
                     func = "lin", cmissing = TRUE)
   
@@ -114,7 +114,7 @@ test_that("No errors return when cmissing FALSE with NAs", {
   expect_error(singlewin(xvar = list(Temp = MassClimate2$Temp), 
                          cdate = MassClimate2$Date, bdate = Mass$Date, 
                          baseline = lm(Mass ~ 1, data = Mass), 
-                         furthest = 2, closest = 2, 
+                         limits = c(2, 2), 
                          type = "variable", stat = "max", func = "lin", 
                          cmissing = FALSE))
   
@@ -134,7 +134,7 @@ test_that("glm models can run", {
   test <- singlewin(xvar = list(Temp = MassClimate$Temp), 
                     cdate = MassClimate$Date, bdate = Mass$Date, 
                     baseline = glm(Mass ~ 1, data = Mass, family = poisson), 
-                    furthest = 2, closest = 2, 
+                    limits = c(2, 2), 
                     type = "variable", stat = "max", 
                     func = "lin", cmissing = FALSE)
   
@@ -155,7 +155,7 @@ test_that("lmer models can run", {
                     cdate = OffspringClimate$Date, 
                     bdate = Offspring$Date, 
                     baseline = lmer(Offspring ~ 1 + (1|BirdID), data = Offspring),  
-                    furthest = 2, closest = 2, type = "variable", 
+                    limits = c(2, 2), type = "variable", 
                     stat = "max", func = "lin", cmissing = FALSE)
   
   expect_true(is.list(test))
@@ -180,8 +180,8 @@ test_that("Fixed window works", {
   test <- singlewin(xvar = list(Temp = MassClimate$Temp), 
                     cdate = MassClimate$Date, bdate = Mass$Date, 
                     baseline = lm(Mass ~ 1, data = Mass), 
-                    furthest = 2, closest = 2, 
-                    type = "fixed", cutoff.day = 20, cutoff.month = 5, 
+                    limits = c(2, 2), 
+                    type = "fixed", refday = c(20, 5), 
                     stat = "max", func = "lin", cmissing = FALSE)
   
   expect_true(is.list(test))
@@ -199,7 +199,7 @@ test_that("slope stats work", {
   test <- singlewin(xvar = list(Temp = MassClimate$Temp), 
                     cdate = MassClimate$Date, bdate = Mass$Date, 
                     baseline = lm(Mass ~ 1, data = Mass), 
-                    furthest = 2, closest = 1, 
+                    limits = c(2, 1), 
                     type = "variable", stat = "slope", 
                     func = "lin", cmissing = FALSE)
   
@@ -223,7 +223,7 @@ test_that("Quadratic function works", {
   test <- singlewin(xvar = list(Temp = MassClimate$Temp), 
                     cdate = MassClimate$Date, bdate = Mass$Date, 
                     baseline = lm(Mass ~ 1, data = Mass), 
-                    furthest = 2, closest = 2, 
+                    limits = c(2, 2), 
                     type = "variable", stat = "max", 
                     func = "quad", cmissing = FALSE)
   
@@ -243,7 +243,7 @@ test_that("Cubic function works", {
   test <- singlewin(xvar = list(Temp = MassClimate$Temp), 
                     cdate = MassClimate$Date, bdate = Mass$Date, 
                     baseline = lm(Mass ~ 1, data = Mass), 
-                    furthest = 2, closest = 2, 
+                    limits = c(2, 2), 
                     type = "variable", stat = "max", 
                     func = "cub", cmissing = FALSE)
   
@@ -263,7 +263,7 @@ test_that("Log function works", {
   test <- singlewin(xvar = list(Temp = MassClimate$Temp), 
                     cdate = MassClimate$Date, bdate = Mass$Date, 
                     baseline = lm(Mass ~ 1, data = Mass), 
-                    furthest = 2, closest = 2, 
+                    limits = c(2, 2), 
                     type = "variable", stat = "max", 
                     func = "log", cmissing = FALSE)
   
@@ -283,7 +283,7 @@ test_that("Inverse function works", {
   test <- singlewin(xvar = list(Temp = MassClimate$Temp), 
                     cdate = MassClimate$Date, bdate = Mass$Date, 
                     baseline = lm(Mass ~ 1, data = Mass), 
-                    furthest = 2, closest = 2, 
+                    limits = c(2, 2), 
                     type = "variable", stat = "max", 
                     func = "inv", cmissing = FALSE)
   
@@ -305,7 +305,7 @@ test_that("singlewin gives error when NAs are present in biological data", {
   expect_error(singlewin(xvar = list(Temp = MassClimate$Temp), 
                          cdate = MassClimate$Date, bdate = Mass$Date, 
                          baseline = lm(Mass ~ 1, data = Mass), 
-                         furthest = 2, closest = 2, 
+                         limits = c(2, 2), 
                          type = "variable", stat = "max", 
                          func = "lin", cmissing = FALSE))
   

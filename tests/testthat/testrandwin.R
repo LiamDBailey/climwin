@@ -16,7 +16,7 @@ test_that("Check randwin output", {
   
   rand <- randwin(repeats = 1, xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, 
                   bdate = Mass$Date, baseline = lm(Mass ~ 1, data = Mass), 
-                  furthest = 2, closest = 1, 
+                  limits = c(2, 1), 
                   type = "variable", stat = "max", func = "lin", cmissing = FALSE)
   
   duration  <- (furthest - closest) + 1

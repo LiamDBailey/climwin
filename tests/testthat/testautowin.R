@@ -13,13 +13,13 @@ test_that("AutoWinOutput has created an output", {
   data(MassClimate, envir = environment())
   
   single <- singlewin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date,
-                      baseline = lm(Mass ~ 1, data = Mass), furthest = 1, closest = 1,
+                      baseline = lm(Mass ~ 1, data = Mass), limits = c(1, 1),
                       stat = "mean", func = "lin",
                       type = "variable", cmissing = FALSE, cinterval = "day")
   
-  test <- autowin(reference = single$BestModelData$climate,
+  test <- autowin(reference = single,
                   xvar  = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date,
-                  baseline = lm(Mass ~ 1, data = Mass), furthest = 2, closest = 1, 
+                  baseline = lm(Mass ~ 1, data = Mass), limits = c(2, 1), 
                   stat = "mean", func = "lin", type = "variable", cmissing = FALSE, cinterval = "day")
   
   
