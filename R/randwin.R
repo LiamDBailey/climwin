@@ -85,7 +85,7 @@
 randwin <- function(exclude = NA, repeats = 1, xvar, cdate, bdate, baseline, 
                     stat, limits, func, type, refday,
                     cmissing = FALSE, cinterval = "day",
-                    upper = NA, lower = NA, thresh = FALSE, centre = NULL, cvk,
+                    upper = NA, lower = NA, thresh = FALSE, centre = NULL, cvk = 0,
                     cutoff.day = NULL, cutoff.month = NULL,
                     furthest = NULL, closest = NULL){
   
