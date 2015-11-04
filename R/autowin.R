@@ -222,8 +222,11 @@ autowin <- function(reference, xvar, cdate, bdate, baseline, limits, stat, func,
   modeldat$climate   <- seq(1, nrow(modeldat), 1)
   
   if (is.null(weights(baseline)) == FALSE){
-    modeldat$modweights <- weights(baseline)
-    baseline            <- update(baseline, .~., weights = modeldat$modweights, data = modeldat)
+    if (class(baseline)[1] == "glm" & sum(weights(baseline)) == nrow(model.frame(baseline)) || attr(class(baseline), "package") == "lme4" & sum(weights(baseline)) == nrow(model.frame(baseline))){
+    } else {
+      modeldat$modweights <- weights(baseline)
+      baseline <- update(baseline, .~., weights = modeldat$modweights, data = modeldat)
+    }
   }
   
   if (func == "lin"){
