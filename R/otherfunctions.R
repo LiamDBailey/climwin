@@ -19,6 +19,10 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, limits,
   
   duration  <- (limits[1] - limits[2]) + 1
   maxmodno  <- (duration * (duration + 1))/2
+  if (length(exclude) == 2 ){ maxmodno  <- maxmodno- exclude[1]*(duration-exclude[2]-1)+(exclude[1]-1)*exclude[1]/2 }
+  if (stat == "slope") { 
+    ifelse(is.na(exclude[2])==TRUE,  maxmodno  <- maxmodno - duration, maxmodno  <- maxmodno-exclude[2]-1)
+  } 
   cont      <- convertdate(bdate = bdate, cdate = cdate, xvar = xvar, 
                            cinterval = cinterval, type = type, 
                            refday = refday)   # create new climate dataframe with continuous daynumbers, leap days are not a problem
@@ -645,7 +649,7 @@ wgdev <- function(covar, groupvar) {
   
   for (i in 1:groups){
     b       <- which(groupvar == a[i])
-    temp[i] <- mean(covar[b])
+    temp[i] <- mean(covar[b], na.rm=TRUE)
   }
   
   for (j in 1:observations){
@@ -666,7 +670,7 @@ wgmean <- function(covar, groupvar){
   
   for (i in 1:groups){
     b       <- which(groupvar == a[i])
-    temp[i] <- mean(covar[b])
+    temp[i] <- mean(covar[b], na.rm=TRUE)
   }
   
   for (j in 1:observations){
@@ -674,6 +678,7 @@ wgmean <- function(covar, groupvar){
     groupmean[j] <- temp[c]
     groupdev[j]  <- covar[j] - groupmean[j]
   }
+  groupmean[which(is.nan(groupmean)==TRUE)]<-NA
   return(groupmean)
 }
 
