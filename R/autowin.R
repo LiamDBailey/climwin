@@ -92,8 +92,13 @@
 
 autowin <- function(reference, xvar, cdate, bdate, baseline, limits, stat, func, type, refday, 
                     cmissing = FALSE, cinterval = "day", upper = NA,
-                    lower = NA, thresh = FALSE, centre = NULL, cutoff.day = NULL, cutoff.month = NULL,
+                    lower = NA, thresh = FALSE, centre = NULL, arrow = TRUE, 
+                    cutoff.day = NULL, cutoff.month = NULL,
                     furthest = NULL, closest = NULL){
+  
+  WindowOpen  <- reference$Dataset$WindowOpen[1]
+  WindowClose <- reference$Dataset$WindowClose[1]
+  reference   <- reference$BestModelData$climate
   
   if(is.null(cutoff.day) == FALSE & is.null(cutoff.month) == FALSE){
     stop("cutoff.day and cutoff.month are now redundant. Please use parameter 'refday'")
@@ -266,10 +271,12 @@ autowin <- function(reference, xvar, cdate, bdate, baseline, limits, stat, func,
     setTxtProgressBar(pb, modno - 1)
   }
   
-  modlist$Furthest    <- limits[1]
-  modlist$Closest     <- limits[2]
-  modlist$Statistics  <- stat
-  modlist$Functions   <- type
+  modlist$Furthest        <- limits[1]
+  modlist$Closest         <- limits[2]
+  modlist$Statistics      <- stat
+  modlist$Functions       <- type
+  modlist$BestWindowOpen  <- WindowOpen
+  modlist$BestWindowClose <- WindowClose
   
   if (type == TRUE){
     modlist$Reference.day   <- refday[1]

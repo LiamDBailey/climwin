@@ -320,5 +320,5 @@ singlewin <- function(xvar, cdate, bdate, baseline,
     LocalBestModel <- update(modeloutput, .~.)
   }
   LocalData           <- model.frame(LocalBestModel)
-  return(list(BestModel = LocalBestModel, BestModelData = LocalData))
+  return(list(BestModel = LocalBestModel, BestModelData = LocalData, Dataset = data.frame(WindowOpen = limits[1], WindowClose = limits[2])))
 }
