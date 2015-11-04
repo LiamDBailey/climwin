@@ -1,8 +1,8 @@
 #Basewin function that is combined with manywin to test multiple climate window characteristics
 basewin <- function(exclude, xvar, cdate, bdate, baseline, limits, 
                     type, stat = "mean", func = "lin", refday,
-                    cmissing = FALSE, cinterval = "day",  nrandom = 0, cvk = 0,
-                    upper = NA, lower = NA, thresh = FALSE, centre = list(NULL, "both")){
+                    cmissing = FALSE, cinterval = "day",  nrandom = 0, k = 0,
+                    upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both")){
   
   print("Initialising, please wait...")
   
@@ -46,7 +46,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, limits,
   }
   
   if (max(cont$bintno) > max(cont$cintno)){
-    if (type == "fixed"){
+    if (type == "absolute"){
       stop("You need more recent biological data. This error may be caused by your choice of refday")
     } else {
       stop("You need more recent biological data")
@@ -71,7 +71,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, limits,
     }
   
   if (is.na(upper) == FALSE && is.na(lower) == TRUE){
-    if (thresh == TRUE){
+    if (binary == TRUE){
       cont$xvar <- ifelse (cont$xvar > upper, 1, 0)
     } else {
       cont$xvar <- ifelse (cont$xvar > upper, cont$xvar, 0)
@@ -80,7 +80,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, limits,
   
   
   if (is.na(lower) == FALSE && is.na(upper) == TRUE){
-    if (thresh == TRUE){
+    if (binary == TRUE){
       cont$xvar <- ifelse (cont$xvar < lower, 1, 0)
     } else {
       cont$xvar <- ifelse (cont$xvar < lower, cont$xvar, 0)
@@ -88,7 +88,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, limits,
   }
   
   if (is.na(lower) == FALSE && is.na(upper) == FALSE){
-    if (thresh == TRUE){
+    if (binary == TRUE){
       cont$xvar <- ifelse (cont$xvar > lower & cont$xvar < upper, 1, 0)
     } else {
       cont$xvar <- ifelse (cont$xvar > lower & cont$xvar < upper, cont$xvar - lower, 0)
@@ -97,8 +97,8 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, limits,
   
   for (i in 1:length(bdate)){
     for (j in limits[2]:limits[1]){
-      k <- j - limits[2] + 1
-      cmatrix[i, k] <- cont$xvar[which(cont$cintno == cont$bintno[i] - j)]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
+      kay <- j - limits[2] + 1
+      cmatrix[i, kay] <- cont$xvar[which(cont$cintno == cont$bintno[i] - j)]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
     }
   }
   
@@ -137,8 +137,8 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, limits,
     }
   }
   
-  if (cvk > 1){
-    modeldat$K <- sample(seq(from = 1, to = length(modeldat$climate), by = 1) %% cvk + 1)
+  if (k > 1){
+    modeldat$K <- sample(seq(from = 1, to = length(modeldat$climate), by = 1) %% k + 1)
   }   # create labels k-fold crossvalidation
   
     if (func == "lin"){
@@ -212,8 +212,8 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, limits,
           }
           
           # If valid, perform k-fold crossvalidation
-          if (cvk > 1) {      
-            for (k in 1:cvk) {
+          if (k > 1) {      
+            for (k in 1:k) {
               test                     <- subset(modeldat, modeldat$K == k) # Create the test dataset
               train                    <- subset(modeldat, modeldat$K != k) # Create the train dataset
               baselinecv               <- update(baseline, yvar~., data = train) # Refit the model without climate using the train dataset
@@ -237,13 +237,13 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, limits,
               ifelse (k == 1, AICc_cv_basetotal <- AICc_cv_baseline, AICc_cv_basetotal <- AICc_cv_basetotal + AICc_cv_baseline)
               #Add up the AICc values for all iterations of crossvalidation
             }
-            AICc_cv_avg          <- AICc_cvtotal / cvk # Determine the average AICc value of the climate model from cross validations
-            AICc_cv_baseline_avg <- AICc_cv_basetotal / cvk # Determine the average AICc value of the null model from cross validations
+            AICc_cv_avg          <- AICc_cvtotal / k # Determine the average AICc value of the climate model from cross validations
+            AICc_cv_baseline_avg <- AICc_cv_basetotal / k # Determine the average AICc value of the null model from cross validations
             deltaAICc_cv         <- AICc_cv_avg - AICc_cv_baseline_avg # Calculate delta AICc
           }
           
           #Add model parameters to list
-          if (cvk > 1){
+          if (k > 1){
             modlist$ModelAICc[[modno]]    <- AICc_cv_avg
             modlist$deltaAICc[[modno]]    <- deltaAICc_cv
           } else {
@@ -382,10 +382,10 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, limits,
   modlist$Closest      <- limits[2]
   modlist$Statistics   <- stat
   modlist$Type         <- type
-  modlist$K            <- cvk
+  modlist$K            <- k
   modlist$ModWeight    <- (exp(-0.5 * modlist$deltaAICc)) / sum(exp(-0.5 * modlist$deltaAICc))
   
-  if (type == "fixed"){
+  if (type == "absolute"){
     modlist$Reference.day   <- refday[1]
     modlist$Reference.month <- refday[2]
   }
@@ -450,7 +450,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
   
   if (cross == FALSE){
     if (cinterval == "day"){  
-      if (type == "fixed"){   
+      if (type == "absolute"){   
         bintno            <- as.numeric(as.Date(paste(refday[1], refday[2], year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1 
         wrongyear         <- which(bintno < realbintno)
         bintno[wrongyear] <- (as.numeric(as.Date(paste(refday[1], refday[2], (year(bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1)
@@ -465,7 +465,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       newclim3   <- cast(newclim2, cintno ~ variable, mean)
       cintno     <- newclim3$cintno
       xvar       <- newclim3$xvar
-      if (type == "fixed"){ 
+      if (type == "absolute"){ 
         bintno            <- ceiling((as.numeric(as.Date(paste(refday[1], refday[2], year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1) / 7) 
         wrongyear         <- which(bintno < realbintno)
         bintno[wrongyear] <- ceiling((as.numeric(as.Date(paste(refday[1], refday[2], (year(bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1) / 7)
@@ -482,7 +482,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       newclim3   <- cast(newclim2, cintno ~ variable, mean)
       cintno     <- newclim3$cintno
       xvar       <- newclim3$xvar
-      if (type == "fixed"){ 
+      if (type == "absolute"){ 
         bintno            <- refday[2] + 12 * (year(bdate) - min(year(cdate2)))
         wrongyear         <- which(bintno < realbintno)
         bintno[wrongyear] <- refday[2] + 12 * (year(bdate[wrongyear]) + 1 - min(year(cdate2)))
@@ -492,7 +492,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
     }
   } else {
     if (cinterval == "day"){  
-      if (type == "fixed"){   
+      if (type == "absolute"){   
         bintno            <- as.numeric(as.Date(paste(refday[1], refday[2], year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1 
         wrongyear         <- which(bintno < realbintno)
         bintno[wrongyear] <- (as.numeric(as.Date(paste(refday[1], refday[2], (year(bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1)
@@ -508,7 +508,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       cintno     <- newclim3$cintno
       xvar       <- newclim3$xvar
       xvar2      <- newclim3$xvar2
-      if (type == "fixed"){ 
+      if (type == "absolute"){ 
         bintno            <- ceiling((as.numeric(as.Date(paste(refday[1], refday[2], year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1) / 7) 
         wrongyear         <- which(bintno < realbintno)
         bintno[wrongyear] <- ceiling((as.numeric(as.Date(paste(refday[1], refday[2], (year(bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1) / 7)
@@ -526,7 +526,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       cintno     <- newclim3$cintno
       xvar       <- newclim3$xvar
       xvar2      <- newclim3$xvar2
-      if (type == "fixed"){ 
+      if (type == "absolute"){ 
         bintno            <- refday[2] + 12 * (year(bdate) - min(year(cdate2)))
         wrongyear         <- which(bintno < realbintno)
         bintno[wrongyear] <- refday[2] + 12 * (year(bdate[wrongyear]) + 1 - min(year(cdate2)))

@@ -8,7 +8,7 @@ test_that("plotdelta produces a graph", {
   
   testdata <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                          baseline = lm(Mass ~ 1, data = Mass), limits = c(3, 2), 
-                         type = "variable", stat = "max", func = "lin", cmissing = FALSE)
+                         type = "relative", stat = "max", func = "lin", cmissing = FALSE)
   
   
   test <- plotdelta(dataset = testdata[[1]]$Dataset)

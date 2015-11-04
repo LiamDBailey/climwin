@@ -85,17 +85,29 @@
 randwin <- function(exclude = NA, repeats = 1, xvar, cdate, bdate, baseline, 
                     stat, limits, func, type, refday,
                     cmissing = FALSE, cinterval = "day",
-                    upper = NA, lower = NA, thresh = FALSE, centre = list(NULL, "both"), cvk = 0,
+                    upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"), k = 0,
                     cutoff.day = NULL, cutoff.month = NULL,
-                    furthest = NULL, closest = NULL){
+                    furthest = NULL, closest = NULL, thresh = NULL, cvk = NULL){
   
   #Create a centre function that over-rides quadratics etc. when centre != NULL
   if(is.null(centre[[1]]) == FALSE){
     func = "centre"
   }
   
+  if(is.null(cvk) == FALSE){
+    stop("Parameter 'cvk' is now redundant. Please use parameter 'k' instead.")
+  }
+  
+  if(is.null(thresh) == FALSE){
+    stop("Parameter 'thresh' is now redundant. Please use parameter 'binary' instead.")
+  }
+  
+  if(type == "variable" || type == "fixed"){
+    stop("Parameter 'type' now uses levels 'relative' and 'absolute' rather than 'variable' and 'fixed'.")
+  }
+  
   if(is.null(furthest) == FALSE & is.null(closest) == FALSE){
-    stop("furthest and closest are now redundant. Please use parameter 'limits'")
+    stop("furthest and closest are now redundant. Please use parameter 'limits' instead.")
   }
   
   if (is.null(names(xvar)) == TRUE){
@@ -106,25 +118,25 @@ randwin <- function(exclude = NA, repeats = 1, xvar, cdate, bdate, baseline,
   }
   
   if(is.null(cutoff.day) == FALSE & is.null(cutoff.month) == FALSE){
-    stop("cutoff.day and cutoff.month are now redundant. Please use parameter 'refday'")
+    stop("cutoff.day and cutoff.month are now redundant. Please use parameter 'refday' instead.")
   }
   
   if (is.na(upper) == FALSE && is.na(lower) == FALSE){
     combos       <- expand.grid(list(upper = upper, lower = lower))
     combos       <- combos[which(combos$upper >= combos$lower), ]
-    allcombos    <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func, gg = c(1:nrow(combos)), thresh = thresh))
+    allcombos    <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func, gg = c(1:nrow(combos)), binary = binary))
     allcombos    <- cbind(allcombos, combos[allcombos$gg, ], deparse.level = 2)
-    threshlevel  <- "two"
+    binarylevel  <- "two"
     allcombos$gg <- NULL
   } else if (is.na(upper) == FALSE && is.na(lower) == TRUE){
-    allcombos   <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func, upper = upper, lower = lower, thresh = thresh))
-    threshlevel <- "upper"
+    allcombos   <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func, upper = upper, lower = lower, binary = binary))
+    binarylevel <- "upper"
   } else if (is.na(upper) == TRUE && is.na(lower) == FALSE){
-    allcombos   <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func, upper = upper, lower = lower, thresh = thresh))
-    threshlevel <- "lower"
+    allcombos   <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func, upper = upper, lower = lower, binary = binary))
+    binarylevel <- "lower"
   } else if (is.na(upper) == TRUE && is.na(lower) == TRUE){
     allcombos   <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func))
-    threshlevel <- "none"
+    binarylevel <- "none"
   }
   
   rownames(allcombos) <- seq(1, nrow(allcombos), 1)
@@ -141,9 +153,9 @@ randwin <- function(exclude = NA, repeats = 1, xvar, cdate, bdate, baseline,
                            func = paste(allcombos[combo, 4]), type = paste(allcombos[combo, 2]),
                            refday = refday,
                            nrandom = repeats, cmissing = cmissing, cinterval = cinterval,
-                           upper = ifelse(threshlevel == "two" || threshlevel == "upper", allcombos$upper[combo], NA),
-                           lower = ifelse(threshlevel == "two" || threshlevel == "lower", allcombos$lower[combo], NA),
-                           thresh = paste(allcombos$thresh[combo]), centre = centre, cvk=cvk)
+                           upper = ifelse(binarylevel == "two" || binarylevel == "upper", allcombos$upper[combo], NA),
+                           lower = ifelse(binarylevel == "two" || binarylevel == "lower", allcombos$lower[combo], NA),
+                           binary = paste(allcombos$binary[combo]), centre = centre, k = k)
       
       outputrep$Repeat <- r
       

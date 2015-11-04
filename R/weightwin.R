@@ -107,18 +107,22 @@
 #'@export
 
 weightwin <- function(xvar, cdate, bdate, baseline, limits, 
-                      func = "lin", type = "fixed", refday, 
+                      func = "lin", type, refday, 
                       weightfunc = "W", cinterval = "day",
                       par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)), 
                       method = "L-BFGS-B", cutoff.day = NULL, cutoff.month = NULL,
                       furthest = NULL, closest = NULL){
   
+  if(type == "variable" || type == "fixed"){
+    stop("Parameter 'type' now uses levels 'relative' and 'absolute' rather than 'variable' and 'fixed'.")
+  }
+  
   if(is.null(furthest) == FALSE & is.null(closest) == FALSE){
-    stop("furthest and closest are now redundant. Please use parameter 'limits'")
+    stop("furthest and closest are now redundant. Please use parameter 'limits' instead.")
   }
   
   if(is.null(cutoff.day) == FALSE & is.null(cutoff.month) == FALSE){
-    stop("cutoff.day and cutoff.month are now redundant. Please use parameter 'refday'")
+    stop("cutoff.day and cutoff.month are now redundant. Please use parameter 'refday' instead.")
   }
   
   xvar = xvar[[1]]

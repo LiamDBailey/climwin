@@ -7,8 +7,8 @@
 # func: L, Q, C, I, LOG
 # upper: range
 # lower: range
-# thresh: TRUE or FALSE
-# cvk: 0 and >1
+# binary: TRUE or FALSE
+# k: 0 and >1
 # centre: value
 
 # Test that climatewin has created a BestModel, BestModelData and WindowOutput
@@ -34,7 +34,7 @@ test_that("climatewin produces the right output", {
   
   test <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), limits = c(2, 2), 
-                     type = "variable", stat = "max", func = "lin", cmissing = FALSE)
+                     type = "relative", stat = "max", func = "lin", cmissing = FALSE)
   
   duration  <- (furthest - closest) + 1
   maxmodno  <- (duration * (duration + 1))/2
@@ -62,7 +62,7 @@ test_that("climatewin produces multiple combos", {
   
   test <- climatewin(xvar = list(Temp = MassClimate$Temp, Rain = MassClimate$Rain), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), limits = c(1, 0), 
-                     type = "variable", stat = c("max", "min"), func = c("lin", "quad"), cmissing = FALSE)
+                     type = "relative", stat = c("max", "min"), func = c("lin", "quad"), cmissing = FALSE)
   
   expect_equal(nrow(test$combos), 8)
   
@@ -72,7 +72,7 @@ test_that("climatewin produces multiple combos", {
 
 # Test that upper and lower work
 
-test_that("climatewin produces binary values with upper and thresh = TRUE", {
+test_that("climatewin produces binary values with upper and binary = TRUE", {
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -82,15 +82,15 @@ test_that("climatewin produces binary values with upper and thresh = TRUE", {
   
   test <- climatewin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), limits = c(1, 0), 
-                     type = "variable", stat = "max", func = "lin", cmissing = FALSE,
-                     upper = 10, thresh = TRUE)
+                     type = "relative", stat = "max", func = "lin", cmissing = FALSE,
+                     upper = 10, binary = TRUE)
   
   expect_equal(min(test[[1]]$BestModelData$climate), 0)
   expect_equal(max(test[[1]]$BestModelData$climate), 1)
   
 })
 
-test_that("climatewin produces non-binary values with upper and thresh = FALSE", {
+test_that("climatewin produces non-binary values with upper and binary = FALSE", {
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -100,15 +100,15 @@ test_that("climatewin produces non-binary values with upper and thresh = FALSE",
   
   test <- climatewin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), limits = c(1, 0), 
-                     type = "variable", stat = "max", func = "lin", cmissing = FALSE,
-                     upper = 10, thresh = FALSE)
+                     type = "relative", stat = "max", func = "lin", cmissing = FALSE,
+                     upper = 10, binary = FALSE)
   
   expect_equal(min(test[[1]]$BestModelData$climate), 0)
   expect_true(max(test[[1]]$BestModelData$climate) > 1)
   
 })
 
-test_that("climatewin produces non-binary values with lower and thresh = FALSE", {
+test_that("climatewin produces non-binary values with lower and binary = FALSE", {
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -118,15 +118,15 @@ test_that("climatewin produces non-binary values with lower and thresh = FALSE",
   
   test <- climatewin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), limits = c(1, 0), 
-                     type = "variable", stat = "max", func = "lin", cmissing = FALSE,
-                     lower = 10, upper = 15, thresh = FALSE)
+                     type = "relative", stat = "max", func = "lin", cmissing = FALSE,
+                     lower = 10, upper = 15, binary = FALSE)
   
   expect_equal(min(test[[1]]$BestModelData$climate), 0)
   expect_true(max(test[[1]]$BestModelData$climate) > 1)
   
 })
 
-test_that("climatewin produces binary values with lower and thresh = TRUE", {
+test_that("climatewin produces binary values with lower and binary = TRUE", {
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -136,15 +136,15 @@ test_that("climatewin produces binary values with lower and thresh = TRUE", {
   
   test <- climatewin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), limits = c(1, 0), 
-                     type = "variable", stat = "max", func = "lin", cmissing = FALSE,
-                     lower = 10, thresh = TRUE)
+                     type = "relative", stat = "max", func = "lin", cmissing = FALSE,
+                     lower = 10, binary = TRUE)
   
   expect_equal(min(test[[1]]$BestModelData$climate), 0)
   expect_equal(max(test[[1]]$BestModelData$climate), 1)
   
 })
 
-test_that("climatewin produces binary values with lower/upper and thresh = TRUE", {
+test_that("climatewin produces binary values with lower/upper and binary = TRUE", {
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -154,15 +154,15 @@ test_that("climatewin produces binary values with lower/upper and thresh = TRUE"
   
   test <- climatewin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), limits = c(1, 0), 
-                     type = "variable", stat = "max", func = "lin", cmissing = FALSE,
-                     lower = 10, upper = 15, thresh = TRUE)
+                     type = "relative", stat = "max", func = "lin", cmissing = FALSE,
+                     lower = 10, upper = 15, binary = TRUE)
   
   expect_equal(min(test[[1]]$BestModelData$climate), 0)
   expect_equal(max(test[[1]]$BestModelData$climate), 1)
   
 })
 
-test_that("climatewin produces non-binary values with lower/upper and thresh = FALSE", {
+test_that("climatewin produces non-binary values with lower/upper and binary = FALSE", {
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -172,8 +172,8 @@ test_that("climatewin produces non-binary values with lower/upper and thresh = F
   
   test <- climatewin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), limits = c(1, 0), 
-                     type = "variable", stat = "max", func = "lin", cmissing = FALSE,
-                     lower = 10, upper = 15, thresh = FALSE)
+                     type = "relative", stat = "max", func = "lin", cmissing = FALSE,
+                     lower = 10, upper = 15, binary = FALSE)
   
   expect_equal(min(test[[1]]$BestModelData$climate), 0)
   expect_true(max(test[[1]]$BestModelData$climate) > 1)
@@ -192,7 +192,7 @@ test_that("No errors return when cmissing TRUE and full dataset", {
   
   test <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), limits = c(2, 2), 
-                     type = "variable", stat = "max", func = "lin", cmissing=TRUE)
+                     type = "relative", stat = "max", func = "lin", cmissing=TRUE)
   
   expect_true(is.list(test))
 
@@ -207,7 +207,7 @@ test_that("No errors return when cmissing TRUE with NAs", {
   MassClimate2 <- MassClimate[-491, ]
   test <- climatewin(xvar = list(MassClimate2$Temp), cdate = MassClimate2$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), limits = c(2, 0), 
-                     type = "variable", stat = "max", func = "lin", cmissing = TRUE)
+                     type = "relative", stat = "max", func = "lin", cmissing = TRUE)
   
   expect_true(is.list(test))
   
@@ -226,7 +226,7 @@ test_that("Error returned when cmissing FALSE with NAs, cinterval = D", {
   MassClimate2 <- MassClimate[-491, ]
   expect_error(climatewin(xvar = list(MassClimate2$Temp), cdate = MassClimate2$Date, bdate = Mass$Date, 
                           baseline = lm(Mass ~ 1, data = Mass), limits = c(2, 2), 
-                          type = "variable", stat = "max", func = "lin", 
+                          type = "relative", stat = "max", func = "lin", 
                           cmissing=FALSE))
   
   expect_true(exists("missing"))
@@ -243,7 +243,7 @@ test_that("Error returned when cmissing FALSE with NAs, cinterval = W", {
   MassClimate2 <- MassClimate[-491, ]
   expect_error(climatewin(xvar = list(MassClimate2$Temp), cdate = MassClimate2$Date, bdate = Mass$Date, 
                           baseline = lm(Mass ~ 1, data = Mass), limits = c(2, 0), 
-                          type = "variable", stat = "max", func = "lin", cinterval = "week",
+                          type = "relative", stat = "max", func = "lin", cinterval = "week",
                           cmissing=FALSE))
   
   expect_true(exists("missing"))
@@ -260,7 +260,7 @@ test_that("Error returned when cmissing FALSE with NAs, cinterval = M", {
   MassClimate2 <- MassClimate[-491, ]
   expect_error(climatewin(xvar = list(MassClimate2$Temp), cdate = MassClimate2$Date, bdate = Mass$Date, 
                           baseline = lm(Mass ~ 1, data = Mass), limits = c(1, 0), 
-                          type = "variable", stat = "max", func = "lin", cinterval = "month",
+                          type = "relative", stat = "max", func = "lin", cinterval = "month",
                           cmissing=FALSE))
   
   expect_true(exists("missing"))
@@ -281,7 +281,7 @@ test_that("glm models can run", {
   
   test <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = glm(Mass ~ 1, data = Mass, family = poisson), limits = c(2, 2), 
-                     type = "variable", stat = "max", func = "lin", cmissing=FALSE)
+                     type = "relative", stat = "max", func = "lin", cmissing=FALSE)
   
   expect_true(is.list(test))
   expect_false(is.na((test[[1]]$BestModel)[1]))
@@ -299,7 +299,7 @@ test_that("lmer models can run", {
   test <- climatewin(xvar = list(OffspringClimate$Temp), cdate = OffspringClimate$Date, 
                      bdate = Offspring$Date, 
                      baseline = lmer(Offspring ~ 1 + (1|BirdID), data = Offspring),  
-                     limits = c(2, 2), type = "variable", 
+                     limits = c(2, 2), type = "relative", 
                      stat = "max", func = "lin", cmissing=FALSE)
   
   expect_true(is.list(test))
@@ -319,7 +319,7 @@ test_that("glmer models can run", {
   suppressWarnings(test <- climatewin(xvar = list(OffspringClimate$Temp), cdate = OffspringClimate$Date, 
                      bdate = Offspring$Date, 
                      baseline = glmer(Offspring ~ 1 + (1|Order), data = Offspring, family = "poisson"),  
-                     limits = c(1, 0), type = "variable", 
+                     limits = c(1, 0), type = "relative", 
                      stat = "max", func = "lin", cmissing=FALSE))
   
   expect_true(is.list(test))
@@ -336,14 +336,14 @@ test_that("glmer models can run", {
 # Test fixed and variable windows#
 
 # Test fixed window#
-test_that("Fixed window works", {
+test_that("absolute window works", {
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
   
   test <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), limits = c(2, 2), 
-                     type = "fixed", refday = c(20, 5), 
+                     type = "absolute", refday = c(20, 5), 
                      stat = "max", func = "lin", cmissing=FALSE)
   
   expect_true(is.list(test))
@@ -364,7 +364,7 @@ test_that("slope stat work", {
   
   test <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), limits = c(2, 1), 
-                     type = "variable", stat = "slope", func = "lin", cmissing=FALSE)
+                     type = "relative", stat = "slope", func = "lin", cmissing=FALSE)
 
   expect_true(is.list(test))
   expect_false(is.na((test[[1]]$BestModel)[1]))
@@ -381,7 +381,7 @@ test_that("slope and LOG return error", {
   
   expect_error(cliamtewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date,
                           bdate = Mass$Date, baseline = lm(Mass ~ 1, data = Mass),
-                          limits = c(2, 1), type = "variable", stat = "slope",
+                          limits = c(2, 1), type = "relative", stat = "slope",
                           func = "log"))  
   
 })
@@ -393,7 +393,7 @@ test_that("slope and I return error", {
   
   expect_error(cliamtewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date,
                           bdate = Mass$Date, baseline = lm(Mass ~ 1, data = Mass),
-                          limits = c(2, 1), type = "variable", stat = "slope",
+                          limits = c(2, 1), type = "relative", stat = "slope",
                           func = "inv"))  
   
 })
@@ -410,7 +410,7 @@ test_that("Quadratic function works", {
   
   test <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), limits = c(2, 2), 
-                     type = "variable", stat = "max", func = "quad", cmissing=FALSE)
+                     type = "relative", stat = "max", func = "quad", cmissing=FALSE)
   
   furthest = 2
   closest = 2
@@ -439,7 +439,7 @@ test_that("Cubic function works", {
   
   test <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), limits = c(2, 2), 
-                     type = "variable", stat = "max", func = "cub", cmissing=FALSE)
+                     type = "relative", stat = "max", func = "cub", cmissing=FALSE)
   
   furthest = 2
   closest = 2
@@ -468,7 +468,7 @@ test_that("Log function works", {
   
   test <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), limits = c(2, 2), 
-                     type = "variable", stat = "max", func = "log", cmissing=FALSE)
+                     type = "relative", stat = "max", func = "log", cmissing=FALSE)
   
   furthest = 2
   closest = 2
@@ -497,7 +497,7 @@ test_that("Inverse function works", {
   
   test <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), limits = c(2, 2), 
-                     type = "variable", stat = "max", func = "inv", cmissing=FALSE)
+                     type = "relative", stat = "max", func = "inv", cmissing=FALSE)
   
   furthest = 2
   closest = 2
@@ -530,7 +530,7 @@ data(MassClimate, envir = environment())
 
 test <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                    baseline = lm(Mass ~ 1, data = Mass), limits = c(2, 2), 
-                   type = "variable", stat = "max", func = "lin",
+                   type = "relative", stat = "max", func = "lin",
                    cmissing=FALSE, cinterval = "week")
 
 expect_true(is.list(test))
@@ -549,7 +549,7 @@ data(MassClimate, envir = environment())
   
 test <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                    baseline = lm(Mass ~ 1, data = Mass), limits = c(2, 2), 
-                   type = "variable", stat = "max", func = "lin",
+                   type = "relative", stat = "max", func = "lin",
                    cmissing=FALSE, cinterval = "month")
 
 expect_true(is.list(test))
@@ -570,7 +570,7 @@ test_that("climatewin gives error when NAs are present in biological data", {
   
   expect_error(climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                           baseline = lm(Mass ~ 1, data = Mass), limits = c(2, 2), 
-                          type = "variable", stat = "max", func = "lin",
+                          type = "relative", stat = "max", func = "lin",
                           cmissing = FALSE, cinterval = "day"))  
 
   })
@@ -585,8 +585,8 @@ test_that("Does cross validation work?", {
   
   test <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), limits = c(2, 2), 
-                     type = "variable", stat = "max", func = "lin",
-                     cmissing = FALSE, cinterval = "day", cvk = 2)
+                     type = "relative", stat = "max", func = "lin",
+                     cmissing = FALSE, cinterval = "day", k = 2)
   
   expect_true(is.list(test))
   expect_false(is.na((test[[1]]$BestModel)[1]))
@@ -609,8 +609,8 @@ test_that("Mean centring is functioning", {
   
   test <- climatewin(xvar = list(OffspringClimate$Temp), cdate = OffspringClimate$Date, 
                      bdate = Offspring$Date, baseline = lm(Offspring ~ 1, data = Offspring), limits = c(2, 2), 
-                     type = "variable", stat = "max", func = "lin",
-                     cmissing = FALSE, cinterval = "day", centre = Offspring$Year)
+                     type = "relative", stat = "max", func = "lin",
+                     cmissing = FALSE, cinterval = "day", centre = list(Offspring$Year, "both"))
   
   expect_true(is.list(test))
   expect_false(is.na((test[[1]]$BestModel)[1]))

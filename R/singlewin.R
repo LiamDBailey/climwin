@@ -91,16 +91,24 @@ singlewin <- function(xvar, cdate, bdate, baseline,
                       limits, stat, func, 
                       type, refday, 
                       cmissing = FALSE, cinterval = "day",
-                      upper = NA, lower = NA, thresh = FALSE,
+                      upper = NA, lower = NA, binary = FALSE,
                       centre = list(NULL, "both"), cutoff.day = NULL, cutoff.month = NULL,
-                      furthest = NULL, closest = NULL){
+                      furthest = NULL, closest = NULL, thresh = NULL){
+  
+  if(is.null(thresh) == FALSE){
+    stop("Parameter 'thresh' is now redundant. Please use parameter 'binary' instead.")
+  }
+  
+  if(type == "variable" || type == "fixed"){
+    stop("Parameter 'type' now uses levels 'relative' and 'absolute' rather than 'variable' and 'fixed'.")
+  }
   
   if(is.null(furthest) == FALSE & is.null(closest) == FALSE){
-    stop("furthest and closest are now redundant. Please use parameter 'limits'")
+    stop("furthest and closest are now redundant. Please use parameter 'limits' instead.")
   }
   
   if(is.null(cutoff.day) == FALSE & is.null(cutoff.month) == FALSE){
-    stop("cutoff.day and cutoff.month are now redundant. Please use parameter 'refday'")
+    stop("cutoff.day and cutoff.month are now redundant. Please use parameter 'refday' instead.")
   }
   
   xvar = xvar[[1]]
@@ -133,7 +141,7 @@ singlewin <- function(xvar, cdate, bdate, baseline,
   }
   
   if(cinterval == "day"){  
-    if(type == "fixed"){   
+    if(type == "absolute"){   
       bintno            <- as.numeric(as.Date(paste(refday[1], refday[2], year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1 
       wrongyear         <- which(bintno < realbintno)
       bintno[wrongyear] <- (as.numeric(as.Date(paste(refday[1], refday[2], (year(bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1)
@@ -148,7 +156,7 @@ singlewin <- function(xvar, cdate, bdate, baseline,
     newclim3   <- cast(newclim2, cintno~variable, mean)
     cintno     <- newclim3$cintno
     xvar       <- newclim3$xvar
-    if (type == "fixed"){ 
+    if (type == "absolute"){ 
       bintno            <- ceiling((as.numeric(as.Date(paste(refday[1], refday[2], year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1) / 7) 
       wrongyear         <- which(bintno < realbintno)
       bintno[wrongyear] <- ceiling((as.numeric(as.Date(paste(refday[1], refday[2], (year(bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1) / 7)
@@ -165,7 +173,7 @@ singlewin <- function(xvar, cdate, bdate, baseline,
     newclim3   <- cast(newclim2, cintno ~ variable, mean)
     cintno     <- newclim3$cintno
     xvar       <- newclim3$xvar
-    if (type == "fixed"){ 
+    if (type == "absolute"){ 
       bintno            <- refday[2] + 12 * (year(bdate) - min(year(cdate2)))
       wrongyear         <- which(bintno < realbintno)
       bintno[wrongyear] <- refday[2] + 12 * (year(bdate[wrongyear]) + 1 - min(year(cdate2)))
@@ -193,7 +201,7 @@ singlewin <- function(xvar, cdate, bdate, baseline,
   }
   
   if(max(bintno) > max(cintno)){
-    if(type == "fixed"){
+    if(type == "absolute"){
       stop("You need more recent biological data. This error may be caused by your choice of refday")
     } else {
       stop("You need more recent biological data")
@@ -217,7 +225,7 @@ singlewin <- function(xvar, cdate, bdate, baseline,
   }
   
   if(is.na(upper) == FALSE && is.na(lower) == TRUE){
-    if(thresh == TRUE){
+    if(binary == TRUE){
       xvar <- ifelse(xvar > upper, 1, 0)
     } else {
       xvar <- ifelse(xvar > upper, xvar, 0)
@@ -226,7 +234,7 @@ singlewin <- function(xvar, cdate, bdate, baseline,
   
   
   if(is.na(lower) == FALSE && is.na(upper) == TRUE){
-    if(thresh == TRUE){
+    if(binary == TRUE){
       xvar <- ifelse(xvar < lower, 1, 0)
     } else {
       xvar <- ifelse(xvar < lower, xvar, 0)
@@ -234,7 +242,7 @@ singlewin <- function(xvar, cdate, bdate, baseline,
   }
   
   if(is.na(lower) == FALSE && is.na(upper) == FALSE){
-    if(thresh == TRUE){
+    if(binary == TRUE){
       xvar <- ifelse(xvar > lower & xvar < upper, 1, 0)
     } else {
       xvar <- ifelse(xvar > lower & xvar < upper, xvar - lower, 0)

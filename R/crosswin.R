@@ -76,12 +76,16 @@ crosswin <- function(xvar, xvar2, cdate, bdate, limits,
   
   print("Initialising, please wait...")
   
+  if(type == "variable" || type == "fixed"){
+    stop("Parameter 'type' now uses levels 'relative' and 'absolute' rather than 'variable' and 'fixed'.")
+  }
+  
   if(is.null(furthest) == FALSE & is.null(closest) == FALSE){
-    stop("furthest and closest are now redundant. Please use parameter 'limits'")
+    stop("furthest and closest are now redundant. Please use parameter 'limits' instead.")
   }
   
   if(is.null(cutoff.day) == FALSE & is.null(cutoff.month) == FALSE){
-    stop("cutoff.day and cutoff.month are now redundant. Please use parameter 'refday'")
+    stop("cutoff.day and cutoff.month are now redundant. Please use parameter 'refday' instead.")
   }
   
   xvar  <- xvar[[1]]

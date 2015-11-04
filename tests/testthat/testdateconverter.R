@@ -16,16 +16,16 @@ MassClimatedup         <- MassClimate
 MassClimatedup[17533,] <- MassClimatedup[17532,]
 
 test <- convertdate(bdate = Mass$Date, cdate = MassClimate$Date, xvar = MassClimate$Temp,
-                    cinterval = "day", type = "variable")
+                    cinterval = "day", type = "relative")
 
 expect_equal(length(which(is.na(test))), 0)
 expect_equal(test$cintno[1], 1)
 expect_equal(length(test$cintno), length(test$xvar))
 expect_true((max(test$bintno) %in% test$cintno))
 expect_error(convertdate(bdate = Mass$Date, cdate = MassClimate$Date,
-                         cinterval = "R", type = "variable"))
+                         cinterval = "R", type = "relative"))
 expect_error(convertdate(bdate = Mass$Date, cdate = MassClimatedup$Date,
-                         cinterval = "day", type = "variable"))
+                         cinterval = "day", type = "relative"))
 
 })
 
@@ -35,7 +35,7 @@ data(Mass, envir = environment())
 data(MassClimate, envir = environment())
 
 test <- convertdate(bdate = Mass$Date, cdate = MassClimate$Date, xvar = MassClimate$Temp,
-                    cinterval = "week", type = "variable")
+                    cinterval = "week", type = "relative")
 
 expect_equal(length(which(is.na(test))), 0)
 expect_equal(test$cintno[1], 1)
@@ -50,7 +50,7 @@ data(Mass, envir = environment())
 data(MassClimate, envir = environment())
 
 test <- convertdate(bdate = Mass$Date, cdate = MassClimate$Date, xvar = MassClimate$Temp,
-                    cinterval = "month", type = "variable")
+                    cinterval = "month", type = "relative")
 
 expect_equal(length(which(is.na(test))), 0)
 expect_equal(test$cintno[1], 1)
@@ -65,7 +65,7 @@ data(Mass, envir = environment())
 data(MassClimate, envir = environment())
 
 test <- convertdate(bdate = Mass$Date, cdate = MassClimate$Date, xvar = MassClimate$Temp,
-                    xvar2 = MassClimate$Rain, cinterval = "day", type = "variable", cross = TRUE)
+                    xvar2 = MassClimate$Rain, cinterval = "day", type = "relative", cross = TRUE)
 
 expect_equal(length(which(is.na(test))), 0)
 expect_equal(test$cintno[1], 1)
@@ -81,7 +81,7 @@ data(Mass, envir = environment())
 data(MassClimate, envir = environment())
 
 test <- convertdate(bdate = Mass$Date, cdate = MassClimate$Date, xvar = MassClimate$Temp,
-                    xvar2 = MassClimate$Rain, cinterval = "week", type = "variable", cross = TRUE)
+                    xvar2 = MassClimate$Rain, cinterval = "week", type = "relative", cross = TRUE)
 
 expect_equal(length(which(is.na(test))), 0)
 expect_equal(test$cintno[1], 1)
@@ -97,7 +97,7 @@ data(Mass, envir = environment())
 data(MassClimate, envir = environment())
 
 test <- convertdate(bdate = Mass$Date, cdate = MassClimate$Date, xvar = MassClimate$Temp,
-                    xvar2 = MassClimate$Rain, cinterval = "month", type = "variable", cross = TRUE)
+                    xvar2 = MassClimate$Rain, cinterval = "month", type = "relative", cross = TRUE)
 
 expect_equal(length(which(is.na(test))), 0)
 expect_equal(test$cintno[1], 1)

@@ -15,12 +15,12 @@ test_that("AutoWinOutput has created an output", {
   single <- singlewin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date,
                       baseline = lm(Mass ~ 1, data = Mass), limits = c(1, 1),
                       stat = "mean", func = "lin",
-                      type = "variable", cmissing = FALSE, cinterval = "day")
+                      type = "relative", cmissing = FALSE, cinterval = "day")
   
   test <- autowin(reference = single,
                   xvar  = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date,
                   baseline = lm(Mass ~ 1, data = Mass), limits = c(2, 1), 
-                  stat = "mean", func = "lin", type = "variable", cmissing = FALSE, cinterval = "day")
+                  stat = "mean", func = "lin", type = "relative", cmissing = FALSE, cinterval = "day")
   
   
   furthest <- 2

@@ -14,7 +14,7 @@ test_that("singlewin creates an output", {
                     cdate = MassClimate$Date, bdate = Mass$Date,
                     baseline = lm(Mass$Mass~1), limits = c(72, 15),
                     stat = "mean", func = "lin",
-                    type = "variable", cmissing = FALSE, cinterval = "day")
+                    type = "relative", cmissing = FALSE, cinterval = "day")
   
   expect_true(is.list(test))  
   expect_false(is.na(test[[1]][1]))
@@ -32,7 +32,7 @@ test_that("cinterval W works", {
                     cdate = MassClimate$Date, bdate = Mass$Date,
                     baseline = lm(Mass ~ 1, data = Mass), limits = c(1, 0),
                     stat = "mean", func = "lin",
-                    type = "variable", cmissing = FALSE, cinterval = "week")
+                    type = "relative", cmissing = FALSE, cinterval = "week")
   
   expect_true(is.list(test))  
   expect_false(is.na(test[[1]][1]))
@@ -50,7 +50,7 @@ test_that("cinterval M works", {
                     cdate = MassClimate$Date, bdate = Mass$Date,
                     baseline = lm(Mass ~ 1, data = Mass), limits = c(1, 0),
                     stat = "mean", func = "lin",
-                    type = "variable", cmissing = FALSE, cinterval = "month")
+                    type = "relative", cmissing = FALSE, cinterval = "month")
   
   expect_true(is.list(test))  
   expect_false(is.na(test[[1]][1]))
@@ -73,7 +73,7 @@ test_that("No errors return when cmissing TRUE and full dataset", {
                     cdate = MassClimate$Date, bdate = Mass$Date, 
                     baseline = lm(Mass ~ 1, data = Mass), 
                     limits = c(2, 2), 
-                    type = "variable", stat = "max", 
+                    type = "relative", stat = "max", 
                     func = "lin", cmissing = TRUE)
   
   expect_true(is.list(test))  
@@ -94,7 +94,7 @@ test_that("No errors return when cmissing TRUE with NAs", {
                     cdate = MassClimate2$Date, bdate = Mass$Date, 
                     baseline = lm(Mass ~ 1, data = Mass), 
                     limits = c(2, 0), 
-                    type = "variable", stat = "max", 
+                    type = "relative", stat = "max", 
                     func = "lin", cmissing = TRUE)
   
   expect_true(is.list(test))  
@@ -115,7 +115,7 @@ test_that("No errors return when cmissing FALSE with NAs", {
                          cdate = MassClimate2$Date, bdate = Mass$Date, 
                          baseline = lm(Mass ~ 1, data = Mass), 
                          limits = c(2, 2), 
-                         type = "variable", stat = "max", func = "lin", 
+                         type = "relative", stat = "max", func = "lin", 
                          cmissing = FALSE))
   
 })
@@ -135,7 +135,7 @@ test_that("glm models can run", {
                     cdate = MassClimate$Date, bdate = Mass$Date, 
                     baseline = glm(Mass ~ 1, data = Mass, family = poisson), 
                     limits = c(2, 2), 
-                    type = "variable", stat = "max", 
+                    type = "relative", stat = "max", 
                     func = "lin", cmissing = FALSE)
   
   expect_true(is.list(test))
@@ -155,7 +155,7 @@ test_that("lmer models can run", {
                     cdate = OffspringClimate$Date, 
                     bdate = Offspring$Date, 
                     baseline = lmer(Offspring ~ 1 + (1|BirdID), data = Offspring),  
-                    limits = c(2, 2), type = "variable", 
+                    limits = c(2, 2), type = "relative", 
                     stat = "max", func = "lin", cmissing = FALSE)
   
   expect_true(is.list(test))
@@ -181,7 +181,7 @@ test_that("Fixed window works", {
                     cdate = MassClimate$Date, bdate = Mass$Date, 
                     baseline = lm(Mass ~ 1, data = Mass), 
                     limits = c(2, 2), 
-                    type = "fixed", refday = c(20, 5), 
+                    type = "absolute", refday = c(20, 5), 
                     stat = "max", func = "lin", cmissing = FALSE)
   
   expect_true(is.list(test))
@@ -200,7 +200,7 @@ test_that("slope stats work", {
                     cdate = MassClimate$Date, bdate = Mass$Date, 
                     baseline = lm(Mass ~ 1, data = Mass), 
                     limits = c(2, 1), 
-                    type = "variable", stat = "slope", 
+                    type = "relative", stat = "slope", 
                     func = "lin", cmissing = FALSE)
   
   expect_true(is.list(test))  
@@ -224,7 +224,7 @@ test_that("Quadratic function works", {
                     cdate = MassClimate$Date, bdate = Mass$Date, 
                     baseline = lm(Mass ~ 1, data = Mass), 
                     limits = c(2, 2), 
-                    type = "variable", stat = "max", 
+                    type = "relative", stat = "max", 
                     func = "quad", cmissing = FALSE)
   
   expect_true(is.list(test))  
@@ -244,7 +244,7 @@ test_that("Cubic function works", {
                     cdate = MassClimate$Date, bdate = Mass$Date, 
                     baseline = lm(Mass ~ 1, data = Mass), 
                     limits = c(2, 2), 
-                    type = "variable", stat = "max", 
+                    type = "relative", stat = "max", 
                     func = "cub", cmissing = FALSE)
   
   expect_true(is.list(test))  
@@ -264,7 +264,7 @@ test_that("Log function works", {
                     cdate = MassClimate$Date, bdate = Mass$Date, 
                     baseline = lm(Mass ~ 1, data = Mass), 
                     limits = c(2, 2), 
-                    type = "variable", stat = "max", 
+                    type = "relative", stat = "max", 
                     func = "log", cmissing = FALSE)
   
   expect_true(is.list(test))  
@@ -284,7 +284,7 @@ test_that("Inverse function works", {
                     cdate = MassClimate$Date, bdate = Mass$Date, 
                     baseline = lm(Mass ~ 1, data = Mass), 
                     limits = c(2, 2), 
-                    type = "variable", stat = "max", 
+                    type = "relative", stat = "max", 
                     func = "inv", cmissing = FALSE)
   
   expect_true(is.list(test))  
@@ -306,7 +306,7 @@ test_that("singlewin gives error when NAs are present in biological data", {
                          cdate = MassClimate$Date, bdate = Mass$Date, 
                          baseline = lm(Mass ~ 1, data = Mass), 
                          limits = c(2, 2), 
-                         type = "variable", stat = "max", 
+                         type = "relative", stat = "max", 
                          func = "lin", cmissing = FALSE))
   
 })

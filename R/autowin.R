@@ -92,20 +92,28 @@
 
 autowin <- function(reference, xvar, cdate, bdate, baseline, limits, stat, func, type, refday, 
                     cmissing = FALSE, cinterval = "day", upper = NA,
-                    lower = NA, thresh = FALSE, centre = list(NULL, "both"), arrow = TRUE, 
+                    lower = NA, binary = FALSE, centre = list(NULL, "both"), arrow = TRUE, 
                     cutoff.day = NULL, cutoff.month = NULL,
-                    furthest = NULL, closest = NULL){
+                    furthest = NULL, closest = NULL, thresh = NULL){
   
   WindowOpen  <- reference$Dataset$WindowOpen[1]
   WindowClose <- reference$Dataset$WindowClose[1]
   reference   <- reference$BestModelData$climate
   
+  if(is.null(thresh) == FALSE){
+    stop("Parameter 'thresh' is now redundant. Please use parameter 'binary' instead.")
+  }
+  
+  if(type == "variable" || type == "fixed"){
+    stop("Parameter 'type' now uses levels 'relative' and 'absolute' rather than 'variable' and 'fixed'.")
+  }
+  
   if(is.null(cutoff.day) == FALSE & is.null(cutoff.month) == FALSE){
-    stop("cutoff.day and cutoff.month are now redundant. Please use parameter 'refday'")
+    stop("cutoff.day and cutoff.month are now redundant. Please use parameter 'refday' instead.")
   }
   
   if(is.null(furthest) == FALSE & is.null(closest) == FALSE){
-    stop("furthest and closest are now redundant. Please use parameter 'limits'")
+    stop("furthest and closest are now redundant. Please use parameter 'limits' instead.")
   }
   
   xvar = xvar[[1]]
@@ -113,7 +121,7 @@ autowin <- function(reference, xvar, cdate, bdate, baseline, limits, stat, func,
   print("Initialising, please wait...")
   
   if (stat == "slope" & func == "log" || stat == "slope" & func == "inv"){
-    stop("stat = slope cannot be used with func = log or inv as negative values may be present")
+    stop("stat = slope cannot be used with func = log or inv as negative values may be present.")
   }
   
   if (cinterval == "day"){
