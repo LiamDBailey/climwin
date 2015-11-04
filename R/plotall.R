@@ -106,7 +106,13 @@ plotall <- function(dataset, datasetrand = NULL,
   } else if(dataset$Function[1] == "cub"){
     gridExtra::grid.arrange(plotenv$delta, plotenv$cw, plotenv$beta, plotenv$beta2, hist, window, best, plotenv$beta3, nrow = 2, ncol = 4, top = paste(title))
   } else if(dataset$Function[1] == "centre"){
-    gridExtra::grid.arrange(plotenv$delta, plotenv$cw, plotenv$wgmean, plotenv$wgdev, hist, window, best, nrow = 2, ncol = 4, top = paste(title))
+    if(is.null(dataset$WithinGrpDev) == TRUE){
+      gridExtra::grid.arrange(plotenv$delta, plotenv$cw, plotenv$wgmean, hist, window, best, nrow = 2, ncol = 4, top = paste(title))
+    } else if(is.null(dataset$WithinGrpMean) == TRUE){
+      gridExtra::grid.arrange(plotenv$delta, plotenv$cw, plotenv$wgdev, hist, window, best, nrow = 2, ncol = 4, top = paste(title))
+    } else {
+      gridExtra::grid.arrange(plotenv$delta, plotenv$cw, plotenv$wgmean, plotenv$wgdev, hist, window, best, nrow = 2, ncol = 4, top = paste(title))
+    }
   } else {
     gridExtra::grid.arrange(plotenv$beta, plotenv$delta, plotenv$cw, hist, window, best, nrow = 2, top = paste(title))
   }
@@ -118,7 +124,13 @@ plotall <- function(dataset, datasetrand = NULL,
     } else if(dataset$Function[1] == "cub"){
       gridExtra::grid.arrange(plotenv$delta, plotenv$cw, plotenv$beta, plotenv$beta2, hist, window, plotenv$beta3, nrow = 2, ncol = 4, top = paste(title))
     } else if(dataset$Function[1] == "centre"){
-      gridExtra::grid.arrange(plotenv$delta, plotenv$cw, plotenv$wgmean, plotenv$wgdev, hist, window, nrow = 2, ncol = 4, top = paste(title))
+      if(is.null(dataset$WithinGrpDev) == TRUE){
+        gridExtra::grid.arrange(plotenv$delta, plotenv$cw, plotenv$wgmean, hist, window, nrow = 2, ncol = 4, top = paste(title))
+      } else if(is.null(dataset$WithinGrpMean) == TRUE){
+        gridExtra::grid.arrange(plotenv$delta, plotenv$cw, plotenv$wgdev, hist, window, nrow = 2, ncol = 4, top = paste(title))
+      } else {
+        gridExtra::grid.arrange(plotenv$delta, plotenv$cw, plotenv$wgmean, plotenv$wgdev, hist, window, nrow = 2, ncol = 4, top = paste(title))
+      }
     } else {
       gridExtra::grid.arrange(plotenv$beta, plotenv$delta, plotenv$cw, hist, window, nrow = 2, top = paste(title))
     } 
