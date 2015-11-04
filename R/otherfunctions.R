@@ -2,14 +2,14 @@
 basewin <- function(exclude, xvar, cdate, bdate, baseline, limits, 
                     type, stat = "mean", func = "lin", refday,
                     cmissing = FALSE, cinterval = "day",  nrandom = 0, cvk = 0,
-                    upper = NA, lower = NA, thresh = FALSE, centre = NULL, centre_var = "both"){
+                    upper = NA, lower = NA, thresh = FALSE, centre = list(NULL, "both")){
   
   print("Initialising, please wait...")
   
-  if(is.null(centre) == FALSE){
+  if(is.null(centre[[1]]) == FALSE){
     func = "centre"
-    if(centre_var != "both" & centre_var != "dev" & centre_var != "mean"){
-      stop("Please set centre_var to one of 'both', 'var', or 'mean'. See help file for details.")
+    if(centre[[2]] != "both" & centre[[2]] != "dev" & centre[[2]] != "mean"){
+      stop("Please set centre to one of 'both', 'var', or 'mean'. See help file for details.")
     }
   }
   
@@ -58,7 +58,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, limits,
   modeldat      <- model.frame(baseline)
   modeldat$yvar <- modeldat[, 1]
   
-  if (is.null(centre) == FALSE){
+  if (is.null(centre[[1]]) == FALSE){
     func <- "centre"
   }
   
@@ -148,16 +148,16 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, limits,
     } else if (func == "inv") {
       modeloutput <- update (baseline, yvar~. + I(climate ^ -1), data = modeldat)
     } else if (func == "centre"){
-      if(centre_var == "both"){
+      if(centre[[2]] == "both"){
         modeldat$wgdev  <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
         modeldat$wgmean <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
         modeloutput <- update (baseline, yvar ~. + wgdev + wgmean, data = modeldat)
       }
-      if(centre_var == "mean"){
+      if(centre[[2]] == "mean"){
         modeldat$wgmean <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
         modeloutput <- update (baseline, yvar ~. + wgmean, data = modeldat)
       }
-      if(centre_var == "dev"){
+      if(centre[[2]] == "dev"){
         modeldat$wgdev  <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
         modeloutput <- update (baseline, yvar ~. + wgdev, data = modeldat)
       }
@@ -190,17 +190,17 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, limits,
           }
           
           if (is.null(centre) == FALSE){
-            if(centre_var == "both"){
-              modeldat$wgdev  <- wgdev(modeldat$climate, centre)
-              modeldat$wgmean <- wgmean(modeldat$climate, centre)
+            if(centre[[2]] == "both"){
+              modeldat$wgdev  <- wgdev(modeldat$climate, centre[[1]])
+              modeldat$wgmean <- wgmean(modeldat$climate, centre[[1]])
               modeloutput     <- update(modeloutput, .~., data = modeldat)
             }
-            if(centre_var == "mean"){
-              modeldat$wgmean <- wgmean(modeldat$climate, centre)
+            if(centre[[2]] == "mean"){
+              modeldat$wgmean <- wgmean(modeldat$climate, centre[[1]])
               modeloutput     <- update(modeloutput, .~., data = modeldat)
             }
-            if(centre_var == "dev"){
-              modeldat$wgdev  <- wgdev(modeldat$climate, centre)
+            if(centre[[2]] == "dev"){
+              modeldat$wgdev  <- wgdev(modeldat$climate, centre[[1]])
               modeloutput     <- update(modeloutput, .~., data = modeldat)
             }
           } else {
@@ -267,19 +267,19 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, limits,
               modlist$Std.ErrorC[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][3]
               modlist$ModelInt[[modno]]   <- fixef(modeloutput)[1]
             } else if (func == "centre"){
-              if(centre_var == "both"){
+              if(centre[[2]] == "both"){
                 modlist$WithinGrpMean[[modno]] <- fixef(modeloutput)[length(fixef(modeloutput))]
                 modlist$Std.ErrorMean[[modno]] <- coef(summary(modeloutput))[, "Std. Error"][2]
                 modlist$WithinGrpDev[[modno]]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
                 modlist$Std.ErrorDev[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][3]
                 modlist$ModelInt[[modno]]      <- fixef(modeloutput)[1]
               }
-              if(centre_var == "mean"){
+              if(centre[[2]] == "mean"){
                 modlist$WithinGrpMean[[modno]] <- fixef(modeloutput)[length(fixef(modeloutput))]
                 modlist$Std.Error[[modno]]     <- coef(summary(modeloutput))[, "Std. Error"][2]
                 modlist$ModelInt[[modno]]      <- fixef(modeloutput)[1]
               }
-              if(centre_var == "dev"){
+              if(centre[[2]] == "dev"){
                 modlist$WithinGrpDev[[modno]]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
                 modlist$Std.Error[[modno]]     <- coef(summary(modeloutput))[, "Std. Error"][2]
                 modlist$ModelInt[[modno]]      <- fixef(modeloutput)[1]
@@ -308,19 +308,19 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, limits,
               modlist$Std.ErrorC[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][4]
               modlist$ModelInt[[modno]]   <- coef(modeloutput)[1]
             } else if (func == "centre"){
-              if(centre_var == "both"){
+              if(centre[[2]] == "both"){
                 modlist$WithinGrpMean[[modno]] <- coef(modeloutput)[length(coef(modeloutput))]
                 modlist$Std.ErrorMean[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][2]
                 modlist$WithinGrpDev[[modno]]  <- coef(modeloutput)[length(coef(modeloutput)) - 1]
                 modlist$Std.ErrorDev[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][3]
                 modlist$ModelInt[[modno]]      <- coef(modeloutput)[1]
               }
-              if(centre_var == "mean"){
+              if(centre[[2]] == "mean"){
                 modlist$WithinGrpMean[[modno]] <- coef(modeloutput)[length(coef(modeloutput))]
                 modlist$Std.ErrorMean[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][2]
                 modlist$ModelInt[[modno]]      <- coef(modeloutput)[1]
               }
-              if(centre_var == "dev"){
+              if(centre[[2]] == "dev"){
                 modlist$WithinGrpDev[[modno]]  <- coef(modeloutput)[length(coef(modeloutput)) - 1]
                 modlist$Std.ErrorDev[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][2]
                 modlist$ModelInt[[modno]]      <- coef(modeloutput)[1]
@@ -355,17 +355,17 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, limits,
   }
   
   if (is.null(centre) == FALSE){
-    if (centre_var == "both"){
-        modeldat$WGdev   <- wgdev(modeldat$climate, centre)
-        modeldat$WGmean  <- wgmean(modeldat$climate, centre)
+    if (centre[[2]] == "both"){
+        modeldat$WGdev   <- wgdev(modeldat$climate, centre[[1]])
+        modeldat$WGmean  <- wgmean(modeldat$climate, centre[[1]])
         LocalModel       <- update(modeloutput, .~., data = modeldat)
     }
-    if (centre_var == "dev"){
-      modeldat$WGdev   <- wgdev(modeldat$climate, centre)
+    if (centre[[2]] == "dev"){
+      modeldat$WGdev   <- wgdev(modeldat$climate, centre[[1]])
       LocalModel       <- update(modeloutput, .~., data = modeldat)
     }
-    if (centre_var == "mean"){
-      modeldat$WGmean  <- wgmean(modeldat$climate, centre)
+    if (centre[[2]] == "mean"){
+      modeldat$WGmean  <- wgmean(modeldat$climate, centre[[1]])
       LocalModel       <- update(modeloutput, .~., data = modeldat)
     }
     modlist$Function <- "centre"
@@ -387,7 +387,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, limits,
   }
   
   if (nrandom == 0){
-    if (is.null(centre) == FALSE){
+    if (is.null(centre[[1]]) == FALSE){
       LocalData         <- model.frame(LocalModel)
       LocalData$climate <- modeldat$climate
     } else {

@@ -164,7 +164,7 @@
 climatewin <- function(exclude = NA, xvar, cdate, bdate, baseline, 
                        type, refday, stat = "mean", func = "lin", limits, 
                        cmissing = FALSE, cinterval = "day", cvk = 0,
-                       upper = NA, lower = NA, thresh = FALSE, centre = NULL, centre_var = "both",
+                       upper = NA, lower = NA, thresh = FALSE, centre = list(NULL, "both"),
                        cutoff.day = NULL, cutoff.month = NULL, furthest = NULL, closest = NULL){
   
   if(is.null(cutoff.day) == FALSE & is.null(cutoff.month) == FALSE){
@@ -176,7 +176,7 @@ climatewin <- function(exclude = NA, xvar, cdate, bdate, baseline,
   }
   
   #Create a centre function that over-rides quadratics etc. when centre != NULL
-  if(is.null(centre) == FALSE){
+  if(is.null(centre[[1]]) == FALSE){
     func = "centre"
   }
     
@@ -221,7 +221,7 @@ climatewin <- function(exclude = NA, xvar, cdate, bdate, baseline,
                     cmissing = cmissing, cinterval = cinterval, cvk = cvk, 
                     upper = ifelse(threshlevel == "two" || threshlevel == "upper", allcombos$upper[combo], NA),
                     lower = ifelse(threshlevel == "two" || threshlevel == "lower", allcombos$lower[combo], NA),
-                    thresh = paste(allcombos$thresh[combo]), centre = centre, centre_var = centre_var)
+                    thresh = paste(allcombos$thresh[combo]), centre = centre)
     combined[[combo]]            <- runs
     allcombos$Type               <- runs$Dataset$Type[1]
     allcombos$AIC[combo]         <- round(runs$Dataset$deltaAICc[1], digits = 2)
@@ -231,14 +231,14 @@ climatewin <- function(exclude = NA, xvar, cdate, bdate, baseline,
       allcombos$betaL[combo] <- round(runs$Dataset$ModelBeta[1], digits = 2)
     }
     if(allcombos$func[1] == "centre"){
-      if(centre_var == "both"){
+      if(centre[[2]] == "both"){
         allcombos$WithinGrpMean <- round(runs$Dataset$WithinGrpMean[1], digits = 2)
         allcombos$WithinGrpDev  <- round(runs$Dataset$WithinGrpDev[1], digits = 2)
       }
-      if(centre_var == "dev"){
+      if(centre[[2]] == "dev"){
         allcombos$WithinGrpDev  <- round(runs$Dataset$WithinGrpDev[1], digits = 2)
       }
-      if(centre_var == "mean"){
+      if(centre[[2]] == "mean"){
         allcombos$WithinGrpMean <- round(runs$Dataset$WithinGrpMean[1], digits = 2)
       }
     }

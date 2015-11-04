@@ -92,7 +92,7 @@ singlewin <- function(xvar, cdate, bdate, baseline,
                       type, refday, 
                       cmissing = FALSE, cinterval = "day",
                       upper = NA, lower = NA, thresh = FALSE,
-                      centre = NULL, cutoff.day = NULL, cutoff.month = NULL,
+                      centre = c(NULL, "both"), cutoff.day = NULL, cutoff.month = NULL,
                       furthest = NULL, closest = NULL){
   
   if(is.null(furthest) == FALSE & is.null(closest) == FALSE){
@@ -208,7 +208,7 @@ singlewin <- function(xvar, cdate, bdate, baseline,
   modeldat      <- model.frame(baseline)
   modeldat$yvar <- modeldat[, 1]
   
-  if(is.null(centre) == FALSE){
+  if(is.null(centre[[1]]) == FALSE){
     func = "centre"
   }
   
@@ -312,7 +312,7 @@ singlewin <- function(xvar, cdate, bdate, baseline,
   } else {
     ifelse(n == 1, modeldat$climate <- cmatrix, modeldat$climate <- apply(cmatrix, 1, FUN = stat))
   }
-  if(is.null(centre) == FALSE){
+  if(is.null(centre[[1]]) == FALSE){
     modeldat$WGdev  <- wgdev(modeldat$climate, centre)
     modeldat$WGmean <- wgmean(modeldat$climate, centre)
     LocalBestModel  <- update(modeloutput, .~., data = modeldat)
