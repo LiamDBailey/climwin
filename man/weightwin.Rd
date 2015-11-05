@@ -4,10 +4,11 @@
 \alias{weightwin}
 \title{Find a weighted climate window}
 \usage{
-weightwin(xvar, cdate, bdate, baseline, furthest, closest, func = "lin",
-  type = "fixed", cutoff.day, cutoff.month, weightfunc = "W",
-  cinterval = "day", par = c(3, 0.2, 0), control = list(ndeps = c(0.01,
-  0.01, 0.01)), method = "L-BFGS-B")
+weightwin(xvar, cdate, bdate, baseline, limits, func = "lin", type, refday,
+  weightfunc = "W", cinterval = "day", par = c(3, 0.2, 0),
+  control = list(ndeps = c(0.01, 0.01, 0.01)), method = "L-BFGS-B",
+  cutoff.day = NULL, cutoff.month = NULL, furthest = NULL,
+  closest = NULL)
 }
 \arguments{
 \item{xvar}{A list object containing all climate variables of interest.
@@ -22,23 +23,19 @@ environment and variable name (e.g. Biol$Date).}
 \item{baseline}{The baseline model structure used for testing correlation.
 Currently known to support lm, lme, glm and glmer objects.}
 
-\item{furthest}{The furthest number of time intervals (set by cinterval)
-back from the cutoff date or biological record that will be included in
-the climate window search.}
-
-\item{closest}{The closest number of time intervals (set by cinterval) back
-from the cutoff date or biological record that will be included in the
-climate window search.}
+\item{limits}{Two values signifying respectively the furthest and closest number
+of time intervals (set by cinterval) back from the cutoff date or biological record to include
+in the climate window search.}
 
 \item{func}{The function used to fit the climate variable in the model. Can be
 linear ("lin"), quadratic ("quad"), cubic ("cub"), inverse ("inv") or log ("log").}
 
-\item{type}{fixed or variable, whether you wish the climate window to be variable
-(i.e. the number of days before each biological record is measured) or fixed
-(i.e. number of days before a set point in time).}
+\item{type}{"absolute" or "relative", whether you wish the climate window to be relative
+(e.g. the number of days before each biological record is measured) or absolute
+(e.g. number of days before a set point in time).}
 
-\item{cutoff.day,cutoff.month}{If type is "fixed", the day and month of the year
-from which the fixed window analysis will start.}
+\item{refday}{If type is absolute, the day and month respectively of the
+year from which the absolute window analysis will start.}
 
 \item{weightfunc}{The distribution to be used for optimisation. Can be
 either a Weibull ("W") or Generalised Extreme Value distribution ("G").}
@@ -58,6 +55,10 @@ function. Please see \code{\link{optim}} for more detail.}
 
 \item{method}{The method used for the optimisation function. Please see
 \code{\link{optim}} for more detail.}
+
+\item{cutoff.day,}{cutoff.month Redundant parameters. Now replaced by refday.}
+
+\item{furthest,}{closest Redundant parameters. Now repalced by limits.}
 }
 \value{
 Produces a constantly updating grid of plots as the optimisation
@@ -103,10 +104,10 @@ description.
 data(Offspring)
 data(OffspringClimate)
 
-# Test for climate windows between 365 and 0 days ago (furthest=365, closest=0)
+# Test for climate windows between 365 and 0 days ago (limits = c(365, 0))
 # Fit a quadratic term for the mean weighted climate (func="quad")
 # in a Poisson regression (offspring number ranges 0-3)
-# Test a variable window (type = "fixed")
+# Test a variable window (type = "absolute")
 # Test at the resolution of days (cinterval="day")
 # Uses a Weibull weight function (weightfunc="week")
 
@@ -114,7 +115,7 @@ weight <- weightwin(xvar = list(Temp = OffspringClimate$Temperature),
                    cdate = OffspringClimate$Date,
                    bdate = Offspring$Date,
                    baseline = glm(Offspring ~ 1, family = poisson, data = Offspring),
-                   furthest = 365, closest = 0, func = "quad",
+                   limits = c(365, 0), func = "quad",
                    type = "variable", weightfunc = "W", cinterval = "day",
                    par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)),
                    method = "L-BFGS-B")

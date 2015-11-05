@@ -4,11 +4,13 @@
 \alias{plotbetas}
 \title{Plot model beta estimates}
 \usage{
-plotbetas(dataset, plotallenv, plotall = FALSE)
+plotbetas(dataset, arrow = FALSE, plotallenv, plotall = FALSE)
 }
 \arguments{
 \item{dataset}{A dataframe containing information on all fitted climate
 windows. Output from \code{\link{climatewin}}.}
+
+\item{arrow}{TRUE or FALSE. Add arrows to plots to pinpoint best window.}
 
 \item{plotallenv}{Used in conjunction with function \code{\link{plotall}}.
 Should not be changed manually.}

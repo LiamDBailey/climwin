@@ -13,19 +13,16 @@
 #'  environment and variable name (e.g. Biol$Date).
 #'@param baseline The baseline model structure used for testing correlation. 
 #'  Currently known to support lm, lme, glm and glmer objects.
-#'@param furthest The furthest number of time intervals (set by cinterval) 
-#'  back from the cutoff date or biological record that will be included in
-#'  the climate window search.
-#'@param closest The closest number of time intervals (set by cinterval) back 
-#'  from the cutoff date or biological record that will be included in the
-#'  climate window search.
+#'@param limits Two values signifying respectively the furthest and closest number 
+#'  of time intervals (set by cinterval) back from the cutoff date or biological record to include 
+#'  in the climate window search.
 #'@param func The function used to fit the climate variable in the model. Can be
 #'  linear ("lin"), quadratic ("quad"), cubic ("cub"), inverse ("inv") or log ("log").
-#'@param type fixed or variable, whether you wish the climate window to be variable
-#'  (i.e. the number of days before each biological record is measured) or fixed
-#'  (i.e. number of days before a set point in time).
-#'@param cutoff.day,cutoff.month If type is "fixed", the day and month of the year
-#'  from which the fixed window analysis will start.
+#'@param type "absolute" or "relative", whether you wish the climate window to be relative
+#'  (e.g. the number of days before each biological record is measured) or absolute
+#'  (e.g. number of days before a set point in time).
+#'@param refday If type is absolute, the day and month respectively of the 
+#'  year from which the absolute window analysis will start.
 #'@param weightfunc The distribution to be used for optimisation. Can be 
 #'  either a Weibull ("W") or Generalised Extreme Value distribution ("G").
 #'@param cinterval The resolution at which the climate window analysis will be 
@@ -40,6 +37,8 @@
 #'  function. Please see \code{\link{optim}} for more detail.
 #'@param method The method used for the optimisation function. Please see 
 #'  \code{\link{optim}} for more detail.
+#'@param cutoff.day, cutoff.month Redundant parameters. Now replaced by refday.
+#'@param furthest, closest Redundant parameters. Now repalced by limits.
 #'@references van de Pol & Cockburn 2011 Am Nat 177(5):698-707 (doi: 
 #'  10.1086/659101) "Identifying the critical climatic time window that affects 
 #'  trait expression"
@@ -80,10 +79,10 @@
 #'data(Offspring)
 #'data(OffspringClimate)
 #'  
-#'# Test for climate windows between 365 and 0 days ago (furthest=365, closest=0)
+#'# Test for climate windows between 365 and 0 days ago (limits = c(365, 0))
 #'# Fit a quadratic term for the mean weighted climate (func="quad")
 #'# in a Poisson regression (offspring number ranges 0-3)
-#'# Test a variable window (type = "fixed")
+#'# Test a variable window (type = "absolute")
 #'# Test at the resolution of days (cinterval="day")
 #'# Uses a Weibull weight function (weightfunc="week")
 #'  
@@ -91,7 +90,7 @@
 #'                    cdate = OffspringClimate$Date, 
 #'                    bdate = Offspring$Date, 
 #'                    baseline = glm(Offspring ~ 1, family = poisson, data = Offspring), 
-#'                    furthest = 365, closest = 0, func = "quad", 
+#'                    limits = c(365, 0), func = "quad", 
 #'                    type = "variable", weightfunc = "W", cinterval = "day", 
 #'                    par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)), 
 #'                    method = "L-BFGS-B") 

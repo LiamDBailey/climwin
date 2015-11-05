@@ -4,10 +4,11 @@
 \alias{climatewin}
 \title{Test for a climate windows in data.}
 \usage{
-climatewin(exclude = NA, xvar, cdate, bdate, baseline, furthest, closest,
-  type, cutoff.day, cutoff.month, stat = "mean", func = "lin",
-  cmissing = FALSE, cinterval = "day", cvk = 0, upper = NA,
-  lower = NA, thresh = FALSE, centre = NULL)
+climatewin(exclude = NA, xvar, cdate, bdate, baseline, type, refday,
+  stat = "mean", func = "lin", limits, cmissing = FALSE,
+  cinterval = "day", k = 0, upper = NA, lower = NA, binary = FALSE,
+  centre = list(NULL, "both"), cutoff.day = NULL, cutoff.month = NULL,
+  furthest = NULL, closest = NULL, thresh = NULL, cvk = NULL)
 }
 \arguments{
 \item{exclude}{Two values (distance and duration) which allow users
@@ -27,20 +28,12 @@ parent environment and variable name (e.g. Biol$Date).}
 \item{baseline}{The baseline model structure used for model testing.
 Currently known to support lm, glm, lmer and glmer objects.}
 
-\item{furthest}{The furthest number of time intervals (set by cinterval)
-back from the cutoff date or biological record that will be included in
-the climate window search.}
+\item{type}{"absolute" or "relative", whether you wish the climate window to be relative
+(e.g. the number of days before each biological record is measured) or absolute
+(e.g. number of days before a set point in time).}
 
-\item{closest}{The closest number of time intervals (set by cinterval) back
-from the cutoff date or biological record that will be included in the
-climate window search.}
-
-\item{type}{fixed or variable, whether you wish the climate window to be
-variable (i.e. the number of days before each biological record is
-measured) or fixed (i.e. number of days before a set point in time).}
-
-\item{cutoff.day,cutoff.month}{If type is "fixed", the day and month of the
-year from which the fixed window analysis will start.}
+\item{refday}{If type is absolute, the day and month respectively of the
+year from which the absolute window analysis will start.}
 
 \item{stat}{The aggregate statistics used to analyse the climate data. Can
 currently use basic R statistics (e.g. mean, min), as well as slope.
@@ -49,6 +42,10 @@ function(x) (...). See FUN in \code{\link{apply}} for more detail.}
 
 \item{func}{The functions used to fit the climate variable. Can be linear
 ("lin"), quadratic ("quad"), cubic ("cub"), inverse ("inv") or log ("log").}
+
+\item{limits}{Two values signifying respectively the furthest and closest number
+of time intervals (set by cinterval) back from the cutoff date or biological record to include
+in the climate window search.}
 
 \item{cmissing}{TRUE or FALSE, determines what should be done if there are
 missing climate data. If FALSE, the function will not run if missing
@@ -60,7 +57,7 @@ conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the un
 of parameters 'furthest' and 'closest' will differ depending on the choice
 of cinterval.}
 
-\item{cvk}{The number of folds used for k-fold cross validation. By default
+\item{k}{The number of folds used for k-fold cross validation. By default
 this value is set to 0, so no cross validation occurs. Value should be a
 minimum of 2 for cross validation to occur.}
 
@@ -74,12 +71,23 @@ climate thresholds (depending on parameter thresh). Note that when values
 of lower and upper are both provided, climatewin will instead calculate an
 optimal climate zone.}
 
-\item{thresh}{TRUE or FALSE. Determines whether to use values of upper and
+\item{binary}{TRUE or FALSE. Determines whether to use values of upper and
 lower to calculate binary climate data (thresh = TRUE), or to use for
 growing degree days (thresh = FALSE).}
 
-\item{centre}{Variable used for mean centring (e.g. Year, Site, Individual).
-Please specify the parent environment and variable name (e.g. Biol$Year).}
+\item{centre}{A list item containing:
+1. The variable used for mean centring (e.g. Year, Site, Individual).
+Please specify the parent environment and variable name (e.g. Biol$Year).
+2. Whether the model should include both within-group means and variance ("both"),
+only within-group means ("mean"), or only within-group variance ("var").}
+
+\item{cutoff.day,}{cutoff.month Redundant parameters. Now replaced by refday.}
+
+\item{furthest,}{closest Redundant parameters. Now repalced by limits.}
+
+\item{thresh}{Redundant parameter. Now replaced by binary.}
+
+\item{cvk}{Redundant parameter. Now replaced by k.}
 }
 \value{
 Will return a list with an output for each tested set of climate
@@ -124,8 +132,8 @@ OffspringWin <- climatewin(xvar = list(Temp = OffspringClimate$Temperature),
                           cdate = OffspringClimate$Date,
                           bdate = Offspring$Date,
                           baseline = glm(Offspring ~ 1, data = Offspring, family = poisson),
-                          furthest = 150, closest = 0,
-                          type = "variables", stat = "mean",
+                          limits = c(150, 0),
+                          type = "relative", stat = "mean",
                           func = c("lin", "quad"), cmissing = FALSE, cinterval = "day")
 
 # Examine tested combinations
@@ -144,7 +152,7 @@ summary(OffspringWin[[2]]$BestModel)
 
 ##EXAMPLE 2##
 
-# Test for a fixed climate window with both 'mean' and 'max' aggregate statistics
+# Test for an absolute climate window with both 'mean' and 'max' aggregate statistics
 # using datasets 'Mass' and 'MassClimate'.
 
 # Load data.
@@ -152,17 +160,17 @@ summary(OffspringWin[[2]]$BestModel)
 data(Mass)
 data(MassClimate)
 
-# Test a fixed window, starting 20 May (cutoff.month = 5, cutoff.day = 20)
-# Test for climate windows between 100 and 0 days ago (furthest = 100, closest = 0)
+# Test an absolute window, starting 20 May (refday = c(20, 5))
+# Test for climate windows between 100 and 0 days ago (limits = c(100, 0))
 # Test both mean and max aggregate statistics (stat = c("mean", "max"))
 # Fit a linear term (func = "lin")
 # Test at the resolution of days (cinterval = "day")
 
 MassWin <- climatewin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date,
                      bdate = Mass$Date, baseline = lm(Mass ~ 1, data = Mass),
-                     furthest = 100, closest = 0,
+                     limits = c(100, 0),
                      stat = c("mean", "max"), func = "lin",
-                     type = "fixed", cutoff.day = 20, cutoff.month = 5,
+                     type = "absolute", refday = c(20, 5),
                      cmissing = FALSE, cinterval = "day")
 
 # Examine tested combinations

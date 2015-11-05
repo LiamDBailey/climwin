@@ -4,8 +4,9 @@
 \alias{crosswin}
 \title{Test the correlation between two climate variables}
 \usage{
-crosswin(xvar, xvar2, cdate, bdate, furthest, closest, stat, stat2, type,
-  cutoff.day, cutoff.month, cinterval = "day", cmissing = FALSE)
+crosswin(xvar, xvar2, cdate, bdate, limits, stat, stat2, type, refday,
+  cinterval = "day", cmissing = FALSE, cutoff.day = NULL,
+  cutoff.month = NULL, furthest = NULL, closest = NULL)
 }
 \arguments{
 \item{xvar}{The first climate variable of interest. Please specify the parent
@@ -20,13 +21,9 @@ environment and variable name (e.g. Climate$Date).}
 \item{bdate}{The biological date variable (dd/mm/yyyy). Please specify the
 parent environment and variable name (e.g. Biol$Date).}
 
-\item{furthest}{The furthest number of time intervals (set by cinterval) back
-from the cutoff date or biological record that will be included in the
-climate window search.}
-
-\item{closest}{The closest number of time intervals (set by cinterval) back
-from the cutoff date or biological record that will be included in the
-climate window search.}
+\item{limits}{Two values signifying respectively the furthest and closest number
+of time intervals (set by cinterval) back from the cutoff date or biological record to include
+in the climate window search.}
 
 \item{stat}{The aggregate statistic used to analyse the climate data. Can
 currently use basic R statistics (e.g. mean, min), as well as slope.
@@ -38,12 +35,12 @@ currently use basic R statistics (e.g. mean, min), as well as slope.
 Additional aggregate statistics can be created using the format function(x)
 (...). See FUN in \code{\link{apply}} for more detail.}
 
-\item{type}{fixed or variable, whether you wish the climate window to be variable
-(i.e. the number of days before each biological record is measured) or fixed
-(i.e. number of days before a set point in time).}
+\item{type}{"absolute" or "relative", whether you wish the climate window to be relative
+(e.g. the number of days before each biological record is measured) or absolute
+(e.g. number of days before a set point in time).}
 
-\item{cutoff.day,cutoff.month}{If type is "fixed", the day and month of the year
-from which the fixed window analysis will start.}
+\item{refday}{If type is absolute, the day and month respectively of the
+year from which the absolute window analysis will start.}
 
 \item{cinterval}{The resolution at which climate window analysis will be
 conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the units
@@ -54,6 +51,10 @@ of cinterval}
 missing climate data. If FALSE, the function will not run if missing climate
 data is encountered. If TRUE, any records affected by missing climate data
 will be removed from climate window analysis.}
+
+\item{cutoff.day,}{cutoff.month Redundant parameters. Now replaced by refday.}
+
+\item{furthest,}{closest Redundant parameters. Now repalced by limits.}
 }
 \value{
 Will return a dataframe containing the correlation between the two
@@ -73,8 +74,8 @@ data(MassClimate)
 cross <- crosswin(xvar = list(Temp = MassClimate$Temp),
                  xvar2 = list(Rain = MassClimate$Rain),
                  cdate = MassClimate$Date, bdate = Mass$Date,
-                 furthest = 365, closest = 0,
-                 stat = "mean", stat2 = "mean", type = "variable",
+                 limits = c(365, 0),
+                 stat = "mean", stat2 = "mean", type = "relative",
                  cmissing = FALSE, cinterval = "day")
 
 # View the output

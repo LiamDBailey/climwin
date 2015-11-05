@@ -6,7 +6,7 @@
 \usage{
 plotall(dataset, datasetrand = NULL, bestmodel = NULL,
   bestmodeldata = NULL, cw1 = 0.95, cw2 = 0.5, cw3 = 0.25,
-  histq = 0.99, title = NULL)
+  histq = 0.99, title = NULL, arrow = FALSE)
 }
 \arguments{
 \item{dataset}{A dataframe containing information on all fitted climate
@@ -31,6 +31,8 @@ likelihood of finding a climate window model of a given deltaAICc value by
 chance.}
 
 \item{title}{Title of the plot panel.}
+
+\item{arrow}{TRUE or FALSE. Add arrows to plots to pinpoint best window.}
 }
 \value{
 Will return a panel of 6-8 plots:
@@ -77,9 +79,9 @@ data(MassClimate)
 single <- singlewin(xvar = list(Temp = MassClimate$Temp),
                    cdate = MassClimate$Date, bdate = Mass$Date,
                    baseline = lm(Mass ~ 1, data = Mass),
-                   furthest = 72, closest = 15,
+                   limits = c(72, 15),
                    stat = "mean", func = "lin",
-                   type = "fixed", cutoff.day = 20, cutoff.month = 5,
+                   type = "fixed", refday = c(20, 5),
                    cmissing = FALSE, cinterval = "day")
 
 plotall(dataset = MassOutput, bestmodel = single$bestmodel,

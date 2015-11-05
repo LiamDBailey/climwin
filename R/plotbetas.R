@@ -8,6 +8,7 @@
 #' Should not be changed manually.
 #'@param plotallenv Used in conjunction with function \code{\link{plotall}}.
 #' Should not be changed manually.
+#'@param arrow TRUE or FALSE. Add arrows to plots to pinpoint best window.
 #'@return Returns colour plots of model beta estimates. Where applicable, 2nd 
 #' order coefficients (quadratic) and 3rd order coefficients (cubic) will be 
 #' plotted seperately.
