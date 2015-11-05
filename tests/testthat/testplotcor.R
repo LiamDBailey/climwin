@@ -8,8 +8,8 @@ test_that("plotcor produces a graph", {
   
   cross <- crosswin(xvar = list(Temp = MassClimate$Temp), 
                     xvar2 = list(Rain = MassClimate$Rain), cdate = MassClimate$Date,
-                    bdate = Mass$Date, furthest = 2, closest = 1, 
-                    stat = "max", stat2 = "max", type = "variable",
+                    bdate = Mass$Date, limits = c(2, 1), 
+                    stat = "max", stat2 = "max", type = "relative",
                     cmissing = FALSE, cinterval = "day")
   
   test <- plotcor(cor.output = cross, type = "A")

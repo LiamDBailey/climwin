@@ -106,32 +106,46 @@
 #'@importFrom evd dgev
 #'@export
 
-weightwin <- function(xvar, cdate, bdate, baseline, furthest, closest, 
-                      func = "lin", type = "fixed", cutoff.day, cutoff.month, 
+weightwin <- function(xvar, cdate, bdate, baseline, limits, 
+                      func = "lin", type, refday, 
                       weightfunc = "W", cinterval = "day",
                       par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)), 
-                      method = "L-BFGS-B"){
+                      method = "L-BFGS-B", cutoff.day = NULL, cutoff.month = NULL,
+                      furthest = NULL, closest = NULL){
+  
+  if(type == "variable" || type == "fixed"){
+    stop("Parameter 'type' now uses levels 'relative' and 'absolute' rather than 'variable' and 'fixed'.")
+  }
+  
+  if(is.null(furthest) == FALSE & is.null(closest) == FALSE){
+    stop("furthest and closest are now redundant. Please use parameter 'limits' instead.")
+  }
+  
+  if(is.null(cutoff.day) == FALSE & is.null(cutoff.month) == FALSE){
+    stop("cutoff.day and cutoff.month are now redundant. Please use parameter 'refday' instead.")
+  }
   
   xvar = xvar[[1]]
   
   funcenv                 <- environment()
   cont                    <- convertdate(bdate = bdate, cdate = cdate, xvar = xvar, 
                                          cinterval = cinterval, type = type, 
-                                         cutoff.day = cutoff.day, cutoff.month = cutoff.month )   # create new climate dataframe with continuous daynumbers, leap days are not a problem 
+                                         refday = refday)   
+  # create new climate dataframe with continuous daynumbers, leap days are not a problem 
 
   modno        <- 1
   DAICc        <- list()
   par_shape    <- list()
   par_scale    <- list()
   par_location <- list()
-  duration     <- (furthest - closest) + 1
+  duration     <- (limits[1] - limits[2]) + 1
   cmatrix      <- matrix(ncol = (duration), nrow = length(bdate))
   baseline     <- update(baseline, .~.)
   nullmodel    <- AICc(baseline)
   
   for (i in 1:length(bdate)){
-    for (j in closest:furthest){
-      k <- j - closest + 1
+    for (j in limits[2]:limits[1]){
+      k <- j - limits[2] + 1
       cmatrix[i, k] <- xvar[match(cont$bintno[i] - j, cont$cintno)]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
     }
   }

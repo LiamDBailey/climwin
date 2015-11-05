@@ -83,32 +83,129 @@
 #'@export
 
 randwin <- function(exclude = NA, repeats = 1, xvar, cdate, bdate, baseline, 
-                    furthest, closest, stat,  
-                    func, type, cutoff.day, cutoff.month,
+                    stat, limits, func, type, refday,
                     cmissing = FALSE, cinterval = "day",
-                    upper = NA, lower = NA, thresh = FALSE, centre = NULL, cvk){
+                    upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"), k = 0,
+                    cutoff.day = NULL, cutoff.month = NULL,
+                    furthest = NULL, closest = NULL, thresh = NULL, cvk = NULL){
   
-  xvar = xvar[[1]]
-  
-  for (r in 1:repeats){
-    print (c("randomization number ", r))
-    bdateNew        <- sample(bdate)
-    outputrep <- basewin(exclude = exclude, xvar = xvar, cdate = cdate, bdate = bdateNew, 
-                         baseline = baseline, furthest = furthest,
-                         closest = closest, stat = stat, 
-                         func = func, type = type,
-                         cutoff.day = cutoff.day, cutoff.month = cutoff.month,
-                         nrandom = repeats, cmissing = cmissing, cinterval = cinterval,
-                         upper = upper, lower = lower, thresh = thresh, centre = centre, cvk=cvk)
-    
-    outputrep$Repeat <- r
-    
-    if(r == 1){ 
-      outputrand <- outputrep 
-    } else { 
-      outputrand <- rbind(outputrand, outputrep)
-    }
-    rm(outputrep)
+  #Create a centre function that over-rides quadratics etc. when centre != NULL
+  if(is.null(centre[[1]]) == FALSE){
+    func = "centre"
   }
-  return(as.data.frame(outputrand))
+  
+  if(is.null(cvk) == FALSE){
+    stop("Parameter 'cvk' is now redundant. Please use parameter 'k' instead.")
+  }
+  
+  if(is.null(thresh) == FALSE){
+    stop("Parameter 'thresh' is now redundant. Please use parameter 'binary' instead.")
+  }
+  
+  if(type == "variable" || type == "fixed"){
+    stop("Parameter 'type' now uses levels 'relative' and 'absolute' rather than 'variable' and 'fixed'.")
+  }
+  
+  if(is.null(furthest) == FALSE & is.null(closest) == FALSE){
+    stop("furthest and closest are now redundant. Please use parameter 'limits' instead.")
+  }
+  
+  if (is.null(names(xvar)) == TRUE){
+    numbers <- seq(1, length(xvar), 1)
+    for (xname in 1:length(xvar)){
+      names(xvar)[xname] = paste("climate", numbers[xname])
+    }
+  }
+  
+  if(is.null(cutoff.day) == FALSE & is.null(cutoff.month) == FALSE){
+    stop("cutoff.day and cutoff.month are now redundant. Please use parameter 'refday' instead.")
+  }
+  
+  if (is.na(upper) == FALSE && is.na(lower) == FALSE){
+    combos       <- expand.grid(list(upper = upper, lower = lower))
+    combos       <- combos[which(combos$upper >= combos$lower), ]
+    allcombos    <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func, gg = c(1:nrow(combos)), binary = binary))
+    allcombos    <- cbind(allcombos, combos[allcombos$gg, ], deparse.level = 2)
+    binarylevel  <- "two"
+    allcombos$gg <- NULL
+  } else if (is.na(upper) == FALSE && is.na(lower) == TRUE){
+    allcombos   <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func, upper = upper, lower = lower, binary = binary))
+    binarylevel <- "upper"
+  } else if (is.na(upper) == TRUE && is.na(lower) == FALSE){
+    allcombos   <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func, upper = upper, lower = lower, binary = binary))
+    binarylevel <- "lower"
+  } else if (is.na(upper) == TRUE && is.na(lower) == TRUE){
+    allcombos   <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func))
+    binarylevel <- "none"
+  }
+  
+  rownames(allcombos) <- seq(1, nrow(allcombos), 1)
+  print("All combinations to be tested...")
+  print(allcombos)
+  
+  combined <- list()
+  for (combo in 1:nrow(allcombos)){
+    for (r in 1:repeats){
+      print (c("randomization number ", r))
+      bdateNew        <- sample(bdate)
+      outputrep <- basewin(exclude = exclude, xvar = xvar[[paste(allcombos[combo, 1])]], cdate = cdate, bdate = bdateNew, 
+                           baseline = baseline, limits = limits, stat = paste(allcombos[combo, 3]), 
+                           func = paste(allcombos[combo, 4]), type = paste(allcombos[combo, 2]),
+                           refday = refday,
+                           nrandom = repeats, cmissing = cmissing, cinterval = cinterval,
+                           upper = ifelse(binarylevel == "two" || binarylevel == "upper", allcombos$upper[combo], NA),
+                           lower = ifelse(binarylevel == "two" || binarylevel == "lower", allcombos$lower[combo], NA),
+                           binary = paste(allcombos$binary[combo]), centre = centre, k = k)
+      
+      outputrep$Repeat <- r
+      
+      if(r == 1){ 
+        outputrand <- outputrep 
+      } else { 
+        outputrand <- rbind(outputrand, outputrep)
+      }
+      rm(outputrep)
+      if(r == repeats){
+        outputrand                   <- as.data.frame(outputrand)
+        combined[[combo]]            <- outputrand
+        allcombos$Type               <- outputrand$Type[1]
+        allcombos$AIC[combo]         <- round(outputrand$deltaAICc[1], digits = 2)
+        allcombos$WindowOpen[combo]  <- outputrand$WindowOpen[1]
+        allcombos$WindowClose[combo] <- outputrand$WindowClose[1]
+        if(length(which("lin" == levels(allcombos$func))) >0){
+          allcombos$betaL[combo] <- round(outputrand$ModelBeta[1], digits = 2)
+        }
+        if(allcombos$func[1] == "centre"){
+          if(centre[[2]] == "both"){
+            allcombos$WithinGrpMean <- round(outputrand$WithinGrpMean[1], digits = 2)
+            allcombos$WithinGrpDev  <- round(outputrand$WithinGrpDev[1], digits = 2)
+          }
+          if(centre[[2]] == "dev"){
+            allcombos$WithinGrpDev  <- round(outputrand$WithinGrpDev[1], digits = 2)
+          }
+          if(centre[[2]] == "mean"){
+            allcombos$WithinGrpMean <- round(outputrand$WithinGrpMean[1], digits = 2)
+          }
+        }
+        if(length(which("quad" == levels(allcombos$func))) > 0){
+          allcombos$betaL[combo]   <- round(outputrand$ModelBeta[1], digits = 2)
+          allcombos$betaQ[combo]   <- round(outputrand$ModelBetaQ[1], digits = 2)
+        }
+        if(length(which("cub" == levels(allcombos$func))) > 0){
+          allcombos$betaL[combo]   <- round(outputrand$ModelBeta[1], digits = 2)
+          allcombos$betaQ[combo]   <- round(outputrand$ModelBetaQ[1], digits = 2)
+          allcombos$betaC[combo]   <- round(outputrand$ModelBetaC[1], digits = 2)
+        }
+        if(length(which("inv" == levels(allcombos$func))) > 0){
+          allcombos$betaInv[combo] <- round(outputrand$ModelBeta[1], digits = 2)
+        }
+        if(length(which("log" == levels(allcombos$func))) > 0){
+          allcombos$betaLog[combo] <- round(outputrand$ModelBeta[1], digits = 2)
+        }
+      }
+    }
+  }
+  allcombos <- cbind(response = colnames(model.frame(baseline))[1], allcombos)
+  combined <- c(combined, combos = list(allcombos))
+  return(combined)
 } 

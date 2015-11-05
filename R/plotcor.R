@@ -45,21 +45,53 @@
 #'@export
 
 
-plotcor <- function(cor.output, type = type){
+plotcor <- function(cor.output, type, arrow = FALSE){
   ifelse (type == "A", title <- "Correlation between single window and all other windows", 
           title <- "Correlation between 2 climate variables in all windows")
   with(cor.output, {
-    ggplot(cor.output, aes(x = WindowClose, y = WindowOpen, z = cor))+
-      geom_tile(aes(fill = cor))+
-      scale_fill_gradient2(low = "red", mid = "yellow", high = "blue", 
-                           midpoint = mean(cor.output$cor), name = "")+
-      theme_classic()+
-      theme(panel.grid.major = element_blank(),
-            panel.grid.minor = element_blank(),
-            axis.line = element_line(size = 0.25, colour = "black"))+
-      ggtitle(title)+
-      ylab("Window open")+
-      xlab("Window close")
+    if(type == "C"){
+      ggplot(cor.output, aes(x = WindowClose, y = WindowOpen, z = cor))+
+        geom_tile(aes(fill = cor))+
+        scale_fill_gradient2(low = "red", mid = "yellow", high = "blue", 
+                             midpoint = mean(cor.output$cor), name = "")+
+        theme_classic()+
+        theme(panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              axis.line = element_line(size = 0.25, colour = "black"))+
+        ggtitle(title)+
+        ylab("Window open")+
+        xlab("Window close")
+    } else if(type == "A"){
+      if(arrow == FALSE){
+        ggplot(cor.output, aes(x = WindowClose, y = WindowOpen, z = cor))+
+          geom_tile(aes(fill = cor))+
+          scale_fill_gradient2(low = "red", mid = "yellow", high = "blue", 
+                               midpoint = mean(cor.output$cor), name = "")+
+          theme_classic()+
+          theme(panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(),
+                axis.line = element_line(size = 0.25, colour = "black"))+
+          ggtitle(title)+
+          ylab("Window open")+
+          xlab("Window close")
+      } else {
+        ggplot(cor.output, aes(x = WindowClose, y = WindowOpen, z = cor))+
+          geom_tile(aes(fill = cor))+
+          scale_fill_gradient2(low = "red", mid = "yellow", high = "blue", 
+                               midpoint = mean(cor.output$cor), name = "")+
+          theme_classic()+
+          theme(panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(),
+                axis.line = element_line(size = 0.25, colour = "black"))+
+          ggtitle(title)+
+          ylab("Window open")+
+          xlab("Window close") +
+          geom_segment(aes(x = BestWindowClose[1], y = 0, xend = BestWindowClose[1], yend = (BestWindowOpen[1]-1)), 
+                       size = 1, arrow = grid::arrow(length = grid::unit(0.25, "cm"))) +
+          geom_segment(aes(x = 0, y = BestWindowOpen[1], xend = (BestWindowClose[1]-1), yend = BestWindowOpen[1]),
+                       size = 1, arrow = grid::arrow(length = grid::unit(0.25, "cm")))
+      }
+    }
   }
   )
 }

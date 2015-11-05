@@ -1,14 +1,15 @@
 #Basewin function that is combined with manywin to test multiple climate window characteristics
-basewin <- function(exclude, xvar, cdate, bdate, baseline, furthest, closest, 
-                    type, cutoff.day, cutoff.month, stat = "mean", func = "lin",
-                    cmissing = FALSE, cinterval = "day",  nrandom = 0, cvk = 0,
-                    upper = NA, lower = NA, thresh = FALSE, centre = NULL, centre_var = "both"){
+basewin <- function(exclude, xvar, cdate, bdate, baseline, limits, 
+                    type, stat = "mean", func = "lin", refday,
+                    cmissing = FALSE, cinterval = "day",  nrandom = 0, k = 0,
+                    upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both")){
+  
   print("Initialising, please wait...")
   
-  if(is.null(centre) == FALSE){
+  if(is.null(centre[[1]]) == FALSE){
     func = "centre"
-    if(centre_var != "both" & centre_var != "dev" & centre_var != "mean"){
-      stop("Please set centre_var to one of 'both', 'var', or 'mean'. See help file for details.")
+    if(centre[[2]] != "both" & centre[[2]] != "dev" & centre[[2]] != "mean"){
+      stop("Please set centre to one of 'both', 'var', or 'mean'. See help file for details.")
     }
   }
   
@@ -16,8 +17,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, furthest, closest,
     stop("stat = slope cannot be used with func = log or inv as negative values may be present")
   }
   
-  duration  <- (furthest - closest) + 1
-  
+  duration  <- (limits[1] - limits[2]) + 1
   maxmodno  <- (duration * (duration + 1))/2
   if (length(exclude) == 2 ){ maxmodno  <- maxmodno- exclude[1]*(duration-exclude[2]-1)+(exclude[1]-1)*exclude[1]/2 }
   if (stat == "slope") { 
@@ -25,29 +25,29 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, furthest, closest,
   } 
   cont      <- convertdate(bdate = bdate, cdate = cdate, xvar = xvar, 
                            cinterval = cinterval, type = type, 
-                           cutoff.day = cutoff.day, cutoff.month = cutoff.month)   # create new climate dataframe with continuous daynumbers, leap days are not a problem
+                           refday = refday)   # create new climate dataframe with continuous daynumbers, leap days are not a problem
   
   if (cinterval == "day"){
-    if ( (min(cont$bintno) - furthest) < min(cont$cintno)){
-      stop("You do not have enough climate data to search that far back. Please adjust the value of furthest or add additioNAl climate data.")
+    if ( (min(cont$bintno) - limits[1]) < min(cont$cintno)){
+      stop("You do not have enough climate data to search that far back. Please adjust the value of limits or add additioNAl climate data.")
     }
   }
   
   if (cinterval == "week"){
-    if ( (min(cont$bintno) - furthest * 7) < min(cont$cintno)){
-      stop("You do not have enough climate data to search that far back. Please adjust the value of furthest or add additioNAl climate data.")
+    if ( (min(cont$bintno) - limits[1] * 7) < min(cont$cintno)){
+      stop("You do not have enough climate data to search that far back. Please adjust the value of limits or add additioNAl climate data.")
     }
   }
   
   if (cinterval == "month"){
-    if ( (as.numeric(min(as.Date(bdate, format = "%d/%m/%Y")) - months(furthest)) - (as.numeric(min(as.Date(cdate, format = "%d/%m/%Y"))))) <= 0){
-      stop("You do not have enough climate data to search that far back. Please adjust the value of furthest or add additioNAl climate data.")
+    if ( (as.numeric(min(as.Date(bdate, format = "%d/%m/%Y")) - months(limits[1])) - (as.numeric(min(as.Date(cdate, format = "%d/%m/%Y"))))) <= 0){
+      stop("You do not have enough climate data to search that far back. Please adjust the value of limits or add additioNAl climate data.")
     }
   }
   
   if (max(cont$bintno) > max(cont$cintno)){
-    if (type == "fixed"){
-      stop("You need more recent biological data. This error may be caused by your choice of cutoff.day/cutoff.month")
+    if (type == "absolute"){
+      stop("You need more recent biological data. This error may be caused by your choice of refday")
     } else {
       stop("You need more recent biological data")
     }
@@ -62,7 +62,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, furthest, closest,
   modeldat      <- model.frame(baseline)
   modeldat$yvar <- modeldat[, 1]
   
-  if (is.null(centre) == FALSE){
+  if (is.null(centre[[1]]) == FALSE){
     func <- "centre"
   }
   
@@ -71,7 +71,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, furthest, closest,
     }
   
   if (is.na(upper) == FALSE && is.na(lower) == TRUE){
-    if (thresh == TRUE){
+    if (binary == TRUE){
       cont$xvar <- ifelse (cont$xvar > upper, 1, 0)
     } else {
       cont$xvar <- ifelse (cont$xvar > upper, cont$xvar, 0)
@@ -80,7 +80,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, furthest, closest,
   
   
   if (is.na(lower) == FALSE && is.na(upper) == TRUE){
-    if (thresh == TRUE){
+    if (binary == TRUE){
       cont$xvar <- ifelse (cont$xvar < lower, 1, 0)
     } else {
       cont$xvar <- ifelse (cont$xvar < lower, cont$xvar, 0)
@@ -88,7 +88,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, furthest, closest,
   }
   
   if (is.na(lower) == FALSE && is.na(upper) == FALSE){
-    if (thresh == TRUE){
+    if (binary == TRUE){
       cont$xvar <- ifelse (cont$xvar > lower & cont$xvar < upper, 1, 0)
     } else {
       cont$xvar <- ifelse (cont$xvar > lower & cont$xvar < upper, cont$xvar - lower, 0)
@@ -96,9 +96,9 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, furthest, closest,
   }  
   
   for (i in 1:length(bdate)){
-    for (j in closest:furthest){
-      k <- j - closest + 1
-      cmatrix[i, k] <- cont$xvar[which(cont$cintno == cont$bintno[i] - j)]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
+    for (j in limits[2]:limits[1]){
+      kay <- j - limits[2] + 1
+      cmatrix[i, kay] <- cont$xvar[which(cont$cintno == cont$bintno[i] - j)]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
     }
   }
   
@@ -137,8 +137,8 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, furthest, closest,
     }
   }
   
-  if (cvk > 1){
-    modeldat$K <- sample(seq(from = 1, to = length(modeldat$climate), by = 1) %% cvk + 1)
+  if (k > 1){
+    modeldat$K <- sample(seq(from = 1, to = length(modeldat$climate), by = 1) %% k + 1)
   }   # create labels k-fold crossvalidation
   
     if (func == "lin"){
@@ -152,16 +152,16 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, furthest, closest,
     } else if (func == "inv") {
       modeloutput <- update (baseline, yvar~. + I(climate ^ -1), data = modeldat)
     } else if (func == "centre"){
-      if(centre_var == "both"){
+      if(centre[[2]] == "both"){
         modeldat$wgdev  <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
         modeldat$wgmean <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
         modeloutput <- update (baseline, yvar ~. + wgdev + wgmean, data = modeldat)
       }
-      if(centre_var == "mean"){
+      if(centre[[2]] == "mean"){
         modeldat$wgmean <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
         modeloutput <- update (baseline, yvar ~. + wgmean, data = modeldat)
       }
-      if(centre_var == "dev"){
+      if(centre[[2]] == "dev"){
         modeldat$wgdev  <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
         modeloutput <- update (baseline, yvar ~. + wgdev, data = modeldat)
       }
@@ -172,14 +172,14 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, furthest, closest,
   pb <- txtProgressBar(min = 0, max = maxmodno, style = 3, char = "|")
   
   #CREATE A FOR LOOP TO FIT DIFFERENT CLIMATE WINDOWS#
-  for (m in closest:furthest){
+  for (m in limits[2]:limits[1]){
     for (n in 1:duration){
         if (length(exclude) == 2 && m >= exclude[2] & (m-n) >= exclude[2] & n <= exclude[1]){
           next
         }
-      if ( (m - n) >= (closest - 1)){  # do not use windows that overshoot the closest possible day in window
+      if ( (m - n) >= (limits[2] - 1)){  # do not use windows that overshoot the closest possible day in window
         if (stat != "slope" || n > 1){
-          windowopen  <- m - closest + 1
+          windowopen  <- m - limits[2] + 1
           windowclose <- windowopen - n + 1
           if (stat == "slope"){ 
             time             <- seq(1, n, 1)
@@ -193,18 +193,18 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, furthest, closest,
                  Consider adding a constant to climate data to remove these values")
           }
           
-          if (is.null(centre) == FALSE){
-            if(centre_var == "both"){
-              modeldat$wgdev  <- wgdev(modeldat$climate, centre)
-              modeldat$wgmean <- wgmean(modeldat$climate, centre)
+          if (is.null(centre[[1]]) == FALSE){
+            if(centre[[2]] == "both"){
+              modeldat$wgdev  <- wgdev(modeldat$climate, centre[[1]])
+              modeldat$wgmean <- wgmean(modeldat$climate, centre[[1]])
               modeloutput     <- update(modeloutput, .~., data = modeldat)
             }
-            if(centre_var == "mean"){
-              modeldat$wgmean <- wgmean(modeldat$climate, centre)
+            if(centre[[2]] == "mean"){
+              modeldat$wgmean <- wgmean(modeldat$climate, centre[[1]])
               modeloutput     <- update(modeloutput, .~., data = modeldat)
             }
-            if(centre_var == "dev"){
-              modeldat$wgdev  <- wgdev(modeldat$climate, centre)
+            if(centre[[2]] == "dev"){
+              modeldat$wgdev  <- wgdev(modeldat$climate, centre[[1]])
               modeloutput     <- update(modeloutput, .~., data = modeldat)
             }
           } else {
@@ -212,8 +212,8 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, furthest, closest,
           }
           
           # If valid, perform k-fold crossvalidation
-          if (cvk > 1) {      
-            for (k in 1:cvk) {
+          if (k > 1) {      
+            for (k in 1:k) {
               test                     <- subset(modeldat, modeldat$K == k) # Create the test dataset
               train                    <- subset(modeldat, modeldat$K != k) # Create the train dataset
               baselinecv               <- update(baseline, yvar~., data = train) # Refit the model without climate using the train dataset
@@ -237,13 +237,13 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, furthest, closest,
               ifelse (k == 1, AICc_cv_basetotal <- AICc_cv_baseline, AICc_cv_basetotal <- AICc_cv_basetotal + AICc_cv_baseline)
               #Add up the AICc values for all iterations of crossvalidation
             }
-            AICc_cv_avg          <- AICc_cvtotal / cvk # Determine the average AICc value of the climate model from cross validations
-            AICc_cv_baseline_avg <- AICc_cv_basetotal / cvk # Determine the average AICc value of the null model from cross validations
+            AICc_cv_avg          <- AICc_cvtotal / k # Determine the average AICc value of the climate model from cross validations
+            AICc_cv_baseline_avg <- AICc_cv_basetotal / k # Determine the average AICc value of the null model from cross validations
             deltaAICc_cv         <- AICc_cv_avg - AICc_cv_baseline_avg # Calculate delta AICc
           }
           
           #Add model parameters to list
-          if (cvk > 1){
+          if (k > 1){
             modlist$ModelAICc[[modno]]    <- AICc_cv_avg
             modlist$deltaAICc[[modno]]    <- deltaAICc_cv
           } else {
@@ -257,30 +257,40 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, furthest, closest,
           if (length(attr(class(modeloutput),"package")) > 0 && attr(class(modeloutput), "package") == "lme4"){            
             if (func == "quad"){
               modlist$ModelBeta[[modno]]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
+              modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][2]
               modlist$ModelBetaQ[[modno]] <- fixef(modeloutput)[length(fixef(modeloutput))]
+              modlist$Std.ErrorQ[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][3]
               modlist$ModelBetaC[[modno]] <- NA
               modlist$ModelInt[[modno]]   <- fixef(modeloutput)[1]
             } else if (func == "cub"){
               modlist$ModelBeta[[modno]]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 2]
-              modlist$ModelBetaQ[[modno]] <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]    
+              modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][2]
+              modlist$ModelBetaQ[[modno]] <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
+              modlist$Std.ErrorQ[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][3]
               modlist$ModelBetaC[[modno]] <- fixef(modeloutput)[length(fixef(modeloutput))]
+              modlist$Std.ErrorC[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][3]
               modlist$ModelInt[[modno]]   <- fixef(modeloutput)[1]
             } else if (func == "centre"){
-              if(centre_var == "both"){
+              if(centre[[2]] == "both"){
                 modlist$WithinGrpMean[[modno]] <- fixef(modeloutput)[length(fixef(modeloutput))]
+                modlist$Std.ErrorMean[[modno]] <- coef(summary(modeloutput))[, "Std. Error"][2]
                 modlist$WithinGrpDev[[modno]]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
+                modlist$Std.ErrorDev[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][3]
                 modlist$ModelInt[[modno]]      <- fixef(modeloutput)[1]
               }
-              if(centre_var == "mean"){
+              if(centre[[2]] == "mean"){
                 modlist$WithinGrpMean[[modno]] <- fixef(modeloutput)[length(fixef(modeloutput))]
+                modlist$Std.Error[[modno]]     <- coef(summary(modeloutput))[, "Std. Error"][2]
                 modlist$ModelInt[[modno]]      <- fixef(modeloutput)[1]
               }
-              if(centre_var == "dev"){
+              if(centre[[2]] == "dev"){
                 modlist$WithinGrpDev[[modno]]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
+                modlist$Std.Error[[modno]]     <- coef(summary(modeloutput))[, "Std. Error"][2]
                 modlist$ModelInt[[modno]]      <- fixef(modeloutput)[1]
               }
             } else {
               modlist$ModelBeta[[modno]]  <- fixef(modeloutput)[length(fixef(modeloutput))]
+              modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][2]
               modlist$ModelBetaQ[[modno]] <- NA
               modlist$ModelBetaC[[modno]] <- NA
               modlist$ModelInt[[modno]]   <- fixef(modeloutput)[1]
@@ -288,30 +298,40 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, furthest, closest,
           } else {
             if (func == "quad"){
               modlist$ModelBeta[[modno]]  <- coef(modeloutput)[length(coef(modeloutput)) - 1]
+              modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][2]
               modlist$ModelBetaQ[[modno]] <- coef(modeloutput)[length(coef(modeloutput))]
+              modlist$Std.ErrorQ[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][3]
               modlist$ModelBetaC[[modno]] <- NA
               modlist$ModelInt[[modno]]   <- coef(modeloutput)[1]
             } else if (func == "cub"){
               modlist$ModelBeta[[modno]]  <- coef(modeloutput)[length(coef(modeloutput)) - 2]
+              modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][2]
               modlist$ModelBetaQ[[modno]] <- coef(modeloutput)[length(coef(modeloutput)) - 1]
+              modlist$Std.ErrorQ[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][3]
               modlist$ModelBetaC[[modno]] <- coef(modeloutput)[length(coef(modeloutput))]
+              modlist$Std.ErrorC[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][4]
               modlist$ModelInt[[modno]]   <- coef(modeloutput)[1]
             } else if (func == "centre"){
-              if(centre_var == "both"){
+              if(centre[[2]] == "both"){
                 modlist$WithinGrpMean[[modno]] <- coef(modeloutput)[length(coef(modeloutput))]
+                modlist$Std.ErrorMean[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][2]
                 modlist$WithinGrpDev[[modno]]  <- coef(modeloutput)[length(coef(modeloutput)) - 1]
+                modlist$Std.ErrorDev[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][3]
                 modlist$ModelInt[[modno]]      <- coef(modeloutput)[1]
               }
-              if(centre_var == "mean"){
+              if(centre[[2]] == "mean"){
                 modlist$WithinGrpMean[[modno]] <- coef(modeloutput)[length(coef(modeloutput))]
+                modlist$Std.ErrorMean[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][2]
                 modlist$ModelInt[[modno]]      <- coef(modeloutput)[1]
               }
-              if(centre_var == "dev"){
+              if(centre[[2]] == "dev"){
                 modlist$WithinGrpDev[[modno]]  <- coef(modeloutput)[length(coef(modeloutput)) - 1]
+                modlist$Std.ErrorDev[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][2]
                 modlist$ModelInt[[modno]]      <- coef(modeloutput)[1]
               }
             } else {
               modlist$ModelBeta[[modno]]  <- coef(modeloutput)[length(coef(modeloutput))]
+              modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][2]
               modlist$ModelBetaQ[[modno]] <- NA
               modlist$ModelBetaC[[modno]] <- NA
               modlist$ModelInt[[modno]]   <- coef(modeloutput)[1]
@@ -327,7 +347,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, furthest, closest,
   #Save the best model output
   m <- (modlist$WindowOpen[modlist$ModelAICc %in% min(modlist$ModelAICc)])
   n <- (modlist$WindowOpen[modlist$ModelAICc %in% min(modlist$ModelAICc)]) - (modlist$WindowClose[modlist$ModelAICc %in% min(modlist$ModelAICc)]) + 1
-  windowopen  <- m[1] - closest + 1
+  windowopen  <- m[1] - limits[2] + 1
   windowclose <- windowopen - n[1] + 1
   if (stat == "slope"){
     time      <- seq(1, n[1], 1)
@@ -338,18 +358,18 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, furthest, closest,
             modeldat$climate <- apply(cmatrix[, windowclose:windowopen], 1, FUN = stat))
   }
   
-  if (is.null(centre) == FALSE){
-    if (centre_var == "both"){
-        modeldat$WGdev   <- wgdev(modeldat$climate, centre)
-        modeldat$WGmean  <- wgmean(modeldat$climate, centre)
+  if (is.null(centre[[1]]) == FALSE){
+    if (centre[[2]] == "both"){
+        modeldat$WGdev   <- wgdev(modeldat$climate, centre[[1]])
+        modeldat$WGmean  <- wgmean(modeldat$climate, centre[[1]])
         LocalModel       <- update(modeloutput, .~., data = modeldat)
     }
-    if (centre_var == "dev"){
-      modeldat$WGdev   <- wgdev(modeldat$climate, centre)
+    if (centre[[2]] == "dev"){
+      modeldat$WGdev   <- wgdev(modeldat$climate, centre[[1]])
       LocalModel       <- update(modeloutput, .~., data = modeldat)
     }
-    if (centre_var == "mean"){
-      modeldat$WGmean  <- wgmean(modeldat$climate, centre)
+    if (centre[[2]] == "mean"){
+      modeldat$WGmean  <- wgmean(modeldat$climate, centre[[1]])
       LocalModel       <- update(modeloutput, .~., data = modeldat)
     }
     modlist$Function <- "centre"
@@ -358,20 +378,20 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, furthest, closest,
     modlist$Function <- func
   }
   
-  modlist$furthest     <- furthest
-  modlist$closest      <- closest
+  modlist$Furthest     <- limits[1]
+  modlist$Closest      <- limits[2]
   modlist$Statistics   <- stat
   modlist$Type         <- type
-  modlist$K            <- cvk
+  modlist$K            <- k
   modlist$ModWeight    <- (exp(-0.5 * modlist$deltaAICc)) / sum(exp(-0.5 * modlist$deltaAICc))
   
-  if (type == "fixed"){
-    modlist$Cutoff.day   <- cutoff.day
-    modlist$Cutoff.month <- cutoff.month
+  if (type == "absolute"){
+    modlist$Reference.day   <- refday[1]
+    modlist$Reference.month <- refday[2]
   }
   
   if (nrandom == 0){
-    if (is.null(centre) == FALSE){
+    if (is.null(centre[[1]]) == FALSE){
       LocalData         <- model.frame(LocalModel)
       LocalData$climate <- modeldat$climate
     } else {
@@ -401,7 +421,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, furthest, closest,
 
 #Function to convert dates into day/week/month number
 convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type, 
-                        cutoff.day, cutoff.month, cross = FALSE){
+                        refday, cross = FALSE){
   
   bdate  <- as.Date(bdate, format = "%d/%m/%Y") # Convert the date variables into the R date format
   cdate2 <- seq(min(as.Date(cdate, format = "%d/%m/%Y")), max(as.Date(cdate, format = "%d/%m/%Y")), "days") # Convert the date variables into the R date format
@@ -430,10 +450,10 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
   
   if (cross == FALSE){
     if (cinterval == "day"){  
-      if (type == "fixed"){   
-        bintno            <- as.numeric(as.Date(paste(cutoff.day, cutoff.month, year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1 
+      if (type == "absolute"){   
+        bintno            <- as.numeric(as.Date(paste(refday[1], refday[2], year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1 
         wrongyear         <- which(bintno < realbintno)
-        bintno[wrongyear] <- (as.numeric(as.Date(paste(cutoff.day, cutoff.month, (year(bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1)
+        bintno[wrongyear] <- (as.numeric(as.Date(paste(refday[1], refday[2], (year(bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1)
       } else {
         bintno <- realbintno
       }
@@ -445,10 +465,10 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       newclim3   <- cast(newclim2, cintno ~ variable, mean)
       cintno     <- newclim3$cintno
       xvar       <- newclim3$xvar
-      if (type == "fixed"){ 
-        bintno            <- ceiling((as.numeric(as.Date(paste(cutoff.day, cutoff.month, year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1) / 7) 
+      if (type == "absolute"){ 
+        bintno            <- ceiling((as.numeric(as.Date(paste(refday[1], refday[2], year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1) / 7) 
         wrongyear         <- which(bintno < realbintno)
-        bintno[wrongyear] <- ceiling((as.numeric(as.Date(paste(cutoff.day, cutoff.month, (year(bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1) / 7)
+        bintno[wrongyear] <- ceiling((as.numeric(as.Date(paste(refday[1], refday[2], (year(bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1) / 7)
       } else {
         bintno <- realbintno
       }
@@ -462,20 +482,20 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       newclim3   <- cast(newclim2, cintno ~ variable, mean)
       cintno     <- newclim3$cintno
       xvar       <- newclim3$xvar
-      if (type == "fixed"){ 
-        bintno            <- cutoff.month + 12 * (year(bdate) - min(year(cdate2)))
+      if (type == "absolute"){ 
+        bintno            <- refday[2] + 12 * (year(bdate) - min(year(cdate2)))
         wrongyear         <- which(bintno < realbintno)
-        bintno[wrongyear] <- cutoff.month + 12 * (year(bdate[wrongyear]) + 1 - min(year(cdate2)))
+        bintno[wrongyear] <- refday[2] + 12 * (year(bdate[wrongyear]) + 1 - min(year(cdate2)))
       } else {
         bintno <- realbintno
       }
     }
   } else {
     if (cinterval == "day"){  
-      if (type == "fixed"){   
-        bintno            <- as.numeric(as.Date(paste(cutoff.day, cutoff.month, year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1 
+      if (type == "absolute"){   
+        bintno            <- as.numeric(as.Date(paste(refday[1], refday[2], year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1 
         wrongyear         <- which(bintno < realbintno)
-        bintno[wrongyear] <- (as.numeric(as.Date(paste(cutoff.day, cutoff.month, (year(bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1)
+        bintno[wrongyear] <- (as.numeric(as.Date(paste(refday[1], refday[2], (year(bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1)
       } else {
         bintno <- realbintno
       }    
@@ -488,10 +508,10 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       cintno     <- newclim3$cintno
       xvar       <- newclim3$xvar
       xvar2      <- newclim3$xvar2
-      if (type == "fixed"){ 
-        bintno            <- ceiling((as.numeric(as.Date(paste(cutoff.day, cutoff.month, year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1) / 7) 
+      if (type == "absolute"){ 
+        bintno            <- ceiling((as.numeric(as.Date(paste(refday[1], refday[2], year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1) / 7) 
         wrongyear         <- which(bintno < realbintno)
-        bintno[wrongyear] <- ceiling((as.numeric(as.Date(paste(cutoff.day, cutoff.month, (year(bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1) / 7)
+        bintno[wrongyear] <- ceiling((as.numeric(as.Date(paste(refday[1], refday[2], (year(bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1) / 7)
       } else {
         bintno <- realbintno
       }
@@ -506,10 +526,10 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       cintno     <- newclim3$cintno
       xvar       <- newclim3$xvar
       xvar2      <- newclim3$xvar2
-      if (type == "fixed"){ 
-        bintno            <- cutoff.month + 12 * (year(bdate) - min(year(cdate2)))
+      if (type == "absolute"){ 
+        bintno            <- refday[2] + 12 * (year(bdate) - min(year(cdate2)))
         wrongyear         <- which(bintno < realbintno)
-        bintno[wrongyear] <- cutoff.month + 12 * (year(bdate[wrongyear]) + 1 - min(year(cdate2)))
+        bintno[wrongyear] <- refday[2] + 12 * (year(bdate[wrongyear]) + 1 - min(year(cdate2)))
       } else {
         bintno <- realbintno
       }
