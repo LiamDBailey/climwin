@@ -16,7 +16,7 @@
 #'  parent environment and variable name (e.g. Biol$Date).
 #'@param baseline The baseline model structure used for testing correlation. 
 #'  Currently known to support lm, glm, lmer and glmer objects.
-#'@param limits Two values signifying respectively the furthest and closest number 
+#'@param range Two values signifying respectively the furthest and closest number 
 #'  of time intervals (set by cinterval) back from the cutoff date or biological record to include 
 #'  in the climate window search.
 #'@param stat The aggregate statistic used to analyse the climate data. Can 
@@ -58,7 +58,7 @@
 #'  2. Whether the model should include both within-group means and variance ("both"),
 #'  only within-group means ("mean"), or only within-group variance ("var").
 #'@param cutoff.day, cutoff.month Redundant parameters. Now replaced by refday.
-#'@param furthest, closest Redundant parameters. Now repalced by limits.
+#'@param furthest, closest Redundant parameters. Now replaced by range.
 #'@param thresh Redundant parameter. Now replaced by binary.
 #'@param cvk Redundant parameter. Now replaced by k.
 #'@return Will return a dataframe containing information on all fitted climate
@@ -77,7 +77,7 @@
 #'rand <- randwin(repeats = 2, xvar = list(Temp = MassClimate$Temp), 
 #'                cdate = MassClimate$Date, bdate = Mass$Date,
 #'                baseline = lm(Mass ~ 1, data = Mass), 
-#'                limits = c(100, 0),
+#'                range = c(100, 0),
 #'                stat = "mean", func = "lin", type = "absolute", 
 #'                refday = c(20, 5),
 #'                cmissing = FALSE, cinterval = "day")
@@ -90,7 +90,7 @@
 #'@export
 
 randwin <- function(exclude = NA, repeats = 1, xvar, cdate, bdate, baseline, 
-                    stat, limits, func, type, refday,
+                    stat, range, func, type, refday,
                     cmissing = FALSE, cinterval = "day",
                     upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"), k = 0,
                     cutoff.day = NULL, cutoff.month = NULL,
@@ -114,7 +114,7 @@ randwin <- function(exclude = NA, repeats = 1, xvar, cdate, bdate, baseline,
   }
   
   if(is.null(furthest) == FALSE & is.null(closest) == FALSE){
-    stop("furthest and closest are now redundant. Please use parameter 'limits' instead.")
+    stop("furthest and closest are now redundant. Please use parameter 'range' instead.")
   }
   
   if (is.null(names(xvar)) == TRUE){
@@ -156,7 +156,7 @@ randwin <- function(exclude = NA, repeats = 1, xvar, cdate, bdate, baseline,
       print (c("randomization number ", r))
       bdateNew        <- sample(bdate)
       outputrep <- basewin(exclude = exclude, xvar = xvar[[paste(allcombos[combo, 1])]], cdate = cdate, bdate = bdateNew, 
-                           baseline = baseline, limits = limits, stat = paste(allcombos[combo, 3]), 
+                           baseline = baseline, range = range, stat = paste(allcombos[combo, 3]), 
                            func = paste(allcombos[combo, 4]), type = paste(allcombos[combo, 2]),
                            refday = refday,
                            nrandom = repeats, cmissing = cmissing, cinterval = cinterval,

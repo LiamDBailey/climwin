@@ -1,5 +1,5 @@
 #Basewin function that is combined with manywin to test multiple climate window characteristics
-basewin <- function(exclude, xvar, cdate, bdate, baseline, limits, 
+basewin <- function(exclude, xvar, cdate, bdate, baseline, range, 
                     type, stat = "mean", func = "lin", refday,
                     cmissing = FALSE, cinterval = "day",  nrandom = 0, k = 0,
                     upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both")){
@@ -17,7 +17,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, limits,
     stop("stat = slope cannot be used with func = log or inv as negative values may be present")
   }
   
-  duration  <- (limits[1] - limits[2]) + 1
+  duration  <- (range[1] - range[2]) + 1
   maxmodno  <- (duration * (duration + 1))/2
   if (length(exclude) == 2 ){ maxmodno  <- maxmodno- exclude[1]*(duration-exclude[2]-1)+(exclude[1]-1)*exclude[1]/2 }
   if (stat == "slope") { 
@@ -28,20 +28,20 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, limits,
                            refday = refday)   # create new climate dataframe with continuous daynumbers, leap days are not a problem
   
   if (cinterval == "day"){
-    if ( (min(cont$bintno) - limits[1]) < min(cont$cintno)){
-      stop("You do not have enough climate data to search that far back. Please adjust the value of limits or add additioNAl climate data.")
+    if ( (min(cont$bintno) - range[1]) < min(cont$cintno)){
+      stop("You do not have enough climate data to search that far back. Please adjust the value of range or add additioNAl climate data.")
     }
   }
   
   if (cinterval == "week"){
-    if ( (min(cont$bintno) - limits[1] * 7) < min(cont$cintno)){
-      stop("You do not have enough climate data to search that far back. Please adjust the value of limits or add additioNAl climate data.")
+    if ( (min(cont$bintno) - range[1] * 7) < min(cont$cintno)){
+      stop("You do not have enough climate data to search that far back. Please adjust the value of range or add additioNAl climate data.")
     }
   }
   
   if (cinterval == "month"){
-    if ( (as.numeric(min(as.Date(bdate, format = "%d/%m/%Y")) - months(limits[1])) - (as.numeric(min(as.Date(cdate, format = "%d/%m/%Y"))))) <= 0){
-      stop("You do not have enough climate data to search that far back. Please adjust the value of limits or add additioNAl climate data.")
+    if ( (as.numeric(min(as.Date(bdate, format = "%d/%m/%Y")) - months(range[1])) - (as.numeric(min(as.Date(cdate, format = "%d/%m/%Y"))))) <= 0){
+      stop("You do not have enough climate data to search that far back. Please adjust the value of range or add additioNAl climate data.")
     }
   }
   
@@ -96,8 +96,8 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, limits,
   }  
   
   for (i in 1:length(bdate)){
-    for (j in limits[2]:limits[1]){
-      kay <- j - limits[2] + 1
+    for (j in range[2]:range[1]){
+      kay <- j - range[2] + 1
       cmatrix[i, kay] <- cont$xvar[which(cont$cintno == cont$bintno[i] - j)]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
     }
   }
@@ -172,14 +172,14 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, limits,
   pb <- txtProgressBar(min = 0, max = maxmodno, style = 3, char = "|")
   
   #CREATE A FOR LOOP TO FIT DIFFERENT CLIMATE WINDOWS#
-  for (m in limits[2]:limits[1]){
+  for (m in range[2]:range[1]){
     for (n in 1:duration){
         if (length(exclude) == 2 && m >= exclude[2] & (m-n) >= exclude[2] & n <= exclude[1]){
           next
         }
-      if ( (m - n) >= (limits[2] - 1)){  # do not use windows that overshoot the closest possible day in window
+      if ( (m - n) >= (range[2] - 1)){  # do not use windows that overshoot the closest possible day in window
         if (stat != "slope" || n > 1){
-          windowopen  <- m - limits[2] + 1
+          windowopen  <- m - range[2] + 1
           windowclose <- windowopen - n + 1
           if (stat == "slope"){ 
             time             <- seq(1, n, 1)
@@ -347,7 +347,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, limits,
   #Save the best model output
   m <- (modlist$WindowOpen[modlist$ModelAICc %in% min(modlist$ModelAICc)])
   n <- (modlist$WindowOpen[modlist$ModelAICc %in% min(modlist$ModelAICc)]) - (modlist$WindowClose[modlist$ModelAICc %in% min(modlist$ModelAICc)]) + 1
-  windowopen  <- m[1] - limits[2] + 1
+  windowopen  <- m[1] - range[2] + 1
   windowclose <- windowopen - n[1] + 1
   if (stat == "slope"){
     time      <- seq(1, n[1], 1)
@@ -378,8 +378,8 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, limits,
     modlist$Function <- func
   }
   
-  modlist$Furthest     <- limits[1]
-  modlist$Closest      <- limits[2]
+  modlist$Furthest     <- range[1]
+  modlist$Closest      <- range[2]
   modlist$Statistics   <- stat
   modlist$Type         <- type
   modlist$K            <- k

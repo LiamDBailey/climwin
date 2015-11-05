@@ -7,11 +7,11 @@ test_that("plothist produces a graph", {
   data(MassClimate, envir = environment())
   
   testdata <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
-                         baseline = lm(Mass ~ 1, data = Mass), limits = c(3, 2), 
+                         baseline = lm(Mass ~ 1, data = Mass), range = c(3, 2), 
                          type = "relative", stat = "max", func = "lin", cmissing = FALSE)
   
   testdatarand <- randwin(repeats = 2, xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
-                          baseline = lm(Mass ~ 1, data = Mass), limits = c(3, 2), 
+                          baseline = lm(Mass ~ 1, data = Mass), range = c(3, 2), 
                           type = "relative", stat = "max", func = "lin", cmissing = FALSE)
   
   

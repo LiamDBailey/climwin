@@ -19,7 +19,7 @@
 #'  parent environment and variable name (e.g. Biol$Date).
 #'@param baseline The baseline model structure used for model testing. 
 #'  Currently known to support lm, glm, lmer and glmer objects.
-#'@param limits Two values signifying respectively the furthest and closest number 
+#'@param range Two values signifying respectively the furthest and closest number 
 #'  of time intervals (set by cinterval) back from the cutoff date or biological record to include 
 #'  in the climate window search.
 #'@param stat The aggregate statistics used to analyse the climate data. Can 
@@ -61,7 +61,7 @@
 #'  2. Whether the model should include both within-group means and variance ("both"),
 #'  only within-group means ("mean"), or only within-group variance ("var").
 #'@param cutoff.day, cutoff.month Redundant parameters. Now replaced by refday.
-#'@param furthest, closest Redundant parameters. Now repalced by limits.
+#'@param furthest, closest Redundant parameters. Now replaced by range.
 #'@param thresh Redundant parameter. Now replaced by binary.
 #'@param cvk Redundant parameter. Now replaced by k.
 #'@return Will return a list with an output for each tested set of climate
@@ -103,7 +103,7 @@
 #'                           cdate = OffspringClimate$Date, 
 #'                           bdate = Offspring$Date, 
 #'                           baseline = glm(Offspring ~ 1, data = Offspring, family = poisson),
-#'                           limits = c(150, 0), 
+#'                           range = c(150, 0), 
 #'                           type = "relative", stat = "mean", 
 #'                           func = c("lin", "quad"), cmissing = FALSE, cinterval = "day")
 #'
@@ -132,14 +132,14 @@
 #'data(MassClimate)
 #'  
 #'# Test an absolute window, starting 20 May (refday = c(20, 5))
-#'# Test for climate windows between 100 and 0 days ago (limits = c(100, 0))
+#'# Test for climate windows between 100 and 0 days ago (range = c(100, 0))
 #'# Test both mean and max aggregate statistics (stat = c("mean", "max"))
 #'# Fit a linear term (func = "lin")
 #'# Test at the resolution of days (cinterval = "day")
 #'  
 #'MassWin <- climatewin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, 
 #'                      bdate = Mass$Date, baseline = lm(Mass ~ 1, data = Mass),
-#'                      limits = c(100, 0),
+#'                      range = c(100, 0),
 #'                      stat = c("mean", "max"), func = "lin",
 #'                      type = "absolute", refday = c(20, 5),
 #'                      cmissing = FALSE, cinterval = "day")
@@ -163,7 +163,7 @@
 #'@export
 
 climatewin <- function(exclude = NA, xvar, cdate, bdate, baseline, 
-                       type, refday, stat = "mean", func = "lin", limits, 
+                       type, refday, stat = "mean", func = "lin", range, 
                        cmissing = FALSE, cinterval = "day", k = 0,
                        upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"),
                        cutoff.day = NULL, cutoff.month = NULL, furthest = NULL, closest = NULL,
@@ -186,7 +186,7 @@ climatewin <- function(exclude = NA, xvar, cdate, bdate, baseline,
   }
   
   if(is.null(furthest) == FALSE & is.null(closest) == FALSE){
-    stop("furthest and closest are now redundant. Please use parameter 'limits' instead.")
+    stop("furthest and closest are now redundant. Please use parameter 'range' instead.")
   }
   
   #Create a centre function that over-rides quadratics etc. when centre != NULL
@@ -231,7 +231,7 @@ climatewin <- function(exclude = NA, xvar, cdate, bdate, baseline,
   combined <- list()
   for (combo in 1:nrow(allcombos)){
     runs <- basewin(exclude = exclude, xvar = xvar[[paste(allcombos[combo, 1])]], cdate = cdate, bdate = bdate, baseline = baseline,
-                    limits = limits, type = paste(allcombos[combo, 2]), refday = refday, stat = paste(allcombos[combo, 3]), func = paste(allcombos[combo, 4]),
+                    range = range, type = paste(allcombos[combo, 2]), refday = refday, stat = paste(allcombos[combo, 3]), func = paste(allcombos[combo, 4]),
                     cmissing = cmissing, cinterval = cinterval, k = k, 
                     upper = ifelse(binarylevel == "two" || binarylevel == "upper", allcombos$upper[combo], NA),
                     lower = ifelse(binarylevel == "two" || binarylevel == "lower", allcombos$lower[combo], NA),

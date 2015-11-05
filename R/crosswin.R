@@ -10,7 +10,7 @@
 #'  environment and variable name (e.g. Climate$Date).
 #'@param bdate The biological date variable (dd/mm/yyyy). Please specify the 
 #'  parent environment and variable name (e.g. Biol$Date).
-#'@param limits Two values signifying respectively the furthest and closest number 
+#'@param range Two values signifying respectively the furthest and closest number 
 #'  of time intervals (set by cinterval) back from the cutoff date or biological record to include 
 #'  in the climate window search.
 #'@param stat The aggregate statistic used to analyse the climate data. Can 
@@ -35,7 +35,7 @@
 #'  of parameters 'furthest' and 'closest' will differ depending on the choice 
 #'  of cinterval
 #'@param cutoff.day, cutoff.month Redundant parameters. Now replaced by refday.
-#'@param furthest, closest Redundant parameters. Now repalced by limits.
+#'@param furthest, closest Redundant parameters. Now repalced by range.
 #'@return Will return a dataframe containing the correlation between the two
 #'  climate variables.
 #'@author Liam D. Bailey and Martijn van de Pol
@@ -49,7 +49,7 @@
 #'cross <- crosswin(xvar = list(Temp = MassClimate$Temp), 
 #'                  xvar2 = list(Rain = MassClimate$Rain), 
 #'                  cdate = MassClimate$Date, bdate = Mass$Date, 
-#'                  limits = c(365, 0),
+#'                  range = c(365, 0),
 #'                  stat = "mean", stat2 = "mean", type = "relative",
 #'                  cmissing = FALSE, cinterval = "day")
 #'                 
@@ -67,7 +67,7 @@
 #EDITED BY: LIAM
 #NOTES: Tidy up code
 
-crosswin <- function(xvar, xvar2, cdate, bdate, limits, 
+crosswin <- function(xvar, xvar2, cdate, bdate, range, 
                      stat, stat2, type, refday,
                      cinterval = "day", cmissing = FALSE,
                      cutoff.day = NULL, cutoff.month = NULL,
@@ -80,7 +80,7 @@ crosswin <- function(xvar, xvar2, cdate, bdate, limits,
   }
   
   if(is.null(furthest) == FALSE & is.null(closest) == FALSE){
-    stop("furthest and closest are now redundant. Please use parameter 'limits' instead.")
+    stop("furthest and closest are now redundant. Please use parameter 'range' instead.")
   }
   
   if(is.null(cutoff.day) == FALSE & is.null(cutoff.month) == FALSE){
@@ -90,7 +90,7 @@ crosswin <- function(xvar, xvar2, cdate, bdate, limits,
   xvar  <- xvar[[1]]
   xvar2 <- xvar2[[1]]
   
-  duration <- (limits[1] - limits[2]) + 1
+  duration <- (range[1] - range[2]) + 1
   maxmodno <- (duration * (duration + 1))/2 
   cont     <- convertdate(bdate = bdate, cdate = cdate, xvar = xvar, xvar2 = xvar2, 
                             cinterval = cinterval, type = type, 
@@ -101,8 +101,8 @@ crosswin <- function(xvar, xvar2, cdate, bdate, limits,
   cmatrix2 <- matrix(ncol = (duration), nrow = length(bdate))  # matrix that stores the weather data for variable or fixed windows
   
   for (i in 1:length(bdate)){
-    for (j in limits[2]:limits[1]){
-      k <- j - limits[2] + 1
+    for (j in range[2]:range[1]){
+      k <- j - range[2] + 1
       cmatrix1[i, k] <- cont$xvar[which(cont$cintn == cont$bintno[i] - j)]  #Create a matrix which contains the climate data from furthest to furthest from each biological record#
       cmatrix2[i, k] <- cont$xvar2[which(cont$cintno == cont$bintno[i] - j)]
     }
@@ -152,11 +152,11 @@ crosswin <- function(xvar, xvar2, cdate, bdate, limits,
   
   pb <- txtProgressBar(min = 0, max = maxmodno, style = 3, char = "|")
   
-  for (m in limits[2]:limits[1]){
+  for (m in range[2]:range[1]){
     for (n in 1:duration){
-      if ( (m - n) >= (limits[2] - 1)){  # do not use windows that overshoot the closest possible day in window   
+      if ( (m - n) >= (range[2] - 1)){  # do not use windows that overshoot the closest possible day in window   
         if (stat != "slope" || stat2 != "slope" || n > 1){
-          windowopen  <- m - limits[2] + 1
+          windowopen  <- m - range[2] + 1
           windowclose <- windowopen - n + 1
           if (stat == "slope"){ 
             time <- seq(1, n, 1)
@@ -194,8 +194,8 @@ crosswin <- function(xvar, xvar2, cdate, bdate, limits,
     #Fill progress bar
     setTxtProgressBar(pb, modno - 1)
   }
-  modlist$Furthest    <- limits[1]
-  modlist$Closest     <- limits[2]
+  modlist$Furthest    <- range[1]
+  modlist$Closest     <- range[2]
   modlist$Statistics  <- stat
   modlist$Statistics2 <- stat2
   modlist$Type        <- type

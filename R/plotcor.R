@@ -23,7 +23,7 @@
 #'single <- singlewin(xvar = list(Temp = MassClimate$Temp), 
 #'                    cdate = MassClimate$Date, bdate = Mass$Date,
 #'                    baseline = lm(Mass ~ 1, data = Mass), 
-#'                    limits = c(72, 15),
+#'                    range = c(72, 15),
 #'                    stat = "mean", func = "lin",
 #'                    type = "fixed", refday = c(20, 5),
 #'                    cmissing = FALSE, cinterval = "day")            
@@ -34,7 +34,7 @@
 #'                xvar  = list(Temp = MassClimate$Temp), 
 #'                cdate = MassClimate$Date, bdate = Mass$Date,
 #'                baseline = lm(Mass ~ 1, data = Mass), 
-#'                limits = c(365, 0), 
+#'                range = c(365, 0), 
 #'                stat = "mean", func = "lin",
 #'                type = "fixed", refday = c(20, 5),
 #'                cmissing = FALSE, cinterval = "day")

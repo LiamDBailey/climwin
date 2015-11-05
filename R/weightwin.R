@@ -13,7 +13,7 @@
 #'  environment and variable name (e.g. Biol$Date).
 #'@param baseline The baseline model structure used for testing correlation. 
 #'  Currently known to support lm, lme, glm and glmer objects.
-#'@param limits Two values signifying respectively the furthest and closest number 
+#'@param range Two values signifying respectively the furthest and closest number 
 #'  of time intervals (set by cinterval) back from the cutoff date or biological record to include 
 #'  in the climate window search.
 #'@param func The function used to fit the climate variable in the model. Can be
@@ -38,7 +38,7 @@
 #'@param method The method used for the optimisation function. Please see 
 #'  \code{\link{optim}} for more detail.
 #'@param cutoff.day, cutoff.month Redundant parameters. Now replaced by refday.
-#'@param furthest, closest Redundant parameters. Now repalced by limits.
+#'@param furthest, closest Redundant parameters. Now replaced by range.
 #'@references van de Pol & Cockburn 2011 Am Nat 177(5):698-707 (doi: 
 #'  10.1086/659101) "Identifying the critical climatic time window that affects 
 #'  trait expression"
@@ -79,7 +79,7 @@
 #'data(Offspring)
 #'data(OffspringClimate)
 #'  
-#'# Test for climate windows between 365 and 0 days ago (limits = c(365, 0))
+#'# Test for climate windows between 365 and 0 days ago (range = c(365, 0))
 #'# Fit a quadratic term for the mean weighted climate (func="quad")
 #'# in a Poisson regression (offspring number ranges 0-3)
 #'# Test a variable window (type = "absolute")
@@ -90,7 +90,7 @@
 #'                    cdate = OffspringClimate$Date, 
 #'                    bdate = Offspring$Date, 
 #'                    baseline = glm(Offspring ~ 1, family = poisson, data = Offspring), 
-#'                    limits = c(365, 0), func = "quad", 
+#'                    range = c(365, 0), func = "quad", 
 #'                    type = "variable", weightfunc = "W", cinterval = "day", 
 #'                    par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)), 
 #'                    method = "L-BFGS-B") 
@@ -105,7 +105,7 @@
 #'@importFrom evd dgev
 #'@export
 
-weightwin <- function(xvar, cdate, bdate, baseline, limits, 
+weightwin <- function(xvar, cdate, bdate, baseline, range, 
                       func = "lin", type, refday, 
                       weightfunc = "W", cinterval = "day",
                       par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)), 
@@ -117,7 +117,7 @@ weightwin <- function(xvar, cdate, bdate, baseline, limits,
   }
   
   if(is.null(furthest) == FALSE & is.null(closest) == FALSE){
-    stop("furthest and closest are now redundant. Please use parameter 'limits' instead.")
+    stop("furthest and closest are now redundant. Please use parameter 'range' instead.")
   }
   
   if(is.null(cutoff.day) == FALSE & is.null(cutoff.month) == FALSE){
@@ -137,14 +137,14 @@ weightwin <- function(xvar, cdate, bdate, baseline, limits,
   par_shape    <- list()
   par_scale    <- list()
   par_location <- list()
-  duration     <- (limits[1] - limits[2]) + 1
+  duration     <- (range[1] - range[2]) + 1
   cmatrix      <- matrix(ncol = (duration), nrow = length(bdate))
   baseline     <- update(baseline, .~.)
   nullmodel    <- AICc(baseline)
   
   for (i in 1:length(bdate)){
-    for (j in limits[2]:limits[1]){
-      k <- j - limits[2] + 1
+    for (j in range[2]:range[1]){
+      k <- j - range[2] + 1
       cmatrix[i, k] <- xvar[match(cont$bintno[i] - j, cont$cintno)]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
     }
   }

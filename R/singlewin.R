@@ -9,7 +9,7 @@
 #'  parent environment and variable name (e.g. Biol$Date).
 #'@param baseline The baseline model structure used for testing correlation. 
 #'  Currently known to support lm, glm, lmer and glmer objects.
-#'@param limits Two values signifying respectively the furthest and closest number 
+#'@param range Two values signifying respectively the furthest and closest number 
 #'  of time intervals (set by cinterval) back from the cutoff date or biological record to include 
 #'  in the climate window search.
 #'@param stat The aggregate statistic used to analyse the climate data. Can 
@@ -48,7 +48,7 @@
 #'  2. Whether the model should include both within-group means and variance ("both"),
 #'  only within-group means ("mean"), or only within-group variance ("var").
 #'@param cutoff.day, cutoff.month Redundant parameters. Now replaced by refday.
-#'@param furthest, closest Redundant parameters. Now repalced by limits.
+#'@param furthest, closest Redundant parameters. Now replaced by range.
 #'@param thresh Redundant parameter. Now replaced by binary.
 #'@return Will return a list containing two objects:
 #'  
@@ -75,7 +75,7 @@
 #'single <- singlewin(xvar = list(Temp = MassClimate$Temp), 
 #'                    cdate = MassClimate$Date, bdate = Mass$Date,
 #'                    baseline = lm(Mass ~ 1, data = Mass), 
-#'                    limits = c(72, 15),
+#'                    range = c(72, 15),
 #'                    stat = "mean", func = "lin",
 #'                    type = "absolute", refday = c(20, 5),
 #'                    cmissing = FALSE, cinterval = "day")
@@ -91,7 +91,7 @@
 #'@export
 
 singlewin <- function(xvar, cdate, bdate, baseline, 
-                      limits, stat, func, 
+                      range, stat, func, 
                       type, refday, 
                       cmissing = FALSE, cinterval = "day",
                       upper = NA, lower = NA, binary = FALSE,
@@ -107,7 +107,7 @@ singlewin <- function(xvar, cdate, bdate, baseline,
   }
   
   if(is.null(furthest) == FALSE & is.null(closest) == FALSE){
-    stop("furthest and closest are now redundant. Please use parameter 'limits' instead.")
+    stop("furthest and closest are now redundant. Please use parameter 'range' instead.")
   }
   
   if(is.null(cutoff.day) == FALSE & is.null(cutoff.month) == FALSE){
@@ -120,7 +120,7 @@ singlewin <- function(xvar, cdate, bdate, baseline,
     stop("stat = slope cannot be used with func = LOG or I as negative values may be present")
   }
   
-  duration  <- (limits[1] - limits[2]) + 1
+  duration  <- (range[1] - range[2]) + 1
   
   bdate  <- as.Date(bdate, format = "%d/%m/%Y") # Convert the date variables into the R date format
   cdate2 <- seq(min(as.Date(cdate, format = "%d/%m/%Y")), max(as.Date(cdate, format = "%d/%m/%Y")), "days") # Convert the date variables into the R date format
@@ -186,20 +186,20 @@ singlewin <- function(xvar, cdate, bdate, baseline,
   }
   
   if(cinterval == "day"){
-    if((min(bintno) - limits[1]) < min(cintno)){
-      stop("You do not have enough climate data to search that far back. Please adjust the value of limits or add additional climate data.")
+    if((min(bintno) - range[1]) < min(cintno)){
+      stop("You do not have enough climate data to search that far back. Please adjust the value of range or add additional climate data.")
     }
   }
 
   if(cinterval == "week"){
-    if((min(bintno) - limits[1] * 7) < min(cintno)){
-      stop("You do not have enough climate data to search that far back. Please adjust the value of limits or add additional climate data.")
+    if((min(bintno) - range[1] * 7) < min(cintno)){
+      stop("You do not have enough climate data to search that far back. Please adjust the value of range or add additional climate data.")
     }
   }
   
   if(cinterval == "month"){
-    if((as.numeric(min(as.Date(bdate, format = "%d/%m/%Y")) - months(limits[1])) - (as.numeric(min(as.Date(cdate, format = "%d/%m/%Y"))))) <= 0){
-      stop("You do not have enough climate data to search that far back. Please adjust the value of limits or add additional climate data.")
+    if((as.numeric(min(as.Date(bdate, format = "%d/%m/%Y")) - months(range[1])) - (as.numeric(min(as.Date(cdate, format = "%d/%m/%Y"))))) <= 0){
+      stop("You do not have enough climate data to search that far back. Please adjust the value of range or add additional climate data.")
     }
   }
   
@@ -253,8 +253,8 @@ singlewin <- function(xvar, cdate, bdate, baseline,
   }  
   
   for (i in 1:length(bdate)){
-    for (j in limits[2]:limits[1]){
-      k <- j - limits[2] + 1
+    for (j in range[2]:range[1]){
+      k <- j - range[2] + 1
       cmatrix[i, k] <- xvar[which(cintno == bintno[i] - j)]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
     }
   }
@@ -313,7 +313,7 @@ singlewin <- function(xvar, cdate, bdate, baseline,
   }
   
   #CREATE A FOR LOOP TO FIT DIFFERENT CLIMATE WINDOWS#
-  m     <- limits[2]
+  m     <- range[2]
   n     <- duration
 
   #Save the best model output
@@ -331,5 +331,5 @@ singlewin <- function(xvar, cdate, bdate, baseline,
     LocalBestModel <- update(modeloutput, .~.)
   }
   LocalData           <- model.frame(LocalBestModel)
-  return(list(BestModel = LocalBestModel, BestModelData = LocalData, Dataset = data.frame(WindowOpen = limits[1], WindowClose = limits[2])))
+  return(list(BestModel = LocalBestModel, BestModelData = LocalData, Dataset = data.frame(WindowOpen = range[1], WindowClose = range[2])))
 }
