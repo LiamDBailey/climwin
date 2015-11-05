@@ -104,7 +104,7 @@ plotbest <- function(dataset, bestmodel, bestmodeldata){
         newdat[, 1] <- xval
         #The first column of the matrix will always be the same as the xval
         for(cols in 2:(ncol(bestmodeldata) - col)){ #This will go through every column except for Yvar
-          if(is.character(bestmodeldata[, cols]) == FALSE){ #If the variable is not categorical then take the mean
+          if(is.factor(bestmodeldata[, cols]) == FALSE){ #If the variable is not categorical then take the mean
             newdat[, cols] <- mean(bestmodeldata[, cols])
           } else { #If it is categorical, simply take the first category
             newdat[, cols] = bestmodeldata[1, cols]          
@@ -177,7 +177,7 @@ plotbest <- function(dataset, bestmodel, bestmodeldata){
         newdat[, 1] <- xval
         #The first column of the matrix will always be the same as the xval
         for(cols in 2:(ncol(bestmodeldata) - col)){ #This will go through every column except for Yvar
-          if(is.character(bestmodeldata[, cols]) == FALSE){ #If the variable is not categorical then take the mean
+          if(is.factor(bestmodeldata[, cols]) == FALSE){ #If the variable is not categorical then take the mean
             newdat[, cols] <- mean(bestmodeldata[, cols])
           } else { #If it is categorical, simply take the first category
             newdat[, cols] = bestmodeldata[1, cols]          
