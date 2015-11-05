@@ -175,8 +175,7 @@ randwin <- function(exclude = NA, repeats = 1, xvar, cdate, bdate, baseline,
       if(r == repeats){
         outputrand                   <- as.data.frame(outputrand)
         combined[[combo]]            <- outputrand
-        allcombos$Type               <- outputrand$Type[1]
-        allcombos$AIC[combo]         <- round(outputrand$deltaAICc[1], digits = 2)
+        allcombos$DeltaAICc[combo]   <- round(outputrand$deltaAICc[1], digits = 2)
         allcombos$WindowOpen[combo]  <- outputrand$WindowOpen[1]
         allcombos$WindowClose[combo] <- outputrand$WindowClose[1]
         if(length(which("lin" == levels(allcombos$func))) >0){

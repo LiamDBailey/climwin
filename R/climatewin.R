@@ -237,8 +237,7 @@ climatewin <- function(exclude = NA, xvar, cdate, bdate, baseline,
                     lower = ifelse(binarylevel == "two" || binarylevel == "lower", allcombos$lower[combo], NA),
                     binary = paste(allcombos$binary[combo]), centre = centre)
     combined[[combo]]            <- runs
-    allcombos$Type               <- runs$Dataset$Type[1]
-    allcombos$AIC[combo]         <- round(runs$Dataset$deltaAICc[1], digits = 2)
+    allcombos$DeltaAICc[combo]   <- round(runs$Dataset$deltaAICc[1], digits = 2)
     allcombos$WindowOpen[combo]  <- runs$Dataset$WindowOpen[1]
     allcombos$WindowClose[combo] <- runs$Dataset$WindowClose[1]
     if(length(which("lin" == levels(allcombos$func))) >0){

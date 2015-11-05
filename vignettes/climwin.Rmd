@@ -121,27 +121,24 @@ Ideally, our predictive data will be available at a resolution of days. However,
 
 
 
-**furthest/closest**
+**range**
 
-While our above example used a small dataset and tested a limited number of climate windows, the number of tested climate windows can be much larger, set by the parameters furthest and closest. These parameters set the upper and lower limits for tested climate windows. The values of furthest and closest will correspond to the resolution chosen in parameter cinterval. In this example we are interested in testing all possible climate windows anywhere up to 100 days before the biological record.
+While our above example used a small dataset and tested a limited number of climate windows, the number of tested climate windows can be much larger, set by the parameter range. This parameter contains two value which set the upper and lower range for tested climate windows respectively. The values of range will correspond to the resolution chosen in parameter cinterval. In this example we are interested in testing all possible climate windows anywhere up to 100 days before the biological record.
 
-`furthest = 100`
-
-`closest = 0`
+`range = c(100, 0)`
 
 
 **type**
 
-There are two distinct ways to carry out a climate window analysis. In our example of chick mass we considered 'variable' climate windows, where the placement of the window will vary depending on the time of the biological response (e.g. 1-2 days *before hatching*). These variable windows assume that each individual may have the same *relative* response to climate, but the exact dates will vary between individuals.
+There are two distinct ways to carry out a climate window analysis. In our example of chick mass we considered 'relative' climate windows, where the placement of the window will vary depending on the time of the biological response (e.g. 1-2 days *before hatching*). These relative windows assume that each individual may have the same *relative* response to climate, but the exact dates will vary between individuals.
 
-Alternatively, there may be situations where we expect all individuals to respond to the same climatic period (e.g. average April temperature). In this case, we assume that all climate windows will have a 'fixed' date that will be taken as day 0. In this case, the additional parameters *cutoff.day* and *cutoff.month* will set the position of day 0 for the climate window analysis.
+Alternatively, there may be situations where we expect all individuals to respond to the same climatic period (e.g. average April temperature). In this case, we assume that all climate windows will have an 'absolute' date that will be taken as day 0. In this case, the additional parameter *refday* will set the day and month of day 0 for the climate window analysis.
 
-In our example using the `Mass` dataset, we test fixed climate windows with a starting date of May 20th.
+In our example using the `Mass` dataset, we test absolute climate windows with a starting date of May 20th.
 
-`type = "fixed"`
+`type = "absolute"`
 
-`cutoff.month = 05,`
-`cutoff.day = 20`
+`refday = c(20, 5)`
 
 
 **stat**
@@ -177,8 +174,8 @@ MassWin <- climatewin(xvar = list(Temp = MassClimate$Temp),
                       bdate = Mass$Date,
                       baseline = lm(Mass ~ 1, data = Mass),
                       cinterval = "day",
-                      furthest = 100, closest = 0,
-                      type = "fixed", cutoff.day = 20, cutoff.month = 05,
+                      range = c(100, 0),
+                      type = "absolute", refday = c(20, 05),
                       stat = "mean",
                       func = "lin")
                        
@@ -302,7 +299,7 @@ MassRand <- randwin(repeats = 5,
                     baseline = lm(Mass ~ 1, data = Mass),
                     cinterval = "day",
                     furthest = 100, closest = 0,
-                    type = "fixed", cutoff.day = 20, cutoff.month = 05,
+                    type = "absolute", cutoff.day = 20, cutoff.month = 05,
                     stat = "mean",
                     func = "lin")
 ```
@@ -344,8 +341,8 @@ MassSingle <- singlewin(xvar = list(Temp = MassClimate$Temp),
                         bdate = Mass$Date,
                         baseline = lm(Mass ~ 1, data = Mass),
                         cinterval = "day",
-                        furthest = 72, closest = 15,
-                        type = "fixed", cutoff.day = 20, cutoff.month = 05,
+                        range = c(72, 15),
+                        type = "absolute", refday = c(20, 05),
                         stat = "mean",
                         func = "lin")
 ```
@@ -398,8 +395,8 @@ MassWin2 <- climatewin(xvar = list(Temp = MassClimate$Temp),
                        bdate = Mass$Date,
                        baseline = lm(Mass ~ 1, data = Mass),
                        cinterval = "day",
-                       furthest = 100, closest = 0,
-                       type = "fixed", cutoff.day = 20, cutoff.month = 05,
+                       range = c(100, 0),
+                       type = "absolute", refday = c(20, 05),
                        stat = c("max", "mean"),
                        func = c("lin", "quad"))
                        
@@ -413,12 +410,12 @@ MassWin2$combos
 
 ```
 
-|  |Climate | Type |Stat |func |
-|:-|:-------|:-----|:----|:----|
-|1 |   Temp |fixed |max  |lin  |
-|2 |   Temp |fixed |mean |lin  |
-|3 |   Temp |fixed |max  |quad |
-|4 |   Temp |fixed |mean |quad |
+|  |response |climate |type     |stat |func |DeltaAICc |...  |
+|:-|:--------|:-------|:--------|:----|:----|:---------|:----|
+|1 |  Mass   |Temp    |absolute |max  |lin  |-5.13     |...  |
+|2 |  Mass   |Temp    |absolute |mean |lin  |-3.17     |...  |
+|3 |  Mass   |Temp    |absolute |max  |quad |-3.40     |...  |
+|4 |  Mass   |Temp    |absolute |mean |quad |-3.67     |...  |
 
 Using this combos list, we can extract information on each of our tested combinations, as each row in the `combos` table corresponds to a list item in our object MassWin2. For example, the BestModel object of the quadratic relationship using maximum temperature (3rd row) would be called using the following code:
 
