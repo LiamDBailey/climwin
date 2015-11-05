@@ -43,7 +43,7 @@ NULL
 #'   \item{Type}{Whether "fixed" or "variable" climate windows were tested.}
 #'   \item{K}{Number of folds used for k-fold cross validation.}
 #'   \item{ModWeight}{Model weight of each fitted climate window.}
-#'   \item{Reference.day,Reference.month}{If type is "fixed", the date from which the climate window was tested.}
+#'   \item{Reference.day,Reference.month}{If type is "absolute", the date from which the climate window was tested.}
 #'   \item{Randomised}{Whether the data was generated using \code{\link{climatewin}} or \code{\link{randwin}}.}
 #'   }
 #'@name MassOutput
@@ -54,23 +54,24 @@ NULL
 #' 
 #' Output file from function \code{\link{randwin}} using temperature and mass data. 
 #' Generated with \code{\link{Mass}} and \code{\link{MassClimate}} dataframes.
-#' @format A data frame with 25,755 rows and 18 variables.
+#' @format A data frame with 335,805 rows and 19 variables.
 #' \describe{
 #'   \item{deltaAICc}{Difference between model AICc of fitted climate window and a null model containing no climate.}
 #'   \item{WindowOpen}{The start day of each tested climate window. Furthest from the biological record.}
 #'   \item{WindowClose}{The end day of each tested climate window. Closest to the biological record.}
 #'   \item{ModelBeta}{Beta estimate of the relationship between temperature and mass.}
+#'   \item{Std.Error}{Standard error term for linear model betas.}
 #'   \item{ModelBetaQ}{Quadratic beta estimate of the relationship between temperature and mass.}
 #'   \item{ModelBetaC}{Cubic beta estimate of the relationship between temperature and mass.}
 #'   \item{ModelInt}{Model intercept.}     
 #'   \item{Function}{The function used to fit climate (e.g. linear ("lin"), quadratic ("quad"))}
-#'   \item{furthest}{Furthest day back considered in climatewin.}
-#'   \item{closest}{Closest day back considered in climatewin.}
+#'   \item{Furthest}{Furthest day back considered in climatewin.}
+#'   \item{Closest}{Closest day back considered in climatewin.}
 #'   \item{Statistics}{The aggregate statistic used to analyse climate (e.g. mean, max, slope).}
-#'   \item{type}{Whether "fixed" or "variable" climate windows were tested.}
+#'   \item{Type}{Whether "fixed" or "variable" climate windows were tested.}
 #'   \item{K}{Number of folds used for k-fold cross validation.}
 #'   \item{ModWeight}{Model weight of each fitted climate window.}
-#'   \item{cutoff.day,cutoff.month}{If type is "fixed", the date from which the climate window was tested.}
+#'   \item{Reference.day,Reference.month}{If type is "absolute", the date from which the climate window was tested.}
 #'   \item{Randomised}{Whether the data was generated using \code{\link{climatewin}} or \code{\link{randwin}}.}
 #'   \item{Repeat}{The number of randomisations carried out.}
 #'   }
