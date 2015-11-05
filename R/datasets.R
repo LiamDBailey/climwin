@@ -26,7 +26,7 @@ NULL
 #' 
 #' Output file from \code{\link{climatewin}} using temperature and body mass data. 
 #' Generated with \code{\link{Mass}} and \code{\link{MassClimate}} dataframes.
-#' @format A data frame with 67,161 rows and 18 variables.
+#' @format A data frame with 5,151 rows and 18 variables.
 #' \describe{
 #'   \item{deltaAICc}{Difference between model AICc of fitted climate window and a null model containing no climate.}
 #'   \item{WindowOpen}{The start day of each tested climate window. Furthest from the biological record.}
@@ -54,7 +54,7 @@ NULL
 #' 
 #' Output file from function \code{\link{randwin}} using temperature and mass data. 
 #' Generated with \code{\link{Mass}} and \code{\link{MassClimate}} dataframes.
-#' @format A data frame with 335,805 rows and 19 variables.
+#' @format A data frame with 10,302 rows and 19 variables.
 #' \describe{
 #'   \item{deltaAICc}{Difference between model AICc of fitted climate window and a null model containing no climate.}
 #'   \item{WindowOpen}{The start day of each tested climate window. Furthest from the biological record.}
