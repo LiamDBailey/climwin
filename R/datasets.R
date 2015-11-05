@@ -103,3 +103,36 @@ NULL
 #'   }
 #'@name OffspringClimate
 NULL
+
+#' Average size of red winged fairy wren (Malurus elegans) chicks.
+#' 
+#' Average size (using standardised measures of tarsus length,
+#' head-bill length and wing length) in red winged fairy wren
+#' (Malurus elegans) chicks. Measured over 7 years.
+#' @format A data frame with 1,003 rows and 5 variables.
+#' \describe{
+#'   \item{NestID}{Unique nest identifier.}
+#'   \item{Cohort}{Year of breeding season.}
+#'   \item{Helpers}{Total number of non-breeding helpers at the nest.}
+#'   \item{Size}{Average offspring size.}
+#'   \item{Date}{Date when pffspring size was recorded (dd/mm/yyyy).}
+#'   }
+#'@name Size
+NULL
+
+#' Daily climate data from 2006 to 2015.
+#' 
+#' Average, maximum and minimum daily temperature data, average rainfall data 
+#' from 2006 to 2015 and EXPOSURE??!. 
+#' Coincides with biological data from \code{\link{Size}}.
+#' @format A data frame with 3,411 rows and 6 variables.
+#' \describe{
+#'   \item{Date}{Date when climate was recorded (dd/mm/yyyy).}
+#'   \item{Rain}{Average daily rainfall data in mm.}
+#'   \item{Temperature}{Average daily temperature data in degrees centigrade.}
+#'   \item{MaxTemp}{Maximum daily temperature in degrees centigrade.}
+#'   \item{MinTemp}{Minimum daily temperature in degrees centigrade.}
+#'   \item{Exposure}{?????}
+#'   }
+#'@name SizeClimate
+NULL
