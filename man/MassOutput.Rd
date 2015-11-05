@@ -3,7 +3,7 @@
 \name{MassOutput}
 \alias{MassOutput}
 \title{Example output dataframe from function climatewin.}
-\format{A data frame with 67,161 rows and 18 variables.
+\format{A data frame with 5,151 rows and 18 variables.
 \describe{
   \item{deltaAICc}{Difference between model AICc of fitted climate window and a null model containing no climate.}
   \item{WindowOpen}{The start day of each tested climate window. Furthest from the biological record.}

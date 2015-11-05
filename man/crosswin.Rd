@@ -52,9 +52,9 @@ missing climate data. If FALSE, the function will not run if missing climate
 data is encountered. If TRUE, any records affected by missing climate data
 will be removed from climate window analysis.}
 
-\item{cutoff.day,}{cutoff.month Redundant parameters. Now replaced by refday.}
+\item{cutoff.day,cutoff.month}{Redundant parameters. Now replaced by refday.}
 
-\item{furthest,}{closest Redundant parameters. Now repalced by range.}
+\item{furthest,closest}{Redundant parameters. Now repalced by range.}
 }
 \value{
 Will return a dataframe containing the correlation between the two

@@ -10,6 +10,11 @@
 #'  climate window model is contained within the cumulative weight level of
 #'  0.95. Parameter values must <= 1.
 #'@param arrow TRUE or FALSE. Add arrows to plots to pinpoint best window.
+#'@param plotall Used in conjunction with function \code{\link{plotall}}. 
+#' Should not be changed manually.
+#'@param plotallenv Used in conjunction with function \code{\link{plotall}}.
+#' Should not be changed manually.
+
 #'@return Returns a plot showing the distribution of cumulative model
 #'  weights. Levels determined by parameters cw1,cw2 and cw3.
 #'@author Liam D. Bailey and Martijn van de Pol

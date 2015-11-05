@@ -56,9 +56,9 @@ function. Please see \code{\link{optim}} for more detail.}
 \item{method}{The method used for the optimisation function. Please see
 \code{\link{optim}} for more detail.}
 
-\item{cutoff.day,}{cutoff.month Redundant parameters. Now replaced by refday.}
+\item{cutoff.day,cutoff.month}{Redundant parameters. Now replaced by refday.}
 
-\item{furthest,}{closest Redundant parameters. Now replaced by range.}
+\item{furthest,closest}{Redundant parameters. Now replaced by range.}
 }
 \value{
 Produces a constantly updating grid of plots as the optimisation

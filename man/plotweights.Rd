@@ -18,6 +18,12 @@ climate window model is contained within the cumulative weight level of
 0.95. Parameter values must <= 1.}
 
 \item{arrow}{TRUE or FALSE. Add arrows to plots to pinpoint best window.}
+
+\item{plotall}{Used in conjunction with function \code{\link{plotall}}.
+Should not be changed manually.}
+
+\item{plotallenv}{Used in conjunction with function \code{\link{plotall}}.
+Should not be changed manually.}
 }
 \value{
 Returns a plot showing the distribution of cumulative model

@@ -34,8 +34,8 @@
 #'  conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the units 
 #'  of parameters 'furthest' and 'closest' will differ depending on the choice 
 #'  of cinterval
-#'@param cutoff.day, cutoff.month Redundant parameters. Now replaced by refday.
-#'@param furthest, closest Redundant parameters. Now repalced by range.
+#'@param cutoff.day,cutoff.month Redundant parameters. Now replaced by refday.
+#'@param furthest,closest Redundant parameters. Now repalced by range.
 #'@return Will return a dataframe containing the correlation between the two
 #'  climate variables.
 #'@author Liam D. Bailey and Martijn van de Pol

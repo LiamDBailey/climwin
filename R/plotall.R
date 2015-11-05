@@ -63,7 +63,7 @@
 #'                    baseline = lm(Mass ~ 1, data = Mass), 
 #'                    range = c(72, 15), 
 #'                    stat = "mean", func = "lin", 
-#'                    type = "fixed", refday = c(20, 5), 
+#'                    type = "absolute", refday = c(20, 5), 
 #'                    cmissing = FALSE, cinterval = "day")
 #'            
 #'plotall(dataset = MassOutput, bestmodel = single$bestmodel, 

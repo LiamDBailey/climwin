@@ -37,8 +37,8 @@
 #'  function. Please see \code{\link{optim}} for more detail.
 #'@param method The method used for the optimisation function. Please see 
 #'  \code{\link{optim}} for more detail.
-#'@param cutoff.day, cutoff.month Redundant parameters. Now replaced by refday.
-#'@param furthest, closest Redundant parameters. Now replaced by range.
+#'@param cutoff.day,cutoff.month Redundant parameters. Now replaced by refday.
+#'@param furthest,closest Redundant parameters. Now replaced by range.
 #'@references van de Pol & Cockburn 2011 Am Nat 177(5):698-707 (doi: 
 #'  10.1086/659101) "Identifying the critical climatic time window that affects 
 #'  trait expression"

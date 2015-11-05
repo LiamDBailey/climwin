@@ -57,8 +57,8 @@
 #'  Please specify the parent environment and variable name (e.g. Biol$Year).
 #'  2. Whether the model should include both within-group means and variance ("both"),
 #'  only within-group means ("mean"), or only within-group variance ("var").
-#'@param cutoff.day, cutoff.month Redundant parameters. Now replaced by refday.
-#'@param furthest, closest Redundant parameters. Now replaced by range.
+#'@param cutoff.day,cutoff.month Redundant parameters. Now replaced by refday.
+#'@param furthest,closest Redundant parameters. Now replaced by range.
 #'@param thresh Redundant parameter. Now replaced by binary.
 #'@param cvk Redundant parameter. Now replaced by k.
 #'@return Will return a dataframe containing information on all fitted climate

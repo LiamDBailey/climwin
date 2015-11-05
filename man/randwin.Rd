@@ -84,9 +84,9 @@ only within-group means ("mean"), or only within-group variance ("var").}
 this value is set to 0, so no cross validation occurs. Value should be a
 minimum of 2 for cross validation to occur.}
 
-\item{cutoff.day,}{cutoff.month Redundant parameters. Now replaced by refday.}
+\item{cutoff.day,cutoff.month}{Redundant parameters. Now replaced by refday.}
 
-\item{furthest,}{closest Redundant parameters. Now replaced by range.}
+\item{furthest,closest}{Redundant parameters. Now replaced by range.}
 
 \item{thresh}{Redundant parameter. Now replaced by binary.}
 
