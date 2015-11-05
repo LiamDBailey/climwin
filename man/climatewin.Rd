@@ -5,7 +5,7 @@
 \title{Test for a climate windows in data.}
 \usage{
 climatewin(exclude = NA, xvar, cdate, bdate, baseline, type, refday,
-  stat = "mean", func = "lin", limits, cmissing = FALSE,
+  stat = "mean", func = "lin", range, cmissing = FALSE,
   cinterval = "day", k = 0, upper = NA, lower = NA, binary = FALSE,
   centre = list(NULL, "both"), cutoff.day = NULL, cutoff.month = NULL,
   furthest = NULL, closest = NULL, thresh = NULL, cvk = NULL)
@@ -43,7 +43,7 @@ function(x) (...). See FUN in \code{\link{apply}} for more detail.}
 \item{func}{The functions used to fit the climate variable. Can be linear
 ("lin"), quadratic ("quad"), cubic ("cub"), inverse ("inv") or log ("log").}
 
-\item{limits}{Two values signifying respectively the furthest and closest number
+\item{range}{Two values signifying respectively the furthest and closest number
 of time intervals (set by cinterval) back from the cutoff date or biological record to include
 in the climate window search.}
 
@@ -83,7 +83,7 @@ only within-group means ("mean"), or only within-group variance ("var").}
 
 \item{cutoff.day,}{cutoff.month Redundant parameters. Now replaced by refday.}
 
-\item{furthest,}{closest Redundant parameters. Now repalced by limits.}
+\item{furthest,}{closest Redundant parameters. Now replaced by range.}
 
 \item{thresh}{Redundant parameter. Now replaced by binary.}
 
@@ -132,7 +132,7 @@ OffspringWin <- climatewin(xvar = list(Temp = OffspringClimate$Temperature),
                           cdate = OffspringClimate$Date,
                           bdate = Offspring$Date,
                           baseline = glm(Offspring ~ 1, data = Offspring, family = poisson),
-                          limits = c(150, 0),
+                          range = c(150, 0),
                           type = "relative", stat = "mean",
                           func = c("lin", "quad"), cmissing = FALSE, cinterval = "day")
 
@@ -161,14 +161,14 @@ data(Mass)
 data(MassClimate)
 
 # Test an absolute window, starting 20 May (refday = c(20, 5))
-# Test for climate windows between 100 and 0 days ago (limits = c(100, 0))
+# Test for climate windows between 100 and 0 days ago (range = c(100, 0))
 # Test both mean and max aggregate statistics (stat = c("mean", "max"))
 # Fit a linear term (func = "lin")
 # Test at the resolution of days (cinterval = "day")
 
 MassWin <- climatewin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date,
                      bdate = Mass$Date, baseline = lm(Mass ~ 1, data = Mass),
-                     limits = c(100, 0),
+                     range = c(100, 0),
                      stat = c("mean", "max"), func = "lin",
                      type = "absolute", refday = c(20, 5),
                      cmissing = FALSE, cinterval = "day")

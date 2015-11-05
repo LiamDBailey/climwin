@@ -4,7 +4,7 @@
 \alias{crosswin}
 \title{Test the correlation between two climate variables}
 \usage{
-crosswin(xvar, xvar2, cdate, bdate, limits, stat, stat2, type, refday,
+crosswin(xvar, xvar2, cdate, bdate, range, stat, stat2, type, refday,
   cinterval = "day", cmissing = FALSE, cutoff.day = NULL,
   cutoff.month = NULL, furthest = NULL, closest = NULL)
 }
@@ -21,7 +21,7 @@ environment and variable name (e.g. Climate$Date).}
 \item{bdate}{The biological date variable (dd/mm/yyyy). Please specify the
 parent environment and variable name (e.g. Biol$Date).}
 
-\item{limits}{Two values signifying respectively the furthest and closest number
+\item{range}{Two values signifying respectively the furthest and closest number
 of time intervals (set by cinterval) back from the cutoff date or biological record to include
 in the climate window search.}
 
@@ -54,7 +54,7 @@ will be removed from climate window analysis.}
 
 \item{cutoff.day,}{cutoff.month Redundant parameters. Now replaced by refday.}
 
-\item{furthest,}{closest Redundant parameters. Now repalced by limits.}
+\item{furthest,}{closest Redundant parameters. Now repalced by range.}
 }
 \value{
 Will return a dataframe containing the correlation between the two
@@ -74,7 +74,7 @@ data(MassClimate)
 cross <- crosswin(xvar = list(Temp = MassClimate$Temp),
                  xvar2 = list(Rain = MassClimate$Rain),
                  cdate = MassClimate$Date, bdate = Mass$Date,
-                 limits = c(365, 0),
+                 range = c(365, 0),
                  stat = "mean", stat2 = "mean", type = "relative",
                  cmissing = FALSE, cinterval = "day")
 

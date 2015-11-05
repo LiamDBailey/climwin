@@ -4,7 +4,7 @@
 \alias{autowin}
 \title{Test for auto-correlation in climate.}
 \usage{
-autowin(reference, xvar, cdate, bdate, baseline, limits, stat, func, type,
+autowin(reference, xvar, cdate, bdate, baseline, range, stat, func, type,
   refday, cmissing = FALSE, cinterval = "day", upper = NA, lower = NA,
   binary = FALSE, centre = list(NULL, "both"), cutoff.day = NULL,
   cutoff.month = NULL, furthest = NULL, closest = NULL, thresh = NULL)
@@ -25,7 +25,7 @@ parent environment and variable name (e.g. Biol$Date).}
 \item{baseline}{The baseline model used to fit climate windows. These will be
 correlated with the reference climate window.}
 
-\item{limits}{Two values signifying respectively the furthest and closest number
+\item{range}{Two values signifying respectively the furthest and closest number
 of time intervals (set by cinterval) back from the cutoff date or biological record to include
 in the climate window search.}
 
@@ -77,7 +77,7 @@ only within-group means ("mean"), or only within-group variance ("var").}
 
 \item{cutoff.day,}{cutoff.month Redundant parameters. Now replaced by refday.}
 
-\item{furthest,}{closest Redundant parameters. Now repalced by limits.}
+\item{furthest,}{closest Redundant parameters. Now replaced by range.}
 
 \item{thresh}{Redundant parameter. Now replaced by binary.}
 }
@@ -102,7 +102,7 @@ data(MassClimate)
 single <- singlewin(xvar = list(Temp = MassClimate$Temp),
                     cdate = MassClimate$Date, bdate = Mass$Date,
                     baseline = lm(Mass ~ 1, data = Mass),
-                    limits = c(72, 15),
+                    range = c(72, 15),
                     stat = "mean", func = "lin", type = "absolute",
                     refday = c(20, 5),
                     cmissing = FALSE, cinterval = "day")
@@ -111,7 +111,7 @@ single <- singlewin(xvar = list(Temp = MassClimate$Temp),
 
 auto <- autowin(reference = single,
                 xvar  = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date,
-                baseline = lm(Mass ~ 1, data = Mass), limits = c(365, 0),
+                baseline = lm(Mass ~ 1, data = Mass), range = c(365, 0),
                 stat = "mean", func = "lin",
                 type = "fixed", refday = c(20, 5),
                 cmissing = FALSE, cinterval = "day")

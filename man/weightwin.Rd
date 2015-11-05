@@ -4,7 +4,7 @@
 \alias{weightwin}
 \title{Find a weighted climate window}
 \usage{
-weightwin(xvar, cdate, bdate, baseline, limits, func = "lin", type, refday,
+weightwin(xvar, cdate, bdate, baseline, range, func = "lin", type, refday,
   weightfunc = "W", cinterval = "day", par = c(3, 0.2, 0),
   control = list(ndeps = c(0.01, 0.01, 0.01)), method = "L-BFGS-B",
   cutoff.day = NULL, cutoff.month = NULL, furthest = NULL,
@@ -23,7 +23,7 @@ environment and variable name (e.g. Biol$Date).}
 \item{baseline}{The baseline model structure used for testing correlation.
 Currently known to support lm, lme, glm and glmer objects.}
 
-\item{limits}{Two values signifying respectively the furthest and closest number
+\item{range}{Two values signifying respectively the furthest and closest number
 of time intervals (set by cinterval) back from the cutoff date or biological record to include
 in the climate window search.}
 
@@ -58,7 +58,7 @@ function. Please see \code{\link{optim}} for more detail.}
 
 \item{cutoff.day,}{cutoff.month Redundant parameters. Now replaced by refday.}
 
-\item{furthest,}{closest Redundant parameters. Now repalced by limits.}
+\item{furthest,}{closest Redundant parameters. Now replaced by range.}
 }
 \value{
 Produces a constantly updating grid of plots as the optimisation
@@ -104,7 +104,7 @@ description.
 data(Offspring)
 data(OffspringClimate)
 
-# Test for climate windows between 365 and 0 days ago (limits = c(365, 0))
+# Test for climate windows between 365 and 0 days ago (range = c(365, 0))
 # Fit a quadratic term for the mean weighted climate (func="quad")
 # in a Poisson regression (offspring number ranges 0-3)
 # Test a variable window (type = "absolute")
@@ -115,7 +115,7 @@ weight <- weightwin(xvar = list(Temp = OffspringClimate$Temperature),
                    cdate = OffspringClimate$Date,
                    bdate = Offspring$Date,
                    baseline = glm(Offspring ~ 1, family = poisson, data = Offspring),
-                   limits = c(365, 0), func = "quad",
+                   range = c(365, 0), func = "quad",
                    type = "variable", weightfunc = "W", cinterval = "day",
                    par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)),
                    method = "L-BFGS-B")

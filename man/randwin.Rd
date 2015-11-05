@@ -5,7 +5,7 @@
 \title{Climate window analysis for randomised data}
 \usage{
 randwin(exclude = NA, repeats = 1, xvar, cdate, bdate, baseline, stat,
-  limits, func, type, refday, cmissing = FALSE, cinterval = "day",
+  range, func, type, refday, cmissing = FALSE, cinterval = "day",
   upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"),
   k = 0, cutoff.day = NULL, cutoff.month = NULL, furthest = NULL,
   closest = NULL, thresh = NULL, cvk = NULL)
@@ -36,7 +36,7 @@ currently use basic R statistics (e.g. mean, min), as well as slope.
 Additional aggregate statistics can be created using the format function(x)
 (...). See FUN in \code{\link{apply}} for more detail.}
 
-\item{limits}{Two values signifying respectively the furthest and closest number
+\item{range}{Two values signifying respectively the furthest and closest number
 of time intervals (set by cinterval) back from the cutoff date or biological record to include
 in the climate window search.}
 
@@ -86,7 +86,7 @@ minimum of 2 for cross validation to occur.}
 
 \item{cutoff.day,}{cutoff.month Redundant parameters. Now replaced by refday.}
 
-\item{furthest,}{closest Redundant parameters. Now repalced by limits.}
+\item{furthest,}{closest Redundant parameters. Now replaced by range.}
 
 \item{thresh}{Redundant parameter. Now replaced by binary.}
 
@@ -113,7 +113,7 @@ data(MassClimate)
 rand <- randwin(repeats = 2, xvar = list(Temp = MassClimate$Temp),
                cdate = MassClimate$Date, bdate = Mass$Date,
                baseline = lm(Mass ~ 1, data = Mass),
-               limits = c(100, 0),
+               range = c(100, 0),
                stat = "mean", func = "lin", type = "absolute",
                refday = c(20, 5),
                cmissing = FALSE, cinterval = "day")
