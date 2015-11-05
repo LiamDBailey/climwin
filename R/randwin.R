@@ -16,23 +16,20 @@
 #'  parent environment and variable name (e.g. Biol$Date).
 #'@param baseline The baseline model structure used for testing correlation. 
 #'  Currently known to support lm, glm, lmer and glmer objects.
-#'@param furthest The furthest number of time intervals (set by cinterval) back 
-#'  from the cutoff date or biological record that will be included in the 
-#'  climate window search.
-#'@param closest The closest number of time intervals (set by cinterval) back 
-#'  from the cutoff date or biological record that will be included in the 
-#'  climate window search.
+#'@param limits Two values signifying respectively the furthest and closest number 
+#'  of time intervals (set by cinterval) back from the cutoff date or biological record to include 
+#'  in the climate window search.
 #'@param stat The aggregate statistic used to analyse the climate data. Can 
 #'  currently use basic R statistics (e.g. mean, min), as well as slope. 
 #'  Additional aggregate statistics can be created using the format function(x)
 #'  (...). See FUN in \code{\link{apply}} for more detail.
 #'@param func The functions used to fit the climate variable. Can be linear 
 #'  ("lin"), quadratic ("quad"), cubic ("cub"), inverse ("inv") or log ("log").
-#'@param type fixed or variable, whether you wish the climate window to be 
-#'  variable (i.e. the number of days before each biological record is 
-#'  measured) or fixed (i.e. number of days before a set point in time).
-#'@param cutoff.day,cutoff.month If type is "fixed", the day and month of the 
-#'  year from which the fixed window analysis will start.
+#'@param type "absolute" or "relative", whether you wish the climate window to be relative
+#'  (e.g. the number of days before each biological record is measured) or absolute
+#'  (e.g. number of days before a set point in time).
+#'@param refday If type is absolute, the day and month respectively of the 
+#'  year from which the absolute window analysis will start.
 #'@param cmissing TRUE or FALSE, determines what should be done if there are 
 #'  missing climate data. If FALSE, the function will not run if missing 
 #'  climate data is encountered. If TRUE, any records affected by missing 
@@ -41,6 +38,9 @@
 #'  conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the units
 #'  of parameters 'furthest' and 'closest' will differ depending on the choice
 #'  of cinterval.
+#'@param k The number of folds used for k-fold cross validation. By default
+#'  this value is set to 0, so no cross validation occurs. Value should be a
+#'  minimum of 2 for cross validation to occur.
 #'@param upper Cut-off values used to determine growing degree days or positive 
 #'  climate thresholds (depending on parameter thresh). Note that when values
 #'  of lower and upper are both provided, climatewin will instead calculate an 
@@ -49,11 +49,18 @@
 #'  climate thresholds (depending on parameter thresh). Note that when values
 #'  of lower and upper are both provided, climatewin will instead calculate an 
 #'  optimal climate zone.
-#'@param thresh TRUE or FALSE. Determines whether to use values of upper and
+#'@param binary TRUE or FALSE. Determines whether to use values of upper and
 #'  lower to calculate binary climate data (thresh = TRUE), or to use for
 #'  growing degree days (thresh = FALSE).
-#'@param centre Variable used for mean centring (e.g. Year, Site, Individual).
+#'@param centre A list item containing:
+#'  1. The variable used for mean centring (e.g. Year, Site, Individual). 
 #'  Please specify the parent environment and variable name (e.g. Biol$Year).
+#'  2. Whether the model should include both within-group means and variance ("both"),
+#'  only within-group means ("mean"), or only within-group variance ("var").
+#'@param cutoff.day, cutoff.month Redundant parameters. Now replaced by refday.
+#'@param furthest, closest Redundant parameters. Now repalced by limits.
+#'@param thresh Redundant parameter. Now replaced by binary.
+#'@param cvk Redundant parameter. Now replaced by k.
 #'@return Will return a dataframe containing information on all fitted climate
 #'  windows. See \code{\link{MassRand}} as an example.
 #'@author Liam D. Bailey and Martijn van de Pol
@@ -70,9 +77,9 @@
 #'rand <- randwin(repeats = 2, xvar = list(Temp = MassClimate$Temp), 
 #'                cdate = MassClimate$Date, bdate = Mass$Date,
 #'                baseline = lm(Mass ~ 1, data = Mass), 
-#'                furthest = 100, closest = 0,
-#'                stat = "mean", func = "lin", type = "fixed", 
-#'                cutoff.day = 20, cutoff.month = 5,
+#'                limits = c(100, 0),
+#'                stat = "mean", func = "lin", type = "absolute", 
+#'                refday = c(20, 5),
 #'                cmissing = FALSE, cinterval = "day")
 #'                 
 #'# View output #

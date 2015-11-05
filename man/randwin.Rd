@@ -4,10 +4,11 @@
 \alias{randwin}
 \title{Climate window analysis for randomised data}
 \usage{
-randwin(exclude = NA, repeats = 1, xvar, cdate, bdate, baseline, furthest,
-  closest, stat, func, type, cutoff.day, cutoff.month, cmissing = FALSE,
-  cinterval = "day", upper = NA, lower = NA, thresh = FALSE,
-  centre = NULL)
+randwin(exclude = NA, repeats = 1, xvar, cdate, bdate, baseline, stat,
+  limits, func, type, refday, cmissing = FALSE, cinterval = "day",
+  upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"),
+  k = 0, cutoff.day = NULL, cutoff.month = NULL, furthest = NULL,
+  closest = NULL, thresh = NULL, cvk = NULL)
 }
 \arguments{
 \item{exclude}{Two values (distance and duration) which allow users
@@ -30,28 +31,24 @@ parent environment and variable name (e.g. Biol$Date).}
 \item{baseline}{The baseline model structure used for testing correlation.
 Currently known to support lm, glm, lmer and glmer objects.}
 
-\item{furthest}{The furthest number of time intervals (set by cinterval) back
-from the cutoff date or biological record that will be included in the
-climate window search.}
-
-\item{closest}{The closest number of time intervals (set by cinterval) back
-from the cutoff date or biological record that will be included in the
-climate window search.}
-
 \item{stat}{The aggregate statistic used to analyse the climate data. Can
 currently use basic R statistics (e.g. mean, min), as well as slope.
 Additional aggregate statistics can be created using the format function(x)
 (...). See FUN in \code{\link{apply}} for more detail.}
 
+\item{limits}{Two values signifying respectively the furthest and closest number
+of time intervals (set by cinterval) back from the cutoff date or biological record to include
+in the climate window search.}
+
 \item{func}{The functions used to fit the climate variable. Can be linear
 ("lin"), quadratic ("quad"), cubic ("cub"), inverse ("inv") or log ("log").}
 
-\item{type}{fixed or variable, whether you wish the climate window to be
-variable (i.e. the number of days before each biological record is
-measured) or fixed (i.e. number of days before a set point in time).}
+\item{type}{"absolute" or "relative", whether you wish the climate window to be relative
+(e.g. the number of days before each biological record is measured) or absolute
+(e.g. number of days before a set point in time).}
 
-\item{cutoff.day,cutoff.month}{If type is "fixed", the day and month of the
-year from which the fixed window analysis will start.}
+\item{refday}{If type is absolute, the day and month respectively of the
+year from which the absolute window analysis will start.}
 
 \item{cmissing}{TRUE or FALSE, determines what should be done if there are
 missing climate data. If FALSE, the function will not run if missing
@@ -73,12 +70,27 @@ climate thresholds (depending on parameter thresh). Note that when values
 of lower and upper are both provided, climatewin will instead calculate an
 optimal climate zone.}
 
-\item{thresh}{TRUE or FALSE. Determines whether to use values of upper and
+\item{binary}{TRUE or FALSE. Determines whether to use values of upper and
 lower to calculate binary climate data (thresh = TRUE), or to use for
 growing degree days (thresh = FALSE).}
 
-\item{centre}{Variable used for mean centring (e.g. Year, Site, Individual).
-Please specify the parent environment and variable name (e.g. Biol$Year).}
+\item{centre}{A list item containing:
+1. The variable used for mean centring (e.g. Year, Site, Individual).
+Please specify the parent environment and variable name (e.g. Biol$Year).
+2. Whether the model should include both within-group means and variance ("both"),
+only within-group means ("mean"), or only within-group variance ("var").}
+
+\item{k}{The number of folds used for k-fold cross validation. By default
+this value is set to 0, so no cross validation occurs. Value should be a
+minimum of 2 for cross validation to occur.}
+
+\item{cutoff.day,}{cutoff.month Redundant parameters. Now replaced by refday.}
+
+\item{furthest,}{closest Redundant parameters. Now repalced by limits.}
+
+\item{thresh}{Redundant parameter. Now replaced by binary.}
+
+\item{cvk}{Redundant parameter. Now replaced by k.}
 }
 \value{
 Will return a dataframe containing information on all fitted climate
@@ -101,9 +113,9 @@ data(MassClimate)
 rand <- randwin(repeats = 2, xvar = list(Temp = MassClimate$Temp),
                cdate = MassClimate$Date, bdate = Mass$Date,
                baseline = lm(Mass ~ 1, data = Mass),
-               furthest = 100, closest = 0,
-               stat = "mean", func = "lin", type = "fixed",
-               cutoff.day = 20, cutoff.month = 5,
+               limits = c(100, 0),
+               stat = "mean", func = "lin", type = "absolute",
+               refday = c(20, 5),
                cmissing = FALSE, cinterval = "day")
 
 # View output #

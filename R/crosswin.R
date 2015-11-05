@@ -10,12 +10,9 @@
 #'  environment and variable name (e.g. Climate$Date).
 #'@param bdate The biological date variable (dd/mm/yyyy). Please specify the 
 #'  parent environment and variable name (e.g. Biol$Date).
-#'@param furthest The furthest number of time intervals (set by cinterval) back
-#'  from the cutoff date or biological record that will be included in the
-#'  climate window search.
-#'@param closest The closest number of time intervals (set by cinterval) back 
-#'  from the cutoff date or biological record that will be included in the 
-#'  climate window search.
+#'@param limits Two values signifying respectively the furthest and closest number 
+#'  of time intervals (set by cinterval) back from the cutoff date or biological record to include 
+#'  in the climate window search.
 #'@param stat The aggregate statistic used to analyse the climate data. Can 
 #'  currently use basic R statistics (e.g. mean, min), as well as slope. 
 #'  Additional aggregate statistics can be created using the format function(x) 
@@ -24,11 +21,11 @@
 #'  currently use basic R statistics (e.g. mean, min), as well as slope. 
 #'  Additional aggregate statistics can be created using the format function(x) 
 #'  (...). See FUN in \code{\link{apply}} for more detail.
-#'@param type fixed or variable, whether you wish the climate window to be variable
-#'  (i.e. the number of days before each biological record is measured) or fixed
-#'  (i.e. number of days before a set point in time).
-#'@param cutoff.day,cutoff.month If type is "fixed", the day and month of the year
-#'  from which the fixed window analysis will start.
+#'@param type "absolute" or "relative", whether you wish the climate window to be relative
+#'  (e.g. the number of days before each biological record is measured) or absolute
+#'  (e.g. number of days before a set point in time).
+#'@param refday If type is absolute, the day and month respectively of the 
+#'  year from which the absolute window analysis will start.
 #'@param cmissing TRUE or FALSE, determines what should be done if there are 
 #'  missing climate data. If FALSE, the function will not run if missing climate
 #'  data is encountered. If TRUE, any records affected by missing climate data 
@@ -37,6 +34,8 @@
 #'  conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the units 
 #'  of parameters 'furthest' and 'closest' will differ depending on the choice 
 #'  of cinterval
+#'@param cutoff.day, cutoff.month Redundant parameters. Now replaced by refday.
+#'@param furthest, closest Redundant parameters. Now repalced by limits.
 #'@return Will return a dataframe containing the correlation between the two
 #'  climate variables.
 #'@author Liam D. Bailey and Martijn van de Pol
@@ -50,8 +49,8 @@
 #'cross <- crosswin(xvar = list(Temp = MassClimate$Temp), 
 #'                  xvar2 = list(Rain = MassClimate$Rain), 
 #'                  cdate = MassClimate$Date, bdate = Mass$Date, 
-#'                  furthest = 365, closest = 0,
-#'                  stat = "mean", stat2 = "mean", type = "variable",
+#'                  limits = c(365, 0),
+#'                  stat = "mean", stat2 = "mean", type = "relative",
 #'                  cmissing = FALSE, cinterval = "day")
 #'                 
 #'# View the output

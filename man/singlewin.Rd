@@ -4,9 +4,10 @@
 \alias{singlewin}
 \title{Fit a single climate window}
 \usage{
-singlewin(xvar, cdate, bdate, baseline, furthest, closest, stat, func, type,
-  cutoff.day, cutoff.month, cmissing = FALSE, cinterval = "day",
-  upper = NA, lower = NA, thresh = FALSE, centre = NULL)
+singlewin(xvar, cdate, bdate, baseline, limits, stat, func, type, refday,
+  cmissing = FALSE, cinterval = "day", upper = NA, lower = NA,
+  binary = FALSE, centre = list(NULL, "both"), cutoff.day = NULL,
+  cutoff.month = NULL, furthest = NULL, closest = NULL, thresh = NULL)
 }
 \arguments{
 \item{xvar}{A list object containing all climate variables of interest.
@@ -21,13 +22,9 @@ parent environment and variable name (e.g. Biol$Date).}
 \item{baseline}{The baseline model structure used for testing correlation.
 Currently known to support lm, glm, lmer and glmer objects.}
 
-\item{furthest}{The furthest number of time intervals (set by cinterval) back
-from the cutoff date or biological record that will be included in the
-climate window search.}
-
-\item{closest}{The closest number of time intervals (set by cinterval) back
-from the cutoff date or biological record that will be included in the
-climate window search.}
+\item{limits}{Two values signifying respectively the furthest and closest number
+of time intervals (set by cinterval) back from the cutoff date or biological record to include
+in the climate window search.}
 
 \item{stat}{The aggregate statistic used to analyse the climate data. Can
 currently use basic R statistics (e.g. mean, min), as well as slope.
@@ -37,12 +34,12 @@ Additional aggregate statistics can be created using the format function(x)
 \item{func}{The functions used to fit the climate variable. Can be linear
 ("lin"), quadratic ("quad"), cubic ("cub"), inverse ("inv") or log ("log").}
 
-\item{type}{fixed or variable, whether you wish the climate window to be
-variable (i.e. the number of days before each biological record is
-measured) or fixed (i.e. number of days before a set point in time).}
+\item{type}{"absolute" or "relative", whether you wish the climate window to be relative
+(e.g. the number of days before each biological record is measured) or absolute
+(e.g. number of days before a set point in time).}
 
-\item{cutoff.day,cutoff.month}{If type is "fixed", the day and month of the
-year from which the fixed window analysis will start.}
+\item{refday}{If type is absolute, the day and month respectively of the
+year from which the absolute window analysis will start.}
 
 \item{cmissing}{TRUE or FALSE, determines what should be done if there are
 missing climate data. If FALSE, the function will not run if missing
@@ -64,12 +61,21 @@ climate thresholds (depending on parameter thresh). Note that when values
 of lower and upper are both provided, climatewin will instead calculate an
 optimal climate zone.}
 
-\item{thresh}{TRUE or FALSE. Determines whether to use values of upper and
+\item{binary}{TRUE or FALSE. Determines whether to use values of upper and
 lower to calculate binary climate data (thresh = TRUE), or to use for
 growing degree days (thresh = FALSE).}
 
-\item{centre}{Variable used for mean centring (e.g. Year, Site, Individual).
-Please specify the parent environment and variable name (e.g. Biol$Year).}
+\item{centre}{A list item containing:
+1. The variable used for mean centring (e.g. Year, Site, Individual).
+Please specify the parent environment and variable name (e.g. Biol$Year).
+2. Whether the model should include both within-group means and variance ("both"),
+only within-group means ("mean"), or only within-group variance ("var").}
+
+\item{cutoff.day,}{cutoff.month Redundant parameters. Now replaced by refday.}
+
+\item{furthest,}{closest Redundant parameters. Now repalced by limits.}
+
+\item{thresh}{Redundant parameter. Now replaced by binary.}
 }
 \value{
 Will return a list containing two objects:
@@ -99,9 +105,9 @@ data(MassClimate)
 single <- singlewin(xvar = list(Temp = MassClimate$Temp),
                    cdate = MassClimate$Date, bdate = Mass$Date,
                    baseline = lm(Mass ~ 1, data = Mass),
-                   furthest = 72, closest = 15,
+                   limits = c(72, 15),
                    stat = "mean", func = "lin",
-                   type = "fixed", cutoff.day = 20, cutoff.month = 5,
+                   type = "absolute", refday = c(20, 5),
                    cmissing = FALSE, cinterval = "day")
 
 ##View data##

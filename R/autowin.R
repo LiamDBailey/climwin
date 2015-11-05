@@ -12,12 +12,9 @@
 #'  parent environment and variable name (e.g. Biol$Date).
 #'@param baseline The baseline model used to fit climate windows. These will be
 #'  correlated with the reference climate window.
-#'@param furthest The furthest number of time intervals (set by cinterval) back 
-#'  from the cutoff date or biological record to include in the climate window 
-#'  search.
-#'@param closest The closest number of time intervals (set by cinterval) back 
-#'  from the cutoff date or biological record to include in the climate window 
-#'  search.
+#'@param limits Two values signifying respectively the furthest and closest number 
+#'  of time intervals (set by cinterval) back from the cutoff date or biological record to include 
+#'  in the climate window search.
 #'@param stat The aggregate statistic used to analyse the climate data. Can 
 #'  currently use basic R statistics (e.g. mean, min), as well as slope. 
 #'  Additional aggregate statistics can be created using the format function(x) 
@@ -25,11 +22,11 @@
 #'@param func The function used to fit the climate variable. Can be linear 
 #'  ("lin"), quadratic ("quad"), cubic ("cub"), inverse ("inv") or log ("log").
 #'  Not required when a variable is provided for parameter 'centre'.
-#'@param type fixed or variable, whether you wish the climate window to be variable
-#'  (e.g. the number of days before each biological record is measured) or fixed
+#'@param type "absolute" or "relative", whether you wish the climate window to be relative
+#'  (e.g. the number of days before each biological record is measured) or absolute
 #'  (e.g. number of days before a set point in time).
-#'@param cutoff.day,cutoff.month If type is fixed, the day and month of the 
-#'  year from which the fixed window analysis will start.
+#'@param refday If type is absolute, the day and month respectively of the 
+#'  year from which the absolute window analysis will start.
 #'@param cmissing TRUE or FALSE, determines what should be done if there are 
 #'  missing climate data. If FALSE, the function will not run if missing climate
 #'  data is encountered. If TRUE, any records affected by missing climate data 
@@ -46,11 +43,17 @@
 #'  climate thresholds (determined by parameter thresh). Note that when values
 #'  of lower and upper are both provided, autowin will instead calculate an 
 #'  optimal climate zone.
-#'@param thresh TRUE or FALSE. Determines whether to use values of upper and
+#'@param binary TRUE or FALSE. Determines whether to use values of upper and
 #'  lower to calculate binary climate data (thresh = TRUE), or to use for
 #'  growing degree days (thresh = FALSE).
-#'@param centre Variable used for mean centring (e.g. Year, Site, Individual).
-#'  Please specify the parent environment and variable name (e.g. Biol$Year). 
+#'@param centre A list item containing:
+#'  1. The variable used for mean centring (e.g. Year, Site, Individual). 
+#'  Please specify the parent environment and variable name (e.g. Biol$Year).
+#'  2. Whether the model should include both within-group means and variance ("both"),
+#'  only within-group means ("mean"), or only within-group variance ("var").
+#'@param cutoff.day, cutoff.month Redundant parameters. Now replaced by refday.
+#'@param furthest, closest Redundant parameters. Now repalced by limits.
+#'@param thresh Redundant parameter. Now replaced by binary.
 #'@return Will return a data frame showing the correlation between the climate 
 #'  in each fitted window and the chosen reference window.
 #'@author Liam D. Bailey and Martijn van de Pol
@@ -67,18 +70,18 @@
 #' single <- singlewin(xvar = list(Temp = MassClimate$Temp), 
 #'                     cdate = MassClimate$Date, bdate = Mass$Date,
 #'                     baseline = lm(Mass ~ 1, data = Mass), 
-#'                     furthest = 72, closest = 15, 
-#'                     stat = "mean", func = "lin", type = "fixed", 
-#'                     cutoff.day = 20, cutoff.month = 5, 
+#'                     limits = c(72, 15), 
+#'                     stat = "mean", func = "lin", type = "absolute", 
+#'                     refday = c(20, 5), 
 #'                     cmissing = FALSE, cinterval = "day")            
 #' 
 #' # Test the autocorrelation between the climate in this single window and other climate windows.
 #' 
-#' auto <- autowin(reference = single$BestModelData$climate,
+#' auto <- autowin(reference = single,
 #'                 xvar  = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date,
-#'                 baseline = lm(Mass ~ 1, data = Mass), furthest = 365, closest = 0, 
+#'                 baseline = lm(Mass ~ 1, data = Mass), limits = c(365, 0), 
 #'                 stat = "mean", func = "lin", 
-#'                 type = "fixed", cutoff.day = 20, cutoff.month = 5,
+#'                 type = "fixed", refday = c(20, 5),
 #'                 cmissing = FALSE, cinterval = "day")
 #'                 
 #' # View the output
@@ -92,7 +95,7 @@
 
 autowin <- function(reference, xvar, cdate, bdate, baseline, limits, stat, func, type, refday, 
                     cmissing = FALSE, cinterval = "day", upper = NA,
-                    lower = NA, binary = FALSE, centre = list(NULL, "both"), arrow = TRUE, 
+                    lower = NA, binary = FALSE, centre = list(NULL, "both"), 
                     cutoff.day = NULL, cutoff.month = NULL,
                     furthest = NULL, closest = NULL, thresh = NULL){
   

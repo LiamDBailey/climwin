@@ -7,6 +7,7 @@
 #' Should not be changed manually.
 #'@param plotallenv Used in conjunction with function \code{\link{plotall}}.
 #' Should not be changed manually.
+#'@param arrow TRUE or FALSE. Add arrows to plots to pinpoint best window.
 #'@return Returns a colour plot of model deltaAICc values (larger negative
 #' values indicate stronger models). DeltaAICc is the difference between AICc
 #' of each climate window and a null model.

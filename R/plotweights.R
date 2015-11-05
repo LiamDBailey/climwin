@@ -9,6 +9,7 @@
 #'  contained within a set. For example, there is a 95 percent chance that the best
 #'  climate window model is contained within the cumulative weight level of
 #'  0.95. Parameter values must <= 1.
+#'@param arrow TRUE or FALSE. Add arrows to plots to pinpoint best window.
 #'@return Returns a plot showing the distribution of cumulative model
 #'  weights. Levels determined by parameters cw1,cw2 and cw3.
 #'@author Liam D. Bailey and Martijn van de Pol

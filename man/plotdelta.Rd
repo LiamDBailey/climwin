@@ -4,11 +4,19 @@
 \alias{plotdelta}
 \title{Plot deltaAICc of models}
 \usage{
-plotdelta(dataset)
+plotdelta(dataset, arrow = FALSE, plotall = FALSE, plotallenv)
 }
 \arguments{
 \item{dataset}{A dataframe containing information on all fitted climate
 windows. Output from \code{\link{climatewin}}.}
+
+\item{arrow}{TRUE or FALSE. Add arrows to plots to pinpoint best window.}
+
+\item{plotall}{Used in conjunction with function \code{\link{plotall}}.
+Should not be changed manually.}
+
+\item{plotallenv}{Used in conjunction with function \code{\link{plotall}}.
+Should not be changed manually.}
 }
 \value{
 Returns a colour plot of model deltaAICc values (larger negative

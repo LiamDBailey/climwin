@@ -4,7 +4,8 @@
 \alias{plotweights}
 \title{Plot distribution of model weights}
 \usage{
-plotweights(dataset, cw1 = 0.95, cw2 = 0.5, cw3 = 0.25)
+plotweights(dataset, cw1 = 0.95, cw2 = 0.5, cw3 = 0.25, arrow = FALSE,
+  plotall = FALSE, plotallenv)
 }
 \arguments{
 \item{dataset}{A dataframe containing information on all fitted climate
@@ -15,6 +16,8 @@ distribution. Cumulative weights represent the chance that the best model is
 contained within a set. For example, there is a 95 percent chance that the best
 climate window model is contained within the cumulative weight level of
 0.95. Parameter values must <= 1.}
+
+\item{arrow}{TRUE or FALSE. Add arrows to plots to pinpoint best window.}
 }
 \value{
 Returns a plot showing the distribution of cumulative model
