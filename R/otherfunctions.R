@@ -66,7 +66,8 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     func <- "centre"
   }
   
-  if (length(modeldat$yvar) != length(bdate)){
+  ifelse(class(baseline)[length(class(baseline))]=="coxph", leng<-length(modeldat$yvar[,1]), leng<-length(modeldat$yvar))
+  if (leng != length(bdate)){
       stop("NA values present in biological response. Please remove NA values")
     }
   
@@ -254,7 +255,49 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
           modlist$WindowOpen[[modno]]  <- m
           modlist$WindowClose[[modno]] <- m - n + 1
           
-          if (length(attr(class(modeloutput),"package")) > 0 && attr(class(modeloutput), "package") == "lme4"){            
+          if (class(baseline)[length(class(baseline))]=="coxph") {
+            if (func == "quad"){
+              modlist$ModelBeta[[modno]]  <- coef(modeloutput)[length(coef(modeloutput))-1]
+              modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "se(coef)"][length(coef(modeloutput))-1]
+              modlist$ModelBetaQ[[modno]] <- coef(modeloutput)[length(coef(modeloutput))]
+              modlist$Std.ErrorQ[[modno]]  <- coef(summary(modeloutput))[, "se(coef)"][length(coef(modeloutput))]
+              modlist$ModelBetaC[[modno]] <- NA
+              modlist$ModelInt[[modno]]   <- 0
+            } else if (func == "cub"){
+              modlist$ModelBeta[[modno]]  <- coef(modeloutput)[length(coef(modeloutput))-2]
+              modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "se(coef)"][length(coef(modeloutput))-2]
+              modlist$ModelBetaQ[[modno]] <- coef(modeloutput)[length(coef(modeloutput))-1]
+              modlist$Std.ErrorQ[[modno]]  <- coef(summary(modeloutput))[, "se(coef)"][length(coef(modeloutput))-1]
+              modlist$ModelBetaC[[modno]] <- coef(modeloutput)[length(coef(modeloutput))]
+              modlist$Std.ErrorC[[modno]]  <- coef(summary(modeloutput))[, "se(coef)"][length(coef(modeloutput))]
+              modlist$ModelInt[[modno]]   <- 0
+            } else if (func == "centre"){
+              if(centre[[2]] == "both"){
+                modlist$WithinGrpMean[[modno]] <- coef(modeloutput)[length(coef(modeloutput))]
+                modlist$Std.ErrorMean[[modno]] <- coef(summary(modeloutput))[, "se(coef)"][length(coef(modeloutput))]
+                modlist$WithinGrpDev[[modno]]  <- coef(modeloutput)[length(coef(modeloutput))-1]
+                modlist$Std.ErrorDev[[modno]]  <- coef(summary(modeloutput))[, "se(coef)"][length(coef(modeloutput))-1]
+                modlist$ModelInt[[modno]]      <- 0
+              }
+              if(centre[[2]] == "mean"){
+                modlist$WithinGrpMean[[modno]] <- coef(modeloutput)[length(coef(modeloutput))]
+                modlist$Std.Error[[modno]]     <- coef(summary(modeloutput))[, "se(coef)"][length(coef(modeloutput))]
+                modlist$ModelInt[[modno]]      <- 0
+              }
+              if(centre[[2]] == "dev"){
+                modlist$WithinGrpDev[[modno]]  <- coef(modeloutput)[length(coef(modeloutput))]
+                modlist$Std.Error[[modno]]     <- coef(summary(modeloutput))[, "se(coef)"][length(coef(modeloutput))]
+                modlist$ModelInt[[modno]]      <- 0
+              }
+            } else {
+              modlist$ModelBeta[[modno]]  <- coef(modeloutput)[length(coef(modeloutput))]
+              modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "se(coef)"][length(coef(modeloutput))]
+              modlist$ModelBetaQ[[modno]] <- NA
+              modlist$ModelBetaC[[modno]] <- NA
+              modlist$ModelInt[[modno]]   <- 0
+            }
+          } 
+          else if (length(attr(class(modeloutput),"package")) > 0 && attr(class(modeloutput), "package") == "lme4"){            
             if (func == "quad"){
               modlist$ModelBeta[[modno]]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
               modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][2]
