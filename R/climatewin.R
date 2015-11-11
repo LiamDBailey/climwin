@@ -169,6 +169,10 @@ climatewin <- function(exclude = NA, xvar, cdate, bdate, baseline,
                        cutoff.day = NULL, cutoff.month = NULL, furthest = NULL, closest = NULL,
                        thresh = NULL, cvk = NULL){
   
+  if(k>0 && class(baseline)[length(class(baseline))]=="coxph"){
+    stop("Sorry, cross-validation is not available yet for coxph models")
+  }
+  
   if(is.null(cvk) == FALSE){
     stop("Parameter 'cvk' is now redundant. Please use parameter 'k' instead.")
   }

@@ -69,7 +69,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   ifelse(class(baseline)[length(class(baseline))]=="coxph", leng<-length(modeldat$yvar[,1]), leng<-length(modeldat$yvar))
   if (leng != length(bdate)){
       stop("NA values present in biological response. Please remove NA values")
-    }
+  }
   
   if (is.na(upper) == FALSE && is.na(lower) == TRUE){
     if (binary == TRUE){
@@ -209,7 +209,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
               modeloutput     <- update(modeloutput, .~., data = modeldat)
             }
           } else {
-            modeloutput <- update(modeloutput, .~.)
+            modeloutput <- my_update(modeloutput, .~., data = modeldat)
           }
           
           # If valid, perform k-fold crossvalidation

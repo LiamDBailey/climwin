@@ -79,6 +79,12 @@ plotall <- function(dataset, datasetrand = NULL,
                     bestmodel = NULL, bestmodeldata = NULL,
                     cw1 = 0.95, cw2 = 0.5, cw3 = 0.25, histq = 0.99,
                     title = NULL, arrow = FALSE){
+
+    if (class(baseline)[length(class(baseline))]=="coxph") {
+      bestmodel = NULL
+      print("sorry plotall cannot yet plot the best model panel for a coxph model")
+    }
+  
   
   a       <- c(cw1, cw2, cw3)
   b       <- a[order (-a)]
