@@ -80,7 +80,7 @@ plotall <- function(dataset, datasetrand = NULL,
                     cw1 = 0.95, cw2 = 0.5, cw3 = 0.25, histq = 0.99,
                     title = NULL, arrow = FALSE){
 
-    if (class(baseline)[length(class(baseline))]=="coxph") {
+    if (class(bestmodel)[length(class(bestmodel))]=="coxph") {
       bestmodel = NULL
       print("sorry plotall cannot yet plot the best model panel for a coxph model")
     }
