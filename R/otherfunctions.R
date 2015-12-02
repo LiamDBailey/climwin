@@ -26,7 +26,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   } 
   cont      <- convertdate(bdate = bdate, cdate = cdate, xvar = xvar, 
                            cinterval = cinterval, type = type, 
-                           refday = refday)   # create new climate dataframe with continuous daynumbers, leap days are not a problem
+                           refday = refday, cohort = cohort)   # create new climate dataframe with continuous daynumbers, leap days are not a problem
   
   if (cinterval == "day"){
     if ( (min(cont$bintno) - range[1]) < min(cont$cintno)){
@@ -465,7 +465,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
 
 #Function to convert dates into day/week/month number
 convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type, 
-                        refday, cross = FALSE, cohort = cohort){
+                        refday, cross = FALSE, cohort){
   
   bdate  <- as.Date(bdate, format = "%d/%m/%Y") # Convert the date variables into the R date format
   cdate2 <- seq(min(as.Date(cdate, format = "%d/%m/%Y")), max(as.Date(cdate, format = "%d/%m/%Y")), "days") # Convert the date variables into the R date format
