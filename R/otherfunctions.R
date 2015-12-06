@@ -512,9 +512,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
     } else if (cinterval == "week"){
       cintno     <- ceiling((as.numeric(cdate2) - min(as.numeric(cdate2)) + 1) / 7)   # atrribute weeknumbers for both datafiles with first week in CLimateData set to cintno 1
       realbintno <- ceiling((as.numeric(bdate) - min(as.numeric(cdate2)) + 1) / 7)
-      print("Got here")
       newclim    <- data.frame("cintno" = cintno, "xvar" = xvar)
-      print("Line 517")
       newclim2   <- melt(newclim, id = "cintno")
       newclim3   <- cast(newclim2, cintno ~ variable, mean)
       cintno     <- newclim3$cintno
