@@ -40,7 +40,7 @@ plothist <- function(dataset, datasetrand = NULL, histq = 0.99){
     keep2                       <- c("deltaAICc", "Randomised")
     randdata                    <- rbind(dataset[keep2], datasetrand[keep2])
     randdata$deltaAICc          <- as.numeric(randdata$deltaAICc)
-    levels(randdata$Randomised) <- c("Real data", paste("Randomised data (", max(datasetrand[[1]]$Repeat), "x )"))
+    levels(randdata$Randomised) <- c("Real data", paste("Randomised data (", max(datasetrand$Repeat), "x )"))
   }
 
   if (is.null(datasetrand) == TRUE){
@@ -58,7 +58,7 @@ plothist <- function(dataset, datasetrand = NULL, histq = 0.99){
       xlab(expression(paste(Delta, "AICc (compared to null model)")))
     })
   } else { 
-    vline.data <- data.frame(y = as.numeric(quantile(datasetrand[[1]]$deltaAICc, prob = (1 - histq))))
+    vline.data <- data.frame(y = as.numeric(quantile(datasetrand$deltaAICc, prob = (1 - histq))))
     with(randdata, {ggplot(randdata, aes(x = deltaAICc, fill = Randomised))+
       geom_histogram(aes(y = 2 * ..density..), colour = "black", binwidth = 2, alpha = 0.5)+
       theme_classic()+

@@ -16,7 +16,7 @@ test_that("plothist produces a graph", {
   
   
   test  <- plothist(dataset = testdata[[1]]$Dataset)
-  test2 <- plothist(dataset = testdata[[1]]$Dataset, datasetrand = testdatarand, histq = 0.95)
+  test2 <- plothist(dataset = testdata[[1]]$Dataset, datasetrand = testdatarand[[1]], histq = 0.95)
   
   expect_true(attr(test, "class")[1] == "gg")
   expect_true(attr(test2, "class")[1] == "gg")
