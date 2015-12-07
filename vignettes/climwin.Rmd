@@ -187,7 +187,7 @@ The object `MassWin` has three key components.
 
 * Dataset is an ordered data frame summarising the results of all tested climate windows. The climate windows are ordered by delta AICc (the difference between the AICc of each model and the null model). Note, when calling the dataset we need to specify that we're interested in the dataset from the first list item (i.e. [[1]]). As we will discuss below, it is possible to test multiple combinations of parameter levels, which will output multiple list items. 
 
-    ```{r, eval = FALSE}
+```{r, eval = FALSE}
 
     head(MassWin[[1]]$Dataset)
 
@@ -207,7 +207,7 @@ As we can see above, the best climate window is 72 - 15 days before May 20th, eq
 
 * As the name suggests, BestModel is a model object showing the relationship between temperature and mass within the  strongest climate window.
 
-    ```{r, eval = FALSE}
+```{r, eval = FALSE}
 
     MassWin[[1]]$BestModel
 
@@ -227,7 +227,7 @@ Coefficients:
 
 * Finally, BestModelData is a data frame containing the raw climate and biological data used to fit BestModel.
 
-    ```{r, eval = FALSE}
+```{r, eval = FALSE}
 
     head(MassWin[[1]]$BestModelData)
 
@@ -264,178 +264,3 @@ plotdelta(dataset = MassOutput)
 
 ```
 
-### Plot model weights
-
-Another way to visualise the delta AICc data is through the use of model weights (Burnham, Anderson & Huyvaert 2011 [source](http://link.springer.com/article/10.1007/s00265-010-1029-6)). In short, the higher a model weight value the greater confidence we have that this model is the true 'best' model. While our top climate window is the most likely *single* window to best explain the data, our confidence that this top window represents the true 'best' model may still be low.
-
-If we sum the weights of multiple models, we can now be more confident that we encompass the true best model, but we are less sure of its exact location. In our model weights plot we shade all models that make up the top 95% of model weights. Therefore, we can be 95% confident that the true 'best' model falls within the shaded region. In our example using the `Mass` dataset, we can see that the top 95% of model weights falls within a small region roughly corresponding to the peak in delta AICc seen above. In fact, we can be 95% sure that the best climate window falls within only 7% of the total fitted models. This result suggests that our results are not produed by chance.
-
-```{r, fig.width = 4, fig.height = 4}
-
-plotweights(dataset = MassOutput)
-
-```
-
-### Plot model coefficients
-
-While we are often interested in estimating the location of the best climate window, we may also be interested in understanding the relationship between climate and our biological response. The `plotbeta` function generates a similar colour plot to that used to model delta AICc, which shows the spread of model coefficients across all fitted climate windows. In the below plot, we can see that windows around our best model show a negative relationship between temperature and mass, while other models show little correlation.
-
-```{r, fig.width = 4, fig.height = 4}
-
-plotbetas(dataset = MassOutput)
-
-```
-
-### Delta AICc histograms
-
-So far both our plots of delta AICc and model weights seem to suggest that there is a true period of climate sensitivity within our data. To better understand how likely it is that we would achieve such a result by chance we can also compare the outcomes of our climate window analysis with a similar analysis on randomised data (i.e. data with no climate signal). To generate this random data we can use the function `randwin`, which uses a similar syntax to that of `climatewin`. The additional parameter *repeats* determines the number of times that biological data should be randomised and analysed. We recommend using a minimum of 5 repeats for best results.
-
-```{r, eval = FALSE}
-
-MassRand <- randwin(repeats = 5,
-                    xvar = list(Temp = MassClimate$Temp),
-                    cdate = MassClimate$Date,
-                    bdate = Mass$Date,
-                    baseline = lm(Mass ~ 1, data = Mass),
-                    cinterval = "day",
-                    furthest = 100, closest = 0,
-                    type = "absolute", cutoff.day = 20, cutoff.month = 05,
-                    stat = "mean",
-                    func = "lin")
-```
-
-Now we can compare the distribution of delta AICc values for our original climate window analysis and the same analysis on randomised data. If our climate window results are due to statistical chance we would expect to see a similar distribution of delta AICc values between both random and real data.
-
-As we can see below, the distribution of delta AICc values in the real data (top histogram) has a much longer tail than that of the randomised data (bottom histogram). The dashed line on the plot represents the 99th quantile of the randomised data, therefore we can be confident that the large negative values of delta AICc we find in our real data are unlikely to occur by random chance.
-
-```{r, fig.width = 4, fig.height = 4}
-
-plothist(dataset = MassOutput, datasetrand = MassRand)
-
-```
-
-### Median window
-
-To represent the model weight plot in a different way, `plotwin` shows boxplots of the start and end point of all climate windows that make up the top 95% of model weights. The values above each boxplot represent the median start and end time for these models.
-
-In the below example, the median start and end values of the top models corresponds almost exactly with our best window determined using delta AICc. In situations where model weights are more dispersed such a match would be less likely. 
-
-```{r, fig.width = 4, fig.height = 4}
-
-plotwin(dataset = MassOutput)
-
-```
-
-### Best model plot
-
-Although the above plots give us strong confidence that our results represent a real period of climate sensitivity, we have not considered how well climate within this period actually explains variation in the biological data. Although temperature in March and April explains variation in mass better than at other points in time, temperature over this period may still not explain variation in the biological data that well.
-
-Using the `plotbest` function, we can plot our best model over the biological data. Examining this plot can help us determine whether it may be more appropriate to test alternative relationships of climate (e.g. quadratic or cubic) by adjusting the parameter *func*.
-
-While it is easy to save the Dataset output from the `climatewin` function, the BestModel object can often be lost when we start a new R session. To overcome this issue, the `singlewin` function allows you to generate BestModel and BestModelData for a single climate window.
-
-```{r}
-
-MassSingle <- singlewin(xvar = list(Temp = MassClimate$Temp),
-                        cdate = MassClimate$Date,
-                        bdate = Mass$Date,
-                        baseline = lm(Mass ~ 1, data = Mass),
-                        cinterval = "day",
-                        range = c(72, 15),
-                        type = "absolute", refday = c(20, 05),
-                        stat = "mean",
-                        func = "lin")
-```
-
-*NOTE: In the singlewin function the values of furthest and closest now equate to the start and end time of the single window, rather than the range over which multiple windows will be tested.*
-
-We can use the output from the singlewin function to plot the best data.
-
-```{r, fig.width = 4, fig.height = 4}
-
-plotbest(dataset = MassOutput,
-         bestmodel = MassSingle$BestModel, 
-         bestmodeldata = MassSingle$BestModelData)
-
-```
-
-### The `plotall` function
-
-While each of these plots provides useful information for the user, they are best viewed in conjunction. The `plotall` function allows users to create an array of all 6 graphics to contrast and compare the different information they provide.
-
-```{r, fig.width = 10, fig.height = 7.5}
-
-plotall(dataset = MassOutput,
-        datasetrand = MassRand,
-        bestmodel = MassSingle$BestModel, 
-        bestmodeldata = MassSingle$BestModelData)
-
-```
-
-******************
-
-## Testing multiple parameter combinations
-
-In the above examples we have been investigating one combination of `climatewin` parameters. However, there may be situations where users may wish to test different parameter combinations. For example, we may be interested in looking at both the linear and quadratic relationship of temperature or consider investigating the effects of both average and maximum temperature.
-
-For ease of use, `climatewin` allows users to test these different combinations with a single function. To take the above examples, we can test both linear and quadratic relationships
-
-`func = c("lin", "quad")`
-
-and consider both maximum and mean temperature values.
-
-`stat = c("max", "mean")`
-
-So our final function would be:
-
-```{r, eval = FALSE}
-
-MassWin2 <- climatewin(xvar = list(Temp = MassClimate$Temp),
-                       cdate = MassClimate$Date,
-                       bdate = Mass$Date,
-                       baseline = lm(Mass ~ 1, data = Mass),
-                       cinterval = "day",
-                       range = c(100, 0),
-                       type = "absolute", refday = c(20, 05),
-                       stat = c("max", "mean"),
-                       func = c("lin", "quad"))
-                       
-```
-
-To view all the tested combinations we can call the `combos` object
-
-```{r, eval = FALSE}
-
-MassWin2$combos
-
-```
-
-|  |response |climate |type     |stat |func |DeltaAICc |...  |
-|:-|:--------|:-------|:--------|:----|:----|:---------|:----|
-|1 |  Mass   |Temp    |absolute |max  |lin  |-5.13     |...  |
-|2 |  Mass   |Temp    |absolute |mean |lin  |-3.17     |...  |
-|3 |  Mass   |Temp    |absolute |max  |quad |-3.40     |...  |
-|4 |  Mass   |Temp    |absolute |mean |quad |-3.67     |...  |
-
-Using this combos list, we can extract information on each of our tested combinations, as each row in the `combos` table corresponds to a list item in our object MassWin2. For example, the BestModel object of the quadratic relationship using maximum temperature (3rd row) would be called using the following code:
-
-```{r, eval = FALSE}
-
-MassWin2[[3]]$BestModel
-
-```
-
-```{r, eval = FALSE}
-Call:
-lm(formula = Yvar ~ climate + I(climate^2), data = modeldat)
-
-Coefficients:
- (Intercept)       climate  I(climate^2)  
-   139.39170      -1.33767       0.03332
-```
-
-******************************
-
-This covers the basic functions of `climwin`. For more advanced features additional vignettes will be provided with future updates. To ask additional questions or report bugs please e-mail:
-
-liam.bailey@anu.edu.au

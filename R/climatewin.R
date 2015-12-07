@@ -60,6 +60,9 @@
 #'  Please specify the parent environment and variable name (e.g. Biol$Year).
 #'  2. Whether the model should include both within-group means and variance ("both"),
 #'  only within-group means ("mean"), or only within-group variance ("var").
+#'@param cohort A varaible used to group biological records that occur in the same biological
+#'  season but cover multiple years (e.g. southern hemisphere breeding season). Only required
+#'  when type is "absolute". The cohort variable should be in the same dataset as the variable bdate. 
 #'@param cutoff.day,cutoff.month Redundant parameters. Now replaced by refday.
 #'@param furthest,closest Redundant parameters. Now replaced by range.
 #'@param thresh Redundant parameter. Now replaced by binary.
@@ -167,7 +170,7 @@ climatewin <- function(exclude = NA, xvar, cdate, bdate, baseline,
                        cmissing = FALSE, cinterval = "day", k = 0,
                        upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"),
                        cutoff.day = NULL, cutoff.month = NULL, furthest = NULL, closest = NULL,
-                       thresh = NULL, cvk = NULL){
+                       thresh = NULL, cvk = NULL, cohort = NULL){
   
   if(k>0 && class(baseline)[length(class(baseline))]=="coxph"){
     stop("Sorry, cross-validation is not available yet for coxph models")
@@ -239,7 +242,7 @@ climatewin <- function(exclude = NA, xvar, cdate, bdate, baseline,
                     cmissing = cmissing, cinterval = cinterval, k = k, 
                     upper = ifelse(binarylevel == "two" || binarylevel == "upper", allcombos$upper[combo], NA),
                     lower = ifelse(binarylevel == "two" || binarylevel == "lower", allcombos$lower[combo], NA),
-                    binary = paste(allcombos$binary[combo]), centre = centre)
+                    binary = paste(allcombos$binary[combo]), centre = centre, cohort = cohort)
     combined[[combo]]            <- runs
     allcombos$DeltaAICc[combo]   <- round(runs$Dataset$deltaAICc[1], digits = 2)
     allcombos$WindowOpen[combo]  <- runs$Dataset$WindowOpen[1]

@@ -2,7 +2,8 @@
 basewin <- function(exclude, xvar, cdate, bdate, baseline, range, 
                     type, stat = "mean", func = "lin", refday,
                     cmissing = FALSE, cinterval = "day",  nrandom = 0, k = 0,
-                    upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both")){
+                    upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"),
+                    cohort = NULL){
   
   print("Initialising, please wait...")
   
@@ -25,7 +26,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   } 
   cont      <- convertdate(bdate = bdate, cdate = cdate, xvar = xvar, 
                            cinterval = cinterval, type = type, 
-                           refday = refday)   # create new climate dataframe with continuous daynumbers, leap days are not a problem
+                           refday = refday, cohort = cohort)   # create new climate dataframe with continuous daynumbers, leap days are not a problem
   
   if (cinterval == "day"){
     if ( (min(cont$bintno) - range[1]) < min(cont$cintno)){
@@ -108,12 +109,12 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
       .GlobalEnv$missing <- as.Date(cont$cintno[is.na(cont$xvar)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1)
     }
     if (cinterval == "month"){
-      .GlobalEnv$missing <- c(paste("Month:", month(as.Date(cont$cintno[is.na(cont$xvar)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1)),
-                                    "Year:", year(as.Date(cont$cintno[is.na(cont$xvar)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1))))
+      .GlobalEnv$missing <- c(paste("Month:", lubridate::month(as.Date(cont$cintno[is.na(cont$xvar)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1)),
+                                    "Year:", lubridate::year(as.Date(cont$cintno[is.na(cont$xvar)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1))))
     }
     if (cinterval == "week"){
-      .GlobalEnv$missing <- c(paste("Week:", month(as.Date(cont$cintno[is.na(cont$xvar)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1)),
-                                    "Year:", year(as.Date(cont$cintno[is.na(cont$xvar)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1))))
+      .GlobalEnv$missing <- c(paste("Week:", lubridate::month(as.Date(cont$cintno[is.na(cont$xvar)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1)),
+                                    "Year:", lubridate::year(as.Date(cont$cintno[is.na(cont$xvar)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1))))
     }
     stop(c("Climate data should not contain NA values: ", length(.GlobalEnv$missing),
            " NA value(s) found. Please add missing climate data or set cmissing=TRUE.
@@ -464,7 +465,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
 
 #Function to convert dates into day/week/month number
 convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type, 
-                        refday, cross = FALSE){
+                        refday, cross = FALSE, cohort){
   
   bdate  <- as.Date(bdate, format = "%d/%m/%Y") # Convert the date variables into the R date format
   cdate2 <- seq(min(as.Date(cdate, format = "%d/%m/%Y")), max(as.Date(cdate, format = "%d/%m/%Y")), "days") # Convert the date variables into the R date format
@@ -493,10 +494,18 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
   
   if (cross == FALSE){
     if (cinterval == "day"){  
-      if (type == "absolute"){   
-        bintno            <- as.numeric(as.Date(paste(refday[1], refday[2], year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1 
-        wrongyear         <- which(bintno < realbintno)
-        bintno[wrongyear] <- (as.numeric(as.Date(paste(refday[1], refday[2], (year(bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1)
+      if (type == "absolute"){
+        if(is.null(cohort) == FALSE){
+          newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort))
+          datenum  <- 1
+          bintno   <- seq(1, length(bdate), 1)
+          for(i in levels(as.factor(cohort))){
+            sub                               <- subset(newdat, cohort == i)
+            bintno[as.numeric(rownames(sub))] <- as.numeric(as.Date(paste(refday[1], refday[2], min(lubridate::year(sub$bdate)), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1
+          }
+        } else {
+          bintno            <- as.numeric(as.Date(paste(refday[1], refday[2], year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1 
+        }
       } else {
         bintno <- realbintno
       }
@@ -508,27 +517,43 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       newclim3   <- cast(newclim2, cintno ~ variable, mean)
       cintno     <- newclim3$cintno
       xvar       <- newclim3$xvar
-      if (type == "absolute"){ 
-        bintno            <- ceiling((as.numeric(as.Date(paste(refday[1], refday[2], year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1) / 7) 
-        wrongyear         <- which(bintno < realbintno)
-        bintno[wrongyear] <- ceiling((as.numeric(as.Date(paste(refday[1], refday[2], (year(bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1) / 7)
+      if (type == "absolute"){
+        if(is.null(cohort) == FALSE){
+          newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort))
+          datenum  <- 1
+          bintno   <- seq(1, length(bdate), 1)
+          for(i in levels(as.factor(cohort))){
+            sub                               <- subset(newdat, cohort == i)
+            bintno[as.numeric(rownames(sub))] <- ceiling((as.numeric(as.Date(paste(refday[1], refday[2], min(lubridate::year(sub$bdate)), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1)/7)
+          }
+        } else {
+          bintno <- ceiling((as.numeric(as.Date(paste(refday[1], refday[2], year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1)/7) 
+        }
       } else {
         bintno <- realbintno
       }
     } else if (cinterval == "month"){ 
-      cmonth     <- month(cdate2)
+      cmonth     <- lubridate::month(cdate2)
       cyear      <- year(cdate2) - min(year(cdate2))
       cintno     <- cmonth + 12 * cyear
-      realbintno <- month(bdate) + 12 * (year(bdate) - min(year(cdate2)))
+      realbintno <- lubridate::month(bdate) + 12 * (year(bdate) - min(year(cdate2)))
       newclim    <- data.frame("cintno" = cintno, "xvar" = xvar)
       newclim2   <- melt(newclim, id = "cintno")
       newclim3   <- cast(newclim2, cintno ~ variable, mean)
       cintno     <- newclim3$cintno
       xvar       <- newclim3$xvar
-      if (type == "absolute"){ 
-        bintno            <- refday[2] + 12 * (year(bdate) - min(year(cdate2)))
-        wrongyear         <- which(bintno < realbintno)
-        bintno[wrongyear] <- refday[2] + 12 * (year(bdate[wrongyear]) + 1 - min(year(cdate2)))
+      if (type == "absolute"){
+        if(is.null(cohort) == FALSE){
+          newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort))
+          datenum  <- 1
+          bintno   <- seq(1, length(bdate), 1)
+          for(i in levels(as.factor(cohort))){
+            sub                               <- subset(newdat, cohort == i)
+            bintno[as.numeric(rownames(sub))] <- refday[2] + 12 * (min(lubridate::year(sub$bdate)) - min(lubridate::year(cdate2)))
+          }
+        } else {
+          bintno            <- refday[2] + 12 * (year(bdate) - min(year(cdate2)))
+        }
       } else {
         bintno <- realbintno
       }
@@ -536,9 +561,17 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
   } else {
     if (cinterval == "day"){  
       if (type == "absolute"){   
-        bintno            <- as.numeric(as.Date(paste(refday[1], refday[2], year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1 
-        wrongyear         <- which(bintno < realbintno)
-        bintno[wrongyear] <- (as.numeric(as.Date(paste(refday[1], refday[2], (year(bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1)
+        if(is.null(cohort) == FALSE){
+          newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort))
+          datenum  <- 1
+          bintno   <- seq(1, length(bdate), 1)
+          for(i in levels(as.factor(cohort))){
+            sub                               <- subset(newdat, cohort == i)
+            bintno[as.numeric(rownames(sub))] <- as.numeric(as.Date(paste(refday[1], refday[2], min(lubridate::year(sub$bdate)), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1
+          }
+        } else {
+          bintno            <- as.numeric(as.Date(paste(refday[1], refday[2], year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1 
+        }
       } else {
         bintno <- realbintno
       }    
@@ -552,17 +585,25 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       xvar       <- newclim3$xvar
       xvar2      <- newclim3$xvar2
       if (type == "absolute"){ 
-        bintno            <- ceiling((as.numeric(as.Date(paste(refday[1], refday[2], year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1) / 7) 
-        wrongyear         <- which(bintno < realbintno)
-        bintno[wrongyear] <- ceiling((as.numeric(as.Date(paste(refday[1], refday[2], (year(bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1) / 7)
+        if(is.null(cohort) == FALSE){
+          newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort))
+          datenum  <- 1
+          bintno   <- seq(1, length(bdate), 1)
+          for(i in levels(as.factor(cohort))){
+            sub                               <- subset(newdat, cohort == i)
+            bintno[as.numeric(rownames(sub))] <- ceiling((as.numeric(as.Date(paste(refday[1], refday[2], min(lubridate::year(sub$bdate)), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1)/7)
+          }
+        } else {
+          bintno <- ceiling((as.numeric(as.Date(paste(refday[1], refday[2], year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1)/7) 
+        }
       } else {
         bintno <- realbintno
       }
     } else if (cinterval == "month"){ 
-      cmonth     <- month(cdate2)
+      cmonth     <- lubridate::month(cdate2)
       cyear      <- year(cdate2) - min(year(cdate2))
       cintno     <- cmonth + 12 * cyear
-      realbintno <- month(bdate) + 12 * (year(bdate) - min(year(cdate2)))
+      realbintno <- lubridate::month(bdate) + 12 * (year(bdate) - min(year(cdate2)))
       newclim    <- data.frame("cintno" = cintno, "xvar" = xvar, "xvar2" = xvar2)
       newclim2   <- melt(newclim, id = "cintno")
       newclim3   <- cast(newclim2, cintno ~ variable, mean)
@@ -570,9 +611,17 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       xvar       <- newclim3$xvar
       xvar2      <- newclim3$xvar2
       if (type == "absolute"){ 
-        bintno            <- refday[2] + 12 * (year(bdate) - min(year(cdate2)))
-        wrongyear         <- which(bintno < realbintno)
-        bintno[wrongyear] <- refday[2] + 12 * (year(bdate[wrongyear]) + 1 - min(year(cdate2)))
+        if(is.null(cohort) == FALSE){
+          newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort))
+          datenum  <- 1
+          bintno   <- seq(1, length(bdate), 1)
+          for(i in levels(as.factor(cohort))){
+            sub                               <- subset(newdat, cohort == i)
+            bintno[as.numeric(rownames(sub))] <- refday[2] + 12 * (min(lubridate::year(sub$bdate)) - min(lubridate::year(cdate2)))
+          }
+        } else {
+          bintno            <- refday[2] + 12 * (year(bdate) - min(year(cdate2)))
+        }
       } else {
         bintno <- realbintno
       }
@@ -581,6 +630,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
   return(list(cintno = cintno, bintno = bintno, xvar = xvar, xvar2 = xvar2))
 }
 
+##############################################################################################################################
 
 # define a function that returns the AICc or -2LogLikelihood of model using Generalized Extreme Value (GEV) weight function
 modloglik_G <- function(par = par, modeloutput = modeloutput, 
