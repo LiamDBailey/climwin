@@ -23,6 +23,9 @@
 #'  (e.g. number of days before a set point in time).
 #'@param refday If type is absolute, the day and month respectively of the 
 #'  year from which the absolute window analysis will start.
+#'@param cohort A varaible used to group biological records that occur in the same biological
+#'  season but cover multiple years (e.g. southern hemisphere breeding season). Only required
+#'  when type is "absolute". The cohort variable should be in the same dataset as the variable bdate. 
 #'@param weightfunc The distribution to be used for optimisation. Can be 
 #'  either a Weibull ("W") or Generalised Extreme Value distribution ("G").
 #'@param cinterval The resolution at which the climate window analysis will be 
@@ -110,7 +113,7 @@ weightwin <- function(xvar, cdate, bdate, baseline, range,
                       weightfunc = "W", cinterval = "day",
                       par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)), 
                       method = "L-BFGS-B", cutoff.day = NULL, cutoff.month = NULL,
-                      furthest = NULL, closest = NULL){
+                      furthest = NULL, closest = NULL, cohort = NULL){
   
   if(type == "variable" || type == "fixed"){
     stop("Parameter 'type' now uses levels 'relative' and 'absolute' rather than 'variable' and 'fixed'.")
@@ -129,7 +132,7 @@ weightwin <- function(xvar, cdate, bdate, baseline, range,
   funcenv                 <- environment()
   cont                    <- convertdate(bdate = bdate, cdate = cdate, xvar = xvar, 
                                          cinterval = cinterval, type = type, 
-                                         refday = refday)   
+                                         refday = refday, cohort = cohort)   
   # create new climate dataframe with continuous daynumbers, leap days are not a problem 
 
   modno        <- 1
