@@ -57,7 +57,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   modno     <- 1  #Create a model number variable that will count up during the loop#
   cmatrix   <- matrix(ncol = (duration), nrow = length(bdate))  # matrix that stores the weather data for variable or fixed windows
   modlist   <- list()   # dataframes to store ouput
-  baseline  <- my_update(baseline, .~.)
+  baseline  <- update(baseline, .~.)
   nullmodel <- AICc(baseline)
   
   modeldat      <- model.frame(baseline)
@@ -121,7 +121,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   
   if (cmissing == TRUE && length(which(is.na(cmatrix))) > 0){
     modeldat <- modeldat[complete.cases(cmatrix), ]
-    baseline <- my_update(baseline, yvar~., data = modeldat)
+    baseline <- update(baseline, yvar~., data = modeldat)
     cmatrix  <- cmatrix[complete.cases(cmatrix), ]
   }
   
@@ -140,30 +140,30 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   if (k > 1){
     modeldat$K <- sample(seq(from = 1, to = length(modeldat$climate), by = 1) %% k + 1)
   }   # create labels k-fold crossvalidation
-  
-    if (func == "lin"){
-      modeloutput <- my_update(baseline, yvar~. + climate, data = modeldat)
+
+  if (func == "lin"){
+      modeloutput <- update(baseline, yvar~. + climate, data = modeldat)
     } else if (func == "quad") {
-      modeloutput <- my_update(baseline, yvar~. + climate + I(climate ^ 2), data = modeldat)
+      modeloutput <- update(baseline, yvar~. + climate + I(climate ^ 2), data = modeldat)
     } else if (func == "cub") {
-      modeloutput <- my_update(baseline, yvar~. + climate + I(climate ^ 2) + I(climate ^ 3), data = modeldat)
+      modeloutput <- update(baseline, yvar~. + climate + I(climate ^ 2) + I(climate ^ 3), data = modeldat)
     } else if (func == "log") {
-      modeloutput <- my_update(baseline, yvar~. + log(climate), data = modeldat)
+      modeloutput <- update(baseline, yvar~. + log(climate), data = modeldat)
     } else if (func == "inv") {
-      modeloutput <- my_update (baseline, yvar~. + I(climate ^ -1), data = modeldat)
+      modeloutput <- update (baseline, yvar~. + I(climate ^ -1), data = modeldat)
     } else if (func == "centre"){
       if(centre[[2]] == "both"){
         modeldat$wgdev  <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
         modeldat$wgmean <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
-        modeloutput <- my_update (baseline, yvar ~. + wgdev + wgmean, data = modeldat)
+        modeloutput <- update (baseline, yvar ~. + wgdev + wgmean, data = modeldat)
       }
       if(centre[[2]] == "mean"){
         modeldat$wgmean <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
-        modeloutput <- my_update (baseline, yvar ~. + wgmean, data = modeldat)
+        modeloutput <- update (baseline, yvar ~. + wgmean, data = modeldat)
       }
       if(centre[[2]] == "dev"){
         modeldat$wgdev  <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
-        modeloutput <- my_update (baseline, yvar ~. + wgdev, data = modeldat)
+        modeloutput <- update (baseline, yvar ~. + wgdev, data = modeldat)
       }
     } else {
       print("Define func")
@@ -197,18 +197,18 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
             if(centre[[2]] == "both"){
               modeldat$wgdev  <- wgdev(modeldat$climate, centre[[1]])
               modeldat$wgmean <- wgmean(modeldat$climate, centre[[1]])
-              modeloutput     <- my_update(modeloutput, .~., data = modeldat)
+              modeloutput     <- update(modeloutput, .~., data = modeldat)
             }
             if(centre[[2]] == "mean"){
               modeldat$wgmean <- wgmean(modeldat$climate, centre[[1]])
-              modeloutput     <- my_update(modeloutput, .~., data = modeldat)
+              modeloutput     <- update(modeloutput, .~., data = modeldat)
             }
             if(centre[[2]] == "dev"){
               modeldat$wgdev  <- wgdev(modeldat$climate, centre[[1]])
-              modeloutput     <- my_update(modeloutput, .~., data = modeldat)
+              modeloutput     <- update(modeloutput, .~., data = modeldat)
             }
           } else {
-            modeloutput <- my_update(modeloutput, .~., data = modeldat)
+            modeloutput <- update(modeloutput, .~., data = modeldat)
           }
           
           # If valid, perform k-fold crossvalidation
@@ -216,8 +216,8 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
             for (k in 1:k) {
               test                     <- subset(modeldat, modeldat$K == k) # Create the test dataset
               train                    <- subset(modeldat, modeldat$K != k) # Create the train dataset
-              baselinecv               <- my_update(baseline, yvar~., data = train) # Refit the model without climate using the train dataset
-              modeloutputcv            <- my_update(modeloutput, yvar~., data = train)  # Refit the model with climate using the train dataset
+              baselinecv               <- update(baseline, yvar~., data = train) # Refit the model without climate using the train dataset
+              modeloutputcv            <- update(modeloutput, yvar~., data = train)  # Refit the model with climate using the train dataset
               test$predictions         <- predict(modeloutputcv, newdata = test, allow.new.levels = TRUE) # Test the output of the climate model fitted using the test data
               test$predictionsbaseline <- predict(baselinecv, newdata = test, allow.new.levels = TRUE) # Test the output of the null models fitted using the test data
               
@@ -404,19 +404,19 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     if (centre[[2]] == "both"){
         modeldat$WGdev   <- wgdev(modeldat$climate, centre[[1]])
         modeldat$WGmean  <- wgmean(modeldat$climate, centre[[1]])
-        LocalModel       <- my_update(modeloutput, .~., data = modeldat)
+        LocalModel       <- update(modeloutput, .~., data = modeldat)
     }
     if (centre[[2]] == "dev"){
       modeldat$WGdev   <- wgdev(modeldat$climate, centre[[1]])
-      LocalModel       <- my_update(modeloutput, .~., data = modeldat)
+      LocalModel       <- update(modeloutput, .~., data = modeldat)
     }
     if (centre[[2]] == "mean"){
       modeldat$WGmean  <- wgmean(modeldat$climate, centre[[1]])
-      LocalModel       <- my_update(modeloutput, .~., data = modeldat)
+      LocalModel       <- update(modeloutput, .~., data = modeldat)
     }
     modlist$Function <- "centre"
   } else {
-    LocalModel       <- my_update(modeloutput, .~.)
+    LocalModel       <- update(modeloutput, .~.)
     modlist$Function <- func
   }
   
@@ -645,7 +645,7 @@ modloglik_G <- function(par = par, modeloutput = modeloutput,
   
   weight                                <- weight / sum(weight) 
   funcenv$modeldat$climate              <- apply(cmatrix, 1, FUN = function(x) {sum(x*weight)})    # calculate weighted mean from weather data
-  modeloutput                           <- my_update(modeloutput, .~., data = funcenv$modeldat)   # rerun regression model using new weather index
+  modeloutput                           <- update(modeloutput, .~., data = funcenv$modeldat)   # rerun regression model using new weather index
   deltaAICc                             <- AICc(modeloutput) - nullmodel
   funcenv$DAICc[[funcenv$modno]]        <- deltaAICc
   funcenv$par_shape[[funcenv$modno]]    <- par[1]
@@ -680,7 +680,7 @@ modloglik_W <- function(par = par,  modeloutput = modeloutput, duration = durati
   
   weight                                <- weight / sum(weight) 
   funcenv$modeldat$climate              <- apply(cmatrix, 1, FUN = function(x) {sum(x*weight)})    # calculate weighted mean from weather data
-  modeloutput                           <- my_update(modeloutput, .~., data = funcenv$modeldat)   # rerun regression model using new weather index
+  modeloutput                           <- update(modeloutput, .~., data = funcenv$modeldat)   # rerun regression model using new weather index
   deltaAICc                             <- AICc(modeloutput) - nullmodel
   funcenv$DAICc[[funcenv$modno]]        <- deltaAICc
   funcenv$par_shape[[funcenv$modno]]    <- par[1]
