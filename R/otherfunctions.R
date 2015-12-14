@@ -98,11 +98,9 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   }  
   
   for (i in 1:length(bdate)){
-    for (j in range[2]:range[1]){
-      kay <- j - range[2] + 1
-      cmatrix[i, kay] <- cont$xvar[which(cont$cintno == cont$bintno[i] - j)]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
-    }
+    cmatrix[i, ] <- cont$xvar[which(cont$cintno %in% (cont$bintno[i] - c(range[2]:range[1])))]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
   }
+  cmatrix <- cmatrix[, c(ncol(cmatrix):1)]
   
   if (cmissing == FALSE && length(which(is.na(cmatrix))) > 0){
     if (cinterval == "day"){
