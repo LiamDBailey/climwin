@@ -100,7 +100,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   for (i in 1:length(bdate)){
     cmatrix[i, ] <- cont$xvar[which(cont$cintno %in% (cont$bintno[i] - c(range[2]:range[1])))]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
   }
-  cmatrix <- cmatrix[, c(ncol(cmatrix):1)]
+  cmatrix <- as.matrix(cmatrix[, c(ncol(cmatrix):1)])
   
   if (cmissing == FALSE && length(which(is.na(cmatrix))) > 0){
     if (cinterval == "day"){
@@ -127,7 +127,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   
   modeldat         <- model.frame(baseline)
   modeldat$yvar    <- modeldat[, 1]
-  modeldat$climate <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
+  modeldat$climate <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
   
   if (is.null(weights(baseline)) == FALSE){
     if (class(baseline)[1] == "glm" & sum(weights(baseline)) == nrow(model.frame(baseline)) || attr(class(baseline), "package") == "lme4" & sum(weights(baseline)) == nrow(model.frame(baseline))){
