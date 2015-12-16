@@ -59,8 +59,13 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   modlist   <- list()   # dataframes to store ouput
   baseline  <- update(baseline, .~.)
   nullmodel <- AICc(baseline)
+  modeldat  <- model.frame(baseline)
   
-  modeldat      <- model.frame(baseline)
+  if(class(baseline)[length(class(baseline))]=="coxph" & grepl("frailty\\(", colnames(modeldat)[ncol(modeldat)])){
+    colnames(modeldat)[ncol(modeldat)] <- gsub("frailty\\(", "", colnames(modeldat)[ncol(modeldat)])
+    colnames(modeldat)[ncol(modeldat)] <- gsub("\\)", "", colnames(modeldat)[ncol(modeldat)])
+  }
+  
   modeldat$yvar <- modeldat[, 1]
   
   if (is.null(centre[[1]]) == FALSE){
@@ -125,8 +130,8 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     cmatrix  <- cmatrix[complete.cases(cmatrix), ]
   }
   
-  modeldat         <- model.frame(baseline)
-  modeldat$yvar    <- modeldat[, 1]
+  #modeldat         <- model.frame(baseline)
+  #modeldat$yvar    <- modeldat[, 1]
   modeldat$climate <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
   
   if (is.null(weights(baseline)) == FALSE){
@@ -416,7 +421,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     }
     modlist$Function <- "centre"
   } else {
-    LocalModel       <- update(modeloutput, .~.)
+    LocalModel       <- my_update(modeloutput, .~., data = modeldat)
     modlist$Function <- func
   }
   
