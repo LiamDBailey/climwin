@@ -186,8 +186,6 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
         if (stat != "slope" || n > 1){
           windowopen  <- m - range[2] + 1
           windowclose <- windowopen - n + 1
-          print(windowopen)
-          print(windowclose)
           if (stat == "slope"){ 
             time             <- seq(1, n, 1)
             modeldat$climate <- apply(cmatrix[, windowclose:windowopen], 1, FUN = function(x) coef(lm(x ~ time))[2])
