@@ -284,7 +284,7 @@ singlewin <- function(xvar, cdate, bdate, baseline,
   
   modeldat           <- model.frame(baseline)
   modeldat$yvar      <- modeldat[, 1]
-  modeldat$climate   <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
+  modeldat$climate   <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
   
   if(is.null(weights(baseline)) == FALSE){
     if(class(baseline)[1] == "glm" & sum(weights(baseline)) == nrow(model.frame(baseline)) || class(baseline)[1] == "lmerMod" & sum(weights(baseline)) == nrow(model.frame(baseline))){
@@ -305,8 +305,8 @@ singlewin <- function(xvar, cdate, bdate, baseline,
   } else if (func == "inv") {
     modeloutput <- update (baseline, yvar~. + I(climate ^ -1), data = modeldat)
   } else if (func == "centre"){
-    modeldat$wgdev  <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
-    modeldat$wgmean <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
+    modeldat$wgdev  <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
+    modeldat$wgmean <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
     modeloutput <- update (baseline, yvar ~. + wgdev + wgmean, data = modeldat)
   } else {
     print("Define func")

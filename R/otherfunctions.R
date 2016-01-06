@@ -10,7 +10,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   if(is.null(centre[[1]]) == FALSE){
     func = "centre"
     if(centre[[2]] != "both" & centre[[2]] != "dev" & centre[[2]] != "mean"){
-      stop("Please set centre to one of 'both', 'var', or 'mean'. See help file for details.")
+      stop("Please set centre to one of 'both', 'dev', or 'mean'. See help file for details.")
     }
   }
   
@@ -158,16 +158,16 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
       modeloutput <- update (baseline, yvar~. + I(climate ^ -1), data = modeldat)
     } else if (func == "centre"){
       if(centre[[2]] == "both"){
-        modeldat$wgdev  <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
-        modeldat$wgmean <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
+        modeldat$wgdev  <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
+        modeldat$wgmean <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
         modeloutput <- update (baseline, yvar ~. + wgdev + wgmean, data = modeldat)
       }
       if(centre[[2]] == "mean"){
-        modeldat$wgmean <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
+        modeldat$wgmean <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
         modeloutput <- update (baseline, yvar ~. + wgmean, data = modeldat)
       }
       if(centre[[2]] == "dev"){
-        modeldat$wgdev  <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
+        modeldat$wgdev  <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
         modeloutput <- update (baseline, yvar ~. + wgdev, data = modeldat)
       }
     } else {
@@ -186,6 +186,8 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
         if (stat != "slope" || n > 1){
           windowopen  <- m - range[2] + 1
           windowclose <- windowopen - n + 1
+          print(windowopen)
+          print(windowclose)
           if (stat == "slope"){ 
             time             <- seq(1, n, 1)
             modeldat$climate <- apply(cmatrix[, windowclose:windowopen], 1, FUN = function(x) coef(lm(x ~ time))[2])
@@ -213,7 +215,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
               modeloutput     <- update(modeloutput, .~., data = modeldat)
             }
           } else {
-            modeloutput <- update(modeloutput, .~., data = modeldat)
+            modeloutput <- my_update(modeloutput, .~., data = modeldat)
           }
           
           # If valid, perform k-fold crossvalidation
