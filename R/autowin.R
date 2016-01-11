@@ -97,7 +97,7 @@ autowin <- function(reference, xvar, cdate, bdate, baseline, range, stat, func, 
                     cmissing = FALSE, cinterval = "day", upper = NA,
                     lower = NA, binary = FALSE, centre = list(NULL, "both"), 
                     cutoff.day = NULL, cutoff.month = NULL,
-                    furthest = NULL, closest = NULL, thresh = NULL){
+                    furthest = NULL, closest = NULL, thresh = NULL, cohort = NULL){
   
   WindowOpen  <- reference$Dataset$WindowOpen[1]
   WindowClose <- reference$Dataset$WindowClose[1]
@@ -149,7 +149,7 @@ autowin <- function(reference, xvar, cdate, bdate, baseline, range, stat, func, 
   maxmodno   <- (duration * (duration + 1)) / 2 
   cont       <- convertdate(bdate = bdate, cdate = cdate, xvar = xvar, 
                              cinterval = cinterval, type = type, 
-                             refday = refday)
+                             refday = refday, cohort = cohort)
   modno      <- 1
   modlist    <- list()
   cmatrix    <- matrix(ncol = (duration), nrow = length(bdate))
@@ -183,11 +183,9 @@ autowin <- function(reference, xvar, cdate, bdate, baseline, range, stat, func, 
   # Create a matrix with the climate data from closest to furthest days
   # back from each biological record
   for (i in 1:length(bdate)){
-    for (j in range[2]:range[1]){
-      k <- j - range[2] + 1
-      cmatrix[i, k] <- cont$xvar[which(cont$cintno == cont$bintno[i] - j)]    
-    }
+    cmatrix[i, ] <- cont$xvar[which(cont$cintno %in% (cont$bintno[i] - c(range[2]:range[1])))]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
   }
+  cmatrix <- as.matrix(cmatrix[, c(ncol(cmatrix):1)])
   
   if (cmissing == FALSE && length(which(is.na(cmatrix))) > 0){
     if (cinterval == "day"){
