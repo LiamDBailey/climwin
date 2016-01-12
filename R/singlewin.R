@@ -305,11 +305,9 @@ singlewin <- function(xvar, cdate, bdate, baseline,
   } else if (func == "inv") {
     modeloutput <- update (baseline, yvar~. + I(climate ^ -1), data = modeldat)
   } else if (func == "centre"){
-<<<<<<< HEAD
     modeldat$wgdev  <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
     modeldat$wgmean <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
     modeloutput <- update (baseline, yvar ~. + wgdev + wgmean, data = modeldat)
-=======
     if(centre[[2]] == "both"){
       modeldat$wgdev  <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
       modeldat$wgmean <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
@@ -323,7 +321,6 @@ singlewin <- function(xvar, cdate, bdate, baseline,
       modeldat$wgdev  <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
       modeloutput <- update (baseline, yvar ~. + wgdev, data = modeldat)
     }
->>>>>>> 5f5e6070c909699cc0baed0bff39af1aabe93443
   } else {
     print("Define func")
   }
