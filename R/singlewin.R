@@ -96,7 +96,7 @@ singlewin <- function(xvar, cdate, bdate, baseline,
                       cmissing = FALSE, cinterval = "day",
                       upper = NA, lower = NA, binary = FALSE,
                       centre = list(NULL, "both"), cutoff.day = NULL, cutoff.month = NULL,
-                      furthest = NULL, closest = NULL, thresh = NULL){
+                      furthest = NULL, closest = NULL, thresh = NULL, cohort = NULL){
   
   if(is.null(thresh) == FALSE){
     stop("Parameter 'thresh' is now redundant. Please use parameter 'binary' instead.")
@@ -145,9 +145,17 @@ singlewin <- function(xvar, cdate, bdate, baseline,
   
   if(cinterval == "day"){  
     if(type == "absolute"){   
-      bintno            <- as.numeric(as.Date(paste(refday[1], refday[2], year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1 
-      wrongyear         <- which(bintno < realbintno)
-      bintno[wrongyear] <- (as.numeric(as.Date(paste(refday[1], refday[2], (year(bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1)
+      if(is.null(cohort) == FALSE){
+        newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort))
+        datenum  <- 1
+        bintno   <- seq(1, length(bdate), 1)
+        for(i in levels(as.factor(cohort))){
+          sub                               <- subset(newdat, cohort == i)
+          bintno[as.numeric(rownames(sub))] <- as.numeric(as.Date(paste(refday[1], refday[2], min(lubridate::year(sub$bdate)), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1
+        }
+      } else {
+        bintno            <- as.numeric(as.Date(paste(refday[1], refday[2], year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1 
+      }
     } else {
       bintno <- realbintno
     }
@@ -160,9 +168,17 @@ singlewin <- function(xvar, cdate, bdate, baseline,
     cintno     <- newclim3$cintno
     xvar       <- newclim3$xvar
     if (type == "absolute"){ 
-      bintno            <- ceiling((as.numeric(as.Date(paste(refday[1], refday[2], year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1) / 7) 
-      wrongyear         <- which(bintno < realbintno)
-      bintno[wrongyear] <- ceiling((as.numeric(as.Date(paste(refday[1], refday[2], (year(bdate[wrongyear]) + 1), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1) / 7)
+      if(is.null(cohort) == FALSE){
+        newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort))
+        datenum  <- 1
+        bintno   <- seq(1, length(bdate), 1)
+        for(i in levels(as.factor(cohort))){
+          sub                               <- subset(newdat, cohort == i)
+          bintno[as.numeric(rownames(sub))] <- ceiling((as.numeric(as.Date(paste(refday[1], refday[2], min(lubridate::year(sub$bdate)), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1)/7)
+        }
+      } else {
+        bintno <- ceiling((as.numeric(as.Date(paste(refday[1], refday[2], year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1)/7) 
+      }
     } else {
       bintno <- realbintno
     }
@@ -177,9 +193,17 @@ singlewin <- function(xvar, cdate, bdate, baseline,
     cintno     <- newclim3$cintno
     xvar       <- newclim3$xvar
     if (type == "absolute"){ 
-      bintno            <- refday[2] + 12 * (year(bdate) - min(year(cdate2)))
-      wrongyear         <- which(bintno < realbintno)
-      bintno[wrongyear] <- refday[2] + 12 * (year(bdate[wrongyear]) + 1 - min(year(cdate2)))
+      if(is.null(cohort) == FALSE){
+        newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort))
+        datenum  <- 1
+        bintno   <- seq(1, length(bdate), 1)
+        for(i in levels(as.factor(cohort))){
+          sub                               <- subset(newdat, cohort == i)
+          bintno[as.numeric(rownames(sub))] <- refday[2] + 12 * (min(lubridate::year(sub$bdate)) - min(lubridate::year(cdate2)))
+        }
+      } else {
+        bintno            <- refday[2] + 12 * (year(bdate) - min(year(cdate2)))
+      }
     } else {
       bintno <- realbintno
     }
