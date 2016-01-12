@@ -797,10 +797,10 @@ medwin <- function(dataset, cw = 0.95){
   dataset$cw <- as.numeric(cumsum(dataset$ModWeight) <= cw)
   datasetcw  <- subset(dataset, cw == 1)
   
-  keep=c("closest", "WindowClose", "WindowOpen")
+  keep=c("Closest", "WindowClose", "WindowOpen")
   
   datasetcw                  <- datasetcw[keep]
-  datasetcw                  <- melt(datasetcw, id = "closest")
+  datasetcw                  <- melt(datasetcw, id = "Closest")
   datasetcw$variable         <- factor(datasetcw$variable, levels = c("WindowOpen", "WindowClose"))
   levels(datasetcw$variable) <- c("Window Open", "Window Close")
   
