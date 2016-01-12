@@ -305,9 +305,19 @@ singlewin <- function(xvar, cdate, bdate, baseline,
   } else if (func == "inv") {
     modeloutput <- update (baseline, yvar~. + I(climate ^ -1), data = modeldat)
   } else if (func == "centre"){
-    modeldat$wgdev  <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
-    modeldat$wgmean <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
-    modeloutput <- update (baseline, yvar ~. + wgdev + wgmean, data = modeldat)
+    if(centre[[2]] == "both"){
+      modeldat$wgdev  <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
+      modeldat$wgmean <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
+      modeloutput <- update (baseline, yvar ~. + wgdev + wgmean, data = modeldat)
+    }
+    if(centre[[2]] == "mean"){
+      modeldat$wgmean <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
+      modeloutput <- update (baseline, yvar ~. + wgmean, data = modeldat)
+    }
+    if(centre[[2]] == "dev"){
+      modeldat$wgdev  <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
+      modeloutput <- update (baseline, yvar ~. + wgdev, data = modeldat)
+    }
   } else {
     print("Define func")
   }
@@ -323,10 +333,20 @@ singlewin <- function(xvar, cdate, bdate, baseline,
   } else {
     ifelse(n == 1, modeldat$climate <- cmatrix, modeldat$climate <- apply(cmatrix, 1, FUN = stat))
   }
-  if(is.null(centre[[1]]) == FALSE){
-    modeldat$WGdev  <- wgdev(modeldat$climate, centre)
-    modeldat$WGmean <- wgmean(modeldat$climate, centre)
-    LocalBestModel  <- update(modeloutput, .~., data = modeldat)
+  if (is.null(centre[[1]]) == FALSE){
+    if(centre[[2]] == "both"){
+      modeldat$wgdev  <- wgdev(modeldat$climate, centre[[1]])
+      modeldat$wgmean <- wgmean(modeldat$climate, centre[[1]])
+      LocalBestModel     <- update(modeloutput, .~., data = modeldat)
+    }
+    if(centre[[2]] == "mean"){
+      modeldat$wgmean <- wgmean(modeldat$climate, centre[[1]])
+      LocalBestModel     <- update(modeloutput, .~., data = modeldat)
+    }
+    if(centre[[2]] == "dev"){
+      modeldat$wgdev  <- wgdev(modeldat$climate, centre[[1]])
+      LocalBestModel     <- update(modeloutput, .~., data = modeldat)
+    }
   } else {
     LocalBestModel <- update(modeloutput, .~.)
   }
