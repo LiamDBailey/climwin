@@ -2,7 +2,7 @@
 basewin <- function(exclude, xvar, cdate, bdate, baseline, range, 
                     type, stat = "mean", func = "lin", refday,
                     cmissing = FALSE, cinterval = "day",  nrandom = 0, k = 0,
-                    upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"),
+                    spatial, upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"),
                     cohort = NULL){
   
   print("Initialising, please wait...")
@@ -102,6 +102,11 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     } 
   }  
   
+  if(is.null(spatial) == FALSE){
+    for (i in 1:length(bdate)){
+      cmatrix[i, ] <- cont$xvar[which(cont$cintno %in% (cont$bintno[i] - c(range[2]:range[1])))]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
+    }
+  }
   for (i in 1:length(bdate)){
     cmatrix[i, ] <- cont$xvar[which(cont$cintno %in% (cont$bintno[i] - c(range[2]:range[1])))]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
   }
@@ -421,7 +426,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     }
     modlist$Function <- "centre"
   } else {
-    LocalModel       <- my_update(modeloutput, .~., data = modeldat)
+    LocalModel       <- update(modeloutput, .~., data = modeldat)
     modlist$Function <- func
   }
   
@@ -468,7 +473,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
 
 #Function to convert dates into day/week/month number
 convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type, 
-                        refday, cross = FALSE, cohort){
+                        refday, cross = FALSE, cohort, spatial){
   
   bdate  <- as.Date(bdate, format = "%d/%m/%Y") # Convert the date variables into the R date format
   cdate2 <- seq(min(as.Date(cdate, format = "%d/%m/%Y")), max(as.Date(cdate, format = "%d/%m/%Y")), "days") # Convert the date variables into the R date format
@@ -478,14 +483,19 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
     stop("Climate data does not cover all years of biological data. Please increase range of climate data")
   }
   
-  xvar <- xvar[match(cdate2, cdate)]
-  
   if (is.null(xvar2) == FALSE){
     xvar2 <- xvar2[match(cdate2, cdate)]
   }
   
   cintno     <- as.numeric(cdate2) - min(as.numeric(cdate2)) + 1   # atrribute daynumbers for both datafiles with first date in CLimateData set to cintno 1
   realbintno <- as.numeric(bdate) - min(as.numeric(cdate2)) + 1
+  
+  if(is.null(spatial) == FALSE){
+    xvar       <- data.frame(xvar = xvar, spatial = spatial[1])
+  }
+  
+  xvar$xvar    <- xvar[match(cdate2, cdate)]
+  xvar$spatial <- spatial[match(cdate2, cdate)]
   
   if (length(cintno) != length(unique(cintno))){
     stop ("There are duplicate dayrecords in climate data")
