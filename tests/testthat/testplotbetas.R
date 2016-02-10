@@ -1,7 +1,5 @@
 # Test function plotbetas #
 
-# Test that plotbetas produces a ggplot objects #
-# Test that plotbetas produces new plots for quad and cub #
 test_that("plotbetas produces a graph", {
   
   data(Mass, envir = environment())
@@ -14,6 +12,7 @@ test_that("plotbetas produces a graph", {
   testenv <- environment()
   test    <- plotbetas(dataset = testdata[[1]]$Dataset)
   
+  # Test that a ggplot object is produced
   expect_true(attr(test, "class")[1] == "gg")
  
   testdata[[1]]$Dataset$ModelBetaQ <- testdata[[1]]$Dataset$ModelBeta
@@ -21,6 +20,7 @@ test_that("plotbetas produces a graph", {
   
   test <- plotbetas(dataset = testdata[[1]]$Dataset, plotall = TRUE, plotallenv = testenv)
   
+  # Test that a second graph is produced when func = quad
   expect_true(exists("beta2", envir = testenv))
   
   testdata[[1]]$Dataset$ModelBetaC <- testdata[[1]]$Dataset$ModelBeta
@@ -28,7 +28,10 @@ test_that("plotbetas produces a graph", {
   
   test <- plotbetas(dataset = testdata[[1]]$Dataset, plotall = TRUE, plotallenv = testenv)
   
+  # Test that a second graph is produced when func = cub
   expect_true(exists("beta2", envir = testenv))
+  
+  # Test that a third graph is produced when func = cub
   expect_true(exists("beta3", envir = testenv))
   
 })

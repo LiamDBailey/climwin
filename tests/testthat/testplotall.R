@@ -1,6 +1,8 @@
 # Test plotall function #
 
-# Test plotwin produces a ggplot object #
+##########################################################################################
+
+# Test plotall runs when all data is provided#
 test_that("plotall produces a graph when all variables provided", {
   
   data(Mass, envir = environment())
@@ -24,6 +26,7 @@ test_that("plotall produces a graph when all variables provided", {
   
 })
 
+# Test plotall runs when randomised data is not provided
 test_that("plotall produces a graph when datasetrand removed", {
   
   data(Mass, envir = environment())
@@ -43,6 +46,7 @@ test_that("plotall produces a graph when datasetrand removed", {
   
 })
 
+# Test that plotall runs when best model is not provided
 test_that("plotall produces a graph when bestmodel removed", {
   
   data(Mass, envir = environment())

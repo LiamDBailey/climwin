@@ -7,7 +7,8 @@
 singlewin(xvar, cdate, bdate, baseline, range, stat, func, type, refday,
   cmissing = FALSE, cinterval = "day", upper = NA, lower = NA,
   binary = FALSE, centre = list(NULL, "both"), cutoff.day = NULL,
-  cutoff.month = NULL, furthest = NULL, closest = NULL, thresh = NULL)
+  cutoff.month = NULL, furthest = NULL, closest = NULL, thresh = NULL,
+  cohort = NULL)
 }
 \arguments{
 \item{xvar}{A list object containing all climate variables of interest.

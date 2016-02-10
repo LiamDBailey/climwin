@@ -1,6 +1,4 @@
 # Test plotdelta function #
-
-# Test that plotdelta outputs a ggplot object #
 test_that("plotdelta produces a graph", {
   
   data(Mass, envir = environment())
@@ -13,6 +11,7 @@ test_that("plotdelta produces a graph", {
   
   test <- plotdelta(dataset = testdata[[1]]$Dataset)
   
+  # Test that plotdelta creates a ggplot item
   expect_true(attr(test, "class")[1] == "gg")
   
 })

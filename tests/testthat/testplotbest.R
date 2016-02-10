@@ -20,6 +20,7 @@ test_that("plotbest produces a graph", {
   test <- plotbest(dataset = testdata[[1]]$Dataset, bestmodel = single[[1]],
            bestmodeldata = single[[2]])
   
+  # Test that a ggplot object is produced
   expect_true(attr(test, "class")[1] == "gg")
   
 })

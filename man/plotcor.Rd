@@ -42,13 +42,13 @@ single <- singlewin(xvar = list(Temp = MassClimate$Temp),
 
 # Test the autocorrelation between the climate in this single window and other climate windows.
 
-auto <- autowin(reference = single$BestModelData$climate,
+auto <- autowin(reference = single,
                xvar  = list(Temp = MassClimate$Temp),
                cdate = MassClimate$Date, bdate = Mass$Date,
                baseline = lm(Mass ~ 1, data = Mass),
                range = c(365, 0),
                stat = "mean", func = "lin",
-               type = "fixed", refday = c(20, 5),
+               type = "absolute", refday = c(20, 5),
                cmissing = FALSE, cinterval = "day")
 
 # Plot the auto-correlation data

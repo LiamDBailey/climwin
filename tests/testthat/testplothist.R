@@ -1,6 +1,4 @@
 # Test the plothist function #
-
-# Test that plothist produces a ggplot object #
 test_that("plothist produces a graph", {
   
   data(Mass, envir = environment())
@@ -18,8 +16,13 @@ test_that("plothist produces a graph", {
   test  <- plothist(dataset = testdata[[1]]$Dataset)
   test2 <- plothist(dataset = testdata[[1]]$Dataset, datasetrand = testdatarand[[1]], histq = 0.95)
   
+  # Test that plothist creates a ggplot object without randomised data
   expect_true(attr(test, "class")[1] == "gg")
+  
+  # Test that plothist creates a ggplot object with randomised data
   expect_true(attr(test2, "class")[1] == "gg")
+  
+  # Test that plothist has created a facetwrap when randomised data is provided
   expect_false(is.null(test2$facet$facets))
 
 })

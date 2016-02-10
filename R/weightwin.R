@@ -94,7 +94,7 @@
 #'                    bdate = Offspring$Date, 
 #'                    baseline = glm(Offspring ~ 1, family = poisson, data = Offspring), 
 #'                    range = c(365, 0), func = "quad", 
-#'                    type = "variable", weightfunc = "W", cinterval = "day", 
+#'                    type = "relative", weightfunc = "W", cinterval = "day", 
 #'                    par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)), 
 #'                    method = "L-BFGS-B") 
 #'  

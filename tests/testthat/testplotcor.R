@@ -1,6 +1,4 @@
-# Test the PlotCor and PlotWeight functions #
-
-# Test that PlotCor creates a ggplot object #
+# Test the PlotCor function #
 test_that("plotcor produces a graph", {
   
   data(Mass, envir = environment())
@@ -14,6 +12,7 @@ test_that("plotcor produces a graph", {
   
   test <- plotcor(cor.output = cross, type = "A")
   
+  # Test plotcor produces a ggplot object
   expect_true(attr(test, "class")[1]=="gg") 
   
 })

@@ -1,6 +1,4 @@
 # Test plotwin function #
-
-# Test plotwin produces a ggplot object #
 test_that("plotwin produces a graph", {
   
   data(Mass, envir = environment())
@@ -13,6 +11,7 @@ test_that("plotwin produces a graph", {
   
   test <- plotwin(dataset = testdata[[1]]$Dataset, cw = 0.95)
   
+  # Test that plotwin produces a ggplot object
   expect_true(attr(test, "class")[1] == "gg")
   
 })

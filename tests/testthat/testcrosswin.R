@@ -1,10 +1,4 @@
 # Test the outcome of crosswin #
-
-# Test that crosswin has created a correct CrossWinOutput object
-# Expect that an object CrossWinOutput exists
-# Expect that there are no NA values
-# Expect that the number of columns is at least 7 (will vary with values of FIXED) 
-# Expect that the number of rows is equal to the number of possible windows
 test_that("crosswin produces output", {
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -21,9 +15,16 @@ test_that("crosswin produces output", {
   duration  <- (furthest - closest) + 1
   maxmodno  <- (duration * (duration + 1))/2
   
+  # Test that crosswin has created a data frame object
   expect_true(is.data.frame(test))
+  
+  # Test that there are no NAs in the dataframe
   expect_equal(length(which(is.na(test))), 0)
+  
+  # Test that there are at least 7 columns
   expect_true(ncol(test) >= 7)
+  
+  # Test that the right number of models were fitted
   expect_equal(maxmodno, nrow(test))
   
 })

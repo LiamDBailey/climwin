@@ -1,10 +1,4 @@
 # Test randwin function #
-
-# Test that randwin create only WindowOutputRand, not BestModel or BestModelData
-# Test that WindowOutputRand is at least 13 columns (will vary with func = Q or C)
-# Test that the number of rows in each repeat is the same as number of windows
-# Test that the randimised column is yes
-
 test_that("Check randwin output", {
   
   data(Mass, envir = environment())
@@ -22,10 +16,19 @@ test_that("Check randwin output", {
   duration  <- (furthest - closest) + 1
   maxmodno  <- (duration * (duration + 1)) / 2
   
+  # Test that randwin produces an output
   expect_true(is.list(rand))
+  
+  # Test that there are no NA values in output
   expect_equal(length(which(is.na(rand[[1]][, 4]))), 0)
-  expect_true(ncol(rand[[1]]) >= 15)
+  
+  # Test that the randomised output has the right number of columns
+  expect_true(ncol(rand[[1]]) == 17)
+  
+  # Test that the right number of models has been fitted
   expect_equal(maxmodno, nrow(subset(rand[[1]], Repeat == 1)))
+  
+  # Test that data has been stored as randomised
   expect_true((rand[[1]]["Randomised"])[1,] == "yes")
   
 })

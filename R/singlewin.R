@@ -242,7 +242,7 @@ singlewin <- function(xvar, cdate, bdate, baseline,
   
   modeldat      <- model.frame(baseline)
   modeldat$yvar <- modeldat[, 1]
-  
+
   if(is.null(centre[[1]]) == FALSE){
     func = "centre"
   }
@@ -309,15 +309,15 @@ singlewin <- function(xvar, cdate, bdate, baseline,
   modeldat           <- model.frame(baseline)
   modeldat$yvar      <- modeldat[, 1]
   modeldat$climate   <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
-  
-  if(is.null(weights(baseline)) == FALSE){
-    if(class(baseline)[1] == "glm" & sum(weights(baseline)) == nrow(model.frame(baseline)) || class(baseline)[1] == "lmerMod" & sum(weights(baseline)) == nrow(model.frame(baseline))){
+
+  if (is.null(weights(baseline)) == FALSE){
+    if (class(baseline)[1] == "glm" & sum(weights(baseline)) == nrow(model.frame(baseline)) || attr(class(baseline), "package") == "lme4" & sum(weights(baseline)) == nrow(model.frame(baseline))){
     } else {
       modeldat$modweights <- weights(baseline)
       baseline <- update(baseline, .~., weights = modeldat$modweights, data = modeldat)
     }
   }
-  
+
   if (func == "lin"){
     modeloutput <- update(baseline, yvar~. + climate, data = modeldat)
   } else if (func == "quad") {
@@ -327,16 +327,16 @@ singlewin <- function(xvar, cdate, bdate, baseline,
   } else if (func == "log") {
     modeloutput <- update(baseline, yvar~. + log(climate), data = modeldat)
   } else if (func == "inv") {
-    modeloutput <- update (baseline, yvar~. + I(climate ^ -1), data = modeldat)
+    modeloutput <- update(baseline, yvar~. + I(climate ^ -1), data = modeldat)
   } else if (func == "centre"){
     if(centre[[2]] == "both"){
       modeldat$wgdev  <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
       modeldat$wgmean <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
-      modeloutput <- update (baseline, yvar ~. + wgdev + wgmean, data = modeldat)
+      modeloutput <- update(baseline, yvar ~. + wgdev + wgmean, data = modeldat)
     }
     if(centre[[2]] == "mean"){
       modeldat$wgmean <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
-      modeloutput <- update (baseline, yvar ~. + wgmean, data = modeldat)
+      modeloutput <- update(baseline, yvar ~. + wgmean, data = modeldat)
     }
     if(centre[[2]] == "dev"){
       modeldat$wgdev  <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
@@ -345,7 +345,7 @@ singlewin <- function(xvar, cdate, bdate, baseline,
   } else {
     print("Define func")
   }
-  
+
   #CREATE A FOR LOOP TO FIT DIFFERENT CLIMATE WINDOWS#
   m     <- range[2]
   n     <- duration
@@ -357,6 +357,7 @@ singlewin <- function(xvar, cdate, bdate, baseline,
   } else {
     ifelse(n == 1, modeldat$climate <- cmatrix, modeldat$climate <- apply(cmatrix, 1, FUN = stat))
   }
+
   if (is.null(centre[[1]]) == FALSE){
     if(centre[[2]] == "both"){
       modeldat$wgdev  <- wgdev(modeldat$climate, centre[[1]])
@@ -372,8 +373,8 @@ singlewin <- function(xvar, cdate, bdate, baseline,
       LocalBestModel  <- update(modeloutput, .~. + wgdev, data = modeldat)
     }
   } else {
-    LocalBestModel <- update(modeloutput, .~.)
+    LocalBestModel <- my_update(modeloutput, .~., data = modeldat)
   }
-  LocalData           <- model.frame(LocalBestModel)
+  LocalData <- model.frame(LocalBestModel)
   return(list(BestModel = LocalBestModel, BestModelData = LocalData, Dataset = data.frame(WindowOpen = range[1], WindowClose = range[2])))
 }
