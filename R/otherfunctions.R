@@ -26,7 +26,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   } 
   cont      <- convertdate(bdate = bdate, cdate = cdate, xvar = xvar, 
                            cinterval = cinterval, type = type, 
-                           refday = refday, cohort = cohort)   # create new climate dataframe with continuous daynumbers, leap days are not a problem
+                           refday = refday, cohort = cohort, spatial = spatial)   # create new climate dataframe with continuous daynumbers, leap days are not a problem
   
   if (cinterval == "day"){
     if ( (min(cont$bintno) - range[1]) < min(cont$cintno)){
@@ -85,7 +85,6 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     }
   }
   
-  
   if (is.na(lower) == FALSE && is.na(upper) == TRUE){
     if (binary == TRUE){
       cont$xvar <- ifelse (cont$xvar < lower, 1, 0)
@@ -104,11 +103,12 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   
   if(is.null(spatial) == FALSE){
     for (i in 1:length(bdate)){
-      cmatrix[i, ] <- cont$xvar[which(cont$cintno %in% (cont$bintno[i] - c(range[2]:range[1])))]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
+      cmatrix[i, ] <- cont$xvar[which(cont$cintno$spatial %in% cont$bintno$spatial[i] & cont$cintno$Date %in% (cont$bintno$Date[i] - c(range[2]:range[1]))), 1]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
     }
-  }
-  for (i in 1:length(bdate)){
-    cmatrix[i, ] <- cont$xvar[which(cont$cintno %in% (cont$bintno[i] - c(range[2]:range[1])))]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
+  } else {
+    for (i in 1:length(bdate)){
+      cmatrix[i, ] <- cont$xvar[which(cont$cintno %in% (cont$bintno[i] - c(range[2]:range[1])))]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
+    } 
   }
   cmatrix <- as.matrix(cmatrix[, c(ncol(cmatrix):1)])
   
@@ -476,12 +476,39 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
                         refday, cross = FALSE, cohort, spatial){
   
   bdate  <- as.Date(bdate, format = "%d/%m/%Y") # Convert the date variables into the R date format
-  cdate2 <- seq(min(as.Date(cdate, format = "%d/%m/%Y")), max(as.Date(cdate, format = "%d/%m/%Y")), "days") # Convert the date variables into the R date format
+  if(is.null(spatial) == FALSE) {
+    SUB.DATE <- list()
+    NUM <- 1
+    for(i in levels(as.factor(spatial[[2]]))){
+      SUB <- cdate[which(spatial[[2]] == i)]
+      SUB.DATE[[NUM]] <- data.frame(Date = seq(min(as.Date(SUB, format = "%d/%m/%Y")), max(as.Date(SUB, format = "%d/%m/%Y")), "days"),
+                                    spatial = i)
+      if (length(SUB.DATE[[NUM]]$Date) != length(unique(SUB.DATE[[NUM]]$Date))){
+        stop ("There are duplicate dayrecords in climate data")
+      }
+      NUM <- NUM + 1
+    }
+    spatialcdate <- plyr::rbind.fill(SUB.DATE)
+    cdate2 <- spatialcdate$Date
+  } else {
+    cdate2 <- seq(min(as.Date(cdate, format = "%d/%m/%Y")), max(as.Date(cdate, format = "%d/%m/%Y")), "days")
+    if (length(cintno) != length(unique(cintno))){
+      stop ("There are duplicate dayrecords in climate data")
+    }
+  }
   cdate  <- as.Date(cdate, format = "%d/%m/%Y")
   
-  if (min(cdate) > min(bdate)){
+  if(is.null(spatial) == FALSE){
+    for(i in levels(as.factor(spatial[[2]]))){
+      SUB <- cdate[which(spatial[[2]] == i)]
+      if (min(SUB) > min(bdate) | max(SUB) < max(bdate)){
+        stop("Climate data does not cover all years of biological data. Please increase range of climate data")
+      }
+    }
+  } else if (min(cdate) > min(bdate) | max(cdate) < max(bdate)){
     stop("Climate data does not cover all years of biological data. Please increase range of climate data")
   }
+
   
   if (is.null(xvar2) == FALSE){
     xvar2 <- xvar2[match(cdate2, cdate)]
@@ -491,14 +518,25 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
   realbintno <- as.numeric(bdate) - min(as.numeric(cdate2)) + 1
   
   if(is.null(spatial) == FALSE){
-    xvar       <- data.frame(xvar = xvar, spatial = spatial[1])
-  }
-  
-  xvar$xvar    <- xvar[match(cdate2, cdate)]
-  xvar$spatial <- spatial[match(cdate2, cdate)]
-  
-  if (length(cintno) != length(unique(cintno))){
-    stop ("There are duplicate dayrecords in climate data")
+    xvar       <- data.frame(Clim = xvar, spatial = spatial[[2]])
+    cdate      <- data.frame(Date = cdate, spatial = spatial[[2]])
+    split.list <- list()
+    NUM <- 1
+    for(i in levels(xvar$spatial)){
+      SUB <- subset(xvar, spatial == i)
+      SUBcdate  <- subset(cdate, spatial == i)
+      SUBcdate2 <- subset(spatialcdate, spatial == i)
+      rownames(SUB) <- seq(1, nrow(SUB), 1)
+      rownames(SUBcdate) <- seq(1, nrow(SUBcdate), 1)
+      NewClim    <- SUB$Clim[match(SUBcdate2$Date, SUBcdate$Date)]
+      Newspatial <- SUB$spatial[match(SUBcdate2$Date, SUBcdate$Date)]
+      split.list[[NUM]] <- data.frame(NewClim, Newspatial)
+      NUM <- NUM + 1
+    }
+    xvar    <- (plyr::rbind.fill(split.list))$NewClim
+    climspatial <- (plyr::rbind.fill(split.list))$Newspatial
+  } else {
+    xvar    <- xvar[match(cdate2, cdate)]
   }
   
   if (cinterval != "day" && cinterval != "week" && cinterval != "month"){
@@ -640,7 +678,13 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       }
     }
   }
-  return(list(cintno = cintno, bintno = bintno, xvar = xvar, xvar2 = xvar2))
+  if(is.null(spatial) == FALSE){
+    return(list(cintno = data.frame(Date = cintno, spatial = climspatial),
+                bintno = data.frame(Date = bintno, spatial = spatial[[1]]),
+                xvar = data.frame(Clim = xvar, spatial = climspatial), xvar2 = xvar2))
+  } else {
+    return(list(cintno = cintno, bintno = bintno, xvar = xvar, xvar2 = xvar2))
+  }
 }
 
 ##############################################################################################################################
