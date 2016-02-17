@@ -88,7 +88,6 @@
 #'  In addition, the returned list includes an object 'combos', a summary of all
 #'  tested sets of climate window parameters. 
 #'@author Liam D. Bailey and Martijn van de Pol
-#'@import lme4
 #'@import stats
 #'@import utils
 #'@import graphics
