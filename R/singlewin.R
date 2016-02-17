@@ -124,22 +124,66 @@ singlewin <- function(xvar, cdate, bdate, baseline,
   duration  <- (range[1] - range[2]) + 1
   
   bdate  <- as.Date(bdate, format = "%d/%m/%Y") # Convert the date variables into the R date format
-  cdate2 <- seq(min(as.Date(cdate, format = "%d/%m/%Y")), max(as.Date(cdate, format = "%d/%m/%Y")), "days") # Convert the date variables into the R date format
+  
+  if(is.null(spatial) == FALSE){
+    SUB.DATE <- list()
+    NUM <- 1
+    for(i in levels(as.factor(spatial[[2]]))){
+     SUB <- cdate[which(spatial[[2]] == i)]
+     SUB.DATE[[NUM]] <- data.frame(Date = seq(min(as.Date(SUB, format = "%d/%m/%Y")), max(as.Date(SUB, format = "%d/%m/%Y")), "days"),
+                                   spatial = i)
+     if (length(SUB.DATE[[NUM]]$Date) != length(unique(SUB.DATE[[NUM]]$Date))){
+       stop ("There are duplicate dayrecords in climate data")
+     }
+     NUM <- NUM + 1
+    }
+    spatialcdate <- plyr::rbind.fill(SUB.DATE)
+    cdate2       <- spatialcdate$Date
+    cintno       <- as.numeric(cdate2) - min(as.numeric(cdate2)) + 1   # atrribute daynumbers for both datafiles with first date in CLimateData set to cintno 1
+    realbintno   <- as.numeric(bdate) - min(as.numeric(cdate2)) + 1
+  } else {
+    cdate2     <- seq(min(as.Date(cdate, format = "%d/%m/%Y")), max(as.Date(cdate, format = "%d/%m/%Y")), "days")
+    cintno     <- as.numeric(cdate2) - min(as.numeric(cdate2)) + 1   # atrribute daynumbers for both datafiles with first date in CLimateData set to cintno 1
+    realbintno <- as.numeric(bdate) - min(as.numeric(cdate2)) + 1
+    if (length(cintno) != length(unique(cintno))){
+      stop ("There are duplicate dayrecords in climate data")
+    }
+  }
+  
   cdate  <- as.Date(cdate, format = "%d/%m/%Y")
   
-  if(min(cdate) > min(bdate)){
+  if(is.null(spatial) == FALSE){
+    for(i in levels(as.factor(spatial[[2]]))){
+      SUB <- cdate[which(spatial[[2]] == i)]
+      if (min(SUB) > min(bdate) | max(SUB) < max(bdate)){
+        stop("Climate data does not cover all years of biological data. Please increase range of climate data")
+      }
+    }
+  } else if (min(cdate) > min(bdate) | max(cdate) < max(bdate)){
     stop("Climate data does not cover all years of biological data. Please increase range of climate data")
   }
   
-  xvar <- xvar[match(cdate2, cdate)]
-  
-  cintno     <- as.numeric(cdate2) - min(as.numeric(cdate2)) + 1   # atrribute daynumbers for both datafiles with first date in CLimateData set to cintno 1
-  realbintno <- as.numeric(bdate) - min(as.numeric(cdate2)) + 1
-  
-  if (length(cintno) != length(unique(cintno))){
-    stop ("There are duplicate dayrecords in climate data")
-  }
-  
+  if(is.null(spatial) == FALSE){
+    xvar       <- data.frame(Clim = xvar, spatial = spatial[[2]])
+    cdate      <- data.frame(Date = cdate, spatial = spatial[[2]])
+    split.list <- list()
+    NUM <- 1
+    for(i in levels(xvar$spatial)){
+      SUB <- subset(xvar, spatial == i)
+      SUBcdate  <- subset(cdate, spatial == i)
+      SUBcdate2 <- subset(spatialcdate, spatial == i)
+      rownames(SUB) <- seq(1, nrow(SUB), 1)
+      rownames(SUBcdate) <- seq(1, nrow(SUBcdate), 1)
+      NewClim    <- SUB$Clim[match(SUBcdate2$Date, SUBcdate$Date)]
+      Newspatial <- rep(i, times = length(NewClim))
+      split.list[[NUM]] <- data.frame(NewClim, Newspatial)
+      NUM <- NUM + 1
+    }
+    xvar    <- (plyr::rbind.fill(split.list))$NewClim
+    climspatial <- (plyr::rbind.fill(split.list))$Newspatial
+  } else {
+    xvar    <- xvar[match(cdate2, cdate)]
+  }  
   if (cinterval != "day" && cinterval != "week" && cinterval != "month"){
     stop("cinterval should be either day, week or month")
   }
@@ -163,11 +207,21 @@ singlewin <- function(xvar, cdate, bdate, baseline,
   } else if (cinterval == "week"){
     cintno     <- ceiling((as.numeric(cdate2) - min(as.numeric(cdate2)) + 1) / 7)   # atrribute weeknumbers for both datafiles with first week in CLimateData set to cintno 1
     realbintno <- ceiling((as.numeric(bdate) - min(as.numeric(cdate2)) + 1) / 7)
-    newclim    <- data.frame("cintno" = cintno, "xvar" = xvar)
-    newclim2   <- melt(newclim, id = "cintno")
-    newclim3   <- cast(newclim2, cintno~variable, mean)
-    cintno     <- newclim3$cintno
-    xvar       <- newclim3$xvar
+    if(is.null(spatial) == FALSE){
+      newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "spatial" = climspatial)
+      newclim2    <- melt(newclim, id = c("cintno", "spatial"))
+      newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean)
+      newclim3    <- newclim3[order(newclim3$spatial, newclim3$cintno), ]
+      cintno      <- newclim3$cintno
+      xvar        <- newclim3$xvar
+      climspatial <- newclim3$spatial
+    } else {
+      newclim     <- data.frame("cintno" = cintno, "xvar" = xvar)
+      newclim2    <- melt(newclim, id = "cintno")
+      newclim3    <- cast(newclim2, cintno ~ variable, mean)
+      cintno      <- newclim3$cintno
+      xvar        <- newclim3$xvar
+    }
     if (type == "absolute"){ 
       if(is.null(cohort) == FALSE){
         newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort))
@@ -184,15 +238,25 @@ singlewin <- function(xvar, cdate, bdate, baseline,
       bintno <- realbintno
     }
   } else if (cinterval == "month"){ 
-    cmonth     <- month(cdate2)
+    cmonth     <- lubridate::month(cdate2)
     cyear      <- year(cdate2) - min(year(cdate2))
     cintno     <- cmonth + 12 * cyear
-    realbintno <- month(bdate) + 12 * (year(bdate) - min(year(cdate2)))
-    newclim    <- data.frame("cintno" = cintno, "xvar" = xvar)
-    newclim2   <- melt(newclim, id = "cintno")
-    newclim3   <- cast(newclim2, cintno ~ variable, mean)
-    cintno     <- newclim3$cintno
-    xvar       <- newclim3$xvar
+    realbintno <- lubridate::month(bdate) + 12 * (year(bdate) - min(year(cdate2)))
+    if(is.null(spatial) == FALSE){
+      newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "spatial" = climspatial)
+      newclim2    <- melt(newclim, id = c("cintno", "spatial"))
+      newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean)
+      newclim3    <- newclim3[order(newclim3$spatial, newclim3$cintno), ]
+      cintno      <- newclim3$cintno
+      xvar        <- newclim3$xvar
+      climspatial <- newclim3$spatial
+    } else {
+      newclim    <- data.frame("cintno" = cintno, "xvar" = xvar)
+      newclim2   <- melt(newclim, id = "cintno")
+      newclim3   <- cast(newclim2, cintno ~ variable, mean)
+      cintno     <- newclim3$cintno
+      xvar       <- newclim3$xvar 
+    }
     if (type == "absolute"){ 
       if(is.null(cohort) == FALSE){
         newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort))
@@ -277,12 +341,19 @@ singlewin <- function(xvar, cdate, bdate, baseline,
     } 
   }  
   
-  for (i in 1:length(bdate)){
-    for (j in range[2]:range[1]){
-      k <- j - range[2] + 1
-      cmatrix[i, k] <- xvar[which(cintno == bintno[i] - j)]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
+  if(is.null(spatial) == FALSE){
+    cintno = data.frame(Date = cintno, spatial = climspatial)
+    bintno = data.frame(Date = bintno, spatial = spatial[[1]])
+    xvar = data.frame(Clim = xvar, spatial = climspatial)
+    for (i in 1:length(bdate)){
+      cmatrix[i, ] <- xvar[which(cintno$spatial %in% bintno$spatial[i] & cintno$Date %in% (bintno$Date[i] - c(range[2]:range[1]))), 1]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
     }
+  } else {
+    for (i in 1:length(bdate)){
+      cmatrix[i, ] <- xvar[which(cintno %in% (bintno[i] - c(range[2]:range[1])))]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
+    } 
   }
+  cmatrix <- as.matrix(cmatrix[, c(ncol(cmatrix):1)])
   
   if (cmissing == FALSE && length(which(is.na(cmatrix))) > 0){
     if(cinterval == "day"){
@@ -374,8 +445,8 @@ singlewin <- function(xvar, cdate, bdate, baseline,
       LocalBestModel  <- update(modeloutput, .~. + wgdev, data = modeldat)
     }
   } else {
-    LocalBestModel <- my_update(modeloutput, .~., data = modeldat)
+    LocalBestModel <- update(modeloutput, .~., data = modeldat)
   }
   LocalData <- model.frame(LocalBestModel)
-  return(list(BestModel = LocalBestModel, BestModelData = LocalData, Dataset = data.frame(WindowOpen = range[1], WindowClose = range[2])))
+  return(list(BestModel = LocalBestModel, BestModelData = LocalData, Dataset = data.frame(ModelAICc = AICc(LocalBestModel), deltaAICc = AICc(LocalBestModel) - nullmodel, WindowOpen = range[1], WindowClose = range[2])))
 }

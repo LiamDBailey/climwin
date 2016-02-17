@@ -426,3 +426,38 @@ test_that("singlewin gives error when NAs are present in biological data", {
                          func = "lin", cmissing = FALSE))
   
 })
+
+################################################################
+
+#Test spatial replication#
+test_that("spatial replication works with singlewin", {
+  
+  data(Mass, envir = environment())
+  Mass$Plot <- c(rep(c("A", "B"), 23), "A")
+  data(MassClimate, envir = environment())
+  MassClimate$Plot <- "A"
+  MassClimate2 <- MassClimate
+  MassClimate2$Plot <- "B"
+  Clim <- rbind(MassClimate, MassClimate2)
+  
+  test <- singlewin(xvar = list(Temp = Clim$Temp), 
+                    cdate = Clim$Date, bdate = Mass$Date, 
+                    baseline = lm(Mass ~ 1, data = Mass), 
+                    range = c(2, 2), 
+                    type = "relative", stat = "max", 
+                    func = "lin", cmissing = FALSE,
+                    spatial = list(Mass$Plot, Clim$Plot))
+  
+  # Test that singlewin produces an output
+  expect_true(is.list(test))  
+  
+  # Test that the best model has no NAs
+  expect_false(is.na(test[[1]][1]))
+  
+  # Test that there are no NAs in the best model data 
+  expect_equal(length(which(is.na(test[[2]]))), 0)
+  
+  # Test that best model data has atleast 2 columns
+  expect_true(ncol(test[[2]]) >= 2)
+  
+})
