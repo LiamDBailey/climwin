@@ -8,7 +8,7 @@ singlewin(xvar, cdate, bdate, baseline, range, stat, func, type, refday,
   cmissing = FALSE, cinterval = "day", upper = NA, lower = NA,
   binary = FALSE, centre = list(NULL, "both"), cutoff.day = NULL,
   cutoff.month = NULL, furthest = NULL, closest = NULL, thresh = NULL,
-  cohort = NULL)
+  cohort = NULL, spatial = NULL)
 }
 \arguments{
 \item{xvar}{A list object containing all climate variables of interest.
@@ -77,6 +77,18 @@ only within-group means ("mean"), or only within-group variance ("var").}
 \item{furthest,closest}{Redundant parameters. Now replaced by range.}
 
 \item{thresh}{Redundant parameter. Now replaced by binary.}
+
+\item{cohort}{A variable used to group biological records that occur in the same biological
+season but cover multiple years (e.g. southern hemisphere breeding season). Only required
+when type is "absolute". The cohort variable should be in the same dataset as the variable bdate.}
+
+\item{spatial}{A list item containing:
+1. A factor that defines which spatial group (i.e. population) each biological
+record is taken from. The length of this factor should correspond to the length
+of the biological dataset.
+2. A factor that defines which spatial group (i.e. population) climate data
+corresponds to. This length of this factor should correspond to the length of
+the climate dataset.}
 }
 \value{
 Will return a list containing two objects:

@@ -8,7 +8,7 @@ weightwin(xvar, cdate, bdate, baseline, range, func = "lin", type, refday,
   weightfunc = "W", cinterval = "day", par = c(3, 0.2, 0),
   control = list(ndeps = c(0.01, 0.01, 0.01)), method = "L-BFGS-B",
   cutoff.day = NULL, cutoff.month = NULL, furthest = NULL,
-  closest = NULL, cohort = NULL)
+  closest = NULL, cohort = NULL, spatial = NULL)
 }
 \arguments{
 \item{xvar}{A list object containing all climate variables of interest.
@@ -63,6 +63,14 @@ function. Please see \code{\link{optim}} for more detail.}
 \item{cohort}{A varaible used to group biological records that occur in the same biological
 season but cover multiple years (e.g. southern hemisphere breeding season). Only required
 when type is "absolute". The cohort variable should be in the same dataset as the variable bdate.}
+
+\item{spatial}{A list item containing:
+1. A factor that defines which spatial group (i.e. population) each biological
+record is taken from. The length of this factor should correspond to the length
+of the biological dataset.
+2. A factor that defines which spatial group (i.e. population) climate data
+corresponds to. This length of this factor should correspond to the length of
+the climate dataset.}
 }
 \value{
 Produces a constantly updating grid of plots as the optimisation

@@ -8,7 +8,8 @@ randwin(exclude = NA, repeats = 1, xvar, cdate, bdate, baseline, stat,
   range, func, type, refday, cmissing = FALSE, cinterval = "day",
   upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"),
   k = 0, cutoff.day = NULL, cutoff.month = NULL, furthest = NULL,
-  closest = NULL, thresh = NULL, cvk = NULL)
+  closest = NULL, thresh = NULL, cvk = NULL, spatial = NULL,
+  cohort = NULL)
 }
 \arguments{
 \item{exclude}{Two values (distance and duration) which allow users
@@ -91,6 +92,18 @@ minimum of 2 for cross validation to occur.}
 \item{thresh}{Redundant parameter. Now replaced by binary.}
 
 \item{cvk}{Redundant parameter. Now replaced by k.}
+
+\item{spatial}{A list item containing:
+1. A factor that defines which spatial group (i.e. population) each biological
+record is taken from. The length of this factor should correspond to the length
+of the biological dataset.
+2. A factor that defines which spatial group (i.e. population) climate data
+corresponds to. This length of this factor should correspond to the length of
+the climate dataset.}
+
+\item{cohort}{A variable used to group biological records that occur in the same biological
+season but cover multiple years (e.g. southern hemisphere breeding season). Only required
+when type is "absolute". The cohort variable should be in the same dataset as the variable bdate.}
 }
 \value{
 Will return a dataframe containing information on all fitted climate

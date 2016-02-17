@@ -52,6 +52,16 @@
 #'@param binary TRUE or FALSE. Determines whether to use values of upper and
 #'  lower to calculate binary climate data (thresh = TRUE), or to use for
 #'  growing degree days (thresh = FALSE).
+#'@param cohort A variable used to group biological records that occur in the same biological
+#'  season but cover multiple years (e.g. southern hemisphere breeding season). Only required
+#'  when type is "absolute". The cohort variable should be in the same dataset as the variable bdate.
+#'@param spatial A list item containing:
+#'  1. A factor that defines which spatial group (i.e. population) each biological
+#'  record is taken from. The length of this factor should correspond to the length 
+#'  of the biological dataset.
+#'  2. A factor that defines which spatial group (i.e. population) climate data
+#'  corresponds to. This length of this factor should correspond to the length of
+#'  the climate dataset.
 #'@param centre A list item containing:
 #'  1. The variable used for mean centring (e.g. Year, Site, Individual). 
 #'  Please specify the parent environment and variable name (e.g. Biol$Year).
@@ -95,7 +105,7 @@ randwin <- function(exclude = NA, repeats = 1, xvar, cdate, bdate, baseline,
                     upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"), k = 0,
                     cutoff.day = NULL, cutoff.month = NULL,
                     furthest = NULL, closest = NULL, thresh = NULL, cvk = NULL,
-                    spatial = NULL){
+                    spatial = NULL, cohort = NULL){
   
   #Create a centre function that over-rides quadratics etc. when centre != NULL
   if(is.null(centre[[1]]) == FALSE){
@@ -163,7 +173,8 @@ randwin <- function(exclude = NA, repeats = 1, xvar, cdate, bdate, baseline,
                            nrandom = repeats, cmissing = cmissing, cinterval = cinterval,
                            upper = ifelse(binarylevel == "two" || binarylevel == "upper", allcombos$upper[combo], NA),
                            lower = ifelse(binarylevel == "two" || binarylevel == "lower", allcombos$lower[combo], NA),
-                           binary = paste(allcombos$binary[combo]), centre = centre, k = k, spatial = spatial)
+                           binary = paste(allcombos$binary[combo]), centre = centre, k = k, spatial = spatial,
+                           cohort = cohort)
       
       outputrep$Repeat <- r
       

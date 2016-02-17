@@ -6,7 +6,7 @@
 \usage{
 crosswin(xvar, xvar2, cdate, bdate, range, stat, stat2, type, refday,
   cinterval = "day", cmissing = FALSE, cutoff.day = NULL,
-  cutoff.month = NULL, furthest = NULL, closest = NULL)
+  cutoff.month = NULL, furthest = NULL, closest = NULL, spatial = NULL)
 }
 \arguments{
 \item{xvar}{The first climate variable of interest. Please specify the parent
@@ -55,6 +55,14 @@ will be removed from climate window analysis.}
 \item{cutoff.day,cutoff.month}{Redundant parameters. Now replaced by refday.}
 
 \item{furthest,closest}{Redundant parameters. Now repalced by range.}
+
+\item{spatial}{A list item containing:
+1. A factor that defines which spatial group (i.e. population) each biological
+record is taken from. The length of this factor should correspond to the length
+of the biological dataset.
+2. A factor that defines which spatial group (i.e. population) climate data
+corresponds to. This length of this factor should correspond to the length of
+the climate dataset.}
 }
 \value{
 Will return a dataframe containing the correlation between the two

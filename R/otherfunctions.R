@@ -594,7 +594,27 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
 
   
   if (is.null(xvar2) == FALSE){
-    xvar2 <- xvar2[match(cdate2, cdate)]
+    if(is.null(spatial) == FALSE){
+      xvar2      <- data.frame(Clim = xvar2, spatial = spatial[[2]])
+      cdatetemp  <- data.frame(Date = cdate, spatial = spatial[[2]])
+      split.list <- list()
+      NUM <- 1
+      for(i in levels(xvar2$spatial)){
+        SUB <- subset(xvar2, spatial == i)
+        SUBcdate  <- subset(cdatetemp, spatial == i)
+        SUBcdate2 <- subset(spatialcdate, spatial == i)
+        rownames(SUB) <- seq(1, nrow(SUB), 1)
+        rownames(SUBcdate) <- seq(1, nrow(SUBcdate), 1)
+        NewClim    <- SUB$Clim[match(SUBcdate2$Date, SUBcdate$Date)]
+        Newspatial <- rep(i, times = length(NewClim))
+        split.list[[NUM]] <- data.frame(NewClim, Newspatial)
+        NUM <- NUM + 1
+      }
+      xvar2    <- (plyr::rbind.fill(split.list))$NewClim
+      climspatial <- (plyr::rbind.fill(split.list))$Newspatial
+    } else {
+      xvar2    <- xvar2[match(cdate2, cdate)]
+    }
   }
   
 
@@ -619,6 +639,8 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
   } else {
     xvar    <- xvar[match(cdate2, cdate)]
   }
+  
+  
   
   if (cinterval != "day" && cinterval != "week" && cinterval != "month"){
     stop("cinterval should be either day, week or month")
@@ -722,7 +744,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
             bintno[as.numeric(rownames(sub))] <- as.numeric(as.Date(paste(refday[1], refday[2], min(lubridate::year(sub$bdate)), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1
           }
         } else {
-          bintno            <- as.numeric(as.Date(paste(refday[1], refday[2], year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1 
+          bintno <- as.numeric(as.Date(paste(refday[1], refday[2], year(bdate), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1 
         }
       } else {
         bintno <- realbintno
@@ -731,7 +753,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       cintno     <- ceiling((as.numeric(cdate2) - min(as.numeric(cdate2)) + 1) / 7)   # atrribute weeknumbers for both datafiles with first week in CLimateData set to cintno 1
       realbintno <- ceiling((as.numeric(bdate) - min(as.numeric(cdate2)) + 1) / 7)
       if(is.null(spatial) == FALSE){
-        newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "xvar2" = xvar2, "spatial" = spatial)
+        newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "xvar2" = xvar2, "spatial" = climspatial)
         newclim2    <- melt(newclim, id = c("cintno", "spatial"))
         newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean)
         cintno      <- newclim3$cintno
@@ -767,7 +789,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       cintno     <- cmonth + 12 * cyear
       realbintno <- lubridate::month(bdate) + 12 * (year(bdate) - min(year(cdate2)))
       if(is.null(spatial) == FALSE){
-        newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "xvar2" = xvar2, "spatial" = spatial)
+        newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "xvar2" = xvar2, "spatial" = climspatial)
         newclim2    <- melt(newclim, id = c("cintno", "spatial"))
         newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean)
         cintno      <- newclim3$cintno
@@ -800,11 +822,22 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
     }
   }
   if(is.null(spatial) == FALSE){
-    return(list(cintno = data.frame(Date = cintno, spatial = climspatial),
-                bintno = data.frame(Date = bintno, spatial = spatial[[1]]),
-                xvar = data.frame(Clim = xvar, spatial = climspatial), xvar2 = xvar2))
+    if(is.null(xvar2) == FALSE){
+      return(list(cintno = data.frame(Date = cintno, spatial = climspatial),
+                  bintno = data.frame(Date = bintno, spatial = spatial[[1]]),
+                  xvar = data.frame(Clim = xvar, spatial = climspatial), 
+                  xvar2 = data.frame(Clim = xvar2, spatial = climspatial)))
+    } else {
+      return(list(cintno = data.frame(Date = cintno, spatial = climspatial),
+                  bintno = data.frame(Date = bintno, spatial = spatial[[1]]),
+                  xvar = data.frame(Clim = xvar, spatial = climspatial)))
+    }
   } else {
-    return(list(cintno = cintno, bintno = bintno, xvar = xvar, xvar2 = xvar2))
+    if(is.null(xvar2) == FALSE){
+      return(list(cintno = cintno, bintno = bintno, xvar = xvar, xvar2 = xvar2))
+    } else {
+      return(list(cintno = cintno, bintno = bintno, xvar = xvar)) 
+    }
   }
 }
 

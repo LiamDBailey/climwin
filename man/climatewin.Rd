@@ -7,9 +7,9 @@
 climatewin(exclude = NA, xvar, cdate, bdate, baseline, type, refday,
   stat = "mean", func = "lin", range, cmissing = FALSE,
   cinterval = "day", k = 0, upper = NA, lower = NA, binary = FALSE,
-  centre = list(NULL, "both"), cutoff.day = NULL, cutoff.month = NULL,
-  furthest = NULL, closest = NULL, thresh = NULL, cvk = NULL,
-  cohort = NULL)
+  centre = list(NULL, "both"), spatial = NULL, cutoff.day = NULL,
+  cutoff.month = NULL, furthest = NULL, closest = NULL, thresh = NULL,
+  cvk = NULL, cohort = NULL)
 }
 \arguments{
 \item{exclude}{Two values (distance and duration) which allow users
@@ -82,6 +82,14 @@ Please specify the parent environment and variable name (e.g. Biol$Year).
 2. Whether the model should include both within-group means and variance ("both"),
 only within-group means ("mean"), or only within-group variance ("var").}
 
+\item{spatial}{A list item containing:
+1. A factor that defines which spatial group (i.e. population) each biological
+record is taken from. The length of this factor should correspond to the length
+of the biological dataset.
+2. A factor that defines which spatial group (i.e. population) climate data
+corresponds to. This length of this factor should correspond to the length of
+the climate dataset.}
+
 \item{cutoff.day,cutoff.month}{Redundant parameters. Now replaced by refday.}
 
 \item{furthest,closest}{Redundant parameters. Now replaced by range.}
@@ -90,7 +98,7 @@ only within-group means ("mean"), or only within-group variance ("var").}
 
 \item{cvk}{Redundant parameter. Now replaced by k.}
 
-\item{cohort}{A varaible used to group biological records that occur in the same biological
+\item{cohort}{A variable used to group biological records that occur in the same biological
 season but cover multiple years (e.g. southern hemisphere breeding season). Only required
 when type is "absolute". The cohort variable should be in the same dataset as the variable bdate.}
 }

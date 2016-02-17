@@ -32,6 +32,13 @@
 #'  conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the units 
 #'  of parameters 'furthest' and 'closest' will differ depending on the choice 
 #'  of cinterval.
+#'@param spatial A list item containing:
+#'  1. A factor that defines which spatial group (i.e. population) each biological
+#'  record is taken from. The length of this factor should correspond to the length 
+#'  of the biological dataset.
+#'  2. A factor that defines which spatial group (i.e. population) climate data
+#'  corresponds to. This length of this factor should correspond to the length of
+#'  the climate dataset.
 #'@param par Shape, scale and location parameters of the Weibull of GEV weight 
 #'  function used as start weight function. For Weibull : Shape and scale 
 #'  parameters must be greater than 0, while location parameter must be less 
