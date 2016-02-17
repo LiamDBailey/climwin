@@ -149,7 +149,7 @@ autowin <- function(reference, xvar, cdate, bdate, baseline, range, stat, func, 
   maxmodno   <- (duration * (duration + 1)) / 2 
   cont       <- convertdate(bdate = bdate, cdate = cdate, xvar = xvar, 
                              cinterval = cinterval, type = type, 
-                             refday = refday, cohort = cohort)
+                             refday = refday, cohort = cohort, spatial = NULL)
   modno      <- 1
   modlist    <- list()
   cmatrix    <- matrix(ncol = (duration), nrow = length(bdate))

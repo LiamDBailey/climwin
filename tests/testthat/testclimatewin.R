@@ -465,7 +465,7 @@ test_that("slope and log return error", {
   data(MassClimate, envir = environment())
   
   # Test that an error is produced
-  expect_error(cliamtewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date,
+  expect_error(climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date,
                           bdate = Mass$Date, baseline = lm(Mass ~ 1, data = Mass),
                           range = c(2, 1), type = "relative", stat = "slope",
                           func = "log"))  
@@ -479,7 +479,7 @@ test_that("slope and inv return error", {
   data(MassClimate, envir = environment())
   
   # Test that an error is produced
-  expect_error(cliamtewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date,
+  expect_error(climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date,
                           bdate = Mass$Date, baseline = lm(Mass ~ 1, data = Mass),
                           range = c(2, 1), type = "relative", stat = "slope",
                           func = "inv"))  
@@ -898,6 +898,184 @@ test_that("absolute window works", {
                      type = "absolute", refday = c(20, 5), 
                      stat = "max", func = "lin", cmissing=FALSE,
                      cohort = Mass$Plot)
+  
+  # Test that climatewin has produced an output
+  expect_true(is.list(test))
+  
+  # Test that a best model has been fitted
+  expect_false(is.na((test[[1]]$BestModel)[1]))
+  
+  # Test there are no NAs in the best model data
+  expect_equal(length(which(is.na(test[[1]]$BestModelData))), 0)
+  
+  # Test that the best model data has at least 2 parameters
+  expect_true(ncol(test[[1]]$BestModelData) >= 2)
+  
+})
+
+###############################################################
+
+# Test spatial replication #
+test_that("spatial replication works in climatewin", {
+  
+  data(Mass, envir = environment())
+  Mass$Plot <- c(rep(c("A", "B"), 23), "A")
+  data(MassClimate, envir = environment())
+  MassClimate$Plot <- "A"
+  MassClimate2 <- MassClimate
+  MassClimate2$Plot <- "B"
+  Clim <- rbind(MassClimate, MassClimate2)
+  
+  test <- climatewin(xvar = list(Clim$Temp), cdate = Clim$Date, bdate = Mass$Date, 
+                     baseline = lm(Mass ~ 1, data = Mass), range = c(2, 2), 
+                     type = "absolute", refday = c(20, 5), 
+                     stat = "max", func = "lin", cmissing=FALSE,
+                     spatial = list(Mass$Plot, Clim$Plot))
+  
+  # Test that climatewin has produced an output
+  expect_true(is.list(test))
+  
+  # Test that a best model has been fitted
+  expect_false(is.na((test[[1]]$BestModel)[1]))
+  
+  # Test there are no NAs in the best model data
+  expect_equal(length(which(is.na(test[[1]]$BestModelData))), 0)
+  
+  # Test that the best model data has at least 2 parameters
+  expect_true(ncol(test[[1]]$BestModelData) >= 2)
+  
+})
+
+test_that("spatial replication works in climatewin with week", {
+  
+  data(Mass, envir = environment())
+  Mass$Plot <- c(rep(c("A", "B"), 23), "A")
+  data(MassClimate, envir = environment())
+  MassClimate$Plot <- "A"
+  MassClimate2 <- MassClimate
+  MassClimate2$Plot <- "B"
+  Clim <- rbind(MassClimate, MassClimate2)
+  
+  test <- climatewin(xvar = list(Clim$Temp), cdate = Clim$Date, bdate = Mass$Date, 
+                     baseline = lm(Mass ~ 1, data = Mass), range = c(2, 2), 
+                     type = "absolute", refday = c(20, 5), 
+                     cinterval = "week",
+                     stat = "max", func = "lin", cmissing=FALSE,
+                     spatial = list(Mass$Plot, Clim$Plot))
+  
+  # Test that climatewin has produced an output
+  expect_true(is.list(test))
+  
+  # Test that a best model has been fitted
+  expect_false(is.na((test[[1]]$BestModel)[1]))
+  
+  # Test there are no NAs in the best model data
+  expect_equal(length(which(is.na(test[[1]]$BestModelData))), 0)
+  
+  # Test that the best model data has at least 2 parameters
+  expect_true(ncol(test[[1]]$BestModelData) >= 2)
+  
+})
+
+test_that("spatial replication works in climatewin with month", {
+  
+  data(Mass, envir = environment())
+  Mass$Plot <- c(rep(c("A", "B"), 23), "A")
+  data(MassClimate, envir = environment())
+  MassClimate$Plot <- "A"
+  MassClimate2 <- MassClimate
+  MassClimate2$Plot <- "B"
+  Clim <- rbind(MassClimate, MassClimate2)
+  
+  test <- climatewin(xvar = list(Clim$Temp), cdate = Clim$Date, bdate = Mass$Date, 
+                     baseline = lm(Mass ~ 1, data = Mass), range = c(2, 2), 
+                     type = "absolute", refday = c(20, 5), 
+                     cinterval = "month",
+                     stat = "max", func = "lin", cmissing=FALSE,
+                     spatial = list(Mass$Plot, Clim$Plot))
+  
+  # Test that climatewin has produced an output
+  expect_true(is.list(test))
+  
+  # Test that a best model has been fitted
+  expect_false(is.na((test[[1]]$BestModel)[1]))
+  
+  # Test there are no NAs in the best model data
+  expect_equal(length(which(is.na(test[[1]]$BestModelData))), 0)
+  
+  # Test that the best model data has at least 2 parameters
+  expect_true(ncol(test[[1]]$BestModelData) >= 2)
+  
+})
+
+test_that("spatial replication works in climatewin with upper", {
+  
+  data(Mass, envir = environment())
+  Mass$Plot <- c(rep(c("A", "B"), 23), "A")
+  data(MassClimate, envir = environment())
+  MassClimate$Plot <- "A"
+  MassClimate2 <- MassClimate
+  MassClimate2$Plot <- "B"
+  Clim <- rbind(MassClimate, MassClimate2)
+  
+  test <- climatewin(xvar = list(Clim$Temp), cdate = Clim$Date, bdate = Mass$Date, 
+                     baseline = lm(Mass ~ 1, data = Mass), range = c(2, 2), 
+                     type = "absolute", refday = c(20, 5), 
+                     cinterval = "day", upper = 15,
+                     stat = "max", func = "lin", cmissing=FALSE,
+                     spatial = list(Mass$Plot, Clim$Plot))
+  
+  # Test that climatewin has produced an output
+  expect_true(is.list(test))
+  
+  # Test that a best model has been fitted
+  expect_false(is.na((test[[1]]$BestModel)[1]))
+  
+  # Test there are no NAs in the best model data
+  expect_equal(length(which(is.na(test[[1]]$BestModelData))), 0)
+  
+  # Test that the best model data has at least 2 parameters
+  expect_true(ncol(test[[1]]$BestModelData) >= 2)
+  
+})
+
+test_that("spatial replication with climatewin returns an error with NAs and cmissing FALSE", {
+  
+  data(Mass, envir = environment())
+  Mass$Plot <- c(rep(c("A", "B"), 23), "A")
+  data(MassClimate, envir = environment())
+  MassClimate$Plot <- "A"
+  MassClimate2 <- MassClimate
+  MassClimate2$Plot <- "B"
+  Clim <- rbind(MassClimate, MassClimate2)
+  Clim <- Clim[-which(Clim$Date == "20/05/1979"), ]
+  
+  expect_error(climatewin(xvar = list(Clim$Temp), cdate = Clim$Date, bdate = Mass$Date, 
+                     baseline = lm(Mass ~ 1, data = Mass), range = c(1, 0), 
+                     type = "absolute", refday = c(20, 5), 
+                     cinterval = "day",
+                     stat = "max", func = "lin", cmissing = FALSE,
+                     spatial = list(Mass$Plot, Clim$Plot)))
+  
+})
+
+test_that("spatial replication works with climatewin with NAs and cmissing TRUE", {
+  
+  data(Mass, envir = environment())
+  Mass$Plot <- c(rep(c("A", "B"), 23), "A")
+  data(MassClimate, envir = environment())
+  MassClimate$Plot <- "A"
+  MassClimate2 <- MassClimate
+  MassClimate2$Plot <- "B"
+  Clim <- rbind(MassClimate, MassClimate2)
+  Clim <- Clim[-which(Clim$Date == "20/05/1979"), ]
+  
+  test <- climatewin(xvar = list(Clim$Temp), cdate = Clim$Date, bdate = Mass$Date, 
+                          baseline = lm(Mass ~ 1, data = Mass), range = c(1, 0), 
+                          type = "absolute", refday = c(20, 5), 
+                          cinterval = "day",
+                          stat = "max", func = "lin", cmissing = TRUE,
+                          spatial = list(Mass$Plot, Clim$Plot))
   
   # Test that climatewin has produced an output
   expect_true(is.list(test))

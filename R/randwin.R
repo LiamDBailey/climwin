@@ -94,7 +94,8 @@ randwin <- function(exclude = NA, repeats = 1, xvar, cdate, bdate, baseline,
                     cmissing = FALSE, cinterval = "day",
                     upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"), k = 0,
                     cutoff.day = NULL, cutoff.month = NULL,
-                    furthest = NULL, closest = NULL, thresh = NULL, cvk = NULL){
+                    furthest = NULL, closest = NULL, thresh = NULL, cvk = NULL,
+                    spatial = NULL){
   
   #Create a centre function that over-rides quadratics etc. when centre != NULL
   if(is.null(centre[[1]]) == FALSE){
@@ -162,7 +163,7 @@ randwin <- function(exclude = NA, repeats = 1, xvar, cdate, bdate, baseline,
                            nrandom = repeats, cmissing = cmissing, cinterval = cinterval,
                            upper = ifelse(binarylevel == "two" || binarylevel == "upper", allcombos$upper[combo], NA),
                            lower = ifelse(binarylevel == "two" || binarylevel == "lower", allcombos$lower[combo], NA),
-                           binary = paste(allcombos$binary[combo]), centre = centre, k = k)
+                           binary = paste(allcombos$binary[combo]), centre = centre, k = k, spatial = spatial)
       
       outputrep$Repeat <- r
       

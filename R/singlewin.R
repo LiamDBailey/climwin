@@ -96,7 +96,8 @@ singlewin <- function(xvar, cdate, bdate, baseline,
                       cmissing = FALSE, cinterval = "day",
                       upper = NA, lower = NA, binary = FALSE,
                       centre = list(NULL, "both"), cutoff.day = NULL, cutoff.month = NULL,
-                      furthest = NULL, closest = NULL, thresh = NULL, cohort = NULL){
+                      furthest = NULL, closest = NULL, thresh = NULL, cohort = NULL,
+                      spatial = NULL){
   
   if(is.null(thresh) == FALSE){
     stop("Parameter 'thresh' is now redundant. Please use parameter 'binary' instead.")

@@ -28,30 +28,62 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
                            cinterval = cinterval, type = type, 
                            refday = refday, cohort = cohort, spatial = spatial)   # create new climate dataframe with continuous daynumbers, leap days are not a problem
   
-  if (cinterval == "day"){
-    if ( (min(cont$bintno) - range[1]) < min(cont$cintno)){
-      stop("You do not have enough climate data to search that far back. Please adjust the value of range or add additioNAl climate data.")
+  if(is.null(spatial) == FALSE){
+    
+    if (cinterval == "day"){
+      if ( (min(cont$bintno$Date) - range[1]) < min(cont$cintno$Date)){
+        stop("You do not have enough climate data to search that far back. Please adjust the value of range or add additioNAl climate data.")
+      }
     }
-  }
-  
-  if (cinterval == "week"){
-    if ( (min(cont$bintno) - range[1] * 7) < min(cont$cintno)){
-      stop("You do not have enough climate data to search that far back. Please adjust the value of range or add additioNAl climate data.")
+    
+    if (cinterval == "week"){
+      if ( (min(cont$bintno$Date) - range[1] * 7) < min(cont$cintno$Date)){
+        stop("You do not have enough climate data to search that far back. Please adjust the value of range or add additioNAl climate data.")
+      }
     }
-  }
-  
-  if (cinterval == "month"){
-    if ( (as.numeric(min(as.Date(bdate, format = "%d/%m/%Y")) - months(range[1])) - (as.numeric(min(as.Date(cdate, format = "%d/%m/%Y"))))) <= 0){
-      stop("You do not have enough climate data to search that far back. Please adjust the value of range or add additioNAl climate data.")
+    
+    if (cinterval == "month"){
+      if ( (as.numeric(min(as.Date(bdate, format = "%d/%m/%Y")) - months(range[1])) - (as.numeric(min(as.Date(cdate, format = "%d/%m/%Y"))))) <= 0){
+        stop("You do not have enough climate data to search that far back. Please adjust the value of range or add additioNAl climate data.")
+      }
     }
-  }
-  
-  if (max(cont$bintno) > max(cont$cintno)){
-    if (type == "absolute"){
-      stop("You need more recent biological data. This error may be caused by your choice of refday")
-    } else {
-      stop("You need more recent biological data")
+    
+    if (max(cont$bintno$Date) > max(cont$cintno$Date)){
+      if (type == "absolute"){
+        stop("You need more recent biological data. This error may be caused by your choice of refday")
+      } else {
+        stop("You need more recent biological data")
+      }
     }
+    
+  } else {
+    
+    if (cinterval == "day"){
+      if ( (min(cont$bintno) - range[1]) < min(cont$cintno)){
+        stop("You do not have enough climate data to search that far back. Please adjust the value of range or add additioNAl climate data.")
+      }
+    }
+    
+    if (cinterval == "week"){
+      if ( (min(cont$bintno) - range[1] * 7) < min(cont$cintno)){
+        stop("You do not have enough climate data to search that far back. Please adjust the value of range or add additioNAl climate data.")
+      }
+    }
+    
+    if (cinterval == "month"){
+      if ( (as.numeric(min(as.Date(bdate, format = "%d/%m/%Y")) - months(range[1])) - (as.numeric(min(as.Date(cdate, format = "%d/%m/%Y"))))) <= 0){
+        stop("You do not have enough climate data to search that far back. Please adjust the value of range or add additioNAl climate data.")
+      }
+    }
+    
+    if (max(cont$bintno) > max(cont$cintno)){
+      if (type == "absolute"){
+        stop("You need more recent biological data. This error may be caused by your choice of refday")
+      } else {
+        stop("You need more recent biological data")
+      }
+    }
+    
   }
   
   modno     <- 1  #Create a model number variable that will count up during the loop#
@@ -76,30 +108,60 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   if (leng != length(bdate)){
       stop("NA values present in biological response. Please remove NA values")
   }
-  
-  if (is.na(upper) == FALSE && is.na(lower) == TRUE){
-    if (binary == TRUE){
-      cont$xvar <- ifelse (cont$xvar > upper, 1, 0)
-    } else {
-      cont$xvar <- ifelse (cont$xvar > upper, cont$xvar, 0)
+
+  if(is.null(spatial) == FALSE){
+    
+    if (is.na(upper) == FALSE && is.na(lower) == TRUE){
+      if (binary == TRUE){
+        cont$xvar$Clim <- ifelse (cont$xvar$Clim > upper, 1, 0)
+      } else {
+        cont$xvar$Clim <- ifelse (cont$xvar$Clim > upper, cont$xvar$Clim, 0)
+      }
     }
-  }
-  
-  if (is.na(lower) == FALSE && is.na(upper) == TRUE){
-    if (binary == TRUE){
-      cont$xvar <- ifelse (cont$xvar < lower, 1, 0)
-    } else {
-      cont$xvar <- ifelse (cont$xvar < lower, cont$xvar, 0)
+    
+    if (is.na(lower) == FALSE && is.na(upper) == TRUE){
+      if (binary == TRUE){
+        cont$xvar$Clim <- ifelse (cont$xvar$Clim < lower, 1, 0)
+      } else {
+        cont$xvar$Clim <- ifelse (cont$xvar$Clim < lower, cont$xvar$Clim, 0)
+      }
     }
-  }
-  
-  if (is.na(lower) == FALSE && is.na(upper) == FALSE){
-    if (binary == TRUE){
-      cont$xvar <- ifelse (cont$xvar > lower & cont$xvar < upper, 1, 0)
-    } else {
-      cont$xvar <- ifelse (cont$xvar > lower & cont$xvar < upper, cont$xvar - lower, 0)
+    
+    if (is.na(lower) == FALSE && is.na(upper) == FALSE){
+      if (binary == TRUE){
+        cont$xvar$Clim <- ifelse (cont$xvar$Clim > lower & cont$xvar$Clim < upper, 1, 0)
+      } else {
+        cont$xvar$Clim <- ifelse (cont$xvar$Clim > lower & cont$xvar$Clim < upper, cont$xvar$Clim - lower, 0)
+      } 
+    }
+    
+  } else {
+    
+    if (is.na(upper) == FALSE && is.na(lower) == TRUE){
+      if (binary == TRUE){
+        cont$xvar <- ifelse (cont$xvar > upper, 1, 0)
+      } else {
+        cont$xvar <- ifelse (cont$xvar > upper, cont$xvar, 0)
+      }
+    }
+    
+    if (is.na(lower) == FALSE && is.na(upper) == TRUE){
+      if (binary == TRUE){
+        cont$xvar <- ifelse (cont$xvar < lower, 1, 0)
+      } else {
+        cont$xvar <- ifelse (cont$xvar < lower, cont$xvar, 0)
+      }
+    }
+    
+    if (is.na(lower) == FALSE && is.na(upper) == FALSE){
+      if (binary == TRUE){
+        cont$xvar <- ifelse (cont$xvar > lower & cont$xvar < upper, 1, 0)
+      } else {
+        cont$xvar <- ifelse (cont$xvar > lower & cont$xvar < upper, cont$xvar - lower, 0)
+      } 
     } 
-  }  
+    
+  }
   
   if(is.null(spatial) == FALSE){
     for (i in 1:length(bdate)){
@@ -112,18 +174,35 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   }
   cmatrix <- as.matrix(cmatrix[, c(ncol(cmatrix):1)])
   
-  if (cmissing == FALSE && length(which(is.na(cmatrix))) > 0){
-    if (cinterval == "day"){
-      .GlobalEnv$missing <- as.Date(cont$cintno[is.na(cont$xvar)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1)
+  if(cmissing == FALSE && length(which(is.na(cmatrix))) > 0){
+    if(is.null(spatial) == FALSE){
+      
+      if (cinterval == "day"){
+        .GlobalEnv$missing <- as.Date(cont$cintno$Date[is.na(cont$xvar$Clim)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1)
+      }
+      if (cinterval == "month"){
+        .GlobalEnv$missing <- c(paste("Month:", lubridate::month(as.Date(cont$cintno$Date[is.na(cont$xvar$Clim)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1)),
+                                      "Year:", lubridate::year(as.Date(cont$cintno$Date[is.na(cont$xvar$Clim)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1))))
+      }
+      if (cinterval == "week"){
+        .GlobalEnv$missing <- c(paste("Week:", lubridate::month(as.Date(cont$cintno$Date[is.na(cont$xvar$Clim)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1)),
+                                      "Year:", lubridate::year(as.Date(cont$cintno$Date[is.na(cont$xvar$Clim)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1))))
+      }
+    } else {
+      
+      if (cinterval == "day"){
+        .GlobalEnv$missing <- as.Date(cont$cintno[is.na(cont$xvar)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1)
+      }
+      if (cinterval == "month"){
+        .GlobalEnv$missing <- c(paste("Month:", lubridate::month(as.Date(cont$cintno[is.na(cont$xvar)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1)),
+                                      "Year:", lubridate::year(as.Date(cont$cintno[is.na(cont$xvar)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1))))
+      }
+      if (cinterval == "week"){
+        .GlobalEnv$missing <- c(paste("Week:", lubridate::month(as.Date(cont$cintno[is.na(cont$xvar)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1)),
+                                      "Year:", lubridate::year(as.Date(cont$cintno[is.na(cont$xvar)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1))))
+      }
     }
-    if (cinterval == "month"){
-      .GlobalEnv$missing <- c(paste("Month:", lubridate::month(as.Date(cont$cintno[is.na(cont$xvar)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1)),
-                                    "Year:", lubridate::year(as.Date(cont$cintno[is.na(cont$xvar)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1))))
-    }
-    if (cinterval == "week"){
-      .GlobalEnv$missing <- c(paste("Week:", lubridate::month(as.Date(cont$cintno[is.na(cont$xvar)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1)),
-                                    "Year:", lubridate::year(as.Date(cont$cintno[is.na(cont$xvar)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1))))
-    }
+
     stop(c("Climate data should not contain NA values: ", length(.GlobalEnv$missing),
            " NA value(s) found. Please add missing climate data or set cmissing=TRUE.
            See object missing for all missing climate data"))
@@ -489,9 +568,13 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       NUM <- NUM + 1
     }
     spatialcdate <- plyr::rbind.fill(SUB.DATE)
-    cdate2 <- spatialcdate$Date
+    cdate2       <- spatialcdate$Date
+    cintno       <- as.numeric(cdate2) - min(as.numeric(cdate2)) + 1   # atrribute daynumbers for both datafiles with first date in CLimateData set to cintno 1
+    realbintno   <- as.numeric(bdate) - min(as.numeric(cdate2)) + 1
   } else {
-    cdate2 <- seq(min(as.Date(cdate, format = "%d/%m/%Y")), max(as.Date(cdate, format = "%d/%m/%Y")), "days")
+    cdate2     <- seq(min(as.Date(cdate, format = "%d/%m/%Y")), max(as.Date(cdate, format = "%d/%m/%Y")), "days")
+    cintno     <- as.numeric(cdate2) - min(as.numeric(cdate2)) + 1   # atrribute daynumbers for both datafiles with first date in CLimateData set to cintno 1
+    realbintno <- as.numeric(bdate) - min(as.numeric(cdate2)) + 1
     if (length(cintno) != length(unique(cintno))){
       stop ("There are duplicate dayrecords in climate data")
     }
@@ -514,9 +597,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
     xvar2 <- xvar2[match(cdate2, cdate)]
   }
   
-  cintno     <- as.numeric(cdate2) - min(as.numeric(cdate2)) + 1   # atrribute daynumbers for both datafiles with first date in CLimateData set to cintno 1
-  realbintno <- as.numeric(bdate) - min(as.numeric(cdate2)) + 1
-  
+
   if(is.null(spatial) == FALSE){
     xvar       <- data.frame(Clim = xvar, spatial = spatial[[2]])
     cdate      <- data.frame(Date = cdate, spatial = spatial[[2]])
@@ -529,7 +610,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       rownames(SUB) <- seq(1, nrow(SUB), 1)
       rownames(SUBcdate) <- seq(1, nrow(SUBcdate), 1)
       NewClim    <- SUB$Clim[match(SUBcdate2$Date, SUBcdate$Date)]
-      Newspatial <- SUB$spatial[match(SUBcdate2$Date, SUBcdate$Date)]
+      Newspatial <- rep(i, times = length(NewClim))
       split.list[[NUM]] <- data.frame(NewClim, Newspatial)
       NUM <- NUM + 1
     }
@@ -561,13 +642,23 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
         bintno <- realbintno
       }
     } else if (cinterval == "week"){
-      cintno     <- ceiling((as.numeric(cdate2) - min(as.numeric(cdate2)) + 1) / 7)   # atrribute weeknumbers for both datafiles with first week in CLimateData set to cintno 1
-      realbintno <- ceiling((as.numeric(bdate) - min(as.numeric(cdate2)) + 1) / 7)
-      newclim    <- data.frame("cintno" = cintno, "xvar" = xvar)
-      newclim2   <- melt(newclim, id = "cintno")
-      newclim3   <- cast(newclim2, cintno ~ variable, mean)
-      cintno     <- newclim3$cintno
-      xvar       <- newclim3$xvar
+      cintno      <- ceiling((as.numeric(cdate2) - min(as.numeric(cdate2)) + 1) / 7)   # atrribute weeknumbers for both datafiles with first week in CLimateData set to cintno 1
+      realbintno  <- ceiling((as.numeric(bdate) - min(as.numeric(cdate2)) + 1) / 7)
+      if(is.null(spatial) == FALSE){
+        newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "spatial" = climspatial)
+        newclim2    <- melt(newclim, id = c("cintno", "spatial"))
+        newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean)
+        newclim3    <- newclim3[order(newclim3$spatial, newclim3$cintno), ]
+        cintno      <- newclim3$cintno
+        xvar        <- newclim3$xvar
+        climspatial <- newclim3$spatial
+      } else {
+        newclim     <- data.frame("cintno" = cintno, "xvar" = xvar)
+        newclim2    <- melt(newclim, id = "cintno")
+        newclim3    <- cast(newclim2, cintno ~ variable, mean)
+        cintno      <- newclim3$cintno
+        xvar        <- newclim3$xvar
+      }
       if (type == "absolute"){
         if(is.null(cohort) == FALSE){
           newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort))
@@ -588,11 +679,21 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       cyear      <- year(cdate2) - min(year(cdate2))
       cintno     <- cmonth + 12 * cyear
       realbintno <- lubridate::month(bdate) + 12 * (year(bdate) - min(year(cdate2)))
-      newclim    <- data.frame("cintno" = cintno, "xvar" = xvar)
-      newclim2   <- melt(newclim, id = "cintno")
-      newclim3   <- cast(newclim2, cintno ~ variable, mean)
-      cintno     <- newclim3$cintno
-      xvar       <- newclim3$xvar
+      if(is.null(spatial) == FALSE){
+        newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "spatial" = climspatial)
+        newclim2    <- melt(newclim, id = c("cintno", "spatial"))
+        newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean)
+        newclim3    <- newclim3[order(newclim3$spatial, newclim3$cintno), ]
+        cintno      <- newclim3$cintno
+        xvar        <- newclim3$xvar
+        climspatial <- newclim3$spatial
+      } else {
+        newclim    <- data.frame("cintno" = cintno, "xvar" = xvar)
+        newclim2   <- melt(newclim, id = "cintno")
+        newclim3   <- cast(newclim2, cintno ~ variable, mean)
+        cintno     <- newclim3$cintno
+        xvar       <- newclim3$xvar 
+      }
       if (type == "absolute"){
         if(is.null(cohort) == FALSE){
           newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort))
@@ -629,12 +730,22 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
     } else if (cinterval == "week"){
       cintno     <- ceiling((as.numeric(cdate2) - min(as.numeric(cdate2)) + 1) / 7)   # atrribute weeknumbers for both datafiles with first week in CLimateData set to cintno 1
       realbintno <- ceiling((as.numeric(bdate) - min(as.numeric(cdate2)) + 1) / 7)
-      newclim    <- data.frame("cintno" = cintno, "xvar" = xvar, "xvar2" = xvar2)
-      newclim2   <- melt(newclim, id = "cintno")
-      newclim3   <- cast(newclim2, cintno ~ variable, mean)
-      cintno     <- newclim3$cintno
-      xvar       <- newclim3$xvar
-      xvar2      <- newclim3$xvar2
+      if(is.null(spatial) == FALSE){
+        newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "xvar2" = xvar2, "spatial" = spatial)
+        newclim2    <- melt(newclim, id = c("cintno", "spatial"))
+        newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean)
+        cintno      <- newclim3$cintno
+        xvar        <- newclim3$xvar
+        xvar2       <- newclim3$xvar2
+        climspatial <- newclim3$spatial
+      } else {
+        newclim    <- data.frame("cintno" = cintno, "xvar" = xvar, "xvar2" = xvar2)
+        newclim2   <- melt(newclim, id = "cintno")
+        newclim3   <- cast(newclim2, cintno ~ variable, mean)
+        cintno     <- newclim3$cintno
+        xvar       <- newclim3$xvar
+        xvar2      <- newclim3$xvar2 
+      }
       if (type == "absolute"){ 
         if(is.null(cohort) == FALSE){
           newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort))
@@ -655,12 +766,22 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       cyear      <- year(cdate2) - min(year(cdate2))
       cintno     <- cmonth + 12 * cyear
       realbintno <- lubridate::month(bdate) + 12 * (year(bdate) - min(year(cdate2)))
-      newclim    <- data.frame("cintno" = cintno, "xvar" = xvar, "xvar2" = xvar2)
-      newclim2   <- melt(newclim, id = "cintno")
-      newclim3   <- cast(newclim2, cintno ~ variable, mean)
-      cintno     <- newclim3$cintno
-      xvar       <- newclim3$xvar
-      xvar2      <- newclim3$xvar2
+      if(is.null(spatial) == FALSE){
+        newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "xvar2" = xvar2, "spatial" = spatial)
+        newclim2    <- melt(newclim, id = c("cintno", "spatial"))
+        newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean)
+        cintno      <- newclim3$cintno
+        xvar        <- newclim3$xvar
+        xvar2       <- newclim3$xvar2
+        climspatial <- newclim3$spatial
+      } else {
+        newclim    <- data.frame("cintno" = cintno, "xvar" = xvar, "xvar2" = xvar2)
+        newclim2   <- melt(newclim, id = "cintno")
+        newclim3   <- cast(newclim2, cintno ~ variable, mean)
+        cintno     <- newclim3$cintno
+        xvar       <- newclim3$xvar
+        xvar2      <- newclim3$xvar2 
+      }
       if (type == "absolute"){ 
         if(is.null(cohort) == FALSE){
           newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort))

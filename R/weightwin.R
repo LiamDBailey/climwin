@@ -132,7 +132,7 @@ weightwin <- function(xvar, cdate, bdate, baseline, range,
   funcenv                 <- environment()
   cont                    <- convertdate(bdate = bdate, cdate = cdate, xvar = xvar, 
                                          cinterval = cinterval, type = type, 
-                                         refday = refday, cohort = cohort)   
+                                         refday = refday, cohort = cohort, spatial = NULL)   
   # create new climate dataframe with continuous daynumbers, leap days are not a problem 
 
   modno        <- 1

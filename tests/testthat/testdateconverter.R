@@ -12,7 +12,7 @@ MassClimatedup         <- MassClimate
 MassClimatedup[17533,] <- MassClimatedup[17532,]
 
 test <- convertdate(bdate = Mass$Date, cdate = MassClimate$Date, xvar = MassClimate$Temp,
-                    cinterval = "day", type = "relative")
+                    cinterval = "day", type = "relative", spatial = NULL)
 
 # Test that no NA dates were produced
 expect_equal(length(which(is.na(test))), 0)
@@ -43,7 +43,7 @@ data(Mass, envir = environment())
 data(MassClimate, envir = environment())
 
 test <- convertdate(bdate = Mass$Date, cdate = MassClimate$Date, xvar = MassClimate$Temp,
-                    cinterval = "week", type = "relative")
+                    cinterval = "week", type = "relative", spatial = NULL)
 
 # Test that no NA dates were produced
 expect_equal(length(which(is.na(test))), 0)
@@ -66,7 +66,7 @@ data(Mass, envir = environment())
 data(MassClimate, envir = environment())
 
 test <- convertdate(bdate = Mass$Date, cdate = MassClimate$Date, xvar = MassClimate$Temp,
-                    cinterval = "month", type = "relative")
+                    cinterval = "month", type = "relative", spatial = NULL)
 
 # Test that no NA dates were produced
 expect_equal(length(which(is.na(test))), 0)
@@ -91,7 +91,8 @@ data(Mass, envir = environment())
 data(MassClimate, envir = environment())
 
 test <- convertdate(bdate = Mass$Date, cdate = MassClimate$Date, xvar = MassClimate$Temp,
-                    xvar2 = MassClimate$Rain, cinterval = "day", type = "relative", cross = TRUE)
+                    xvar2 = MassClimate$Rain, cinterval = "day", type = "relative", cross = TRUE,
+                    spatial = NULL)
 
 # Test that no NA dates were produced
 expect_equal(length(which(is.na(test))), 0)
@@ -117,7 +118,8 @@ data(Mass, envir = environment())
 data(MassClimate, envir = environment())
 
 test <- convertdate(bdate = Mass$Date, cdate = MassClimate$Date, xvar = MassClimate$Temp,
-                    xvar2 = MassClimate$Rain, cinterval = "week", type = "relative", cross = TRUE)
+                    xvar2 = MassClimate$Rain, cinterval = "week", type = "relative", cross = TRUE,
+                    spatial = NULL)
 
 # Test that no NA dates were produced
 expect_equal(length(which(is.na(test))), 0)
@@ -143,7 +145,8 @@ data(Mass, envir = environment())
 data(MassClimate, envir = environment())
 
 test <- convertdate(bdate = Mass$Date, cdate = MassClimate$Date, xvar = MassClimate$Temp,
-                    xvar2 = MassClimate$Rain, cinterval = "month", type = "relative", cross = TRUE)
+                    xvar2 = MassClimate$Rain, cinterval = "month", type = "relative", cross = TRUE,
+                    spatial = NULL)
 
 # Test that no NA dates were produced
 expect_equal(length(which(is.na(test))), 0)

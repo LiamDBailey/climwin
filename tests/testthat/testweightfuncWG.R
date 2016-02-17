@@ -23,7 +23,7 @@ test_that("GEV loglik test", {
   funcenv$par_location <- list()
   
   cont <- convertdate(bdate = bdate, cdate = cdate, xvar = xvar, 
-                      cinterval = "day", type = "variable")   # create new climate dataframe with continuous daynumbers, leap days are not a problem 
+                      cinterval = "day", type = "variable", spatial = NULL)   # create new climate dataframe with continuous daynumbers, leap days are not a problem 
   
   for (i in 1:length(bdate)){
     for (j in closest:furthest){
@@ -71,7 +71,7 @@ test_that("Weibull loglik test", {
   funcenv$par_location <- list()
   
   cont <- convertdate(bdate = bdate, cdate = cdate, xvar = xvar, 
-                      cinterval = "day", type = "variable")   # create new climate dataframe with continuous daynumbers, leap days are not a problem 
+                      cinterval = "day", type = "variable", spatial = NULL)   # create new climate dataframe with continuous daynumbers, leap days are not a problem 
   
   for (i in 1:length(bdate)){
     for (j in closest:furthest){

@@ -94,7 +94,7 @@ crosswin <- function(xvar, xvar2, cdate, bdate, range,
   maxmodno <- (duration * (duration + 1))/2 
   cont     <- convertdate(bdate = bdate, cdate = cdate, xvar = xvar, xvar2 = xvar2, 
                             cinterval = cinterval, type = type, 
-                            refday = refday, cross = TRUE)   # create new climate dataframe with continuous daynumbers, leap days are not a problem
+                            refday = refday, cross = TRUE, spatial = NULL)   # create new climate dataframe with continuous daynumbers, leap days are not a problem
   modno    <- 1  #Create a model number variable that will count up during the loop#
   modlist  <- list()   # dataframes to store ouput
   cmatrix1 <- matrix(ncol = (duration), nrow = length(bdate))  # matrix that stores the weather data for variable or fixed windows
