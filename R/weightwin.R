@@ -113,7 +113,7 @@ weightwin <- function(xvar, cdate, bdate, baseline, range,
                       weightfunc = "W", cinterval = "day",
                       par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)), 
                       method = "L-BFGS-B", cutoff.day = NULL, cutoff.month = NULL,
-                      furthest = NULL, closest = NULL, cohort = NULL){
+                      furthest = NULL, closest = NULL, cohort = NULL, spatial = NULL){
   
   if(type == "variable" || type == "fixed"){
     stop("Parameter 'type' now uses levels 'relative' and 'absolute' rather than 'variable' and 'fixed'.")
@@ -132,7 +132,7 @@ weightwin <- function(xvar, cdate, bdate, baseline, range,
   funcenv                 <- environment()
   cont                    <- convertdate(bdate = bdate, cdate = cdate, xvar = xvar, 
                                          cinterval = cinterval, type = type, 
-                                         refday = refday, cohort = cohort, spatial = NULL)   
+                                         refday = refday, cohort = cohort, spatial = spatial)   
   # create new climate dataframe with continuous daynumbers, leap days are not a problem 
 
   modno        <- 1
@@ -145,12 +145,16 @@ weightwin <- function(xvar, cdate, bdate, baseline, range,
   baseline     <- update(baseline, .~.)
   nullmodel    <- AICc(baseline)
   
-  for (i in 1:length(bdate)){
-    for (j in range[2]:range[1]){
-      k <- j - range[2] + 1
-      cmatrix[i, k] <- xvar[match(cont$bintno[i] - j, cont$cintno)]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
+  if(is.null(spatial) == FALSE){
+    for (i in 1:length(bdate)){
+      cmatrix[i, ] <- cont$xvar[which(cont$cintno$spatial %in% cont$bintno$spatial[i] & cont$cintno$Date %in% (cont$bintno$Date[i] - c(range[2]:range[1]))), 1]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
     }
+  } else {
+    for (i in 1:length(bdate)){
+      cmatrix[i, ] <- cont$xvar[which(cont$cintno %in% (cont$bintno[i] - c(range[2]:range[1])))]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
+    } 
   }
+  cmatrix <- as.matrix(cmatrix[, c(ncol(cmatrix):1)])
   
   funcenv$modeldat         <- model.frame(baseline)
   funcenv$modeldat$climate <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))

@@ -63,3 +63,43 @@ test_that("weightwin works properly", {
   expect_equal(length(which(is.na(test[[3]]))), 0)
   
 })
+
+#################################################################
+
+# Test that spatial replication works with weightwin #
+test_that("Spatial replication works with weightwin", {
+  
+  data(Mass, envir = environment())
+  Mass$Plot <- c(rep(c("A", "B"), 23), "A")
+  data(MassClimate, envir = environment())
+  MassClimate$Plot <- "A"
+  MassClimate2 <- MassClimate
+  MassClimate2$Plot <- "B"
+  Clim <- rbind(MassClimate, MassClimate2)
+  
+  test <- weightwin(xvar = list(Temp = Clim$Temp), cdate = Clim$Date,
+                    bdate = Mass$Date, baseline = lm(Mass ~ 1, data = Mass),
+                    range = c(2, 1), func = "lin",
+                    type = "relative", weightfun = "W", cinterval = "day",
+                    par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)),
+                    method = "L-BFGS-B", spatial = list(Mass$Plot, Clim$Plot))
+  
+  # Test that weightwin produces an object
+  expect_true(is.list(test))
+  
+  # Test that intercept and slope are generated
+  expect_false(is.na(test[[1]][1]))
+  
+  # Test that best model data contains no NAs
+  expect_equal(length(which(is.na(test[[2]]))), 0)
+  
+  # Test best model data contains at least 2 parameters
+  expect_true(ncol(test[[2]]) >= 2)
+  
+  # Test that list of optimisation is created
+  expect_true(is.list(test[[3]]))
+  
+  # Test that optimisation data contains no NAs
+  expect_equal(length(which(is.na(test[[3]]))), 0)
+  
+})
