@@ -91,6 +91,7 @@
 #'@import stats
 #'@import utils
 #'@import graphics
+#'@import lme4
 #'@importFrom plyr rbind.fill
 #'@importFrom lubridate weeks
 #'@importFrom MuMIn AICc
