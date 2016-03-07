@@ -3,7 +3,7 @@
 \name{MassRand}
 \alias{MassRand}
 \title{Example output dataframe from function randwin.}
-\format{A data frame with 10,302 rows and 19 variables.
+\format{A data frame with 57,380 rows and 19 variables.
 \describe{
   \item{deltaAICc}{Difference between model AICc of fitted climate window and a null model containing no climate.}
   \item{WindowOpen}{The start day of each tested climate window. Furthest from the biological record.}

@@ -3,7 +3,7 @@
 \name{MassOutput}
 \alias{MassOutput}
 \title{Example output dataframe from function climatewin.}
-\format{A data frame with 5,151 rows and 18 variables.
+\format{A data frame with 11,476 rows and 18 variables.
 \describe{
   \item{deltaAICc}{Difference between model AICc of fitted climate window and a null model containing no climate.}
   \item{WindowOpen}{The start day of each tested climate window. Furthest from the biological record.}
@@ -17,7 +17,7 @@
   \item{Furthest}{Furthest day back considered in climatewin.}
   \item{Closest}{Closest day back considered in climatewin.}
   \item{Statistics}{The aggregate statistic used to analyse climate (e.g. mean, max, slope).}
-  \item{Type}{Whether "fixed" or "variable" climate windows were tested.}
+  \item{Type}{Whether "absolute" or "relative" climate windows were tested.}
   \item{K}{Number of folds used for k-fold cross validation.}
   \item{ModWeight}{Model weight of each fitted climate window.}
   \item{Reference.day,Reference.month}{If type is "absolute", the date from which the climate window was tested.}
