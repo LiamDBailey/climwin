@@ -1,0 +1,249 @@
+---
+title: "climwin"
+author: "Liam D. Bailey and Martijn van de Pol"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{climwin}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+In the previous vignette we described the basic features available in the `climwin` package. Below, we will look in more detail at more advanced features available to users. We will cover:
+
+* Testing for climate thresholds
+* Dealing with data records that encompass multiple years
+* Carrying out spatial replication
+* Fitting more complex curves to climate window data using `weightwin`
+
+---
+
+## Climate thresholds
+
+Many studies, may be interested in testing climate windows using climatic thresholds. When testing climatic thresholds, we assume that a biological response is driven by the total numbers of days that surpass a particular climatic value For example, seed germination may be influenced by the number of days over 30 degrees. Alternatively, temperature may only influence organism survival when temperatures fall below freezing. A common example of such a climate threshold is the using of growing degree days in plant studies.
+
+Statistics like these can be achieved using the three parameters 'upper', 'lower' and, 'binary'. When a value is provided for the parameter 'upper', `climatewin` will create a new set of climate data where all values below this threshold are set at 0. Similarly, when a value is set for 'lower', all value above this threshold will be set at 0. When values are provided for both 'upper' and 'lower', all values that fall *between* these two threshold will be set at 0.
+
+In certain circumstances we may assume that all values past the climatic threshold will have an equally large impact of the biological response. In this case, we would set 'binary' to TRUE so that all non-zero values are set at 1. By default however, 'binary' will be set at FALSE, so that all values past the climatic threshold keep their original value.
+
+### A worked example
+
+Below we will provide a worked example using the `Mass` and `MassClimate` dataset. In this example, lets imagine we are interested in testing the impact of the number of days above freezing on our mass response variable. To do this we would set both our 'upper' and 'binary' parameters.
+
+`upper = 0`
+`binary = TRUE`
+
+As we are interested in measuring the *number* of days above freezing, we set our stat parameter to 'sum'. Otherwise, we used model parameter values identical to our earlier vignette.
+
+```{r}
+library(climwin)
+```
+
+```{r, eval = FALSE}
+
+MassWin <- climatewin(xvar = list(Temp = MassClimate$Temp),
+                      cdate = MassClimate$Date,
+                      bdate = Mass$Date,
+                      baseline = lm(Mass ~ 1, data = Mass),
+                      cinterval = "day",
+                      range = c(150, 0),
+                      upper = 0, binary = TRUE,
+                      type = "absolute", refday = c(20, 05),
+                      stat = "sum",
+                      func = "lin")
+                       
+```
+
+When we examine the best model data, we can see that our climate data is now count data.
+
+```{r, eval = FALSE}
+
+    head(MassWin[[1]]$BestModelData)
+
+```
+
+|Yvar  |climate |
+|:-----|:-------|
+|140   |0       |
+|138   |0       |
+|136   |1       |
+|135   |2       |
+|134   |0       |
+|134   |0       |
+
+---
+
+## Biological measurments that encompass two years
+
+Many long-term datasets that will be suitable for `climwin` are likely to be measured during Northern hemisphere spring/summer (e.g. breeding data). These biological records will measured during the middle of the year, meaning that biological records can be grouped easily by year. Yet it other circumstances, biological measurements will often fall across two years, particularly in Southern hemisphere species where spring/summer falls across the new year period.
+
+This can cause issues when fitting 'absolute' climate windows. As described in the introductory vignette, 'absolute' windows will use a set reference day for all biological records. Where biological measurements cross two years however, measurements from the same season can be split up. In the table below, where a reference day of November 1st is used, all those measurements taken at the start of the breeding season are given a date of November 1st 2014 while all values following the new year are set at November 1st 2015. This is obviously unrealistic, as biological measurements in January 2015 cannot be impacted by climatic conditions that occured 11 months later.
+
+|Date      |Reference Date|
+|:---------|:-------------|
+|05/11/2014|01/11/2014    |
+|10/11/2014|01/11/2014    |
+|01/12/2014|01/11/2014    |
+|12/12/2014|01/11/2014    |
+|01/01/2015|01/11/2015    |
+|07/01/2015|01/11/2015    |
+
+As a solution, `climwin` includes a 'cohort' parameter that allows users to specify which biological measurements should be grouped together (e.g. come from the same breeding season). Each biological record should be given a cohort level (see below), which is taken into account when setting the reference day for climate window analyses.
+
+|Date      |Cohort|Reference Date|
+|:---------|:-----|:-------------|
+|05/11/2014|2014  |01/11/2014    |
+|10/11/2014|2014  |01/11/2014    |
+|01/12/2014|2014  |01/11/2014    |
+|12/12/2014|2014  |01/11/2014    |
+|01/01/2015|2014  |01/11/2014    |
+|07/01/2015|2014  |01/11/2014    |
+
+---
+
+## Spatial replication
+
+To detect climate signals using `climwin` can often require large amounts of data, particularly if the relationship between climate and biological response is weak (REF METHODS PAPER). To achieve the required data through spatial replication can require the collection of data over multiple years, often decades; however, spatial replication may also allow users to expand their sample size over a shorter period.
+
+Using spatial replication (i.e. collecting data from multiple sites/populations) assumes that the relationship between the biological response and climatic predictor is consistent across the different measured populations. Where this assumption is valid, spatial replication can help expand the amount of data available for `climwin` analyses.
+
+### A worked example
+
+Spatially replicated data can be analysed using the `climatewin` function with the addition of the 'spatial' parameter. As with regular `climatewin` analysis, analysis with spatial replication requires a separate biological and climate dataset. However, these datasets should not contain an additional variable which specifies the site at which biological and climate data was collected. Below, we have called this parameter 'SiteID'.
+
+
+| Date        | Mass (g) | SiteID |
+|:------------|:---------|:-------|
+| 04/06/2015  |    120   |A       |
+| 05/06/2015  |    123   |A       |
+| 07/06/2015  |    110   |B       |
+| 07/06/2015  |    140   |A       |
+| 06/06/2015  |    138   |B       |
+| ...         | ...      | ...    |
+
+
+
+| Date        | Temperature | SiteID |
+|:------------|:------------|:-------|
+| 01/06/2015  |    15       |A       |
+| 02/06/2015  |    16       |A       |
+| 03/06/2015  |    12       |A       |
+| 04/06/2015  |    18       |A       |
+| 05/06/2015  |    20       |A       |
+| 06/06/2015  |    23       |A       |
+| 07/06/2015  |    21       |A       |
+| 01/06/2015  |    10       |B       |
+| 02/06/2015  |    12       |B       |
+| 03/06/2015  |    9        |B       |
+| 04/06/2015  |    5        |B       |
+| 05/06/2015  |    13       |B       |
+| 06/06/2015  |    10       |B       |
+| 07/06/2015  |    11       |B       |
+| ...         | ...         | ...    |
+
+*NOTE: The climate dataset for spatially replicated `climwin` analysis will often include duplication of dates. In a regular `climwin` analysis this will lead to errors.*
+
+With these new datasets, we can carry out a `climatewin` analysis with the addition of a 'spatial' parameter.
+
+```{r, eval = FALSE}
+
+MassWin <- climatewin(xvar = list(Temp = Climate$Temp),
+                      cdate = Climate$Date,
+                      bdate = Biol$Date,
+                      baseline = lm(Mass ~ 1, data = Biol),
+                      cinterval = "day",
+                      range = c(150, 0),
+                      type = "absolute", refday = c(20, 05),
+                      stat = "mean",
+                      func = "lin", spatial = list(Biol$SiteID, Climate$SiteID))
+                       
+```
+
+The 'spatial' parameter is a list item that includes the SiteID variable for the biological and climate datasets respectively. When `climatewin` fits individual climate windows, climate data will be subset so that each biological record will be matched with the corresponding climate data.
+
+---
+
+## `weightwin` function
+
+When we run regular `climatewin` analyses we assume that all days in the climate window are evenly weighted. While this is often a convenient assumption, this may be biologically unrealistic as we create a strict cut-off for when climate data is considered (see below).
+
+```{r, echo = FALSE, fig.width = 4, fig.height = 4}
+
+data <- data.frame(Day = seq(1, 350, 1), Weight = c(rep(0, times = 150), rep(1, times = 100), rep(0, times = 100)))
+
+plot(x = data$Day, y = data$Weight, type = "l", xlab = "Day", ylab = "Weight", cex.lab = 1.5, cex.axis = 1.5)
+
+```
+
+In certain cases we may be interested in looking for climate windows where the importance of climate decays slowly over time. The function `weightwin` allows users to fit either Weibull (below left) and generalised extreme value (GEV; below right) weight distributions to climate data.
+
+```{r, echo = FALSE, fig.width = 8, fig.height = 4}
+
+par(mfrow = c(1, 2))
+duration <- 365
+j        <- seq(1:duration) / duration
+k        <- seq(-10, 10, by = (2 * 10 / duration))
+weight   <- 3 / 0.2 * ((j[1:duration] - 0) / 0.2) ^ (3 - 1) * exp( - ((j[1:duration] - 0) / 0.2) ^ 3)
+plot((weight / sum(weight)), type = "l", ylab = "Weight", xlab = "Day", cex.lab = 1.5, cex.axis = 1.5, main = "Weibull distribution")
+
+weight <- evd::dgev(k[1:duration], loc = 1, scale = 2, shape = -1, log = FALSE)
+plot((weight / sum(weight)), type = "l", ylab = "Weight", xlab = "Day", cex.lab = 1.5, cex.axis = 1.5, main = "GEV distribution")
+
+```
+
+Instead of varying the start and end date of climate windows like `climatewin`, `weightwin` instead uses an optimisation function to vary the shape, scale and location of either of these weight functions. Each weight function is then used to weight the climate data, which is then used to produce a climate model and delta AICc value. Therefore, although the method of optimising climate data is different, the ultimate output (i.e. delta AICc of a climate window compared to a null model) is the same.
+
+
+### A worked example
+`weightwin` can often be useful to use with climate data where we have already identified a climate window using `climatewin`. Here, we will use `weightwin` to further investigate the Mass and MassClimate data included with the `climwin` package.
+
+The basic parameters in `weightwin` are the same as `climatewin` (though note the abscence of the 'stat' parameter). In addition however, we must designate which weight distribution we want to use. In this case we consider a Weibull function.
+
+`weightfunc = "W"`
+
+Next, we must the location, scale and shape values for the first distribution that will be used to start the optimisation procedure. The default values (3, 0.2, 0) are often appropriate for fitting Weibull distributions. However, you can explore different parameter values using the `explore` function.
+ 
+```{r, eval = FALSE}
+
+weight <- weightwin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, 
+                    bdate = Mass$Date, 
+                    baseline = lm(Mass ~ 1, data = Mass), 
+                    range = c(150, 0), 
+                    func = "lin", type = "absolute", 
+                    refday = c(20, 5), 
+                    weightfunc = "W", cinterval = "day",
+                    par = c(3, 0.2, 0))
+
+```
+
+As part of the `weightwin` function a plot will be generated showing the progress of the optimisation function. Most of this information is useful for assessing the effectiveness of the optimisation function. For our purposes however, we will focus only on the final weighted window function (top left).
+
+```{r, echo = FALSE, fig.width = 4, fig.height = 4}
+
+explore(weightfunc = "W", shape = 2.17, scale = 0.35, loc = 0)
+
+```
+
+In the above plot, we can see that the importance of temperature declines rapidly as we near May 20th. However, temperature later in time declines less rapidly. We can extract the delta AICc value for this weight function below.
+
+```{r, eval = FALSE}
+
+weight$WeightedOutput$DeltaAICc
+
+```
+
+If we compare this value to the delta AICc obtained from the `climatewin` function we can see that the `weightwin` function is better able to explain variation in our mass parameter.
+
+|`climatewin`|`weightwin`|
+|:-----------|:----------|
+|-64.81      |-68.22     |
+
+### Pros and cons
+
+While `weightwin` overcomes the assumptions inherent to the `climatewin` function, it will not always be the most appropriate function to use for climate window analysis. Firstly, the nature of the Weibull and GEV distributions means that `weightwin` can only detect a single period of climatic sensitivity. However, especially for climate window analysis encompassing multiple seasons, this may not always be the case. For example, chick mass may be affected by high temperatures during incubation but may also be influenced by female condition which is driven by winter severity.
+
+Secondly, `weightwin` can be a more involved process. While the above example works easily, optimisation procedures can get stuck on false optima or fail to converge. In these cases, users may be required to test different starting parameters and adjust optimisation characteristics such as step size. Often this procedure can be inhibative for users interested in simple data exploration.
+
+Thirdly, `weightwin` will not always provide substaintial changes in deltaAICc. Particularly in cases where the *location* of a period of sensitivity, rather than shape, are of interest the benefits provided by the `weightwin` function are not large.
+
+WRITE ABOUT PROS: i.e. good for more detailed analysis of current windows (e.g. decaying functions), good when AIC value is very important (e.g. model covariate).
