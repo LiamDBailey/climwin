@@ -37,6 +37,15 @@ plotweights <- function(dataset, cw1 = 0.95, cw2 = 0.5, cw3 = 0.25, arrow = FALS
   cw3        <- b[3]
   WeightDist <- ceiling(100*mean(as.numeric(cumsum(dataset$ModWeight) <= cw1)))
   
+  ConfidenceSet <- dataset[which(cumsum(dataset$ModWeight) <= cw1), ]
+  SpreadMatrix <- matrix(nrow = (nrow(ConfidenceSet)- 1), ncol = 2)
+  for(i in 2:nrow(ConfidenceSet)){
+    Spread[i - 1, 1] <- i
+    Spread[i - 1, 2] <- sqrt((ConfidenceSet$WindowOpen[1] - ConfidenceSet$WindowOpen[i])^2 + 
+                               (ConfidenceSet$WindowClose[1] - ConfidenceSet$WindowClose[i])^2)
+  }
+  WeightSpread <- ceiling(max(Spread[, 2]))
+  
   #Order models by weight#
   dataset        <- dataset[order(-dataset$ModWeight), ]
   dataset$cw1    <- as.numeric(cumsum(dataset$ModWeight) <= cw1)
@@ -59,8 +68,10 @@ with(dataset, {
             panel.grid.minor = element_blank(),
             axis.line = element_line(size = 0.25, colour = "black"),
             plot.title = element_text(size = 16),
-            legend.position = c(0.75, 0.3))+
-      ggtitle(paste(100*cw, "% cumulative model weight\n", WeightDist, "% of total models"))+
+            legend.position = c(0.75, 0.3),
+            panel.border = element_rect(colour = "black", fill = NA))+
+      ggtitle(paste(100*cw, "% confidence set\n", "Model number:", WeightDist, "% of total models \n", 
+                    "Model spread:", WeightSpread))+
       ylab("Window open")+
       xlab("Window close")
     
@@ -80,8 +91,10 @@ with(dataset, {
             panel.grid.minor = element_blank(),
             axis.line = element_line(size = 0.25, colour = "black"),
             plot.title = element_text(size = 16),
-            legend.position = c(0.75, 0.3))+
-      ggtitle(paste(100*cw, "% cumulative model weight\n", WeightDist, "% of total models"))+
+            legend.position = c(0.75, 0.3),
+            panel.border = element_rect(colour = "black", fill = NA))+
+      ggtitle(paste(100*cw, "% confidence set\n", "Model number:", WeightDist, "% of total models \n", 
+                    "Model spread:", WeightSpread))+
       ylab("Window open")+
       xlab("Window close")+
       geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = (WindowOpen[1]-1)), 
