@@ -44,7 +44,7 @@ plotweights <- function(dataset, cw1 = 0.95, cw2 = 0.5, cw3 = 0.25, arrow = FALS
     SpreadMatrix[i - 1, 2] <- sqrt((ConfidenceSet$WindowOpen[1] - ConfidenceSet$WindowOpen[i])^2 + 
                                (ConfidenceSet$WindowClose[1] - ConfidenceSet$WindowClose[i])^2)
   }
-  WeightSpread <- ceiling(max(Spread[, 2]))
+  WeightSpread <- ceiling(max(SpreadMatrix[, 2]))
   
   #Order models by weight#
   dataset        <- dataset[order(-dataset$ModWeight), ]
