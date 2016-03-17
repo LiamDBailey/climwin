@@ -40,8 +40,8 @@ plotweights <- function(dataset, cw1 = 0.95, cw2 = 0.5, cw3 = 0.25, arrow = FALS
   ConfidenceSet <- dataset[which(cumsum(dataset$ModWeight) <= cw1), ]
   SpreadMatrix <- matrix(nrow = (nrow(ConfidenceSet)- 1), ncol = 2)
   for(i in 2:nrow(ConfidenceSet)){
-    Spread[i - 1, 1] <- i
-    Spread[i - 1, 2] <- sqrt((ConfidenceSet$WindowOpen[1] - ConfidenceSet$WindowOpen[i])^2 + 
+    SpreadMatrix[i - 1, 1] <- i
+    SpreadMatrix[i - 1, 2] <- sqrt((ConfidenceSet$WindowOpen[1] - ConfidenceSet$WindowOpen[i])^2 + 
                                (ConfidenceSet$WindowClose[1] - ConfidenceSet$WindowClose[i])^2)
   }
   WeightSpread <- ceiling(max(Spread[, 2]))

@@ -4,11 +4,25 @@ Title: Climate Window Analysis
 Version: 1.0.0
 Author: Liam D. Bailey and Martijn van de Pol
 Maintainer: Liam D. Bailey <liam.bailey@anu.edu.au>
-Description: Contains functions to detect and visualise periods of climate sensitivity (climate windows) for a given biological response.
-Depends: R (>= 2.10), ggplot2, gridExtra, Matrix
-Imports: evd, lubridate, lme4, MuMIn, reshape, plyr 
-Suggests: testthat, knitr
+Description: Contains functions to detect and visualise periods of climate
+    sensitivity (climate windows) for a given biological response.
+Depends:
+    R (>= 2.10),
+    ggplot2,
+    gridExtra,
+    Matrix
+Imports:
+    evd,
+    lubridate,
+    lme4,
+    MuMIn,
+    reshape,
+    plyr
+Suggests:
+    testthat,
+    knitr
 License: GPL-2
 Repository: CRAN
 LazyData: True
 VignetteBuilder: knitr
+RoxygenNote: 5.0.1
