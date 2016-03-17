@@ -105,7 +105,7 @@ randwin <- function(exclude = NA, repeats = 1, xvar, cdate, bdate, baseline,
                     upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"), k = 0,
                     cutoff.day = NULL, cutoff.month = NULL,
                     furthest = NULL, closest = NULL, thresh = NULL, cvk = NULL,
-                    spatial = NULL, cohort = NULL, original = NULL){
+                    spatial = NULL, cohort = NULL, original = TRUE){
   
 if(original == TRUE){
   
