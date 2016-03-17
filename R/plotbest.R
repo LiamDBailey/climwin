@@ -46,7 +46,8 @@ plotbest <- function(dataset, bestmodel, bestmodeldata){
         theme(panel.grid.major = element_blank(),
               panel.grid.minor = element_blank(),
               axis.line = element_line(size = 0.25, colour = "black"),
-              plot.title = element_text(size = 16)) +
+              plot.title = element_text(size = 16),
+              panel.border = element_rect(colour = "black", fill = NA)) +
         ggtitle("Output of best model") +
         ylab("Biological variable")
     })
@@ -73,7 +74,8 @@ plotbest <- function(dataset, bestmodel, bestmodeldata){
             theme(panel.grid.major = element_blank(),
                   panel.grid.minor = element_blank(),
                   axis.line = element_line(size = 0.25, colour = "black"),
-                  plot.title = element_text(size = 16)) +
+                  plot.title = element_text(size = 16),
+                  panel.border = element_rect(colour = "black", fill = NA)) +
             ggtitle("Output of best model") +
             ylab("Biological variable") +    
             if (dataset$Function[1] == "log"){
@@ -120,7 +122,8 @@ plotbest <- function(dataset, bestmodel, bestmodeldata){
             theme(panel.grid.major = element_blank(),
                   panel.grid.minor = element_blank(),
                   axis.line = element_line(size = 0.25, colour = "black"),
-                  plot.title = element_text(size = 16)) +
+                  plot.title = element_text(size = 16),
+                  panel.border = element_rect(colour = "black", fill = NA)) +
             ggtitle("Output of best model") +
             ylab("Biological variable") +    
             if (dataset$Function[1] == "log"){
@@ -146,7 +149,8 @@ plotbest <- function(dataset, bestmodel, bestmodeldata){
             theme(panel.grid.major = element_blank(),
                   panel.grid.minor = element_blank(),
                   axis.line = element_line(size = 0.25, colour = "black"),
-                  plot.title = element_text(size = 16)) +
+                  plot.title = element_text(size = 16),
+                  panel.border = element_rect(colour = "black", fill = NA)) +
             ggtitle("Output of best model") +
             ylab("Biological variable") +    
             if (dataset$Function[1] == "log"){
@@ -193,7 +197,8 @@ plotbest <- function(dataset, bestmodel, bestmodeldata){
             theme(panel.grid.major = element_blank(),
                   panel.grid.minor = element_blank(),
                   axis.line = element_line(size = 0.25, colour = "black"),
-                  plot.title = element_text(size = 16)) +
+                  plot.title = element_text(size = 16),
+                  panel.border = element_rect(colour = "black", fill = NA)) +
             ggtitle("Output of best model") +
             ylab("Biological variable") +    
             if (dataset$Function[1] == "log"){

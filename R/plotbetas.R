@@ -36,7 +36,8 @@ plotbetas <- function(dataset, arrow = FALSE, plotallenv, plotall = FALSE){
               panel.grid.minor = element_blank(),
               axis.line = element_line(size = 0.25, colour = "black"),
               plot.title = element_text(size = 16),
-              legend.position = c(0.75,0.3)) +
+              legend.position = c(0.75,0.3),
+              panel.border = element_rect(colour = "black", fill = NA)) +
         ggtitle("Beta linear") +
         ylab("Window open") +
         xlab("Window close")
@@ -63,7 +64,8 @@ plotbetas <- function(dataset, arrow = FALSE, plotallenv, plotall = FALSE){
               panel.grid.minor = element_blank(),
               axis.line = element_line(size = 0.25, colour = "black"),
               plot.title = element_text(size = 16),
-              legend.position = c(0.75,0.3)) +
+              legend.position = c(0.75,0.3),
+              panel.border = element_rect(colour = "black", fill = NA)) +
         ggtitle("Beta linear") +
         ylab("Window open") +
         xlab("Window close")
@@ -76,7 +78,8 @@ plotbetas <- function(dataset, arrow = FALSE, plotallenv, plotall = FALSE){
               panel.grid.minor = element_blank(),
               axis.line = element_line(size = 0.25, colour = "black"),
               plot.title = element_text(size = 16),
-              legend.position = c(0.75, 0.3)) +
+              legend.position = c(0.75, 0.3),
+              panel.border = element_rect(colour = "black", fill = NA)) +
         ggtitle("Beta quadratic") +
         ylab("Window open") +
         xlab("Window close")
@@ -109,7 +112,8 @@ plotbetas <- function(dataset, arrow = FALSE, plotallenv, plotall = FALSE){
               panel.grid.minor = element_blank(),
               axis.line = element_line(size = 0.25, colour = "black"),
               plot.title = element_text(size = 16),
-              legend.position = c(0.75,0.3)) +
+              legend.position = c(0.75,0.3),
+              panel.border = element_rect(colour = "black", fill = NA)) +
         ggtitle("Beta linear") +
         ylab("Window open") +
         xlab("Window close")
@@ -122,7 +126,8 @@ plotbetas <- function(dataset, arrow = FALSE, plotallenv, plotall = FALSE){
                 panel.grid.minor = element_blank(),
                 axis.line = element_line(size = 0.25, colour = "black"),
                 plot.title = element_text(size = 16),
-                legend.position = c(0.75, 0.3)) +
+                legend.position = c(0.75, 0.3),
+                panel.border = element_rect(colour = "black", fill = NA)) +
           ggtitle("Beta quadratic") +
           ylab("Window open") +
           xlab("Window close")
@@ -135,7 +140,8 @@ plotbetas <- function(dataset, arrow = FALSE, plotallenv, plotall = FALSE){
                 panel.grid.minor = element_blank(),
                 axis.line = element_line(size = 0.25, colour = "black"),
                 plot.title = element_text(size = 16),
-                legend.position = c(0.75, 0.3)) +
+                legend.position = c(0.75, 0.3),
+                panel.border = element_rect(colour = "black", fill = NA)) +
           ggtitle("Beta cubic") +
           ylab("Window open") +
           xlab("Window close")
@@ -174,7 +180,8 @@ plotbetas <- function(dataset, arrow = FALSE, plotallenv, plotall = FALSE){
               panel.grid.minor = element_blank(),
               axis.line = element_line(size = 0.25, colour = "black"),
               plot.title = element_text(size = 16),
-              legend.position = c(0.75,0.3)) +
+              legend.position = c(0.75,0.3),
+              panel.border = element_rect(colour = "black", fill = NA)) +
         ggtitle("Within group mean coefficient") +
         ylab("Window open") +
         xlab("Window close")
@@ -187,7 +194,8 @@ plotbetas <- function(dataset, arrow = FALSE, plotallenv, plotall = FALSE){
               panel.grid.minor = element_blank(),
               axis.line = element_line(size = 0.25, colour = "black"),
               plot.title = element_text(size = 16),
-              legend.position = c(0.75,0.3)) +
+              legend.position = c(0.75,0.3),
+              panel.border = element_rect(colour = "black", fill = NA)) +
         ggtitle("Within group deviation coefficient") +
         ylab("Window open") +
         xlab("Window close")
