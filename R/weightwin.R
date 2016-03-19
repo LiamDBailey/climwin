@@ -76,7 +76,7 @@
 #'  \item WeightedOutput, a list. Parameter values for the best weighted window.
 #'  }
 #'@author Martijn van de Pol and Liam D. Bailey
-#'  @examples
+#'@examples
 #'  \dontrun{
 #'  
 #'# Test for a weighted average over a fixed climate window 

@@ -103,9 +103,7 @@ correlates most strongly with a biological variable. Uses weibull or
 Generalised Extreme Value (GEV) distribution. See references for a full 
 description.
 }
-\author{
-Martijn van de Pol and Liam D. Bailey
- @examples
+\examples{
  \dontrun{
  
 # Test for a weighted average over a fixed climate window 
@@ -140,6 +138,10 @@ head(weight[[3]])
 summary(weight[[1]])
 head(weight[[2]])
  }
+
+}
+\author{
+Martijn van de Pol and Liam D. Bailey
 }
 \references{
 van de Pol & Cockburn 2011 Am Nat 177(5):698-707 (doi: 
