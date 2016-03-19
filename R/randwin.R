@@ -99,7 +99,7 @@
 #'
 #'@export
 
-randwin <- function(exclude = NA, repeats = 1, xvar, cdate, bdate, baseline, 
+randwin <- function(exclude = NA, repeats = 5, xvar, cdate, bdate, baseline, 
                     stat, range, func, type, refday,
                     cmissing = FALSE, cinterval = "day",
                     upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"), k = 0,
