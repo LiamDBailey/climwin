@@ -7,6 +7,7 @@ test_that("Check randwin output", {
   furthest = 2
   closest = 1
   stat = "max"
+  repeats = 2
   
   rand <- randwin(repeats = 2, xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, 
                   bdate = Mass$Date, baseline = lm(Mass ~ 1, data = Mass), 
@@ -26,7 +27,7 @@ test_that("Check randwin output", {
   expect_true(ncol(rand[[1]]) == 17)
   
   # Test that the right number of models has been fitted
-  expect_equal(maxmodno, nrow(subset(rand[[1]], Repeat == 1)))
+  expect_equal(repeats, nrow(rand[[1]]))
   
   # Test that data has been stored as randomised
   expect_true((rand[[1]]["Randomised"])[1,] == "yes")
@@ -48,6 +49,7 @@ test_that("Check randwin output works with spatial replication", {
   furthest = 2
   closest = 1
   stat = "max"
+  repeats = 2
   
   rand <- randwin(repeats = 2, xvar = list(Temp = Clim$Temp), cdate = Clim$Date, 
                   bdate = Mass$Date, baseline = lm(Mass ~ 1, data = Mass), 
@@ -67,7 +69,7 @@ test_that("Check randwin output works with spatial replication", {
   expect_true(ncol(rand[[1]]) == 17)
   
   # Test that the right number of models has been fitted
-  expect_equal(maxmodno, nrow(subset(rand[[1]], Repeat == 1)))
+  expect_equal(repeats, nrow(rand[[1]]))
   
   # Test that data has been stored as randomised
   expect_true((rand[[1]]["Randomised"])[1,] == "yes")
