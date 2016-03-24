@@ -212,13 +212,12 @@ weightwin <- function(xvar, cdate, bdate, baseline, range,
     stop("Please choose Method to equal either W or G")
   } 
   bestmodel                     <- which(as.numeric(funcenv$DAICc) == min(as.numeric(funcenv$DAICc)))[1] # sometimes there are several bestmodels with similar DAICc, in which case we just pick one as they are all very similar
-  WeightedOutput                <- list()   # prepare output of best model
-  WeightedOutput$DeltaAICc      <- funcenv$DAICc[bestmodel]
-  WeightedOutput$par_shape      <- funcenv$par_shape[bestmodel]
-  WeightedOutput$par_scale      <- funcenv$par_scale[bestmodel]
-  WeightedOutput$par_loc        <- funcenv$par_location[bestmodel]
-  WeightedOutput$Function       <- func
-  WeightedOutput$weightfunc     <- weightfunc
+  WeightedOutput                <- data.frame(DelatAICc = funcenv$DAICc[bestmodel], 
+                                              shape = funcenv$par_shape[bestmodel],
+                                              scale = funcenv$par_scale[bestmodel],
+                                              location = funcenv$par_location[bestmodel],
+                                              Function = func, Weight_function = weightfunc)   # prepare output of best model
+  colnames(WeightedOutput) <- c("DeltaAICc", "shape", "Scale", "Location", "Function", "Weight_function")
   
   ifelse (weightfunc == "W", 
           weight <- weibull3(x = j[1:duration], shape = as.numeric(funcenv$par_shape[bestmodel]), 
@@ -237,7 +236,12 @@ weightwin <- function(xvar, cdate, bdate, baseline, range,
   weight                <- weight / sum(weight) 
   modeldat$climate      <- apply(cmatrix, 1, FUN = function(x) {sum(x * weight)})
   LocalModel            <- update(modeloutput, .~., data = modeldat)
-  WeightedOutput$Weight <- weight
 
-  return(list(BestModel = LocalModel, BestModelData = model.frame(LocalModel), WeightedOutput = WeightedOutput))  
+  Return.list <- list()
+  Return.list$BestModel <- LocalModel
+  Return.list$BestModelData <- model.frame(LocalModel)
+  Return.list$WeightedOutput <- WeightedOutput
+  Return.list$Weights <- weight
+  
+  return(Return.list)  
 }
