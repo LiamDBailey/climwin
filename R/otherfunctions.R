@@ -278,7 +278,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
                     modeldat$climate <- apply(cmatrix[, windowclose:windowopen], 1, FUN = stat))
           }
           if (min(modeldat$climate) <= 0 & func == "log" || min(modeldat$climate) <= 0 & func == "inv"){
-            stop("func = log or inv cannot be used with climate values >= 0. 
+            stop("func = log or inv cannot be used with climate values <= 0. 
                  Consider adding a constant to climate data to remove these values")
           }
           
