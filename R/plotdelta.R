@@ -44,6 +44,11 @@ with(dataset, {
       ARR
     }
   } else if(arrow == TRUE){
+    
+    CIRC <- circle(centre = c(dataset$WindowClose[1], dataset$WindowOpen[1]), diameter = 5, npoints = 1000)
+    colnames(CIRC) <- c("WindowClose", "WindowOpen")
+    CIRC$deltaAICc <- 0
+    
     ARR <-   ggplot(dataset, aes(x = WindowClose, y = WindowOpen, z = deltaAICc))+
       geom_tile(aes(fill = deltaAICc))+
       scale_fill_gradientn(colours = c("red", "yellow", "blue"), name = "")+
@@ -57,10 +62,12 @@ with(dataset, {
       ggtitle(expression(paste(Delta, "AICc (compared to null model)")))+
       ylab("Window open") +
       xlab("Window close") +
-      geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = (WindowOpen[1]-1)), 
-                   size = 1, arrow = grid::arrow(length = grid::unit(0.25, "cm"))) +
-      geom_segment(aes(x = 0, y = WindowOpen[1], xend = (WindowClose[1]-1), yend = WindowOpen[1]),
-                   size = 1, arrow = grid::arrow(length = grid::unit(0.25, "cm")))
+      geom_path(data = CIRC, aes(x = WindowClose, y = WindowOpen), size = 1.2, colour = "black")+
+      geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = (WindowOpen[1] - 2.5)), 
+                   size = 1, linetype = "dashed") +
+      geom_segment(aes(x = 0, y = WindowOpen[1], xend = (WindowClose[1] - 2.5), yend = WindowOpen[1]),
+                   size = 1, linetype = "dashed")
+    
     if(plotall == TRUE){
       plotallenv$delta <- ARR
     } else {
