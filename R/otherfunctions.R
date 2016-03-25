@@ -1040,7 +1040,7 @@ merge_results <- function(dataset1, dataset2){
 circle <- function(centre = c(0,0), diameter = 1, npoints = 100){
   r = diameter / 2
   tt <- seq(0,2*pi,length.out = npoints)
-  xx <- center[1] + r * cos(tt)
-  yy <- center[2] + r * sin(tt)
+  xx <- centre[1] + r * cos(tt)
+  yy <- centre[2] + r * sin(tt)
   return(data.frame(x = xx, y = yy))
 }
