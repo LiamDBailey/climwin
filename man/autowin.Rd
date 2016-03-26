@@ -43,7 +43,7 @@ Not required when a variable is provided for parameter 'centre'.}
 (e.g. the number of days before each biological record is measured) or absolute
 (e.g. number of days before a set point in time).}
 
-\item{refday}{If type is absolute, the day and month respectively of the 
+\item{refday}{If type is "absolute", the day and month respectively of the 
 year from which the absolute window analysis will start.}
 
 \item{cmissing}{TRUE or FALSE, determines what should be done if there are 
@@ -53,8 +53,7 @@ will be removed from climate window analysis.}
 
 \item{cinterval}{The resolution at which climate window analysis will be 
 conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the units 
-of parameters 'furthest' and 'closest' will differ with the choice of 
-cinterval.}
+of parameter 'range' will differ with the choice of cinterval.}
 
 \item{upper}{Cut-off value used to determine growing degree days or positive 
 climate thresholds (depending on parameter thresh). Note that when values
@@ -67,8 +66,8 @@ of lower and upper are both provided, autowin will instead calculate an
 optimal climate zone.}
 
 \item{binary}{TRUE or FALSE. Determines whether to use values of upper and
-lower to calculate binary climate data (thresh = TRUE), or to use for
-growing degree days (thresh = FALSE).}
+lower to calculate binary climate data (binary = TRUE), or to use for
+growing degree days (binary = FALSE).}
 
 \item{centre}{A list item containing:
 1. The variable used for mean centring (e.g. Year, Site, Individual). 
@@ -91,7 +90,7 @@ when type is "absolute". The cohort variable should be in the same dataset as th
 record is taken from. The length of this factor should correspond to the length 
 of the biological dataset.
 2. A factor that defines which spatial group (i.e. population) climate data
-corresponds to. This length of this factor should correspond to the length of
+corresponds to. The length of this factor should correspond to the length of
 the climate dataset.}
 }
 \value{

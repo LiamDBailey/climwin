@@ -27,13 +27,13 @@ parent environment and variable name (e.g. climate$Date).}
 parent environment and variable name (e.g. Biol$Date).}
 
 \item{baseline}{The baseline model structure used for model testing. 
-Currently known to support lm, glm, lmer and glmer objects.}
+Currently known to support lm, glm, lmer, glmer and coxph objects.}
 
 \item{type}{"absolute" or "relative", whether you wish the climate window to be relative
 (e.g. the number of days before each biological record is measured) or absolute
 (e.g. number of days before a set point in time).}
 
-\item{refday}{If type is absolute, the day and month respectively of the 
+\item{refday}{If type is "absolute", the day and month respectively of the 
 year from which the absolute window analysis will start.}
 
 \item{stat}{The aggregate statistics used to analyse the climate data. Can 
@@ -45,7 +45,7 @@ function(x) (...). See FUN in \code{\link{apply}} for more detail.}
 ("lin"), quadratic ("quad"), cubic ("cub"), inverse ("inv") or log ("log").}
 
 \item{range}{Two values signifying respectively the furthest and closest number 
-of time intervals (set by cinterval) back from the cutoff date or biological record to include 
+of time intervals (set by cinterval) back from the refday or biological record to include 
 in the climate window search.}
 
 \item{cmissing}{TRUE or FALSE, determines what should be done if there are 
@@ -73,8 +73,8 @@ of lower and upper are both provided, climatewin will instead calculate an
 optimal climate zone.}
 
 \item{binary}{TRUE or FALSE. Determines whether to use values of upper and
-lower to calculate binary climate data (thresh = TRUE), or to use for
-growing degree days (thresh = FALSE).}
+lower to calculate binary climate data (binary = TRUE), or to use for
+growing degree days (binary = FALSE).}
 
 \item{centre}{A list item containing:
 1. The variable used for mean centring (e.g. Year, Site, Individual). 
@@ -108,8 +108,7 @@ Will return a list with an output for each tested set of climate
  
  \itemize{
  \item BestModel, a model object. The strongest climate window model based on AICc. 
- \item BestModelData, a dataframe with the data used to fit the strongest 
- climate window model.
+ \item BestModelData, a dataframe used to fit the strongest climate window model.
  \item Dataset, a dataframe with information on all fitted climate windows. 
  Ordered using deltaAICc, with most negative deltaAICc values first. 
  See \code{\link{MassOutput}} as an example.}
@@ -121,7 +120,7 @@ Will return a list with an output for each tested set of climate
 Finds the time period when a biological variable is most strongly affected 
 by climate. Note that climate data and biological data should be loaded as 
 two seperate objects. Both objects should contain a date column to designate
-when the data were recorded (dd/mm/yyyy) and a response variable column.
+when the data were recorded (dd/mm/yyyy).
 }
 \details{
 Note that climatewin allows you to test multiple possible parameters with the
