@@ -12,7 +12,8 @@ test_that("Check randwin output", {
   rand <- randwin(repeats = 2, xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, 
                   bdate = Mass$Date, baseline = lm(Mass ~ 1, data = Mass), 
                   range = c(2, 1), 
-                  type = "relative", stat = "max", func = "lin", cmissing = FALSE)
+                  type = "relative", stat = "max", func = "lin", cmissing = FALSE,
+                  window = "Sliding")
   
   duration  <- (furthest - closest) + 1
   maxmodno  <- (duration * (duration + 1)) / 2
@@ -54,7 +55,8 @@ test_that("Check randwin output works with spatial replication", {
   rand <- randwin(repeats = 2, xvar = list(Temp = Clim$Temp), cdate = Clim$Date, 
                   bdate = Mass$Date, baseline = lm(Mass ~ 1, data = Mass), 
                   range = c(2, 1), spatial = list(Mass$Plot, Clim$Plot),
-                  type = "relative", stat = "max", func = "lin", cmissing = FALSE)
+                  type = "relative", stat = "max", func = "lin", cmissing = FALSE,
+                  window = "Sliding")
   
   duration  <- (furthest - closest) + 1
   maxmodno  <- (duration * (duration + 1)) / 2

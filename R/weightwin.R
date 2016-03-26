@@ -116,8 +116,8 @@
 #'@export
 
 weightwin <- function(xvar, cdate, bdate, baseline, range, 
-                      func = "lin", type, refday, nrandom = 0, centre,
-                      weightfunc = "W", cinterval = "day", centre = NULL,
+                      func = "lin", type, refday, nrandom = 0, centre = NULL,
+                      weightfunc = "W", cinterval = "day",
                       par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)), 
                       method = "L-BFGS-B", cutoff.day = NULL, cutoff.month = NULL,
                       furthest = NULL, closest = NULL, cohort = NULL, spatial = NULL){
@@ -223,7 +223,7 @@ weightwin <- function(xvar, cdate, bdate, baseline, range,
                     method = method, lower = c(0.0001, 0.0001, -Inf), 
                     upper = c(Inf, Inf, 0), duration = duration, 
                     modeloutput = modeloutput, funcenv = funcenv,  
-                    cmatrix = cmatrix, nullmodel = nullmodel, centre = centre)  
+                    cmatrix = cmatrix, nullmodel = nullmodel)  
     
   } else if (weightfunc == "G"){
     if (par[2] <= 0){
@@ -234,7 +234,7 @@ weightwin <- function(xvar, cdate, bdate, baseline, range,
                     method = method, lower = c(-Inf, 0.0001, -Inf), 
                     upper = c(Inf, Inf, Inf), duration = duration, 
                     modeloutput = modeloutput, funcenv = funcenv,
-                    cmatrix = cmatrix, nullmodel = nullmodel, centre = centre)
+                    cmatrix = cmatrix, nullmodel = nullmodel)
   } else {
     stop("Please choose Method to equal either W or G")
   } 

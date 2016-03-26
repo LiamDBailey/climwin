@@ -60,7 +60,7 @@ test_that("weightwin works properly", {
   expect_true(is.list(test[[3]]))
   
   # Test that optimisation data contains no NAs
-  expect_equal(length(which(is.na(test[[3]]))), 0)
+  expect_equal(length(which(is.na(test[[3]]$ModelBeta))), 0)
   
 })
 
@@ -100,6 +100,6 @@ test_that("Spatial replication works with weightwin", {
   expect_true(is.list(test[[3]]))
   
   # Test that optimisation data contains no NAs
-  expect_equal(length(which(is.na(test[[3]]))), 0)
+  expect_equal(length(which(is.na(test[[3]]$ModelBeta))), 0)
   
 })

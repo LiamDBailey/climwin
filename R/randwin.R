@@ -230,10 +230,7 @@ randwin <- function(exclude = NA, repeats = 5, xvar, cdate, bdate, baseline,
         } else { 
           outputrand <- rbind(outputrand, outputrep)
         }
-        
       }
-      
-      print(outputrand)
 
       rm(outputrep)
       if(r == repeats){
