@@ -5,6 +5,46 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
                     spatial, upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"),
                     cohort = NULL){
   
+  if(is.null(spatial) == FALSE){
+    
+    if(is.null(cohort) == FALSE){
+      
+      sample.size <- 0
+      data <- data.frame(bdate = bdate, spatial = as.factor(spatial), cohort = as.factor(cohort))
+      
+      for(i in levels(as.factor(data$cohort))){
+        
+        sub <- subset(data, cohort = i)
+        sub$spatial <- factor(sub$spatial)
+        sample.size <- sample.size + length(levels(sub$spatial))
+        
+      }
+      
+    } else {
+      
+      sample.size <- 0
+      data <- data.frame(bdate = bdate, spatial = as.factor(spatial))
+      data$Year <- lubridate::year(as.Date(data$bdate, format = "%d/%m/%Y"))
+      
+      for(i in levels(as.factor(data$Year))){
+        
+        sub <- subset(data, Year == i)
+        sub$spatial <- factor(sub$spatial)
+        sample.size <- sample.size + length(levels(sub$spatial))        
+        
+      }
+
+    }
+    
+  } else if(is.null(spatial) == TRUE) {
+    
+    if(is.null(cohort) == FALSE){
+      sample.size <- length(levels(as.factor(cohort)))
+    } else {
+      sample.size <- length(levels(as.factor(lubridate::year(as.Date(bdate, format = "%d/%m/%Y")))))
+    }  
+  } 
+  
   print("Initialising, please wait...")
   
   if(is.null(centre[[1]]) == FALSE){
@@ -515,6 +555,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   modlist$Type         <- type
   modlist$K            <- k
   modlist$ModWeight    <- (exp(-0.5 * modlist$deltaAICc)) / sum(exp(-0.5 * modlist$deltaAICc))
+  modlist$N            <- sample.size
   
   if (type == "absolute"){
     modlist$Reference.day   <- refday[1]
