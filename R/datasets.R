@@ -88,6 +88,8 @@ NULL
 #'   \item{Date}{Date of hatching (dd/mm/yyyy).}
 #'   \item{Order}{Order of nest within each season.}
 #'   \item{BirdID}{Individual ID of female.}
+#'   \item{Cohort}{Grouping factor designating the breeding season
+#'                  of each record.}
 #'    }
 #'@name Offspring
 NULL
