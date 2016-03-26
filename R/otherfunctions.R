@@ -538,7 +538,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     modlist$Randomised        <- "yes"
     modlist                   <- as.data.frame(modlist)
     LocalOutputRand           <- modlist[order(modlist$ModelAICc), ]
-    LocalOutputRand$ModelAICc <-NULL
+    LocalOutputRand$ModelAICc <- NULL
   }
   
   if (nrandom == 0){
