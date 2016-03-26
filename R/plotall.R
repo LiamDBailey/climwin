@@ -77,7 +77,7 @@
 
 plotall <- function(dataset, datasetrand = NULL,
                     bestmodel = NULL, bestmodeldata = NULL,
-                    cw1 = 0.95, cw2 = 0.5, cw3 = 0.25, histq = 0.99,
+                    cw1 = 0.95, cw2 = 0.5, cw3 = 0.25,
                     title = NULL, arrow = FALSE){
 
     if (class(bestmodel)[length(class(bestmodel))]=="coxph") {
@@ -101,7 +101,7 @@ plotall <- function(dataset, datasetrand = NULL,
   
   window <- plotwin(dataset = dataset, cw = cwa)
   
-  hist   <- plothist(dataset = dataset, datasetrand = datasetrand, histq = histq)
+  hist   <- plothist(dataset = dataset, datasetrand = datasetrand)
   if(is.null(bestmodel) == FALSE && is.null(bestmodeldata) == FALSE){
   best  <- plotbest(dataset = dataset, bestmodel = bestmodel, bestmodeldata = bestmodeldata)
   

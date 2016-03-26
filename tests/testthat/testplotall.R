@@ -23,7 +23,7 @@ test_that("plotall produces a graph when all variables provided", {
                       type = "relative", cmissing = FALSE, cinterval = "day")
   
   plotall(dataset = testdata[[1]]$Dataset, datasetrand  = MassRand, bestmodel = single[[1]],
-          bestmodeldata = single[[2]], cw1 = 0.95, cw2 = 0.5, cw3 = 0.25, histq = 0.99)
+          bestmodeldata = single[[2]], cw1 = 0.95, cw2 = 0.5, cw3 = 0.25)
   
 })
 
@@ -43,7 +43,7 @@ test_that("plotall produces a graph when datasetrand removed", {
                       type = "relative", cmissing = FALSE, cinterval = "day")
   
   plotall(dataset = testdata[[1]]$Dataset, bestmodel = single[[1]],
-          bestmodeldata = single[[2]], cw1 = 0.95, cw2 = 0.5, cw3 = 0.25, histq = 0.99)
+          bestmodeldata = single[[2]], cw1 = 0.95, cw2 = 0.5, cw3 = 0.25)
   
 })
 
@@ -68,6 +68,6 @@ test_that("plotall produces a graph when bestmodel removed", {
                       type = "relative", cmissing = FALSE, cinterval = "day")
   
   plotall(dataset = testdata[[1]]$Dataset, datasetrand  = testdatarand[[1]],
-          bestmodeldata = single[[2]], cw1 = 0.95, cw2 = 0.5, cw3 = 0.25, histq = 0.99)
+          bestmodeldata = single[[2]], cw1 = 0.95, cw2 = 0.5, cw3 = 0.25)
   
 })

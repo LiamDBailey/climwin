@@ -15,7 +15,7 @@ test_that("plothist produces a graph", {
   
   
   test  <- plothist(dataset = testdata[[1]]$Dataset)
-  test2 <- plothist(dataset = testdata[[1]]$Dataset, datasetrand = testdatarand[[1]], histq = 0.95)
+  test2 <- plothist(dataset = testdata[[1]]$Dataset, datasetrand = testdatarand[[1]])
   
   # Test that plothist creates a ggplot object without randomised data
   expect_true(attr(test, "class")[1] == "gg")
