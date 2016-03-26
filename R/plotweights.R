@@ -82,6 +82,10 @@ with(dataset, {
     
   } else if(arrow == TRUE){
     
+    CIRC <- circle(centre = c(dataset$WindowClose[1], dataset$WindowOpen[1]), diameter = 5, npoints = 1000)
+    colnames(CIRC) <- c("WindowClose", "WindowOpen")
+    CIRC$cw.full <- 0
+    
     ARR <- ggplot(dataset, aes(x = WindowClose, y = WindowOpen, z = cw.full))+
       geom_tile(aes(fill = cw.full))+
       scale_fill_gradientn(colours = c("black", "white"), breaks=c(b[1], b[2], b[3]), limits = c(0, 1), name = "")+
@@ -95,10 +99,11 @@ with(dataset, {
       ggtitle(paste(WeightDist, "% of models fall within the ", 100*cw, "% confidence set", sep = ""))+
       ylab("Window open")+
       xlab("Window close")+
-      geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = (WindowOpen[1]-1)), 
-                   size = 1, arrow = grid::arrow(length = grid::unit(0.25, "cm"))) +
-      geom_segment(aes(x = 0, y = WindowOpen[1], xend = (WindowClose[1]-1), yend = WindowOpen[1]),
-                   size = 1, arrow = grid::arrow(length = grid::unit(0.25, "cm")))
+      geom_path(data = CIRC, aes(x = WindowClose, y = WindowOpen), size = 1.2, colour = "black")+
+      geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = (WindowOpen[1] - 2.5)), 
+                   size = 1, linetype = "dashed") +
+      geom_segment(aes(x = 0, y = WindowOpen[1], xend = (WindowClose[1] - 2.5), yend = WindowOpen[1]),
+                   size = 1, linetype = "dashed")
     
     if(plotall == TRUE){
       plotallenv$cw <- ARR

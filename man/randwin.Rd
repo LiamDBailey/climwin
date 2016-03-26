@@ -9,7 +9,7 @@ randwin(exclude = NA, repeats = 5, xvar, cdate, bdate, baseline, stat,
   upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"),
   k = 0, cutoff.day = NULL, cutoff.month = NULL, furthest = NULL,
   closest = NULL, thresh = NULL, cvk = NULL, spatial = NULL,
-  cohort = NULL, original = TRUE)
+  cohort = NULL)
 }
 \arguments{
 \item{exclude}{Two values (distance and duration) which allow users

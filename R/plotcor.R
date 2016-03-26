@@ -76,6 +76,11 @@ plotcor <- function(cor.output, type, arrow = FALSE){
           ylab("Window open")+
           xlab("Window close")
       } else {
+        
+        CIRC <- circle(centre = c(cor.output$BestWindowClose[1], cor.output$BestWindowOpen[1]), diameter = 5, npoints = 1000)
+        colnames(CIRC) <- c("WindowClose", "WindowOpen")
+        CIRC$cor <- 0
+        
         ggplot(cor.output, aes(x = WindowClose, y = WindowOpen, z = cor))+
           geom_tile(aes(fill = cor))+
           scale_fill_gradient2(low = "red", mid = "yellow", high = "blue", 
@@ -86,11 +91,12 @@ plotcor <- function(cor.output, type, arrow = FALSE){
                 axis.line = element_line(size = 0.25, colour = "black"))+
           ggtitle(title)+
           ylab("Window open")+
-          xlab("Window close") +
-          geom_segment(aes(x = BestWindowClose[1], y = 0, xend = BestWindowClose[1], yend = (BestWindowOpen[1]-1)), 
-                       size = 1, arrow = grid::arrow(length = grid::unit(0.25, "cm"))) +
-          geom_segment(aes(x = 0, y = BestWindowOpen[1], xend = (BestWindowClose[1]-1), yend = BestWindowOpen[1]),
-                       size = 1, arrow = grid::arrow(length = grid::unit(0.25, "cm")))
+          xlab("Window close")+
+          geom_path(data = CIRC, aes(x = WindowClose, y = WindowOpen), size = 1.2, colour = "black")+
+          geom_segment(aes(x = BestWindowClose[1], y = 0, xend = BestWindowClose[1], yend = (BestWindowOpen[1] - 2.5)), 
+                       size = 1, linetype = "dashed") +
+          geom_segment(aes(x = 0, y = BestWindowOpen[1], xend = (BestWindowClose[1] - 2.5), yend = BestWindowOpen[1]),
+                       size = 1, linetype = "dashed")
       }
     }
   }

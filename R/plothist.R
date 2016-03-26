@@ -33,15 +33,7 @@
 #'@import ggplot2
 #'@export
 
-plothist <- function(dataset, datasetrand = NULL, histq = 0.99){
-  
-  if (is.null(datasetrand) == FALSE){
-    
-    keep2                       <- c("deltaAICc", "Randomised")
-    randdata                    <- rbind(dataset[keep2], datasetrand[keep2])
-    randdata$deltaAICc          <- as.numeric(randdata$deltaAICc)
-    levels(randdata$Randomised) <- c("Real data", paste("Randomised data (", max(datasetrand$Repeat), "x )"))
-  }
+plothist <- function(dataset, datasetrand = NULL){
 
   if (is.null(datasetrand) == TRUE){
     with(dataset, {
@@ -59,20 +51,65 @@ plothist <- function(dataset, datasetrand = NULL, histq = 0.99){
       xlab(expression(paste(Delta, "AICc (compared to null model)")))
     })
   } else { 
-    vline.data <- data.frame(y = as.numeric(quantile(datasetrand$deltaAICc, prob = (1 - histq))))
-    with(randdata, {ggplot(randdata, aes(x = deltaAICc, fill = Randomised))+
-      geom_histogram(aes(y = 2 * ..density..), colour = "black", binwidth = 2, alpha = 0.5)+
-      theme_classic()+
-      theme(panel.grid.major = element_blank(),
-            panel.grid.minor = element_blank(),
-            axis.line = element_line(size = 0.25, colour = "black"),
-            legend.position = "none",
-            plot.title = element_text(size = 16),
-            panel.border = element_rect(colour = "black", fill = NA))+
-      facet_wrap(~Randomised, nrow = 2)+
-      ggtitle(expression(paste("Histogram of ", Delta,"AICc")))+
-      geom_vline(data = vline.data, aes(xintercept = y), linetype = "dashed", colour = "red")+
-      ylab("Proportion")+
-      xlab(expression(paste(Delta,"AICc (compared to null model)")))})
+    
+    if(max(datasetrand$Repeat) < 100){
+      
+      P <- round(pvalue(rand.dataset = datasetrand, full.dataset = dataset, metric = "Weight", sample.size = dataset$sample.size[1]), digits = 3)
+      
+      with(dataset, {
+        ggplot(dataset, aes(x = deltaAICc)) +
+          geom_histogram(aes(y = 2 * ..density..), colour = "black", fill = "red", binwidth = 2, alpha = 0.5) +
+          theme_classic() +
+          theme(panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(),
+                axis.line = element_line(size = 0.25, colour = "black"),
+                legend.position = "none",
+                plot.title = element_text(size = 16),
+                panel.border = element_rect(colour = "black", fill = NA))+
+          ggtitle(bquote(atop(Histogram~of~Delta*AICc,Pspread~.(P))))+
+          ylab("Proportion") +
+          xlab(expression(paste(Delta, "AICc (compared to null model)")))
+      })
+      
+    } else if(max(datasetrand$Repeat) > 100 & max(datasetrand$Repeat) < 1000){
+      
+      P  <- round(pvalue(rand.dataset = datasetrand, full.dataset = dataset, metric = "Weight", sample.size = dataset$sample.size[1]), digits = 3)
+      P2 <- round(pvalue(rand.dataset = datasetrand, full.dataset = dataset, metric = "AIC", sample.size = dataset$sample.size[1]), digits = 3)
+      
+      with(dataset, {
+        ggplot(dataset, aes(x = deltaAICc)) +
+          geom_histogram(aes(y = 2 * ..density..), colour = "black", fill = "red", binwidth = 2, alpha = 0.5) +
+          theme_classic() +
+          theme(panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(),
+                axis.line = element_line(size = 0.25, colour = "black"),
+                legend.position = "none",
+                plot.title = element_text(size = 16),
+                panel.border = element_rect(colour = "black", fill = NA))+
+          ggtitle(bquote(atop(Histogram~of~Delta*AICc,Pspread~.(P)~PAICc~.(P2))))+
+          ylab("Proportion") +
+          xlab(expression(paste(Delta, "AICc (compared to null model)")))
+      })      
+      
+    } else if(max(datasetrand$Repeat) > 1000){
+      
+      P  <- round(pvalue(rand.dataset = datasetrand, full.dataset = dataset, metric = "AIC", sample.size = dataset$sample.size[1]), digits = 3)
+      
+      with(dataset, {
+        ggplot(dataset, aes(x = deltaAICc)) +
+          geom_histogram(aes(y = 2 * ..density..), colour = "black", fill = "red", binwidth = 2, alpha = 0.5) +
+          theme_classic() +
+          theme(panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(),
+                axis.line = element_line(size = 0.25, colour = "black"),
+                legend.position = "none",
+                plot.title = element_text(size = 16),
+                panel.border = element_rect(colour = "black", fill = NA))+
+          ggtitle(bquote(atop(Histogram~of~Delta*AICc,Pspread~.(P))))+
+          ylab("Proportion") +
+          xlab(expression(paste(Delta, "AICc (compared to null model)")))
+      })
+      
+    }
   }
 }

@@ -25,7 +25,7 @@
 #'@param type "absolute" or "relative", whether you wish the climate window to be relative
 #'  (e.g. the number of days before each biological record is measured) or absolute
 #'  (e.g. number of days before a set point in time).
-#'@param refday If type is absolute, the day and month respectively of the 
+#'@param refday If type is "absolute", the day and month respectively of the 
 #'  year from which the absolute window analysis will start.
 #'@param cmissing TRUE or FALSE, determines what should be done if there are 
 #'  missing climate data. If FALSE, the function will not run if missing climate
@@ -33,8 +33,7 @@
 #'  will be removed from climate window analysis.
 #'@param cinterval The resolution at which climate window analysis will be 
 #'  conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the units 
-#'  of parameters 'furthest' and 'closest' will differ with the choice of 
-#'  cinterval.
+#'  of parameter 'range' will differ with the choice of cinterval.
 #'@param upper Cut-off value used to determine growing degree days or positive 
 #'  climate thresholds (depending on parameter thresh). Note that when values
 #'  of lower and upper are both provided, autowin will instead calculate an 
@@ -44,8 +43,8 @@
 #'  of lower and upper are both provided, autowin will instead calculate an 
 #'  optimal climate zone.
 #'@param binary TRUE or FALSE. Determines whether to use values of upper and
-#'  lower to calculate binary climate data (thresh = TRUE), or to use for
-#'  growing degree days (thresh = FALSE).
+#'  lower to calculate binary climate data (binary = TRUE), or to use for
+#'  growing degree days (binary = FALSE).
 #'@param centre A list item containing:
 #'  1. The variable used for mean centring (e.g. Year, Site, Individual). 
 #'  Please specify the parent environment and variable name (e.g. Biol$Year).
@@ -59,7 +58,7 @@
 #'  record is taken from. The length of this factor should correspond to the length 
 #'  of the biological dataset.
 #'  2. A factor that defines which spatial group (i.e. population) climate data
-#'  corresponds to. This length of this factor should correspond to the length of
+#'  corresponds to. The length of this factor should correspond to the length of
 #'  the climate dataset.
 #'@param cutoff.day,cutoff.month Redundant parameters. Now replaced by refday.
 #'@param furthest,closest Redundant parameters. Now replaced by range.

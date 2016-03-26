@@ -3,7 +3,7 @@
 #'Finds the time period when a biological variable is most strongly affected 
 #'by climate. Note that climate data and biological data should be loaded as 
 #'two seperate objects. Both objects should contain a date column to designate
-#'when the data were recorded (dd/mm/yyyy) and a response variable column.
+#'when the data were recorded (dd/mm/yyyy).
 #'
 #'Note that climatewin allows you to test multiple possible parameters with the
 #'same code (e.g. func, stat, xvar). See examples for more detail.
@@ -18,9 +18,9 @@
 #'@param bdate The biological date variable (dd/mm/yyyy). Please specify the 
 #'  parent environment and variable name (e.g. Biol$Date).
 #'@param baseline The baseline model structure used for model testing. 
-#'  Currently known to support lm, glm, lmer and glmer objects.
+#'  Currently known to support lm, glm, lmer, glmer and coxph objects.
 #'@param range Two values signifying respectively the furthest and closest number 
-#'  of time intervals (set by cinterval) back from the cutoff date or biological record to include 
+#'  of time intervals (set by cinterval) back from the refday or biological record to include 
 #'  in the climate window search.
 #'@param stat The aggregate statistics used to analyse the climate data. Can 
 #'  currently use basic R statistics (e.g. mean, min), as well as slope. 
@@ -31,7 +31,7 @@
 #'@param type "absolute" or "relative", whether you wish the climate window to be relative
 #'  (e.g. the number of days before each biological record is measured) or absolute
 #'  (e.g. number of days before a set point in time).
-#'@param refday If type is absolute, the day and month respectively of the 
+#'@param refday If type is "absolute", the day and month respectively of the 
 #'  year from which the absolute window analysis will start.
 #'@param cmissing TRUE or FALSE, determines what should be done if there are 
 #'  missing climate data. If FALSE, the function will not run if missing 
@@ -53,8 +53,8 @@
 #'  of lower and upper are both provided, climatewin will instead calculate an 
 #'  optimal climate zone.
 #'@param binary TRUE or FALSE. Determines whether to use values of upper and
-#'  lower to calculate binary climate data (thresh = TRUE), or to use for
-#'  growing degree days (thresh = FALSE).
+#'  lower to calculate binary climate data (binary = TRUE), or to use for
+#'  growing degree days (binary = FALSE).
 #'@param centre A list item containing:
 #'  1. The variable used for mean centring (e.g. Year, Site, Individual). 
 #'  Please specify the parent environment and variable name (e.g. Biol$Year).
@@ -79,8 +79,7 @@
 #'  
 #'  \itemize{
 #'  \item BestModel, a model object. The strongest climate window model based on AICc. 
-#'  \item BestModelData, a dataframe with the data used to fit the strongest 
-#'  climate window model.
+#'  \item BestModelData, a dataframe used to fit the strongest climate window model.
 #'  \item Dataset, a dataframe with information on all fitted climate windows. 
 #'  Ordered using deltaAICc, with most negative deltaAICc values first. 
 #'  See \code{\link{MassOutput}} as an example.}

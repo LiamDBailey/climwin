@@ -318,7 +318,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
                     modeldat$climate <- apply(cmatrix[, windowclose:windowopen], 1, FUN = stat))
           }
           if (min(modeldat$climate) <= 0 & func == "log" || min(modeldat$climate) <= 0 & func == "inv"){
-            stop("func = log or inv cannot be used with climate values >= 0. 
+            stop("func = log or inv cannot be used with climate values <= 0. 
                  Consider adding a constant to climate data to remove these values")
           }
           
@@ -579,7 +579,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     modlist$Randomised        <- "yes"
     modlist                   <- as.data.frame(modlist)
     LocalOutputRand           <- modlist[order(modlist$ModelAICc), ]
-    LocalOutputRand$ModelAICc <-NULL
+    LocalOutputRand$ModelAICc <- NULL
   }
   
   if (nrandom == 0){
@@ -1074,4 +1074,14 @@ merge_results <- function(dataset1, dataset2){
   
   return(new_dataset)
   
+}
+
+##################################################################################
+
+circle <- function(centre = c(0,0), diameter = 1, npoints = 100){
+  r = diameter / 2
+  tt <- seq(0,2*pi,length.out = npoints)
+  xx <- centre[1] + r * cos(tt)
+  yy <- centre[2] + r * sin(tt)
+  return(data.frame(x = xx, y = yy))
 }

@@ -10,7 +10,8 @@ test_that("plothist produces a graph", {
   
   testdatarand <- randwin(repeats = 2, xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                           baseline = lm(Mass ~ 1, data = Mass), range = c(3, 2), 
-                          type = "relative", stat = "max", func = "lin", cmissing = FALSE)
+                          type = "relative", stat = "max", func = "lin", cmissing = FALSE,
+                          window = "Sliding")
   
   
   test  <- plothist(dataset = testdata[[1]]$Dataset)
