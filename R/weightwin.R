@@ -279,13 +279,14 @@ weightwin <- function(xvar, cdate, bdate, baseline, range,
     stop("Please choose Method to equal either W or G")
   } 
   bestmodel                     <- which(as.numeric(funcenv$DAICc) == min(as.numeric(funcenv$DAICc)))[1] # sometimes there are several bestmodels with similar DAICc, in which case we just pick one as they are all very similar
-  WeightedOutput                <- data.frame(DelatAICc = funcenv$DAICc[bestmodel], 
+  WeightedOutput                <- data.frame(DelatAICc = funcenv$DAICc[bestmodel],
+                                              duration = funcenv$duration,
                                               shape = funcenv$par_shape[bestmodel],
                                               scale = funcenv$par_scale[bestmodel],
                                               location = funcenv$par_location[bestmodel],
                                               Function = func, Weight_function = weightfunc,
                                               sample.size = sample.size)   # prepare output of best model
-  colnames(WeightedOutput) <- c("deltaAICc", "shape", "Scale", "Location", "Function", "Weight_function", "sample.size")
+  colnames(WeightedOutput) <- c("deltaAICc", "duration", "shape", "scale", "location", "function", "Weight_function", "sample.size")
   
   ifelse (weightfunc == "W", 
           weight <- weibull3(x = j[1:duration], shape = as.numeric(funcenv$par_shape[bestmodel]), 

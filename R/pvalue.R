@@ -27,17 +27,16 @@ pvalue <- function(rand.dataset, full.dataset, metric, sample.size){
     }
     
     DeltaW <- full.dataset$ModWeight[1] - median(rand.dataset$ModWeight)
-    
-    if(full.dataset$K[1] >= 10){
-      Pw <- 1 - (1/(1 + exp(-1 * (-0.621031 + 11.563537 * DeltaW + 0.058663 * sample.size + 6.882248 * DeltaW * sample.size))))
-    } else {
-      Pw <- 1 - (1/(1 + exp(-1 * (-0.540324 + 1.947674 * DeltaW + 0.078708 * sample.size + 0.313567 * DeltaW * sample.size))))
-    }
-    
+      
+      if(full.dataset$K[1] >= 10){
+        Pw <- 1 - (1/(1 + exp(-1 * (-0.621031 + 11.563537 * DeltaW + 0.058663 * sample.size + 6.882248 * DeltaW * sample.size))))
+      } else {
+        Pw <- 1 - (1/(1 + exp(-1 * (-0.540324 + 1.947674 * DeltaW + 0.078708 * sample.size + 0.313567 * DeltaW * sample.size))))
+      }
+
     return(Pw)
     
   } else {
-    
     stop("'metric' should be either AIC or Weight")
   }
 }

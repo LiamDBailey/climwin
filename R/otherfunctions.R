@@ -42,7 +42,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     
     if(is.null(cohort) == FALSE){
       sample.size <- length(levels(as.factor(cohort)))
-    } else {
+    } else if(is.null(cohort) == TRUE){
       sample.size <- length(levels(as.factor(lubridate::year(as.Date(bdate, format = "%d/%m/%Y")))))
     }  
   }
@@ -555,7 +555,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   modlist$Type         <- type
   modlist$K            <- k
   modlist$ModWeight    <- (exp(-0.5 * modlist$deltaAICc)) / sum(exp(-0.5 * modlist$deltaAICc))
-  modlist$N            <- sample.size
+  modlist$sample.size  <- sample.size
   
   if (type == "absolute"){
     modlist$Reference.day   <- refday[1]
