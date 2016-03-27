@@ -233,75 +233,12 @@ randwin <- function(exclude = NA, repeats = 5, xvar, cdate, bdate, baseline,
       }
 
       rm(outputrep)
-      if(r == repeats){
-        
-        if(window == "Sliding"){
-          
+      if(r == repeats){          
           outputrand                   <- as.data.frame(outputrand)
           combined[[combo]]            <- outputrand
-          allcombos$DeltaAICc[combo]   <- round(outputrand$deltaAICc[1], digits = 2)
-          allcombos$WindowOpen[combo]  <- outputrand$WindowOpen[1]
-          allcombos$WindowClose[combo] <- outputrand$WindowClose[1]
-          if(length(which("lin" == levels(allcombos$func))) >0){
-            allcombos$betaL[combo] <- round(outputrand$ModelBeta[1], digits = 2)
-          }
-          if(allcombos$func[1] == "centre"){
-            if(centre[[2]] == "both"){
-              allcombos$WithinGrpMean <- round(outputrand$WithinGrpMean[1], digits = 2)
-              allcombos$WithinGrpDev  <- round(outputrand$WithinGrpDev[1], digits = 2)
-            }
-            if(centre[[2]] == "dev"){
-              allcombos$WithinGrpDev  <- round(outputrand$WithinGrpDev[1], digits = 2)
-            }
-            if(centre[[2]] == "mean"){
-              allcombos$WithinGrpMean <- round(outputrand$WithinGrpMean[1], digits = 2)
-            }
-          }
-          if(length(which("quad" == levels(allcombos$func))) > 0){
-            allcombos$betaL[combo]   <- round(outputrand$ModelBeta[1], digits = 2)
-            allcombos$betaQ[combo]   <- round(outputrand$ModelBetaQ[1], digits = 2)
-          }
-          if(length(which("cub" == levels(allcombos$func))) > 0){
-            allcombos$betaL[combo]   <- round(outputrand$ModelBeta[1], digits = 2)
-            allcombos$betaQ[combo]   <- round(outputrand$ModelBetaQ[1], digits = 2)
-            allcombos$betaC[combo]   <- round(outputrand$ModelBetaC[1], digits = 2)
-          }
-          if(length(which("inv" == levels(allcombos$func))) > 0){
-            allcombos$betaInv[combo] <- round(outputrand$ModelBeta[1], digits = 2)
-          }
-          if(length(which("log" == levels(allcombos$func))) > 0){
-            allcombos$betaLog[combo] <- round(outputrand$ModelBeta[1], digits = 2)
-          }
-          
-        } else {
-         
-          outputrand                   <- as.data.frame(outputrand)
-          combined[[combo]]            <- outputrand
-          allcombos$DeltaAICc[combo]   <- round(outputrand$deltaAICc[1], digits = 2)
-          allcombos$WindowOpen[combo]  <- outputrand$WindowOpen[1]
-          allcombos$WindowClose[combo] <- outputrand$WindowClose[1]
-          if(length(which("lin" == levels(allcombos$func))) >0){
-            allcombos$betaL[combo] <- round(outputrand$ModelBeta[1], digits = 2)
-          }
-          if(length(which("quad" == levels(allcombos$func))) > 0){
-            allcombos$betaL[combo]   <- round(outputrand$ModelBeta[1], digits = 2)
-            allcombos$betaQ[combo]   <- round(outputrand$ModelBetaQ[1], digits = 2)
-          }
-          if(length(which("cub" == levels(allcombos$func))) > 0){
-            allcombos$betaL[combo]   <- round(outputrand$ModelBeta[1], digits = 2)
-            allcombos$betaQ[combo]   <- round(outputrand$ModelBetaQ[1], digits = 2)
-            allcombos$betaC[combo]   <- round(outputrand$ModelBetaC[1], digits = 2)
-          }
-          if(length(which("inv" == levels(allcombos$func))) > 0){
-            allcombos$betaInv[combo] <- round(outputrand$ModelBeta[1], digits = 2)
-          }
-          if(length(which("log" == levels(allcombos$func))) > 0){
-            allcombos$betaLog[combo] <- round(outputrand$ModelBeta[1], digits = 2)
-          }
         }
       }
     }
-  }
   allcombos <- cbind(response = colnames(model.frame(baseline))[1], allcombos)
   combined <- c(combined, combos = list(allcombos))
   return(combined)
