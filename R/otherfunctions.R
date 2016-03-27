@@ -5,6 +5,8 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
                     spatial, upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"),
                     cohort = NULL){
   
+  print("Initialising, please wait...")
+  
   if(is.null(spatial) == FALSE){
     
     if(is.null(cohort) == FALSE){
@@ -33,7 +35,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
         sample.size <- sample.size + length(levels(sub$spatial))        
         
       }
-
+      
     }
     
   } else if(is.null(spatial) == TRUE) {
@@ -43,9 +45,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     } else {
       sample.size <- length(levels(as.factor(lubridate::year(as.Date(bdate, format = "%d/%m/%Y")))))
     }  
-  } 
-  
-  print("Initialising, please wait...")
+  }
   
   if(is.null(centre[[1]]) == FALSE){
     func = "centre"

@@ -141,6 +141,46 @@ weightwin <- function(xvar, cdate, bdate, baseline, range,
     }
   }
   
+  if(is.null(spatial) == FALSE){
+    
+    if(is.null(cohort) == FALSE){
+      
+      sample.size <- 0
+      data <- data.frame(bdate = bdate, spatial = as.factor(spatial), cohort = as.factor(cohort))
+      
+      for(i in levels(as.factor(data$cohort))){
+        
+        sub <- subset(data, cohort = i)
+        sub$spatial <- factor(sub$spatial)
+        sample.size <- sample.size + length(levels(sub$spatial))
+        
+      }
+      
+    } else {
+      
+      sample.size <- 0
+      data <- data.frame(bdate = bdate, spatial = as.factor(spatial))
+      data$Year <- lubridate::year(as.Date(data$bdate, format = "%d/%m/%Y"))
+      
+      for(i in levels(as.factor(data$Year))){
+        
+        sub <- subset(data, Year == i)
+        sub$spatial <- factor(sub$spatial)
+        sample.size <- sample.size + length(levels(sub$spatial))        
+        
+      }
+      
+    }
+    
+  } else if(is.null(spatial) == TRUE) {
+    
+    if(is.null(cohort) == FALSE){
+      sample.size <- length(levels(as.factor(cohort)))
+    } else {
+      sample.size <- length(levels(as.factor(lubridate::year(as.Date(bdate, format = "%d/%m/%Y")))))
+    }  
+  }
+  
   if (is.null(centre[[1]]) == FALSE){
     func <- "centre"
   }
@@ -243,8 +283,9 @@ weightwin <- function(xvar, cdate, bdate, baseline, range,
                                               shape = funcenv$par_shape[bestmodel],
                                               scale = funcenv$par_scale[bestmodel],
                                               location = funcenv$par_location[bestmodel],
-                                              Function = func, Weight_function = weightfunc)   # prepare output of best model
-  colnames(WeightedOutput) <- c("deltaAICc", "shape", "Scale", "Location", "Function", "Weight_function")
+                                              Function = func, Weight_function = weightfunc,
+                                              sample.size = sample.size)   # prepare output of best model
+  colnames(WeightedOutput) <- c("deltaAICc", "shape", "Scale", "Location", "Function", "Weight_function", "sample.size")
   
   ifelse (weightfunc == "W", 
           weight <- weibull3(x = j[1:duration], shape = as.numeric(funcenv$par_shape[bestmodel]), 
