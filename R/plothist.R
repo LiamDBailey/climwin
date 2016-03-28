@@ -22,7 +22,7 @@
 #'data(MassOutput)
 #'data(MassRand)
 #' 
-#'plothist(dataset = MassOutput, datasetrand = MassRand, histq = 0.95)
+#'plothist(dataset = MassOutput, datasetrand = MassRand)
 #'
 #'# Plot deltaAICc when no randomised data is provided
 #' 
