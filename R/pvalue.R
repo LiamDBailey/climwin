@@ -20,7 +20,7 @@ pvalue <- function(rand.dataset, full.dataset, metric, sample.size){
     Percentile <- ecdf(rand.dataset$deltaAICc)
     return(Percentile(full.dataset$deltaAICc[1]))
     
-  } else if(metric == "Weight"){
+  } else if(metric == "Spread"){
     
     if(is.null(sample.size) == TRUE){
       stop("Please provide a value for sample size")
@@ -37,6 +37,6 @@ pvalue <- function(rand.dataset, full.dataset, metric, sample.size){
     return(Pw)
     
   } else {
-    stop("'metric' should be either AIC or Weight")
+    stop("'metric' should be either 'AIC' or 'Spread'")
   }
 }
