@@ -2,6 +2,12 @@
 
 ## Major changes
 
+### New function slidingwin
+climwin aims to distinguish between two separate methods for testing climate windows. The commonly used sliding window approach and less common weighted window approach. To ensure the distinction between these two methods is clear, the function climatewin has been made redundant and been replaced with the function slidingwin. User can now conduct a sliding window analysis with 'slidingwin' and a weighted window analysis with 'weightwin'. 
+
+### randwin for weighted window analysis
+The function randwin can now also be used to conduct randomisations using a weighted window approach (i.e. using the function weightwin). Users must now define whether randomisations are to be conducted using a sliding window ("Sliding") or weighted window ("Weighted") approach with the argument 'window'. Note that all arguments from weightwin will be required to run randwin using a weighted window approach.
+
 ### Cohort variable:
 When a group of biological measurements covers two years (e.g. Southern hemisphere species which breed between November - February) use of 'absolute' climate windows will cause these measurements to be split between two different reference days. To overcome this issue, we include a 'cohort' argument to our functions. 
 
