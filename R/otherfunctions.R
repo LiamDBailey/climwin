@@ -1,3 +1,28 @@
+#############################################################################################################
+
+#climatewin is now redundant, will transfer straight to slidingwin with message
+climatewin <- function(exclude = NA, xvar, cdate, bdate, baseline, 
+                       type, refday, stat = "mean", func = "lin", range, 
+                       cmissing = FALSE, cinterval = "day", k = 0,
+                       upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"),
+                       spatial = NULL, cutoff.day = NULL, cutoff.month = NULL, 
+                       furthest = NULL, closest = NULL,
+                       thresh = NULL, cvk = NULL, cohort = NULL){
+  
+  print("PLEASE NOTE: Function 'climatewin' is being made redundant. Please use 'slidingwin' as an alternative")
+  
+  slidingwin(exclude = exclude, xvar = xvar, cdate = cdate, bdate = bdate, baseline = baseline, 
+             type = type, refday = refday, stat = stat, func = func, range = range, 
+             cmissing = cmissing, cinterval = cinterval, k = k,
+             upper = upper, lower = lower, binary = binary, centre = centre,
+             spatial = spatial, cutoff.day = cutoff.day, cutoff.month = cutoff.month, 
+             furthest = furthest, closest = closest,
+             thresh = thresh, cvk = cvk, cohort = cohort)
+  
+}
+
+###########################################################################################################
+
 #Basewin function that is combined with manywin to test multiple climate window characteristics
 basewin <- function(exclude, xvar, cdate, bdate, baseline, range, 
                     type, stat = "mean", func = "lin", refday,

@@ -5,7 +5,7 @@
 #'two seperate objects. Both objects should contain a date column to designate
 #'when the data were recorded (dd/mm/yyyy).
 #'
-#'Note that climatewin allows you to test multiple possible parameters with the
+#'Note that slidingwin allows you to test multiple possible parameters with the
 #'same code (e.g. func, stat, xvar). See examples for more detail.
 #'@param exclude Two values (distance and duration) which allow users
 #'  to exclude short-duration long-lag climate windows from analysis (e.g., 
@@ -46,11 +46,11 @@
 #'  minimum of 2 for cross validation to occur.
 #'@param upper Cut-off values used to determine growing degree days or positive 
 #'  climate thresholds (depending on parameter thresh). Note that when values
-#'  of lower and upper are both provided, climatewin will instead calculate an 
+#'  of lower and upper are both provided, slidingwin will instead calculate an 
 #'  optimal climate zone.
 #'@param lower Cut-off values used to determine chill days or negative 
 #'  climate thresholds (depending on parameter thresh). Note that when values
-#'  of lower and upper are both provided, climatewin will instead calculate an 
+#'  of lower and upper are both provided, slidingwin will instead calculate an 
 #'  optimal climate zone.
 #'@param binary TRUE or FALSE. Determines whether to use values of upper and
 #'  lower to calculate binary climate data (binary = TRUE), or to use for
@@ -109,7 +109,7 @@
 #'
 #'# Test both linear and quadratic functions with climate variable temperature
 #'
-#'OffspringWin <- climatewin(xvar = list(Temp = OffspringClimate$Temperature), 
+#'OffspringWin <- slidingwin(xvar = list(Temp = OffspringClimate$Temperature), 
 #'                           cdate = OffspringClimate$Date, 
 #'                           bdate = Offspring$Date, 
 #'                           baseline = glm(Offspring ~ 1, data = Offspring, family = poisson),
@@ -147,7 +147,7 @@
 #'# Fit a linear term (func = "lin")
 #'# Test at the resolution of days (cinterval = "day")
 #'  
-#'MassWin <- climatewin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, 
+#'MassWin <- slidingwin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, 
 #'                      bdate = Mass$Date, baseline = lm(Mass ~ 1, data = Mass),
 #'                      range = c(100, 0),
 #'                      stat = c("mean", "max"), func = "lin",
@@ -172,7 +172,7 @@
 #'  
 #'@export
 
-climatewin <- function(exclude = NA, xvar, cdate, bdate, baseline, 
+slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline, 
                        type, refday, stat = "mean", func = "lin", range, 
                        cmissing = FALSE, cinterval = "day", k = 0,
                        upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"),
