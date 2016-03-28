@@ -8,6 +8,8 @@
 #'  These windows are often considered to be biologically implausible.
 #'@param repeats The number of times that data will be randomised and analysed 
 #'  for climate windows.
+#'@param window Whether randomisations are carried out for a sliding window ("Sliding")
+#'  or weighted window ("Weighted") approach.
 #'@param xvar A list object containing all climate variables of interest. 
 #'  Please specify the parent environment and variable name (e.g. Climate$Temp).
 #'@param cdate The climate date variable (dd/mm/yyyy). Please specify the parent
@@ -76,7 +78,10 @@
 #'@author Liam D. Bailey and Martijn van de Pol
 #' @examples
 #' \dontrun{
-#'# Test climate windows for random data using Mass dataset
+#'
+#'## EXAMPLE 1 ##
+#'
+#'# Test climate windows in randomised data using a sliding window approach.
 #' 
 #'data(Mass)
 #'data(MassClimate)
@@ -84,7 +89,8 @@
 #'# Randomise data twice
 #'# Note all other parameters are fitted in the same way as the climatewin function.
 #' 
-#'rand <- randwin(repeats = 2, xvar = list(Temp = MassClimate$Temp), 
+#'rand <- randwin(repeats = 2, window = "Sliding", 
+#'                xvar = list(Temp = MassClimate$Temp), 
 #'                cdate = MassClimate$Date, bdate = Mass$Date,
 #'                baseline = lm(Mass ~ 1, data = Mass), 
 #'                range = c(100, 0),
@@ -94,16 +100,41 @@
 #'                 
 #'# View output #
 #' 
-#'head(rand)    
+#'head(rand)
+#'
+#'## EXAMPLE 2 ##
+#'
+#'# Test climate windows in randomised data using a weighted window approach.
+#'   
+#'data(Offspring)
+#'data(OffspringClimate)
+#'
+#'# Randomise data twice
+#'# Note all other parameters are fitted in the same way as the weightwin function.
+#'
+#'weightrand <- weightwin(repeats = 2, window = "Weighted", 
+#'                        xvar = list(Temp = OffspringClimate$Temperature), 
+#'                        cdate = OffspringClimate$Date,
+#'                        bdate = Offspring$Date,
+#'                        baseline = glm(Offspring ~ 1, family = poisson, data = Offspring),
+#'                        range = c(365, 0), func = "quad",
+#'                        type = "relative", weightfunc = "W", cinterval = "day",
+#'                        par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)),
+#'                        method = "L-BFGS-B")
+#'                    
+#'# View output
+#'
+#'head(weightrand)
+#'                           
 #'        }
 #'
 #'@export
 
-randwin <- function(exclude = NA, repeats = 5, xvar, cdate, bdate, baseline, 
+randwin <- function(exclude = NA, repeats = 5, window, xvar, cdate, bdate, baseline, 
                     stat, range, func, type, refday,
                     cmissing = FALSE, cinterval = "day",
                     upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"), k = 0,
-                    window, weightfunc = "W", par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)), 
+                    weightfunc = "W", par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)), 
                     method = "L-BFGS-B", cutoff.day = NULL, cutoff.month = NULL,
                     furthest = NULL, closest = NULL, thresh = NULL, cvk = NULL,
                     spatial = NULL, cohort = NULL){
