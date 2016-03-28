@@ -22,8 +22,5 @@ test_that("plothist produces a graph", {
   
   # Test that plothist creates a ggplot object with randomised data
   expect_true(attr(test2, "class")[1] == "gg")
-  
-  # Test that plothist has created a facetwrap when randomised data is provided
-  expect_false(is.null(test2$facet$facets))
 
 })

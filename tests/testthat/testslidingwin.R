@@ -1,4 +1,4 @@
-# Test the outcomes of climatewin #
+# Test the outcomes of slidingwin #
 
 #Need to vary:
 # baseline model type: glm, lme4, glmer
@@ -14,7 +14,7 @@
 ##########################################################
 
 # Test regular output #
-test_that("climatewin produces the right output", {
+test_that("slidingwin produces the right output", {
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -22,7 +22,7 @@ test_that("climatewin produces the right output", {
   furthest = 2
   closest = 2
   
-  test <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
+  test <- slidingwin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), range = c(2, 2), 
                      type = "relative", stat = "max", func = "lin", cmissing = FALSE)
   
@@ -45,7 +45,7 @@ test_that("climatewin produces the right output", {
   expect_equal(length(which(is.na(test[[1]]$Dataset[, 4]))), 0)
   
   # Test that all columns were created in the dataset
-  expect_true(ncol(test[[1]]$Dataset) == 16)
+  expect_true(ncol(test[[1]]$Dataset) == 17)
   
   # Test that the correct number of models were recorded in the dataset
   expect_equal(maxmodno, nrow(test[[1]]$Dataset))
@@ -56,7 +56,7 @@ test_that("climatewin produces the right output", {
 })
 
 # Test output with multiple combos #
-test_that("climatewin produces multiple combos", {
+test_that("slidingwin produces multiple combos", {
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -64,7 +64,7 @@ test_that("climatewin produces multiple combos", {
   furthest = 1
   closest = 0
   
-  test <- climatewin(xvar = list(Temp = MassClimate$Temp, Rain = MassClimate$Rain), cdate = MassClimate$Date, bdate = Mass$Date, 
+  test <- slidingwin(xvar = list(Temp = MassClimate$Temp, Rain = MassClimate$Rain), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), range = c(1, 0), 
                      type = "relative", stat = c("max", "min"), func = c("lin", "quad"), cmissing = FALSE)
   
@@ -78,7 +78,7 @@ test_that("climatewin produces multiple combos", {
 # Test that upper and lower work #
 
 # Test with upper and binary:
-test_that("climatewin produces binary values with upper and binary = TRUE", {
+test_that("slidingwin produces binary values with upper and binary = TRUE", {
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -86,7 +86,7 @@ test_that("climatewin produces binary values with upper and binary = TRUE", {
   furthest = 1
   closest = 0
   
-  test <- climatewin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
+  test <- slidingwin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), range = c(1, 0), 
                      type = "relative", stat = "max", func = "lin", cmissing = FALSE,
                      upper = 10, binary = TRUE)
@@ -100,7 +100,7 @@ test_that("climatewin produces binary values with upper and binary = TRUE", {
 })
 
 # Test with upper and without binary
-test_that("climatewin produces non-binary values with upper and binary = FALSE", {
+test_that("slidingwin produces non-binary values with upper and binary = FALSE", {
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -108,7 +108,7 @@ test_that("climatewin produces non-binary values with upper and binary = FALSE",
   furthest = 1
   closest = 0
   
-  test <- climatewin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
+  test <- slidingwin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), range = c(1, 0), 
                      type = "relative", stat = "max", func = "lin", cmissing = FALSE,
                      upper = 10, binary = FALSE)
@@ -122,7 +122,7 @@ test_that("climatewin produces non-binary values with upper and binary = FALSE",
 })
 
 # Test with lower and without binary
-test_that("climatewin produces non-binary values with lower and binary = FALSE", {
+test_that("slidingwin produces non-binary values with lower and binary = FALSE", {
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -130,7 +130,7 @@ test_that("climatewin produces non-binary values with lower and binary = FALSE",
   furthest = 1
   closest = 0
   
-  test <- climatewin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
+  test <- slidingwin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), range = c(1, 0), 
                      type = "relative", stat = "max", func = "lin", cmissing = FALSE,
                      lower = 10, upper = 15, binary = FALSE)
@@ -144,7 +144,7 @@ test_that("climatewin produces non-binary values with lower and binary = FALSE",
 })
 
 # With lower and binary
-test_that("climatewin produces binary values with lower and binary = TRUE", {
+test_that("slidingwin produces binary values with lower and binary = TRUE", {
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -152,7 +152,7 @@ test_that("climatewin produces binary values with lower and binary = TRUE", {
   furthest = 1
   closest = 0
   
-  test <- climatewin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
+  test <- slidingwin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), range = c(1, 0), 
                      type = "relative", stat = "max", func = "lin", cmissing = FALSE,
                      lower = 10, binary = TRUE)
@@ -166,7 +166,7 @@ test_that("climatewin produces binary values with lower and binary = TRUE", {
 })
 
 # Test with upper, lower and binary
-test_that("climatewin produces binary values with lower/upper and binary = TRUE", {
+test_that("slidingwin produces binary values with lower/upper and binary = TRUE", {
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -174,7 +174,7 @@ test_that("climatewin produces binary values with lower/upper and binary = TRUE"
   furthest = 1
   closest = 0
   
-  test <- climatewin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
+  test <- slidingwin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), range = c(1, 0), 
                      type = "relative", stat = "max", func = "lin", cmissing = FALSE,
                      lower = 10, upper = 15, binary = TRUE)
@@ -188,7 +188,7 @@ test_that("climatewin produces binary values with lower/upper and binary = TRUE"
 })
 
 # With upper and lower but without binary
-test_that("climatewin produces non-binary values with lower/upper and binary = FALSE", {
+test_that("slidingwin produces non-binary values with lower/upper and binary = FALSE", {
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -196,7 +196,7 @@ test_that("climatewin produces non-binary values with lower/upper and binary = F
   furthest = 1
   closest = 0
   
-  test <- climatewin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
+  test <- slidingwin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), range = c(1, 0), 
                      type = "relative", stat = "max", func = "lin", cmissing = FALSE,
                      lower = 10, upper = 15, binary = FALSE)
@@ -219,11 +219,11 @@ test_that("No errors return when cmissing TRUE and full dataset", {
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
   
-  test <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
+  test <- slidingwin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), range = c(2, 2), 
                      type = "relative", stat = "max", func = "lin", cmissing=TRUE)
   
-  # Test that climatewin ran without an error
+  # Test that slidingwin ran without an error
   expect_true(is.list(test))
 
 })
@@ -235,11 +235,11 @@ test_that("No errors return when cmissing TRUE with NAs", {
   data(MassClimate, envir = environment())
   
   MassClimate2 <- MassClimate[-491, ]
-  test <- climatewin(xvar = list(MassClimate2$Temp), cdate = MassClimate2$Date, bdate = Mass$Date, 
+  test <- slidingwin(xvar = list(MassClimate2$Temp), cdate = MassClimate2$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), range = c(2, 0), 
                      type = "relative", stat = "max", func = "lin", cmissing = TRUE)
   
-  # Test that climatewin ran without an error
+  # Test that slidingwin ran without an error
   expect_true(is.list(test))
   
 })
@@ -253,7 +253,7 @@ test_that("Error returned when cmissing FALSE with NAs, cinterval = day", {
   MassClimate2 <- MassClimate[-491, ]
   
   # Test that an error was returned
-  expect_error(climatewin(xvar = list(MassClimate2$Temp), cdate = MassClimate2$Date, bdate = Mass$Date, 
+  expect_error(slidingwin(xvar = list(MassClimate2$Temp), cdate = MassClimate2$Date, bdate = Mass$Date, 
                           baseline = lm(Mass ~ 1, data = Mass), range = c(2, 2), 
                           type = "relative", stat = "max", func = "lin", 
                           cmissing=FALSE))
@@ -276,7 +276,7 @@ test_that("Error returned when cmissing FALSE with NAs, cinterval = week", {
   MassClimate2 <- MassClimate[-491, ]
   
   # Test that an error is returned
-  expect_error(climatewin(xvar = list(MassClimate2$Temp), cdate = MassClimate2$Date, bdate = Mass$Date, 
+  expect_error(slidingwin(xvar = list(MassClimate2$Temp), cdate = MassClimate2$Date, bdate = Mass$Date, 
                           baseline = lm(Mass ~ 1, data = Mass), range = c(2, 0), 
                           type = "relative", stat = "max", func = "lin", cinterval = "week",
                           cmissing=FALSE))
@@ -299,7 +299,7 @@ test_that("Error returned when cmissing FALSE with NAs, cinterval = month", {
   MassClimate2 <- MassClimate[-491, ]
   
   # Test that an error is returned #
-  expect_error(climatewin(xvar = list(MassClimate2$Temp), cdate = MassClimate2$Date, bdate = Mass$Date, 
+  expect_error(slidingwin(xvar = list(MassClimate2$Temp), cdate = MassClimate2$Date, bdate = Mass$Date, 
                           baseline = lm(Mass ~ 1, data = Mass), range = c(1, 0), 
                           type = "relative", stat = "max", func = "lin", cinterval = "month",
                           cmissing=FALSE))
@@ -318,16 +318,16 @@ test_that("Error returned when cmissing FALSE with NAs, cinterval = month", {
 # Test different types of models #
 
 # Test glm models #
-test_that("glm models can run in climatewin", {
+test_that("glm models can run in slidingwin", {
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
   
-  test <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
+  test <- slidingwin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = glm(Mass ~ 1, data = Mass, family = poisson), range = c(2, 2), 
                      type = "relative", stat = "max", func = "lin", cmissing=FALSE)
   
-  # Test that climatewin produced an output
+  # Test that slidingwin produced an output
   expect_true(is.list(test))
   
   # Test that best model was created
@@ -342,18 +342,18 @@ test_that("glm models can run in climatewin", {
 })
 
 # Test mixed effects models
-test_that("lmer models can run in climatewin", {
+test_that("lmer models can run in slidingwin", {
   
   data(Offspring, envir = environment())
   data(OffspringClimate, envir = environment())
   
-  test <- climatewin(xvar = list(OffspringClimate$Temp), cdate = OffspringClimate$Date, 
+  test <- slidingwin(xvar = list(OffspringClimate$Temp), cdate = OffspringClimate$Date, 
                      bdate = Offspring$Date, 
                      baseline = lmer(Offspring ~ 1 + (1|BirdID), data = Offspring),  
                      range = c(2, 2), type = "relative", 
                      stat = "max", func = "lin", cmissing=FALSE)
   
-  # Test that climatewin produced an output
+  # Test that slidingwin produced an output
   expect_true(is.list(test))
   
   # Test that lmer model produced an intercept
@@ -371,19 +371,19 @@ test_that("lmer models can run in climatewin", {
 })
 
 # Test glmer models #
-test_that("glmer models can run in climatewin", {
+test_that("glmer models can run in slidingwin", {
   
   data(Offspring, envir = environment())
   data(OffspringClimate, envir = environment())
   
   # Warnings created due to convergence issues with such a small data set
-  suppressWarnings(test <- climatewin(xvar = list(OffspringClimate$Temp), cdate = OffspringClimate$Date, 
+  suppressWarnings(test <- slidingwin(xvar = list(OffspringClimate$Temp), cdate = OffspringClimate$Date, 
                      bdate = Offspring$Date, 
                      baseline = glmer(Offspring ~ 1 + (1|Order), data = Offspring, family = "poisson"),  
                      range = c(1, 0), type = "relative", 
                      stat = "max", func = "lin", cmissing=FALSE))
   
-  # Test that climatewin has produced an output
+  # Test that slidingwin has produced an output
   expect_true(is.list(test))
   
   # Test that glmer model produced an intercept
@@ -413,12 +413,12 @@ test_that("absolute window works", {
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
   
-  test <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
+  test <- slidingwin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), range = c(2, 2), 
                      type = "absolute", refday = c(20, 5), 
                      stat = "max", func = "lin", cmissing=FALSE)
   
-  # Test that climatewin has produced an output
+  # Test that slidingwin has produced an output
   expect_true(is.list(test))
   
   # Test that a best model has been fitted
@@ -440,11 +440,11 @@ test_that("slope stat work", {
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
   
-  test <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
+  test <- slidingwin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), range = c(2, 1), 
                      type = "relative", stat = "slope", func = "lin", cmissing=FALSE)
 
-  # Test that climatewin produces an output
+  # Test that slidingwin produces an output
   expect_true(is.list(test))
   
   # Test that a best model is created
@@ -465,7 +465,7 @@ test_that("slope and log return error", {
   data(MassClimate, envir = environment())
   
   # Test that an error is produced
-  expect_error(climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date,
+  expect_error(slidingwin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date,
                           bdate = Mass$Date, baseline = lm(Mass ~ 1, data = Mass),
                           range = c(2, 1), type = "relative", stat = "slope",
                           func = "log"))  
@@ -479,7 +479,7 @@ test_that("slope and inv return error", {
   data(MassClimate, envir = environment())
   
   # Test that an error is produced
-  expect_error(climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date,
+  expect_error(slidingwin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date,
                           bdate = Mass$Date, baseline = lm(Mass ~ 1, data = Mass),
                           range = c(2, 1), type = "relative", stat = "slope",
                           func = "inv"))  
@@ -496,7 +496,7 @@ test_that("Quadratic function works", {
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
   
-  test <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
+  test <- slidingwin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), range = c(2, 2), 
                      type = "relative", stat = "max", func = "quad", cmissing=FALSE)
   
@@ -505,7 +505,7 @@ test_that("Quadratic function works", {
   duration  <- (furthest - closest) + 1
   maxmodno  <- (duration * (duration + 1))/2
   
-  # Test that climatewin produced an output
+  # Test that slidingwin produced an output
   expect_true(is.list(test))
   
   # Test that a best model was fitted
@@ -524,7 +524,7 @@ test_that("Quadratic function works", {
   expect_true(test[[1]]$Dataset[, 10] == "quad")
   
   # Test that the dataset is atleast 17 columns (one extra column for quad SE)
-  expect_true(ncol(test[[1]]$Dataset) == 17)
+  expect_true(ncol(test[[1]]$Dataset) == 18)
   
   # Test that the right number of models was fitted
   expect_equal(maxmodno, nrow(test[[1]]$Dataset))
@@ -540,7 +540,7 @@ test_that("Cubic function works", {
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
   
-  test <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
+  test <- slidingwin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), range = c(2, 2), 
                      type = "relative", stat = "max", func = "cub", cmissing=FALSE)
   
@@ -549,7 +549,7 @@ test_that("Cubic function works", {
   duration  <- (furthest - closest) + 1
   maxmodno  <- (duration * (duration + 1))/2
   
-  # Test that climatewin produced an output
+  # Test that slidingwin produced an output
   expect_true(is.list(test))
   
   # Test that a best model was fitted
@@ -568,7 +568,7 @@ test_that("Cubic function works", {
   expect_true(test[[1]]$Dataset[, 11] == "cub")
   
   # Test that the dataset is atleast 18 columns (extra columns for quad and cub SE)
-  expect_true(ncol(test[[1]]$Dataset) == 18)
+  expect_true(ncol(test[[1]]$Dataset) == 19)
   
   # Test that the right number of models was fitted
   expect_equal(maxmodno, nrow(test[[1]]$Dataset))
@@ -584,7 +584,7 @@ test_that("Log function works", {
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
   
-  test <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
+  test <- slidingwin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), range = c(2, 2), 
                      type = "relative", stat = "max", func = "log", cmissing=FALSE)
   
@@ -593,7 +593,7 @@ test_that("Log function works", {
   duration  <- (furthest - closest) + 1
   maxmodno  <- (duration * (duration + 1))/2
   
-  # Test that climatewin produced an output
+  # Test that slidingwin produced an output
   expect_true(is.list(test))
   
   # Test that a best model was fitted
@@ -612,7 +612,7 @@ test_that("Log function works", {
   expect_true(test[[1]]$Dataset[, 9] == "log")
   
   # Test that the dataset is atleast 16 columns (no extra columns)
-  expect_true(ncol(test[[1]]$Dataset) == 16)
+  expect_true(ncol(test[[1]]$Dataset) == 17)
   
   # Test that the right number of models was fitted
   expect_equal(maxmodno, nrow(test[[1]]$Dataset))
@@ -628,7 +628,7 @@ test_that("Inverse function works", {
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
   
-  test <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
+  test <- slidingwin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), range = c(2, 2), 
                      type = "relative", stat = "max", func = "inv", cmissing=FALSE)
   
@@ -637,7 +637,7 @@ test_that("Inverse function works", {
   duration  <- (furthest - closest) + 1
   maxmodno  <- (duration * (duration + 1))/2
   
-  # Test that climatewin produced an output
+  # Test that slidingwin produced an output
   expect_true(is.list(test))
   
   # Test that a best model was fitted
@@ -656,7 +656,7 @@ test_that("Inverse function works", {
   expect_true(test[[1]]$Dataset[, 9] == "inv")
   
   # Test that the dataset is atleast 16 columns (no extra columns)
-  expect_true(ncol(test[[1]]$Dataset) == 16)
+  expect_true(ncol(test[[1]]$Dataset) == 17)
   
   # Test that the right number of models was fitted
   expect_equal(maxmodno, nrow(test[[1]]$Dataset))
@@ -676,12 +676,12 @@ test_that("Weekly interval works", {
 data(Mass, envir = environment())
 data(MassClimate, envir = environment())
 
-test <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
+test <- slidingwin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                    baseline = lm(Mass ~ 1, data = Mass), range = c(2, 2), 
                    type = "relative", stat = "max", func = "lin",
                    cmissing=FALSE, cinterval = "week")
 
-# Test that climatewin produced an output
+# Test that slidingwin produced an output
 expect_true(is.list(test))
 
 # Test that a best model was fitted
@@ -701,12 +701,12 @@ test_that("Monthly interval works", {
 data(Mass, envir = environment())
 data(MassClimate, envir = environment())
   
-test <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
+test <- slidingwin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                    baseline = lm(Mass ~ 1, data = Mass), range = c(2, 2), 
                    type = "relative", stat = "max", func = "lin",
                    cmissing=FALSE, cinterval = "month")
 
-# Test that climatewin produced an output
+# Test that slidingwin produced an output
 expect_true(is.list(test))
 
 # Test that a best model was fitted
@@ -723,13 +723,13 @@ expect_true(ncol(test[[1]]$BestModelData) >= 2)
 ################################################################
 
 # Error when you have NAs in the biological data #
-test_that("climatewin gives error when NAs are present in biological data", {
+test_that("slidingwin gives error when NAs are present in biological data", {
   
   data(MassClimate, envir = environment())
   Mass <- data.frame(Date = c("01/01/2014", "01/02/2014"), Mass = c(NA, 1))
   
   # Test that an error occurs #
-  expect_error(climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
+  expect_error(slidingwin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                           baseline = lm(Mass ~ 1, data = Mass), range = c(2, 2), 
                           type = "relative", stat = "max", func = "lin",
                           cmissing = FALSE, cinterval = "day"))  
@@ -744,12 +744,12 @@ test_that("Does cross validation work?", {
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
   
-  test <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
+  test <- slidingwin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), range = c(2, 2), 
                      type = "relative", stat = "max", func = "lin",
                      cmissing = FALSE, cinterval = "day", k = 2)
   
-  # Test that climatewin produced an output
+  # Test that slidingwin produced an output
   expect_true(is.list(test))
   
   # Test that a best model was fitted
@@ -777,12 +777,12 @@ test_that("Mean centring is functioning", {
   data(OffspringClimate, envir = environment())
   Offspring$Year <- lubridate::year(as.Date(Offspring$Date, format = "%d/%m/%Y"))
   
-  test <- climatewin(xvar = list(OffspringClimate$Temp), cdate = OffspringClimate$Date, 
+  test <- slidingwin(xvar = list(OffspringClimate$Temp), cdate = OffspringClimate$Date, 
                      bdate = Offspring$Date, baseline = lm(Offspring ~ 1, data = Offspring), range = c(2, 2), 
                      type = "relative", stat = "max", func = "lin",
                      cmissing = FALSE, cinterval = "day", centre = list(Offspring$Year, "both"))
   
-  # Test that climatewin produced an output
+  # Test that slidingwin produced an output
   expect_true(is.list(test))
   
   # Test that a best model was fitted
@@ -801,7 +801,7 @@ test_that("Mean centring is functioning", {
   expect_equal(length(which(is.na(test[[1]]$Dataset[, 6]))), 0)
   
   # Test that there are 16 columns in the dataset
-  expect_true(ncol(test[[1]]$Dataset) == 16)
+  expect_true(ncol(test[[1]]$Dataset) == 17)
   
   # Test that dataset is not randomised
   expect_true((test[[1]]$Dataset["Randomised"])[1, ] == "no")
@@ -815,12 +815,12 @@ test_that("Mean centring is functioning", {
   data(OffspringClimate, envir = environment())
   Offspring$Year <- lubridate::year(as.Date(Offspring$Date, format = "%d/%m/%Y"))
   
-  test <- climatewin(xvar = list(OffspringClimate$Temp), cdate = OffspringClimate$Date, 
+  test <- slidingwin(xvar = list(OffspringClimate$Temp), cdate = OffspringClimate$Date, 
                      bdate = Offspring$Date, baseline = lm(Offspring ~ 1, data = Offspring), range = c(2, 2), 
                      type = "relative", stat = "max", func = "lin",
                      cmissing = FALSE, cinterval = "day", centre = list(Offspring$Year, "mean"))
   
-  # Test that climatewin produced an output
+  # Test that slidingwin produced an output
   expect_true(is.list(test))
   
   # Test that a best model was fitted
@@ -839,7 +839,7 @@ test_that("Mean centring is functioning", {
   expect_equal(length(which(is.na(test[[1]]$Dataset[, 6]))), 0)
   
   # Test that there are 14 columns in the dataset (remove wgdev and SE)
-  expect_true(ncol(test[[1]]$Dataset) == 14)
+  expect_true(ncol(test[[1]]$Dataset) == 15)
   
   # Test that dataset is not randomised
   expect_true((test[[1]]$Dataset["Randomised"])[1, ] == "no")
@@ -853,12 +853,12 @@ test_that("Mean centring is functioning", {
   data(OffspringClimate, envir = environment())
   Offspring$Year <- lubridate::year(as.Date(Offspring$Date, format = "%d/%m/%Y"))
   
-  test <- climatewin(xvar = list(OffspringClimate$Temp), cdate = OffspringClimate$Date, 
+  test <- slidingwin(xvar = list(OffspringClimate$Temp), cdate = OffspringClimate$Date, 
                      bdate = Offspring$Date, baseline = lm(Offspring ~ 1, data = Offspring), range = c(2, 2), 
                      type = "relative", stat = "max", func = "lin",
                      cmissing = FALSE, cinterval = "day", centre = list(Offspring$Year, "dev"))
   
-  # Test that climatewin produced an output
+  # Test that slidingwin produced an output
   expect_true(is.list(test))
   
   # Test that a best model was fitted
@@ -877,7 +877,7 @@ test_that("Mean centring is functioning", {
   expect_equal(length(which(is.na(test[[1]]$Dataset[, 6]))), 0)
   
   # Test that there are 14 columns in the dataset (remove wgmean and SE)
-  expect_true(ncol(test[[1]]$Dataset) == 14)
+  expect_true(ncol(test[[1]]$Dataset) == 15)
   
   # Test that dataset is not randomised
   expect_true((test[[1]]$Dataset["Randomised"])[1, ] == "no")
@@ -893,13 +893,13 @@ test_that("absolute window works", {
   Mass$Plot <- c(rep(c("A", "B"), 23), "A")
   data(MassClimate, envir = environment())
   
-  test <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
+  test <- slidingwin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), range = c(2, 2), 
                      type = "absolute", refday = c(20, 5), 
                      stat = "max", func = "lin", cmissing=FALSE,
                      cohort = Mass$Plot)
   
-  # Test that climatewin has produced an output
+  # Test that slidingwin has produced an output
   expect_true(is.list(test))
   
   # Test that a best model has been fitted
@@ -916,7 +916,7 @@ test_that("absolute window works", {
 ###############################################################
 
 # Test spatial replication #
-test_that("spatial replication works in climatewin", {
+test_that("spatial replication works in slidingwin", {
   
   data(Mass, envir = environment())
   Mass$Plot <- c(rep(c("A", "B"), 23), "A")
@@ -926,13 +926,13 @@ test_that("spatial replication works in climatewin", {
   MassClimate2$Plot <- "B"
   Clim <- rbind(MassClimate, MassClimate2)
   
-  test <- climatewin(xvar = list(Clim$Temp), cdate = Clim$Date, bdate = Mass$Date, 
+  test <- slidingwin(xvar = list(Clim$Temp), cdate = Clim$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), range = c(2, 2), 
                      type = "absolute", refday = c(20, 5), 
                      stat = "max", func = "lin", cmissing=FALSE,
                      spatial = list(Mass$Plot, Clim$Plot))
   
-  # Test that climatewin has produced an output
+  # Test that slidingwin has produced an output
   expect_true(is.list(test))
   
   # Test that a best model has been fitted
@@ -946,7 +946,7 @@ test_that("spatial replication works in climatewin", {
   
 })
 
-test_that("spatial replication works in climatewin with week", {
+test_that("spatial replication works in slidingwin with week", {
   
   data(Mass, envir = environment())
   Mass$Plot <- c(rep(c("A", "B"), 23), "A")
@@ -956,14 +956,14 @@ test_that("spatial replication works in climatewin with week", {
   MassClimate2$Plot <- "B"
   Clim <- rbind(MassClimate, MassClimate2)
   
-  test <- climatewin(xvar = list(Clim$Temp), cdate = Clim$Date, bdate = Mass$Date, 
+  test <- slidingwin(xvar = list(Clim$Temp), cdate = Clim$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), range = c(2, 2), 
                      type = "absolute", refday = c(20, 5), 
                      cinterval = "week",
                      stat = "max", func = "lin", cmissing=FALSE,
                      spatial = list(Mass$Plot, Clim$Plot))
   
-  # Test that climatewin has produced an output
+  # Test that slidingwin has produced an output
   expect_true(is.list(test))
   
   # Test that a best model has been fitted
@@ -977,7 +977,7 @@ test_that("spatial replication works in climatewin with week", {
   
 })
 
-test_that("spatial replication works in climatewin with month", {
+test_that("spatial replication works in slidingwin with month", {
   
   data(Mass, envir = environment())
   Mass$Plot <- c(rep(c("A", "B"), 23), "A")
@@ -987,14 +987,14 @@ test_that("spatial replication works in climatewin with month", {
   MassClimate2$Plot <- "B"
   Clim <- rbind(MassClimate, MassClimate2)
   
-  test <- climatewin(xvar = list(Clim$Temp), cdate = Clim$Date, bdate = Mass$Date, 
+  test <- slidingwin(xvar = list(Clim$Temp), cdate = Clim$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), range = c(2, 2), 
                      type = "absolute", refday = c(20, 5), 
                      cinterval = "month",
                      stat = "max", func = "lin", cmissing=FALSE,
                      spatial = list(Mass$Plot, Clim$Plot))
   
-  # Test that climatewin has produced an output
+  # Test that slidingwin has produced an output
   expect_true(is.list(test))
   
   # Test that a best model has been fitted
@@ -1008,7 +1008,7 @@ test_that("spatial replication works in climatewin with month", {
   
 })
 
-test_that("spatial replication works in climatewin with upper", {
+test_that("spatial replication works in slidingwin with upper", {
   
   data(Mass, envir = environment())
   Mass$Plot <- c(rep(c("A", "B"), 23), "A")
@@ -1018,14 +1018,14 @@ test_that("spatial replication works in climatewin with upper", {
   MassClimate2$Plot <- "B"
   Clim <- rbind(MassClimate, MassClimate2)
   
-  test <- climatewin(xvar = list(Clim$Temp), cdate = Clim$Date, bdate = Mass$Date, 
+  test <- slidingwin(xvar = list(Clim$Temp), cdate = Clim$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), range = c(2, 2), 
                      type = "absolute", refday = c(20, 5), 
                      cinterval = "day", upper = 15,
                      stat = "max", func = "lin", cmissing=FALSE,
                      spatial = list(Mass$Plot, Clim$Plot))
   
-  # Test that climatewin has produced an output
+  # Test that slidingwin has produced an output
   expect_true(is.list(test))
   
   # Test that a best model has been fitted
@@ -1039,7 +1039,7 @@ test_that("spatial replication works in climatewin with upper", {
   
 })
 
-test_that("spatial replication with climatewin returns an error with NAs and cmissing FALSE", {
+test_that("spatial replication with slidingwin returns an error with NAs and cmissing FALSE", {
   
   data(Mass, envir = environment())
   Mass$Plot <- c(rep(c("A", "B"), 23), "A")
@@ -1050,7 +1050,7 @@ test_that("spatial replication with climatewin returns an error with NAs and cmi
   Clim <- rbind(MassClimate, MassClimate2)
   Clim <- Clim[-which(Clim$Date == "20/05/1979"), ]
   
-  expect_error(climatewin(xvar = list(Clim$Temp), cdate = Clim$Date, bdate = Mass$Date, 
+  expect_error(slidingwin(xvar = list(Clim$Temp), cdate = Clim$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), range = c(1, 0), 
                      type = "absolute", refday = c(20, 5), 
                      cinterval = "day",
@@ -1059,7 +1059,7 @@ test_that("spatial replication with climatewin returns an error with NAs and cmi
   
 })
 
-test_that("spatial replication works with climatewin with NAs and cmissing TRUE", {
+test_that("spatial replication works with slidingwin with NAs and cmissing TRUE", {
   
   data(Mass, envir = environment())
   Mass$Plot <- c(rep(c("A", "B"), 23), "A")
@@ -1070,14 +1070,14 @@ test_that("spatial replication works with climatewin with NAs and cmissing TRUE"
   Clim <- rbind(MassClimate, MassClimate2)
   Clim <- Clim[-which(Clim$Date == "20/05/1979"), ]
   
-  test <- climatewin(xvar = list(Clim$Temp), cdate = Clim$Date, bdate = Mass$Date, 
+  test <- slidingwin(xvar = list(Clim$Temp), cdate = Clim$Date, bdate = Mass$Date, 
                           baseline = lm(Mass ~ 1, data = Mass), range = c(1, 0), 
                           type = "absolute", refday = c(20, 5), 
                           cinterval = "day",
                           stat = "max", func = "lin", cmissing = TRUE,
                           spatial = list(Mass$Plot, Clim$Plot))
   
-  # Test that climatewin has produced an output
+  # Test that slidingwin has produced an output
   expect_true(is.list(test))
   
   # Test that a best model has been fitted
