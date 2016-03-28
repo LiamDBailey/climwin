@@ -146,7 +146,7 @@ weightwin <- function(xvar, cdate, bdate, baseline, range,
     if(is.null(cohort) == FALSE){
       
       sample.size <- 0
-      data <- data.frame(bdate = bdate, spatial = as.factor(spatial), cohort = as.factor(cohort))
+      data <- data.frame(bdate = bdate, spatial = as.factor(spatial[[1]]), cohort = as.factor(cohort))
       
       for(i in levels(as.factor(data$cohort))){
         
@@ -156,10 +156,10 @@ weightwin <- function(xvar, cdate, bdate, baseline, range,
         
       }
       
-    } else {
+    } else if(is.null(cohort) == TRUE){
       
       sample.size <- 0
-      data <- data.frame(bdate = bdate, spatial = as.factor(spatial))
+      data <- data.frame(bdate = bdate, spatial = as.factor(spatial[[1]]))
       data$Year <- lubridate::year(as.Date(data$bdate, format = "%d/%m/%Y"))
       
       for(i in levels(as.factor(data$Year))){
