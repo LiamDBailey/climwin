@@ -6,7 +6,7 @@
 \usage{
 plotall(dataset, datasetrand = NULL, bestmodel = NULL,
   bestmodeldata = NULL, cw1 = 0.95, cw2 = 0.5, cw3 = 0.25,
-  histq = 0.99, title = NULL, arrow = FALSE)
+  title = NULL, arrow = FALSE)
 }
 \arguments{
 \item{dataset}{A dataframe containing information on all fitted climate 
@@ -25,14 +25,14 @@ used to fit the strongest climate window model. Output from
 \item{cw1, cw2, cw3}{Cumulative weight levels used to visualise model weight 
 distribution. See \code{\link{plotweights}} for more detail.}
 
+\item{title}{Title of the plot panel.}
+
+\item{arrow}{TRUE or FALSE. Add arrows to plots to pinpoint best window.}
+
 \item{histq}{If datasetrand is provided. The quantile of the randomised data 
 to be compared with non-randomised data. Can be used to determine the 
 likelihood of finding a climate window model of a given deltaAICc value by
 chance.}
-
-\item{title}{Title of the plot panel.}
-
-\item{arrow}{TRUE or FALSE. Add arrows to plots to pinpoint best window.}
 }
 \value{
 Will return a panel of 6-8 plots:

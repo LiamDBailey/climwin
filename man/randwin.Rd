@@ -4,12 +4,13 @@
 \alias{randwin}
 \title{Climate window analysis for randomised data}
 \usage{
-randwin(exclude = NA, repeats = 5, xvar, cdate, bdate, baseline, stat,
-  range, func, type, refday, cmissing = FALSE, cinterval = "day",
+randwin(exclude = NA, repeats = 5, window, xvar, cdate, bdate, baseline,
+  stat, range, func, type, refday, cmissing = FALSE, cinterval = "day",
   upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"),
-  k = 0, cutoff.day = NULL, cutoff.month = NULL, furthest = NULL,
-  closest = NULL, thresh = NULL, cvk = NULL, spatial = NULL,
-  cohort = NULL)
+  k = 0, weightfunc = "W", par = c(3, 0.2, 0), control = list(ndeps =
+  c(0.01, 0.01, 0.01)), method = "L-BFGS-B", cutoff.day = NULL,
+  cutoff.month = NULL, furthest = NULL, closest = NULL, thresh = NULL,
+  cvk = NULL, spatial = NULL, cohort = NULL)
 }
 \arguments{
 \item{exclude}{Two values (distance and duration) which allow users
@@ -19,6 +20,9 @@ These windows are often considered to be biologically implausible.}
 
 \item{repeats}{The number of times that data will be randomised and analysed 
 for climate windows.}
+
+\item{window}{Whether randomisations are carried out for a sliding window ("Sliding")
+or weighted window ("Weighted") approach.}
 
 \item{xvar}{A list object containing all climate variables of interest. 
 Please specify the parent environment and variable name (e.g. Climate$Temp).}
@@ -115,7 +119,10 @@ to help determine the chance of obtaining an observed result at random.
 }
 \examples{
 \dontrun{
-# Test climate windows for random data using Mass dataset
+
+## EXAMPLE 1 ##
+
+# Test climate windows in randomised data using a sliding window approach.
 
 data(Mass)
 data(MassClimate)
@@ -123,7 +130,8 @@ data(MassClimate)
 # Randomise data twice
 # Note all other parameters are fitted in the same way as the climatewin function.
 
-rand <- randwin(repeats = 2, xvar = list(Temp = MassClimate$Temp), 
+rand <- randwin(repeats = 2, window = "Sliding", 
+               xvar = list(Temp = MassClimate$Temp), 
                cdate = MassClimate$Date, bdate = Mass$Date,
                baseline = lm(Mass ~ 1, data = Mass), 
                range = c(100, 0),
@@ -133,7 +141,32 @@ rand <- randwin(repeats = 2, xvar = list(Temp = MassClimate$Temp),
                 
 # View output #
 
-head(rand)    
+head(rand)
+
+## EXAMPLE 2 ##
+
+# Test climate windows in randomised data using a weighted window approach.
+  
+data(Offspring)
+data(OffspringClimate)
+
+# Randomise data twice
+# Note all other parameters are fitted in the same way as the weightwin function.
+
+weightrand <- weightwin(repeats = 2, window = "Weighted", 
+                       xvar = list(Temp = OffspringClimate$Temperature), 
+                       cdate = OffspringClimate$Date,
+                       bdate = Offspring$Date,
+                       baseline = glm(Offspring ~ 1, family = poisson, data = Offspring),
+                       range = c(365, 0), func = "quad",
+                       type = "relative", weightfunc = "W", cinterval = "day",
+                       par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)),
+                       method = "L-BFGS-B")
+                   
+# View output
+
+head(weightrand)
+                          
        }
 
 }

@@ -4,7 +4,7 @@
 \alias{plothist}
 \title{Create a histogram of deltaAICc values}
 \usage{
-plothist(dataset, datasetrand = NULL, histq = 0.99)
+plothist(dataset, datasetrand = NULL)
 }
 \arguments{
 \item{dataset}{A dataframe containing information on all fitted climate 
@@ -35,7 +35,7 @@ with randomised data if provided.
 data(MassOutput)
 data(MassRand)
 
-plothist(dataset = MassOutput, datasetrand = MassRand, histq = 0.95)
+plothist(dataset = MassOutput, datasetrand = MassRand)
 
 # Plot deltaAICc when no randomised data is provided
 

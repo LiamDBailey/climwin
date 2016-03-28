@@ -5,10 +5,10 @@
 \title{Find a weighted climate window}
 \usage{
 weightwin(xvar, cdate, bdate, baseline, range, func = "lin", type, refday,
-  weightfunc = "W", cinterval = "day", par = c(3, 0.2, 0),
-  control = list(ndeps = c(0.01, 0.01, 0.01)), method = "L-BFGS-B",
-  cutoff.day = NULL, cutoff.month = NULL, furthest = NULL,
-  closest = NULL, cohort = NULL, spatial = NULL)
+  nrandom = 0, centre = NULL, weightfunc = "W", cinterval = "day",
+  par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)),
+  method = "L-BFGS-B", cutoff.day = NULL, cutoff.month = NULL,
+  furthest = NULL, closest = NULL, cohort = NULL, spatial = NULL)
 }
 \arguments{
 \item{xvar}{A list object containing all climate variables of interest. 
