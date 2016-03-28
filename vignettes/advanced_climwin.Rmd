@@ -22,7 +22,7 @@ In the previous vignette we described the basic features available in the `climw
 
 Many studies, may be interested in testing climate windows using climatic thresholds. When testing climatic thresholds, we assume that a biological response is driven by the total numbers of days that surpass a particular climatic value For example, seed germination may be influenced by the number of days over 30 degrees. Alternatively, temperature may only influence organism survival when temperatures fall below freezing. A common example of such a climate threshold is the using of growing degree days in plant studies.
 
-Statistics like these can be achieved using the three parameters 'upper', 'lower' and, 'binary'. When a value is provided for the parameter 'upper', `climatewin` will create a new set of climate data where all values below this threshold are set at 0. Similarly, when a value is set for 'lower', all value above this threshold will be set at 0. When values are provided for both 'upper' and 'lower', all values that fall *between* these two threshold will be set at 0.
+Statistics like these can be achieved using the three parameters 'upper', 'lower' and, 'binary'. When a value is provided for the parameter 'upper', `slidingwin` will create a new set of climate data where all values below this threshold are set at 0. Similarly, when a value is set for 'lower', all value above this threshold will be set at 0. When values are provided for both 'upper' and 'lower', all values that fall *between* these two threshold will be set at 0.
 
 In certain circumstances we may assume that all values past the climatic threshold will have an equally large impact of the biological response. In this case, we would set 'binary' to TRUE so that all non-zero values are set at 1. By default however, 'binary' will be set at FALSE, so that all values past the climatic threshold keep their original value.
 
@@ -35,13 +35,13 @@ Below we will provide a worked example using the `Mass` and `MassClimate` datase
 
 As we are interested in measuring the *number* of days above freezing, we set our stat parameter to 'sum'. Otherwise, we used model parameter values identical to our earlier vignette.
 
-```{r}
+```{r message = FALSE}
 library(climwin)
 ```
 
 ```{r, eval = FALSE}
 
-MassWin <- climatewin(xvar = list(Temp = MassClimate$Temp),
+MassWin <- slidingwin(xvar = list(Temp = MassClimate$Temp),
                       cdate = MassClimate$Date,
                       bdate = Mass$Date,
                       baseline = lm(Mass ~ 1, data = Mass),
@@ -109,7 +109,7 @@ Using spatial replication (i.e. collecting data from multiple sites/populations)
 
 ### A worked example
 
-Spatially replicated data can be analysed using the `climatewin` function with the addition of the 'spatial' parameter. As with regular `climatewin` analysis, analysis with spatial replication requires a separate biological and climate dataset. However, these datasets should not contain an additional variable which specifies the site at which biological and climate data was collected. Below, we have called this parameter 'SiteID'.
+Spatially replicated data can be analysed using the `slidingwin` function with the addition of the 'spatial' parameter. As with regular `slidingwin` analysis, analysis with spatial replication requires a separate biological and climate dataset. However, these datasets should not contain an additional variable which specifies the site at which biological and climate data was collected. Below, we have called this parameter 'SiteID'.
 
 
 | Date        | Mass (g) | SiteID |
@@ -143,11 +143,11 @@ Spatially replicated data can be analysed using the `climatewin` function with t
 
 *NOTE: The climate dataset for spatially replicated `climwin` analysis will often include duplication of dates. In a regular `climwin` analysis this will lead to errors.*
 
-With these new datasets, we can carry out a `climatewin` analysis with the addition of a 'spatial' parameter.
+With these new datasets, we can carry out a `slidingwin` analysis with the addition of a 'spatial' parameter.
 
 ```{r, eval = FALSE}
 
-MassWin <- climatewin(xvar = list(Temp = Climate$Temp),
+MassWin <- slidingwin(xvar = list(Temp = Climate$Temp),
                       cdate = Climate$Date,
                       bdate = Biol$Date,
                       baseline = lm(Mass ~ 1, data = Biol),
@@ -159,13 +159,13 @@ MassWin <- climatewin(xvar = list(Temp = Climate$Temp),
                        
 ```
 
-The 'spatial' parameter is a list item that includes the SiteID variable for the biological and climate datasets respectively. When `climatewin` fits individual climate windows, climate data will be subset so that each biological record will be matched with the corresponding climate data.
+The 'spatial' parameter is a list item that includes the SiteID variable for the biological and climate datasets respectively. When `slidingwin` fits individual climate windows, climate data will be subset so that each biological record will be matched with the corresponding climate data.
 
 ---
 
 ## `weightwin` function
 
-When we run regular `climatewin` analyses we assume that all days in the climate window are evenly weighted. While this is often a convenient assumption, this may be biologically unrealistic as we create a strict cut-off for when climate data is considered (see below).
+When we run regular `slidingwin` analyses we assume that all days in the climate window are evenly weighted. While this is often a convenient assumption, this may be biologically unrealistic as we create a strict cut-off for when climate data is considered (see below).
 
 ```{r, echo = FALSE, fig.width = 4, fig.height = 4}
 
@@ -191,13 +191,13 @@ plot((weight / sum(weight)), type = "l", ylab = "Weight", xlab = "Day", cex.lab 
 
 ```
 
-Instead of varying the start and end date of climate windows like `climatewin`, `weightwin` instead uses an optimisation function to vary the shape, scale and location of either of these weight functions. Each weight function is then used to weight the climate data, which is then used to produce a climate model and delta AICc value. Therefore, although the method of optimising climate data is different, the ultimate output (i.e. delta AICc of a climate window compared to a null model) is the same.
+Instead of varying the start and end date of climate windows like `slidingwin`, `weightwin` instead uses an optimisation function to vary the shape, scale and location of either of these weight functions. Each weight function is then used to weight the climate data, which is then used to produce a climate model and delta AICc value. Therefore, although the method of optimising climate data is different, the ultimate output (i.e. delta AICc of a climate window compared to a null model) is the same.
 
 
 ### A worked example
-`weightwin` can often be useful to use with climate data where we have already identified a climate window using `climatewin`. Here, we will use `weightwin` to further investigate the Mass and MassClimate data included with the `climwin` package.
+`weightwin` can often be useful to use with climate data where we have already identified a climate window using `slidingwin`. Here, we will use `weightwin` to further investigate the Mass and MassClimate data included with the `climwin` package.
 
-The basic parameters in `weightwin` are the same as `climatewin` (though note the abscence of the 'stat' parameter). In addition however, we must designate which weight distribution we want to use. In this case we consider a Weibull function.
+The basic parameters in `weightwin` are the same as `slidingwin` (though note the abscence of the 'stat' parameter). In addition however, we must designate which weight distribution we want to use. In this case we consider a Weibull function.
 
 `weightfunc = "W"`
 
@@ -232,15 +232,15 @@ weight$WeightedOutput$DeltaAICc
 
 ```
 
-If we compare this value to the delta AICc obtained from the `climatewin` function we can see that the `weightwin` function is better able to explain variation in our mass parameter.
+If we compare this value to the delta AICc obtained from the `slidingwin` function we can see that the `weightwin` function is better able to explain variation in our mass parameter.
 
-|`climatewin`|`weightwin`|
+|`slidingwin`|`weightwin`|
 |:-----------|:----------|
 |-64.81      |-68.22     |
 
 ### Pros and cons
 
-While `weightwin` overcomes the assumptions inherent to the `climatewin` function, it will not always be the most appropriate function to use for climate window analysis. Firstly, the nature of the Weibull and GEV distributions means that `weightwin` can only detect a single period of climatic sensitivity. However, especially for climate window analysis encompassing multiple seasons, this may not always be the case. For example, chick mass may be affected by high temperatures during incubation but may also be influenced by female condition which is driven by winter severity.
+While `weightwin` overcomes the assumptions inherent to the `slidingwin` function, it will not always be the most appropriate function to use for climate window analysis. Firstly, the nature of the Weibull and GEV distributions means that `weightwin` can only detect a single period of climatic sensitivity. However, especially for climate window analysis encompassing multiple seasons, this may not always be the case. For example, chick mass may be affected by high temperatures during incubation but may also be influenced by female condition which is driven by winter severity.
 
 Secondly, `weightwin` can be a more involved process. While the above example works easily, optimisation procedures can get stuck on false optima or fail to converge. In these cases, users may be required to test different starting parameters and adjust optimisation characteristics such as step size. Often this procedure can be inhibative for users interested in simple data exploration.
 
