@@ -37,7 +37,7 @@ plothist <- function(dataset, datasetrand = NULL){
   
   if (is.null(datasetrand) == TRUE){
     
-    if(is.null(dataset$WeightedOutput) == TRUE){
+    if(is.null(dataset$shape) == TRUE){
       
       with(dataset, {
         ggplot(dataset, aes(x = deltaAICc)) +
@@ -56,49 +56,45 @@ plothist <- function(dataset, datasetrand = NULL){
       
     } else {
       
-      par(mfrow = c(1,1))
+      stop("Please provide randomised data to include with weightwin data")
       
-      if(dataset$WeightedOutput$Weight_function == "W"){
-        
-        j        <- seq(1:dataset$WeightedOutput$duration) / dataset$WeightedOutput$duration
-        weight <- weibull3(x = j[1:dataset$WeightedOutput$duration], shape = dataset$WeightedOutput$shape, 
-                           scale = dataset$WeightedOutput$scale, location = dataset$WeightedOutput$location)
-        weight[is.na(weight)] <- 0
-        
-        if (sum(weight) == 0){
-          weight <- weight + 1
-        }
-        
-        title <- c("Weibull", paste("shape=", dataset$WeightedOutput$shape, "scale=", dataset$WeightedOutput$scale, 
-                                    "location=", dataset$WeightedOutput$location))
-        plot((weight / sum(weight)), type = "l", ylab = "weight", xlab = "timesteps", main = title, xaxt = 'n')
-        
-      } else {
-        
-        k        <- seq(-10, 10, by = (2 * 10 / dataset$WeightedOutput$duration))
-        weight <- dgev(k[1:dataset$WeightedOutput$duration], loc = dataset$WeightedOutput$location, 
-                       scale = dataset$WeightedOutput$scale, shape = dataset$WeightedOutput$shape, log = FALSE)
-        weight[is.na(weight)] <- 0
-        
-        if (sum(weight) == 0){
-          weight <- weight + 1
-        }
-        title <- c("GEV", paste("shape=", dataset$WeightedOutput$shape, "scale=", dataset$WeightedOutput$scale, 
-                                "location=", dataset$WeightedOutput$loc))
-        plot((weight / sum(weight)), type = "l", ylab = "weight", xlab = "timesteps", main = title, xaxt = 'n')
-        
-      }
     }
-  } else { 
+      
+  } else {
     
     if(max(datasetrand$Repeat) <= 100){
+      print("PDeltaAICc may be unreliable with so few randomisations")
+    }
+          
+    if(is.null(dataset$shape) == TRUE){
+        
+      keep2                       <- c("deltaAICc", "Randomised")
+      randdata                    <- rbind(dataset[keep2], datasetrand[keep2])
+      randdata$deltaAICc          <- as.numeric(randdata$deltaAICc)
+      levels(randdata$Randomised) <- c("Real data", paste("Randomised data (", max(datasetrand$Repeat), "x )"))
       
-      if(is.null(dataset$WeightedOutput) == TRUE){
+      P  <- round(pvalue(rand.dataset = datasetrand, full.dataset = dataset, metric = "Spread", sample.size = dataset$sample.size[1]), digits = 3)
+      P2 <- round(pvalue(rand.dataset = datasetrand, full.dataset = dataset, metric = "AIC", sample.size = dataset$sample.size[1]), digits = 3)
+      
+      with(randdata, {ggplot(randdata, aes(x = deltaAICc, fill = Randomised))+
+                        geom_histogram(aes(y = 2 * ..density..), colour = "black", binwidth = 2, alpha = 0.5)+
+                        theme_classic()+
+                        theme(panel.grid.major = element_blank(),
+                              panel.grid.minor = element_blank(),
+                              axis.line = element_line(size = 0.25, colour = "black"),
+                              legend.position = "none",
+                              plot.title = element_text(size = 16))+
+                        facet_wrap(~Randomised, nrow = 2)+
+                        ggtitle(bquote(atop(Histogram~of~Delta*AICc,P[Delta*AICc]~.(P2)~~P[spread]~.(P))))+
+                        ylab("Proportion")+
+                        xlab(expression(paste(Delta,"AICc (compared to null model)")))
+                      })        
+      } else {
         
-        P <- round(pvalue(rand.dataset = datasetrand, full.dataset = dataset, metric = "Spread", sample.size = dataset$sample.size[1]), digits = 3)
+        P2 <- round(pvalue(rand.dataset = datasetrand, full.dataset = dataset, metric = "AIC", sample.size = dataset$sample.size[1]), digits = 3)
         
-        with(dataset, {
-          ggplot(dataset, aes(x = deltaAICc)) +
+        with(datasetrand, {
+          ggplot(datasetrand, aes(x = deltaAICc)) +
             geom_histogram(aes(y = 2 * ..density..), colour = "black", fill = "red", binwidth = 2, alpha = 0.5) +
             theme_classic() +
             theme(panel.grid.major = element_blank(),
@@ -107,88 +103,10 @@ plothist <- function(dataset, datasetrand = NULL){
                   legend.position = "none",
                   plot.title = element_text(size = 16),
                   panel.border = element_rect(colour = "black", fill = NA))+
-            ggtitle(bquote(atop(Histogram~of~Delta*AICc,Pspread~.(P))))+
+            ggtitle(bquote(atop(Histogram~of~Delta*AICc,P[Delta*AICc]~.(P2)))) +
             ylab("Proportion") +
             xlab(expression(paste(Delta, "AICc (compared to null model)")))
         }) 
-        
-      } else {
-
-        P <- round(pvalue(rand.dataset = datasetrand, full.dataset = dataset$WeightedOutput, 
-                          metric = "Spread", sample.size = dataset$WeightedOutput$sample.size[1]), digits = 3)
-        par(mfrow = c(1,1))
-        
-        if(dataset$WeightedOutput$Weight_function == "W"){
-          
-          j      <- seq(1:dataset$WeightedOutput$duration) / dataset$WeightedOutput$duration
-          weight <- weibull3(x = j[1:dataset$WeightedOutput$duration], shape = dataset$WeightedOutput$shape, 
-                             scale = dataset$WeightedOutput$scale, location = dataset$WeightedOutput$location)
-          weight[is.na(weight)] <- 0
-          
-          if (sum(weight) == 0){
-            weight <- weight + 1
-          }
-          
-          title <- c("Weibull", paste("shape=", dataset$WeightedOutput$shape, "scale=", dataset$WeightedOutput$scale, 
-                                      "location=", dataset$WeightedOutput$location, "\n Pspread:", P))
-          plot((weight / sum(weight)), type = "l", ylab = "weight", xlab = "timesteps", main = title, xaxt = 'n')
-          
-        } else {
-          
-          k        <- seq(-10, 10, by = (2 * 10 / dataset$WeightedOutput$duration))
-          weight <- dgev(k[1:dataset$WeightedOutput$duration], loc = dataset$WeightedOutput$location, 
-                         scale = dataset$WeightedOutput$scale, shape = dataset$WeightedOutput$shape, log = FALSE)
-          weight[is.na(weight)] <- 0
-          
-          if (sum(weight) == 0){
-            weight <- weight + 1
-          }
-          title <- c("GEV", paste("shape=", dataset$WeightedOutput$shape, "scale=", dataset$WeightedOutput$scale, 
-                                  "location=", dataset$WeightedOutput$loc, "\n Pspread:", P))
-          plot((weight / sum(weight)), type = "l", ylab = "weight", xlab = "timesteps", main = title, xaxt = 'n')
-          
-        }
-        
-      }
-    } else if(max(datasetrand$Repeat) > 100 & max(datasetrand$Repeat) < 1000){
-      
-      P  <- round(pvalue(rand.dataset = datasetrand, full.dataset = dataset, metric = "Spread", sample.size = dataset$sample.size[1]), digits = 3)
-      P2 <- round(pvalue(rand.dataset = datasetrand, full.dataset = dataset, metric = "AIC", sample.size = dataset$sample.size[1]), digits = 3)
-      
-      with(dataset, {
-        ggplot(dataset, aes(x = deltaAICc)) +
-          geom_histogram(aes(y = 2 * ..density..), colour = "black", fill = "red", binwidth = 2, alpha = 0.5) +
-          theme_classic() +
-          theme(panel.grid.major = element_blank(),
-                panel.grid.minor = element_blank(),
-                axis.line = element_line(size = 0.25, colour = "black"),
-                legend.position = "none",
-                plot.title = element_text(size = 16),
-                panel.border = element_rect(colour = "black", fill = NA))+
-          ggtitle(bquote(atop(Histogram~of~Delta*AICc,Pspread~.(P)~PAICc~.(P2))))+
-          ylab("Proportion") +
-          xlab(expression(paste(Delta, "AICc (compared to null model)")))
-      })      
-      
-    } else if(max(datasetrand$Repeat) >= 1000){
-      
-      P  <- round(pvalue(rand.dataset = datasetrand, full.dataset = dataset, metric = "AIC", sample.size = dataset$sample.size[1]), digits = 3)
-      
-      with(dataset, {
-        ggplot(dataset, aes(x = deltaAICc)) +
-          geom_histogram(aes(y = 2 * ..density..), colour = "black", fill = "red", binwidth = 2, alpha = 0.5) +
-          theme_classic() +
-          theme(panel.grid.major = element_blank(),
-                panel.grid.minor = element_blank(),
-                axis.line = element_line(size = 0.25, colour = "black"),
-                legend.position = "none",
-                plot.title = element_text(size = 16),
-                panel.border = element_rect(colour = "black", fill = NA))+
-          ggtitle(bquote(atop(Histogram~of~Delta*AICc,Pspread~.(P))))+
-          ylab("Proportion") +
-          xlab(expression(paste(Delta, "AICc (compared to null model)")))
-      })
-      
+      } 
     }
-  }
 }
