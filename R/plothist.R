@@ -85,6 +85,7 @@ plothist <- function(dataset, datasetrand = NULL){
                               legend.position = "none",
                               plot.title = element_text(size = 16))+
                         facet_wrap(~Randomised, nrow = 2)+
+                        geom_vline(aes(xintercept = dataset$deltaAICc[1]), linetype = "dashed", size = 1.5)+
                         ggtitle(bquote(atop(Histogram~of~Delta*AICc,P[Delta*AICc]~.(P2)~~P[spread]~.(P))))+
                         ylab("Proportion")+
                         xlab(expression(paste(Delta,"AICc (compared to null model)")))
@@ -103,6 +104,7 @@ plothist <- function(dataset, datasetrand = NULL){
                   legend.position = "none",
                   plot.title = element_text(size = 16),
                   panel.border = element_rect(colour = "black", fill = NA))+
+            geom_vline(aes(xintercept = dataset$deltaAICc[1]), linetype = "dashed", size = 1.5)+
             ggtitle(bquote(atop(Histogram~of~Delta*AICc,P[Delta*AICc]~.(P2)))) +
             ylab("Proportion") +
             xlab(expression(paste(Delta, "AICc (compared to null model)")))
