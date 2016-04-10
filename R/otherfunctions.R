@@ -278,9 +278,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     baseline <- update(baseline, yvar~., data = modeldat)
     cmatrix  <- cmatrix[complete.cases(cmatrix), ]
   }
-  
-  #modeldat         <- model.frame(baseline)
-  #modeldat$yvar    <- modeldat[, 1]
+
   modeldat$climate <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
   
   if (is.null(weights(baseline)) == FALSE){
@@ -540,6 +538,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     #Fill progress bar
     setTxtProgressBar(pb, modno - 1)
   }
+  
   #Save the best model output
   m <- (modlist$WindowOpen[modlist$ModelAICc %in% min(modlist$ModelAICc)])
   n <- (modlist$WindowOpen[modlist$ModelAICc %in% min(modlist$ModelAICc)]) - (modlist$WindowClose[modlist$ModelAICc %in% min(modlist$ModelAICc)]) + 1
@@ -947,7 +946,7 @@ modloglik_G <- function(par = par, modeloutput = modeloutput,
 
 # define a function that returns the AICc or -2LogLikelihood of model using Weibull weight function
 modloglik_W <- function(par = par,  modeloutput = modeloutput, duration = duration, 
-                        cmatrix = cmatrix, nullmodel =  nullmodel, funcenv = funcenv){
+                        cmatrix = cmatrix, modeldat = modeldat, nullmodel =  nullmodel, funcenv = funcenv){
   
   j                     <- seq(1:duration) / duration # rescale j to interval [0,1]
   weight                <- weibull3(x = j, shape = par[1], scale = par[2], location = par[3])  # calculate weights using the Weibull probability distribution function
@@ -958,14 +957,13 @@ modloglik_W <- function(par = par,  modeloutput = modeloutput, duration = durati
   }
   
   weight                                <- weight / sum(weight) 
-  funcenv$modeldat$climate              <- apply(cmatrix, 1, FUN = function(x) {sum(x*weight)})    # calculate weighted mean from weather data
-  modeloutput                           <- update(modeloutput, .~., data = funcenv$modeldat)   # rerun regression model using new weather index
+  modeldat$climate                      <- apply(cmatrix, 1, FUN = function(x) {sum(x*weight)})    # calculate weighted mean from weather data
+  modeloutput                           <- update(modeloutput, .~., data = modeldat)   # rerun regression model using new weather index
   deltaAICc                             <- AICc(modeloutput) - nullmodel
   funcenv$DAICc[[funcenv$modno]]        <- deltaAICc
   funcenv$par_shape[[funcenv$modno]]    <- par[1]
   funcenv$par_scale[[funcenv$modno]]    <- par[2]
   funcenv$par_location[[funcenv$modno]] <- par[3]
-  
 
   # plot the weight function and corresponding weather index being evaluated
   par(mfrow = c(3, 2))
