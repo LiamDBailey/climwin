@@ -76,6 +76,10 @@ crosswin <- function(xvar, xvar2, cdate, bdate, range,
                      cutoff.day = NULL, cutoff.month = NULL,
                      furthest = NULL, closest = NULL, spatial = NULL){
   
+  if(is.null(cohort) == TRUE){
+    cohort = lubridate::year(as.Date(bdate, format = "%d/%m/%Y")) 
+  }
+  
   print("Initialising, please wait...")
   
   if(type == "variable" || type == "fixed"){
