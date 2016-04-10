@@ -130,7 +130,7 @@
 #'
 #'@export
 
-randwin <- function(exclude = NA, repeats = 5, window, xvar, cdate, bdate, baseline, 
+randwin <- function(exclude = NA, repeats = 5, window = "Sliding", xvar, cdate, bdate, baseline, 
                     stat, range, func, type, refday,
                     cmissing = FALSE, cinterval = "day",
                     upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"), k = 0,
