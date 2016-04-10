@@ -101,7 +101,9 @@ plotall <- function(dataset, datasetrand = NULL,
   
   window <- plotwin(dataset = dataset, cw = cwa)
   
-  hist   <- plothist(dataset = dataset, datasetrand = datasetrand)
+  if(is.null(datasetrand) == FALSE){
+    hist   <- plothist(dataset = dataset, datasetrand = datasetrand)    
+    
   if(is.null(bestmodel) == FALSE && is.null(bestmodeldata) == FALSE){
   best  <- plotbest(dataset = dataset, bestmodel = bestmodel, bestmodeldata = bestmodeldata)
   
@@ -141,4 +143,46 @@ plotall <- function(dataset, datasetrand = NULL,
       gridExtra::grid.arrange(plotenv$beta, plotenv$delta, plotenv$cw, hist, window, nrow = 2, top = paste(title))
     } 
   }
+} else {
+  
+  if(is.null(bestmodel) == FALSE && is.null(bestmodeldata) == FALSE){
+    best  <- plotbest(dataset = dataset, bestmodel = bestmodel, bestmodeldata = bestmodeldata)
+    
+    if (dataset$Function[1] == "lin"){
+      gridExtra::grid.arrange(plotenv$delta, plotenv$cw, plotenv$beta, window, best, nrow = 2, ncol = 3, top = paste(title))
+    } else if (dataset$Function[1] == "quad"){
+      gridExtra::grid.arrange(plotenv$delta, plotenv$cw, plotenv$beta, plotenv$beta2, window, best, nrow = 2, ncol = 4, top = paste(title))
+    } else if(dataset$Function[1] == "cub"){
+      gridExtra::grid.arrange(plotenv$delta, plotenv$cw, plotenv$beta, plotenv$beta2, window, best, plotenv$beta3, nrow = 2, ncol = 4, top = paste(title))
+    } else if(dataset$Function[1] == "centre"){
+      if(is.null(dataset$WithinGrpDev) == TRUE){
+        gridExtra::grid.arrange(plotenv$delta, plotenv$cw, plotenv$wgmean, window, best, nrow = 2, ncol = 4, top = paste(title))
+      } else if(is.null(dataset$WithinGrpMean) == TRUE){
+        gridExtra::grid.arrange(plotenv$delta, plotenv$cw, plotenv$wgdev, window, best, nrow = 2, ncol = 4, top = paste(title))
+      } else {
+        gridExtra::grid.arrange(plotenv$delta, plotenv$cw, plotenv$wgmean, plotenv$wgdev, window, best, nrow = 2, ncol = 4, top = paste(title))
+      }
+    } else {
+      gridExtra::grid.arrange(plotenv$beta, plotenv$delta, plotenv$cw, window, best, nrow = 2, top = paste(title))
+    }
+  } else {
+    if (dataset$Function[1] == "lin"){
+      gridExtra::grid.arrange(plotenv$delta, plotenv$cw, plotenv$beta, window, nrow = 2, ncol = 3, top = paste(title))
+    } else if (dataset$Function[1] == "quad"){
+      gridExtra::grid.arrange(plotenv$delta, plotenv$cw, plotenv$beta, plotenv$beta2, window, nrow = 2, ncol = 4, top = paste(title))
+    } else if(dataset$Function[1] == "cub"){
+      gridExtra::grid.arrange(plotenv$delta, plotenv$cw, plotenv$beta, plotenv$beta2, window, plotenv$beta3, nrow = 2, ncol = 4, top = paste(title))
+    } else if(dataset$Function[1] == "centre"){
+      if(is.null(dataset$WithinGrpDev) == TRUE){
+        gridExtra::grid.arrange(plotenv$delta, plotenv$cw, plotenv$wgmean, window, nrow = 2, ncol = 4, top = paste(title))
+      } else if(is.null(dataset$WithinGrpMean) == TRUE){
+        gridExtra::grid.arrange(plotenv$delta, plotenv$cw, plotenv$wgdev, window, nrow = 2, ncol = 4, top = paste(title))
+      } else {
+        gridExtra::grid.arrange(plotenv$delta, plotenv$cw, plotenv$wgmean, plotenv$wgdev, window, nrow = 2, ncol = 4, top = paste(title))
+      }
+    } else {
+      gridExtra::grid.arrange(plotenv$beta, plotenv$delta, plotenv$cw, window, nrow = 2, top = paste(title))
+    } 
+  } 
+}
 }

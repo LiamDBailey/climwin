@@ -1,82 +1,48 @@
-#'Create a histogram of deltaAICc values
+#'Create a histogram of randomised deltaAICc values
 #'
-#'Create a histogram of deltaAICc values for all fitted climate windows. Compare
-#'with randomised data if provided.
-#'@param dataset A dataframe containing information on all fitted climate 
-#'  windows. Output from \code{\link{climatewin}}.
+#'Create a histogram of deltaAICc values from randomised data.
+#'@param dataset A dataframe containing information on all fitted climate
+#'  windows from observed data. Output from \code{\link{slidingwin}}.
 #'@param datasetrand A dataframe containing information on all fitted climate 
 #'  windows using randomised data. Output from \code{\link{randwin}}.
-#'@param histq If datasetrand is provided. The quantile of the randomised data 
-#'  that will be compared to non-randomised data. Used to determine the 
-#'  likelihood of finding a climate window model of a given deltaAICc value at 
-#'  random.
-#'@return If datasetrand is provided, plothist will return two stacked histograms
-#'  to compare the deltaAICc of non-randomised and randomised data. This can 
-#'  help determine the likelihood of obtaining a deltaAICc value of fitted 
-#'  climate windows at random. Without datasetrand, plotall will create a single
-#'  histogram of deltaAICc values for all fitted climate windows.
+#'@return plothist will return a histograms of deltaAICc values from 
+#'  randomised data. Values of PdeltaAICc and Pc will be provided to help 
+#'  determine the likelihood that an observed deltaAICc value would occur
+#'  by chance. 
 #'@author Liam D. Bailey and Martijn van de Pol
 #'@examples
-#'# Plot real and randomised data for the Mass dataset
+#'# Plot randomised data for the Mass dataset
 #' 
 #'data(MassOutput)
 #'data(MassRand)
 #' 
-#'plothist(dataset = MassOutput, datasetrand = MassRand)
-#'
-#'# Plot deltaAICc when no randomised data is provided
-#' 
-#'data(MassOutput)
-#' 
-#'plothist(dataset = MassOutput)
+#'plothist(datasetrand = MassRand)
 #' 
 #'@import ggplot2
 #'@export
 
-plothist <- function(dataset, datasetrand = NULL){
+plothist <- function(dataset, datasetrand){
   
-  if (is.null(datasetrand) == TRUE){
-    
-    if(is.null(dataset$shape) == TRUE){
-      
-      with(dataset, {
-        ggplot(dataset, aes(x = deltaAICc)) +
-          geom_histogram(aes(y = 2 * ..density..), colour = "black", fill = "red", binwidth = 2, alpha = 0.5) +
-          theme_classic() +
-          theme(panel.grid.major = element_blank(),
-                panel.grid.minor = element_blank(),
-                axis.line = element_line(size = 0.25, colour = "black"),
-                legend.position = "none",
-                plot.title = element_text(size = 16),
-                panel.border = element_rect(colour = "black", fill = NA))+
-          ggtitle(expression(paste("Histogram of ", Delta,"AICc"))) +
-          ylab("Proportion") +
-          xlab(expression(paste(Delta, "AICc (compared to null model)")))
-      })
-      
-    } else {
-      
-      stop("Please provide randomised data to include with weightwin data")
-      
-    }
-      
-  } else {
-    
-    if(max(datasetrand$Repeat) <= 100){
+  if(is.null(datasetrand) == TRUE){
+    stop("Please provide randomised data")
+  }  
+  
+if(max(datasetrand$Repeat) <= 100){
       print("PDeltaAICc may be unreliable with so few randomisations")
     }
           
     if(is.null(dataset$shape) == TRUE){
-        
-      keep2                       <- c("deltaAICc", "Randomised")
-      randdata                    <- rbind(dataset[keep2], datasetrand[keep2])
-      randdata$deltaAICc          <- as.numeric(randdata$deltaAICc)
-      levels(randdata$Randomised) <- c("Real data", paste("Randomised data (", max(datasetrand$Repeat), "x )"))
       
       P  <- round(pvalue(rand.dataset = datasetrand, full.dataset = dataset, metric = "Spread", sample.size = dataset$sample.size[1]), digits = 3)
       P2 <- round(pvalue(rand.dataset = datasetrand, full.dataset = dataset, metric = "AIC", sample.size = dataset$sample.size[1]), digits = 3)
+      if(P2 < 0.01){
+        P2 = as.character("<0.01")
+      }
+      if(P < 0.01){
+        P = as.character("<0.01")
+      }
       
-      with(randdata, {ggplot(randdata, aes(x = deltaAICc, fill = Randomised))+
+      with(datasetrand, {ggplot(datasetrand, aes(x = deltaAICc, fill = Randomised))+
                         geom_histogram(aes(y = 2 * ..density..), colour = "black", binwidth = 2, alpha = 0.5)+
                         theme_classic()+
                         theme(panel.grid.major = element_blank(),
@@ -84,15 +50,17 @@ plothist <- function(dataset, datasetrand = NULL){
                               axis.line = element_line(size = 0.25, colour = "black"),
                               legend.position = "none",
                               plot.title = element_text(size = 16))+
-                        facet_wrap(~Randomised, nrow = 2)+
                         geom_vline(aes(xintercept = dataset$deltaAICc[1]), linetype = "dashed", size = 1.5)+
-                        ggtitle(bquote(atop(Histogram~of~Delta*AICc,P[Delta*AICc]~.(P2)~~P[spread]~.(P))))+
+                        ggtitle(bquote(atop(Histogram~of~Delta*AICc,P[Delta*AICc]~.(P2)~~P[C]~.(P))))+
                         ylab("Proportion")+
                         xlab(expression(paste(Delta,"AICc (compared to null model)")))
                       })        
       } else {
         
         P2 <- round(pvalue(rand.dataset = datasetrand, full.dataset = dataset, metric = "AIC", sample.size = dataset$sample.size[1]), digits = 3)
+        if(P2 < 0.01){
+          P2 = as.character("<0.01")
+        }
         
         with(datasetrand, {
           ggplot(datasetrand, aes(x = deltaAICc)) +
@@ -111,4 +79,3 @@ plothist <- function(dataset, datasetrand = NULL){
         }) 
       } 
     }
-}
