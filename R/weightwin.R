@@ -118,9 +118,13 @@
 weightwin <- function(xvar, cdate, bdate, baseline, range, 
                       func = "lin", type, refday, nrandom = 0, centre = NULL,
                       weightfunc = "W", cinterval = "day",
-                      par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)), 
+                      par = c(3, 0.2, 0), control = list(ndeps = c(0.001, 0.001, 0.001)), 
                       method = "L-BFGS-B", cutoff.day = NULL, cutoff.month = NULL,
                       furthest = NULL, closest = NULL, cohort = NULL, spatial = NULL){
+  
+  if(is.null(cohort) == TRUE){
+    cohort = lubridate::year(as.Date(bdate, format = "%d/%m/%Y")) 
+  }
   
   if(type == "variable" || type == "fixed"){
     stop("Parameter 'type' now uses levels 'relative' and 'absolute' rather than 'variable' and 'fixed'.")
@@ -189,21 +193,23 @@ weightwin <- function(xvar, cdate, bdate, baseline, range,
     xvar = xvar[[1]]    
   }
   
-  funcenv                 <- environment()
-  cont                    <- convertdate(bdate = bdate, cdate = cdate, xvar = xvar, 
-                                         cinterval = cinterval, type = type, 
-                                         refday = refday, cohort = cohort, spatial = spatial)   
+  funcenv       <- environment()
+  cont          <- convertdate(bdate = bdate, cdate = cdate, xvar = xvar, 
+                               cinterval = cinterval, type = type, 
+                               refday = refday, cohort = cohort, spatial = spatial)   
   # create new climate dataframe with continuous daynumbers, leap days are not a problem 
 
-  modno        <- 1
-  DAICc        <- list()
-  par_shape    <- list()
-  par_scale    <- list()
-  par_location <- list()
-  duration     <- (range[1] - range[2]) + 1
-  cmatrix      <- matrix(ncol = (duration), nrow = length(bdate))
-  baseline     <- update(baseline, .~.)
-  nullmodel    <- AICc(baseline)
+  modno         <- 1
+  DAICc         <- list()
+  par_shape     <- list()
+  par_scale     <- list()
+  par_location  <- list()
+  duration      <- (range[1] - range[2]) + 1
+  cmatrix       <- matrix(ncol = (duration), nrow = length(bdate))
+  baseline      <- update(baseline, .~.)
+  nullmodel     <- AICc(baseline)
+  modeldat      <- model.frame(baseline)
+  modeldat$yvar <- modeldat[, 1]
   
   if(is.null(spatial) == FALSE){
     for (i in 1:length(bdate)){
@@ -216,8 +222,7 @@ weightwin <- function(xvar, cdate, bdate, baseline, range,
   }
   cmatrix <- as.matrix(cmatrix[, c(ncol(cmatrix):1)])
   
-  funcenv$modeldat         <- model.frame(baseline)
-  funcenv$modeldat$climate <- matrix(ncol = 1, nrow = nrow(cmatrix), seq(from = 1, to = nrow(cmatrix), by = 1))
+  modeldat$climate <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
   
   if (func == "lin"){
     modeloutput <- update(baseline, .~. + climate, data = modeldat)
@@ -228,20 +233,20 @@ weightwin <- function(xvar, cdate, bdate, baseline, range,
   } else if (func == "log") {
     modeloutput <- update(baseline, .~. + log(climate), data = modeldat)
   } else if (func == "inv") {
-    modeloutput <- update (baseline, .~. + I(climate ^ -1), data = modeldat)
+    modeloutput <- update(baseline, .~. + I(climate ^ -1), data = modeldat)
   } else if (func == "centre"){
     if(centre[[2]] == "both"){
-      funcenv$modeldat$wgdev  <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
-      funcenv$modeldat$wgmean <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
-      modeloutput <- update (baseline, yvar ~. + wgdev + wgmean, data = modeldat)
+      modeldat$wgdev  <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
+      modeldat$wgmean <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
+      modeloutput <- update(baseline, yvar ~. + wgdev + wgmean, data = modeldat)
     }
     if(centre[[2]] == "mean"){
-      funcenv$modeldat$wgmean <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
-      modeloutput <- update (baseline, yvar ~. + wgmean, data = modeldat)
+      modeldat$wgmean <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
+      modeloutput <- update(baseline, yvar ~. + wgmean, data = modeldat)
     }
     if(centre[[2]] == "dev"){
-      funcenv$modeldat$wgdev  <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
-      modeloutput <- update (baseline, yvar ~. + wgdev, data = modeldat)
+      modeldat$wgdev  <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
+      modeloutput <- update(baseline, yvar ~. + wgdev, data = modeldat)
     }
   } else {
     print("Define func")
@@ -259,12 +264,41 @@ weightwin <- function(xvar, cdate, bdate, baseline, range,
       stop("Weibull location parameter should be <=0")
     }
     j      <- seq(1:duration) / duration
+    #result <- optimx(par = par, fn = modloglik_W, control = control, 
+    #                method = "L-BFGS-B", lower = c(0.0001, 0.0001, -Inf), 
+    #                upper = c(Inf, Inf, 0), duration = duration, 
+    #                modeloutput = modeloutput, modeldat = modeldat, 
+    #                funcenv = funcenv,  
+    #                cmatrix = cmatrix, nullmodel = nullmodel)
+    #result <- optimx(par = par, fn = modloglik_W, control = control, 
+    #                 method = "bobyqa", lower = c(0.0001, 0.0001, -Inf), 
+    #                 upper = c(Inf, Inf, 0), duration = duration, 
+    #                 modeloutput = modeloutput, modeldat = modeldat, 
+    #                 funcenv = funcenv,  
+    #                 cmatrix = cmatrix, nullmodel = nullmodel)  
     result <- optim(par = par, fn = modloglik_W, control = control, 
                     method = method, lower = c(0.0001, 0.0001, -Inf), 
                     upper = c(Inf, Inf, 0), duration = duration, 
-                    modeloutput = modeloutput, funcenv = funcenv,  
-                    cmatrix = cmatrix, nullmodel = nullmodel)  
-    
+                    modeloutput = modeloutput, modeldat = modeldat, 
+                    funcenv = funcenv,  
+                    cmatrix = cmatrix, nullmodel = nullmodel)
+    #result  <- nlminb(start = par, objective = modloglik_W, control = list(step.min = 0.001, step.max = 0.001),
+    #                  lower = c(0.0001, 0.0001, -100), upper = c(100, 100, 0),
+    #                  duration = duration, modeloutput = modeloutput, modeldat = modeldat,
+    #                  funcenv = funcenv, cmatrix = cmatrix, nullmodel = nullmodel)
+    #result  <- lbfgs(x0 = par, fn = modloglik_W, control = list(xtol_rel = 1e-10),
+    #                 lower = c(0.0001, 0.0001, -Inf), upper = c(Inf, Inf, 0),
+    #                 duration = duration, modeloutput = modeloutput, modeldat = modeldat,
+    #                 funcenv = funcenv, cmatrix = cmatrix, nullmodel = nullmodel)
+    #result  <- tnewton(x0 = par, fn = modloglik_W, control = list(xtol_rel = 1e-10),
+    #                   lower = c(0.0001, 0.0001, -Inf), upper = c(Inf, Inf, 0),
+    #                   duration = duration, modeloutput = modeloutput, modeldat = modeldat,
+    #                   funcenv = funcenv, cmatrix = cmatrix, nullmodel = nullmodel)
+    #result  <- varmetric(x0 = par, fn = modloglik_W, control = list(xtol_rel = 1e-10),
+    #                     lower = c(0.0001, 0.0001, -Inf), upper = c(Inf, Inf, 0),
+    #                     duration = duration, modeloutput = modeloutput, modeldat = modeldat,
+    #                     funcenv = funcenv, cmatrix = cmatrix, nullmodel = nullmodel)
+    print(result)
   } else if (weightfunc == "G"){
     if (par[2] <= 0){
       stop("GEV scale parameter should be >0")
@@ -275,26 +309,26 @@ weightwin <- function(xvar, cdate, bdate, baseline, range,
                     upper = c(Inf, Inf, Inf), duration = duration, 
                     modeloutput = modeloutput, funcenv = funcenv,
                     cmatrix = cmatrix, nullmodel = nullmodel)
+    print(result)
   } else {
     stop("Please choose Method to equal either W or G")
   } 
-  bestmodel                     <- which(as.numeric(funcenv$DAICc) == min(as.numeric(funcenv$DAICc)))[1] # sometimes there are several bestmodels with similar DAICc, in which case we just pick one as they are all very similar
-  WeightedOutput                <- data.frame(DelatAICc = funcenv$DAICc[bestmodel],
-                                              duration = funcenv$duration,
-                                              shape = funcenv$par_shape[bestmodel],
-                                              scale = funcenv$par_scale[bestmodel],
-                                              location = funcenv$par_location[bestmodel],
+  WeightedOutput                <- data.frame(DelatAICc = as.numeric(result$value),
+                                              duration = duration,
+                                              shape = as.numeric(result$par[1]),
+                                              scale = as.numeric(result$par[2]),
+                                              location = as.numeric(result$par[3]),
                                               Function = func, Weight_function = weightfunc,
-                                              sample.size = sample.size)   # prepare output of best model
+                                              sample.size = sample.size)
   colnames(WeightedOutput) <- c("deltaAICc", "duration", "shape", "scale", "location", "function", "Weight_function", "sample.size")
   
   ifelse (weightfunc == "W", 
-          weight <- weibull3(x = j[1:duration], shape = as.numeric(funcenv$par_shape[bestmodel]), 
-                                                scale = as.numeric(funcenv$par_scale[bestmodel]), 
-                                                location = as.numeric(funcenv$par_location[bestmodel])),
-          weight <- dgev(j[1:duration], loc = as.numeric(funcenv$par_location[bestmodel]), 
-                         scale = as.numeric(funcenv$par_scale[bestmodel]), 
-                         shape = as.numeric(funcenv$par_shape[bestmodel]), 
+          weight <- weibull3(x = j[1:duration], shape = as.numeric(result$par[1]), 
+                                                scale = as.numeric(result$par[2]), 
+                                                location = as.numeric(result$par[3])),
+          weight <- dgev(j[1:duration], shape = as.numeric(result$par[1]), 
+                         scale = as.numeric(result$par[2]), 
+                         loc = as.numeric(result$par[3]), 
                          log = FALSE))
   
   weight[is.na(weight)] <- 0
@@ -305,6 +339,8 @@ weightwin <- function(xvar, cdate, bdate, baseline, range,
   weight                <- weight / sum(weight) 
   modeldat$climate      <- apply(cmatrix, 1, FUN = function(x) {sum(x * weight)})
   LocalModel            <- update(modeloutput, .~., data = modeldat)
+  
+  #return(list(DAICc = funcenv$DAICc, shape = funcenv$par_shape, scale = funcenv$par_scale, location = funcenv$par_location, Weight = weightfunc, weight = weight))
   
   if (class(LocalModel)[length(class(LocalModel))]=="coxph") {
     if (func == "quad"){

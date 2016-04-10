@@ -180,6 +180,10 @@ slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
                        furthest = NULL, closest = NULL,
                        thresh = NULL, cvk = NULL, cohort = NULL){
   
+  if(is.null(cohort) == TRUE){
+    cohort = lubridate::year(as.Date(bdate, format = "%d/%m/%Y")) 
+  }
+  
   if(k > 0 && class(baseline)[length(class(baseline))]=="coxph"){
     stop("Sorry, cross-validation is not available yet for coxph models")
   }
