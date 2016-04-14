@@ -236,11 +236,14 @@ randwin <- function(exclude = NA, repeats = 5, window = "Sliding", xvar, cdate, 
                              cohort = cohort)
         
         outputrep$Repeat <- r
+        WeightDist <- sum(as.numeric(cumsum(outputrep$ModWeight) <= 0.95))/nrow(outputrep)
+        outputrep <- outputrep[1, ]
+        outputrep$WeightDist <- WeightDist
         
         if(r == 1){ 
-          outputrand <- outputrep[1, ] 
+          outputrand <- outputrep
         } else { 
-          outputrand <- rbind(outputrand, outputrep[1, ])
+          outputrand <- rbind(outputrand, outputrep)
         }
         
       } else if(window == "Weighted"){

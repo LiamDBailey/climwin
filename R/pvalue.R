@@ -34,12 +34,14 @@ pvalue <- function(rand.dataset, full.dataset, metric, sample.size){
       print("Pc will be overly liberal when sample size is less than 10")
     }
     
-    DeltaW <- full.dataset$ModWeight[1] - median(rand.dataset$ModWeight)
+    WeightDist <- sum(as.numeric(cumsum(full.dataset$ModWeight) <= 0.95))/nrow(full.dataset)
+    
+    DeltaW <- WeightDist - median(rand.dataset$WeightDist)
       
       if(full.dataset$K[1] >= 10){
-        Pc <- 1 - (1/(1 + exp(-1 * (-0.621031 + 11.563537 * DeltaW + 0.058663 * sample.size + 6.882248 * DeltaW * sample.size))))
+        Pc <- (1/(1 + exp(-1 * (-0.621031 + 11.563537 * DeltaW + 0.058663 * sample.size + 6.882248 * DeltaW * sample.size))))
       } else {
-        Pc <- 1 - (1/(1 + exp(-1 * (-0.540324 + 1.947674 * DeltaW + 0.078708 * sample.size + 0.313567 * DeltaW * sample.size))))
+        Pc <- (1/(1 + exp(-1 * (-0.540324 + 1.947674 * DeltaW + 0.078708 * sample.size + 0.313567 * DeltaW * sample.size))))
       }
 
     return(Pc)
