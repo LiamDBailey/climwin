@@ -378,7 +378,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
               mse        <- sum((test$predictions - test[, 1]) ^ 2) / num
               p_baseline <- num - df.residual(baselinecv)  # Determine df for the baseline model
               #calculate mean standard errors for climate model
-              #calc mse only works non-categorical yvars, e.g. normal, biNAry, count data 
+              #calc mse only works non-categorical yvars, e.g. normal, binary, count data 
               mse_baseline <- sum((test$predictionsbaseline - test[, 1]) ^ 2) / num
               #calculate mean standard errors for null model
               AICc_cv          <- num * log(mse) + (2 * p * (p + 1)) / (num - p - 1)

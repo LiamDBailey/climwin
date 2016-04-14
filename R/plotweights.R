@@ -29,22 +29,31 @@
 
 plotweights <- function(dataset, cw1 = 0.95, cw2 = 0.5, cw3 = 0.25, arrow = FALSE, plotall = FALSE, plotallenv){
 
+  #Order cw1, cw2 and cw3 so that cw1 is always the largest value
   a          <- c(cw1, cw2, cw3)
   b          <- a[order (-a)]
   cw         <- cw1
   cw1        <- b[1]
   cw2        <- b[2]
   cw3        <- b[3]
+  
+  #Determine the % of models that fall within the 95% cumulative set (i.e. Spread or C)
   WeightDist <- ceiling(100*mean(as.numeric(cumsum(dataset$ModWeight) <= cw1)))
   
+  #Create a subset of the models that fall within the 95% confidence set
   ConfidenceSet <- dataset[which(cumsum(dataset$ModWeight) <= cw1), ]
+    
+  #Create an empty matrix equivalent length to the confidence set
   SpreadMatrix <- matrix(nrow = (nrow(ConfidenceSet)- 1), ncol = 2)
+  #Determine Euclidan distances between each model and the best model
   for(i in 2:nrow(ConfidenceSet)){
     SpreadMatrix[i - 1, 1] <- i
     SpreadMatrix[i - 1, 2] <- sqrt((ConfidenceSet$WindowOpen[1] - ConfidenceSet$WindowOpen[i])^2 + 
                                (ConfidenceSet$WindowClose[1] - ConfidenceSet$WindowClose[i])^2)
   }
+  #Determine the maximum Euclidian distance
   WeightSpread <- ceiling(max(SpreadMatrix[, 2]))
+  #N.B. This metric is currently not used in our code
   
   #Order models by weight#
   dataset        <- dataset[order(-dataset$ModWeight), ]
