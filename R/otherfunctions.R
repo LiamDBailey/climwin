@@ -1062,28 +1062,6 @@ skim <- function(winoutput, duration, cutoff) {
 
 ##################################################################################
 
-medwin <- function(dataset, cw = 0.95){
-  
-  #Order models by weight#
-  dataset    <- dataset[order(-dataset$ModWeight), ]
-  dataset$cw <- as.numeric(cumsum(dataset$ModWeight) <= cw)
-  datasetcw  <- subset(dataset, cw == 1)
-  
-  keep=c("Closest", "WindowClose", "WindowOpen")
-  
-  datasetcw                  <- datasetcw[keep]
-  datasetcw                  <- melt(datasetcw, id = "Closest")
-  datasetcw$variable         <- factor(datasetcw$variable, levels = c("WindowOpen", "WindowClose"))
-  levels(datasetcw$variable) <- c("Window Open", "Window Close")
-  
-  wo <- datasetcw[which(datasetcw$variable == "Window Open"), ]
-  wc <- datasetcw[which(datasetcw$variable == "Window Close"), ]
-  
-  return(list("Median Window Open" = median(wo$value), "Median Window Close" = median(wc$value)))
-}
-
-##################################################################################
-
 merge_results <- function(dataset1, dataset2){
   
   new_combos <- rbind.fill(dataset1$combos, dataset2$combos)
@@ -1107,4 +1085,16 @@ circle <- function(centre = c(0,0), diameter = 1, npoints = 100){
   xx <- centre[1] + r * cos(tt)
   yy <- centre[2] + r * sin(tt)
   return(data.frame(x = xx, y = yy))
+}
+
+##################################################################################
+
+#Function to temporarily adjust global R options (used in pvalue to enforce scientific notation)
+
+withOptions <- function(optlist, expr)
+{
+  oldopt <- options(optlist)
+  on.exit(options(oldopt))
+  expr <- substitute(expr)
+  eval.parent(expr)
 }
