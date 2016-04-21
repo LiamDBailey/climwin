@@ -18,7 +18,8 @@ pvalue <- function(rand.dataset, full.dataset, metric, sample.size){
   if(metric == "AIC"){
     
     Percentile <- ecdf(rand.dataset$deltaAICc)
-    return(Percentile(full.dataset$deltaAICc[1]))
+    PDAIC <- ifelse(Percentile(full.dataset$deltaAICc[1]) == 0, "<0.001", Percentile(full.dataset$deltaAICc[1]))
+    return(PDAIC)
     
   } else if(metric == "Spread"){
     
@@ -43,7 +44,7 @@ pvalue <- function(rand.dataset, full.dataset, metric, sample.size){
       } else {
         Pc <- (1/(1 + exp(-1 * (-0.540324 + 1.947674 * DeltaW + 0.078708 * sample.size + 0.313567 * DeltaW * sample.size))))
       }
-
+    
     return(Pc)
     
   } else {
