@@ -922,6 +922,7 @@ modloglik_G <- function(par = par, modeloutput = modeloutput,
   }
   
   weight                                <- weight / sum(weight) 
+  print(weight)
   funcenv$modeldat$climate              <- apply(cmatrix, 1, FUN = function(x) {sum(x*weight)})    # calculate weighted mean from weather data
   modeloutput                           <- update(modeloutput, .~., data = funcenv$modeldat)   # rerun regression model using new weather index
   deltaAICc                             <- AICc(modeloutput) - nullmodel
@@ -956,9 +957,9 @@ modloglik_W <- function(par = par,  modeloutput = modeloutput, duration = durati
     weight <- weight + 1
   }
   
-  weight                                <- weight / sum(weight) 
-  modeldat$climate                      <- apply(cmatrix, 1, FUN = function(x) {sum(x*weight)})    # calculate weighted mean from weather data
-  modeloutput                           <- update(modeloutput, .~., data = modeldat)   # rerun regression model using new weather index
+  weight                                <- weight / sum(weight)
+  funcenv$modeldat$climate              <- apply(cmatrix, 1, FUN = function(x) {sum(x*weight)})    # calculate weighted mean from weather data
+  modeloutput                           <- update(modeloutput, .~., data = funcenv$modeldat)   # rerun regression model using new weather index
   deltaAICc                             <- AICc(modeloutput) - nullmodel
   funcenv$DAICc[[funcenv$modno]]        <- deltaAICc
   funcenv$par_shape[[funcenv$modno]]    <- par[1]
