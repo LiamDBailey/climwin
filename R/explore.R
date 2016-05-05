@@ -1,6 +1,6 @@
 #'Visualise the weight distribution for given parameter values
 #' 
-#'Create a plot of the weibell or generalised extreme values (GEV) distribution
+#'Create a plot of the Weibell or Generalised Extreme Values (GEV) distribution
 #'for given values of shape, scale and location parameters. Used to determine 
 #'initial parameter values for \code{\link{weightwin}}.
 #'@param shape A parameter that determines the shape of the distribution. 
@@ -11,7 +11,7 @@
 #' Should be less than or equal to 0.
 #'@param weightfunc Choose whether to use a weibull ("W") or GEV ("G")
 #' distribution.
-#'@return ExploreWeight will return an example plot of the distribution using
+#'@return explore will return an example plot of the distribution using
 #' given parameter values. This can be used to select the initial parameter 
 #' values for \code{\link{weightwin}}
 #'@author Martijn van de Pol and Liam D. Bailey

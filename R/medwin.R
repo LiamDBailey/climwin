@@ -8,6 +8,13 @@
 #'@return Returns two values representing the median start and end
 #'time of climate windows within the confidence set. 
 #'@author Liam D. Bailey and Martijn van de Pol
+#'@examples
+#'\dontrun{
+#'# Determine median start and end time of MassOutput from the 95% confidence set
+#'
+#'medwin(MassOutput, cw = 0.95)
+#'
+#'}
 #'@export
 
 medwin <- function(dataset, cw = 0.95){

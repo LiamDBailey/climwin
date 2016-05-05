@@ -14,6 +14,18 @@
 #'@return Returns a value representing the probability that a given climate 
 #'  window result is a false positive. 
 #'@author Liam D. Bailey and Martijn van de Pol
+#'@examples
+#'
+#'# Calculate PDAICc for the Mass dataset
+#'
+#'pvalue(datasetrand = MassRand, dataset = MassOutput, 
+#'       metric = "AIC", sample.size = 47)
+#'       
+#'# Calculate Pc for the Mass dataset
+#'
+#'pvalue(datasetrand = MassRand, dataset = MassOutput,
+#'       metric = "C", sample.size = 47) 
+#'
 #'@export
 
 pvalue <- function(dataset, datasetrand, metric, sample.size){

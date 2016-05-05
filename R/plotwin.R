@@ -1,10 +1,10 @@
-#'Plot the opening and closing point of best climate windows
+#'Plot the start and end time of best climate windows
 #'
-#'Visualise the opening and closing point for a subset of best climate windows.
+#'Visualise the start and end time for a subset of best climate windows.
 #'@param dataset A dataframe containing information on all fitted climate
 #'  windows. Output from \code{\link{slidingwin}}.
 #'@param cw Cumulative model weight used to subset the group of best models.
-#'@return Creates two boxplots showing the opening and closing point for a subset
+#'@return Creates two boxplots showing the start and end time for a subset
 #'  of best climate windows. Best climate windows make up the
 #'  cumulative model weight equivalent to the value of cw.
 #'@author Liam D. Bailey and Martijn van de Pol

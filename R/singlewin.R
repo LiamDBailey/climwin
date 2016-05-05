@@ -29,7 +29,7 @@
 #'  climate data will be removed from climate window analysis.
 #'@param cinterval The resolution at which climate window analysis will be 
 #'  conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the units
-#'  of parameters 'furthest' and 'closest' will differ depending on the choice
+#'  of parameter 'range' will differ depending on the choice
 #'  of cinterval.
 #'@param upper Cut-off values used to determine growing degree days or positive 
 #'  climate thresholds (depending on parameter thresh). Note that when values
@@ -104,10 +104,10 @@ singlewin <- function(xvar, cdate, bdate, baseline,
                       range, stat, func, 
                       type, refday, 
                       cmissing = FALSE, cinterval = "day",
+                      cohort = NULL, spatial = NULL,
                       upper = NA, lower = NA, binary = FALSE,
                       centre = list(NULL, "both"), cutoff.day = NULL, cutoff.month = NULL,
-                      furthest = NULL, closest = NULL, thresh = NULL, cohort = NULL,
-                      spatial = NULL){
+                      furthest = NULL, closest = NULL, thresh = NULL){
   
   if(is.null(thresh) == FALSE){
     stop("Parameter 'thresh' is now redundant. Please use parameter 'binary' instead.")

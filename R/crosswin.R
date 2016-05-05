@@ -1,5 +1,4 @@
-#'Test the correlation between two climate variables across all considered climate
-#'windows.
+#'Test the correlation between two climate variables.
 #'@param xvar The first climate variable of interest. Please specify the parent 
 #'  environment and variable name (e.g. Climate$Temp).
 #'@param xvar2 The second climate variable of interest. Please specify the parent 
@@ -30,7 +29,7 @@
 #'  will be removed from climate window analysis.
 #'@param cinterval The resolution at which climate window analysis will be 
 #'  conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the units 
-#'  of parameters 'furthest' and 'closest' will differ depending on the choice 
+#'  of parameter 'range' will differ depending on the choice 
 #'  of cinterval
 #'@param spatial A list item containing:
 #'  1. A factor that defines which spatial group (i.e. population) each biological
@@ -74,10 +73,10 @@
 
 crosswin <- function(xvar, xvar2, cdate, bdate, range, 
                      stat, stat2, type, refday,
-                     cinterval = "day", cmissing = FALSE,
+                     cinterval = "day", cmissing = FALSE, 
+                     spatial = NULL, cohort = NULL,
                      cutoff.day = NULL, cutoff.month = NULL,
-                     furthest = NULL, closest = NULL, spatial = NULL,
-                     cohort = NULL){
+                     furthest = NULL, closest = NULL){
   
   print("Initialising, please wait...")
   

@@ -30,7 +30,7 @@
 #'  either a Weibull ("W") or Generalised Extreme Value distribution ("G").
 #'@param cinterval The resolution at which the climate window analysis will be 
 #'  conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the units 
-#'  of parameters 'furthest' and 'closest' will differ depending on the choice 
+#'  of parameter 'range' will differ depending on the choice 
 #'  of cinterval.
 #'@param spatial A list item containing:
 #'  1. A factor that defines which spatial group (i.e. population) each biological
@@ -75,12 +75,12 @@
 #'  
 #'  Also returns a list containing three objects: \itemize{ 
 #'  \item BestModel, a model object. The best weighted window model determined
-#'  by AICc.
+#'  by deltaAICc.
 #'  
 #'  \item BestModelData, a dataframe. Biological and climate data used to fit
 #'  the best weighted window model.
 #'  
-#'  \item WeightedOutput, a list. Parameter values for the best weighted window.
+#'  \item WeightedOutput. Parameter values for the best weighted window.
 #'  }
 #'@author Martijn van de Pol and Liam D. Bailey
 #'@examples
@@ -124,10 +124,10 @@
 
 weightwin <- function(xvar, cdate, bdate, baseline, range, 
                       func = "lin", type, refday, nrandom = 0, centre = NULL,
-                      weightfunc = "W", cinterval = "day",
+                      weightfunc = "W", cinterval = "day", cohort = NULL, spatial = NULL,
                       par = c(3, 0.2, 0), control = list(ndeps = c(0.001, 0.001, 0.001)), 
                       method = "L-BFGS-B", cutoff.day = NULL, cutoff.month = NULL,
-                      furthest = NULL, closest = NULL, cohort = NULL, spatial = NULL){
+                      furthest = NULL, closest = NULL){
   
   if(is.null(cohort) == TRUE){
     cohort = lubridate::year(as.Date(bdate, format = "%d/%m/%Y")) 

@@ -1,6 +1,6 @@
 #'Climate window analysis for randomised data
 #'
-#'Will randomise biological data and carry out a climate window analysis. Used
+#'Randomises biological data and carries out a climate window analysis. Used
 #'to help determine the chance of obtaining an observed result at random.
 #'@param exclude Two values (distance and duration) which allow users
 #'  to exclude short-duration long-lag climate windows from analysis (e.g., 
@@ -38,7 +38,7 @@
 #'  climate data will be removed from climate window analysis.
 #'@param cinterval The resolution at which climate window analysis will be 
 #'  conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the units
-#'  of parameters 'furthest' and 'closest' will differ depending on the choice
+#'  of parameter 'range' will differ depending on the choice
 #'  of cinterval.
 #'@param k If window = "sliding"; the number of folds used for k-fold cross validation. By default
 #'  this value is set to 0, so no cross validation occurs. Value should be a
@@ -88,8 +88,8 @@
 #'@param furthest,closest Redundant parameters. Now replaced by range.
 #'@param thresh Redundant parameter. Now replaced by binary.
 #'@param cvk Redundant parameter. Now replaced by k.
-#'@return Will return a dataframe containing information on all fitted climate
-#'  windows. See \code{\link{MassRand}} as an example.
+#'@return Returns a dataframe containing information on the best climate
+#'  window from each randomisation. See \code{\link{MassRand}} as an example.
 #'@author Liam D. Bailey and Martijn van de Pol
 #' @examples
 #' \dontrun{
@@ -127,15 +127,15 @@
 #'# Randomise data twice
 #'# Note all other parameters are fitted in the same way as the weightwin function.
 #'
-#'weightrand <- weightwin(repeats = 2, window = "weighted", 
-#'                        xvar = list(Temp = OffspringClimate$Temperature), 
-#'                        cdate = OffspringClimate$Date,
-#'                        bdate = Offspring$Date,
-#'                        baseline = glm(Offspring ~ 1, family = poisson, data = Offspring),
-#'                        range = c(365, 0), func = "quad",
-#'                        type = "relative", weightfunc = "W", cinterval = "day",
-#'                        par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)),
-#'                        method = "L-BFGS-B")
+#'weightrand <- randwin(repeats = 2, window = "weighted", 
+#'                      xvar = list(Temp = OffspringClimate$Temperature), 
+#'                      cdate = OffspringClimate$Date,
+#'                      bdate = Offspring$Date,
+#'                      baseline = glm(Offspring ~ 1, family = poisson, data = Offspring),
+#'                      range = c(365, 0), func = "quad",
+#'                      type = "relative", weightfunc = "W", cinterval = "day",
+#'                      par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)),
+#'                      method = "L-BFGS-B")
 #'                    
 #'# View output
 #'
@@ -148,11 +148,11 @@
 randwin <- function(exclude = NA, repeats = 5, window = "sliding", xvar, cdate, bdate, baseline, 
                     stat, range, func, type, refday,
                     cmissing = FALSE, cinterval = "day",
+                    spatial = NULL, cohort = NULL,
                     upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"), k = 0,
                     weightfunc = "W", par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)), 
                     method = "L-BFGS-B", cutoff.day = NULL, cutoff.month = NULL,
-                    furthest = NULL, closest = NULL, thresh = NULL, cvk = NULL,
-                    spatial = NULL, cohort = NULL){
+                    furthest = NULL, closest = NULL, thresh = NULL, cvk = NULL){
   
   #Create a centre function that over-rides quadratics etc. when centre != NULL
   if(is.null(centre[[1]]) == FALSE){

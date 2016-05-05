@@ -39,7 +39,7 @@
 #'  climate data will be removed from climate window analysis.
 #'@param cinterval The resolution at which climate window analysis will be 
 #'  conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the units
-#'  of parameters 'furthest' and 'closest' will differ depending on the choice
+#'  of parameter 'range' will differ depending on the choice
 #'  of cinterval.
 #'@param k The number of folds used for k-fold cross validation. By default
 #'  this value is set to 0, so no cross validation occurs. Value should be a
@@ -176,9 +176,10 @@ slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
                        type, refday, stat = "mean", func = "lin", range, 
                        cmissing = FALSE, cinterval = "day", k = 0,
                        upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"),
-                       spatial = NULL, cutoff.day = NULL, cutoff.month = NULL, 
+                       spatial = NULL, cohort = NULL, 
+                       cutoff.day = NULL, cutoff.month = NULL, 
                        furthest = NULL, closest = NULL,
-                       thresh = NULL, cvk = NULL, cohort = NULL){
+                       thresh = NULL, cvk = NULL){
   
   if(is.null(cohort) == TRUE){
     cohort = lubridate::year(as.Date(bdate, format = "%d/%m/%Y")) 
