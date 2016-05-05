@@ -33,13 +33,13 @@ if(max(datasetrand$Repeat) <= 100){
           
     if(is.null(dataset$shape) == TRUE){
       
-      P  <- round(pvalue(rand.dataset = datasetrand, full.dataset = dataset, metric = "Spread", sample.size = dataset$sample.size[1]), digits = 3)
-      P2 <- round(pvalue(rand.dataset = datasetrand, full.dataset = dataset, metric = "AIC", sample.size = dataset$sample.size[1]), digits = 3)
-      if(P2 < 0.01){
-        P2 = as.character("<0.01")
+      P  <- round(pvalue(datasetrand = datasetrand, dataset = dataset, metric = "C", sample.size = dataset$sample.size[1]), digits = 3)
+      P2 <- pvalue(datasetrand = datasetrand, dataset = dataset, metric = "AIC", sample.size = dataset$sample.size[1])
+      if(P2 < 0.01 | P2 == "<0.001"){
+        P2 = as.character("<0.001")
       }
-      if(P < 0.01){
-        P = as.character("<0.01")
+      if(P < 0.001){
+        P = as.character("<0.001")
       }
       
       with(datasetrand, {ggplot(datasetrand, aes(x = deltaAICc, fill = Randomised))+
@@ -57,7 +57,7 @@ if(max(datasetrand$Repeat) <= 100){
                       })        
       } else {
         
-        P2 <- round(pvalue(rand.dataset = datasetrand, full.dataset = dataset, metric = "AIC", sample.size = dataset$sample.size[1]), digits = 3)
+        P2 <- round(pvalue(datasetrand = datasetrand, dataset = dataset, metric = "AIC", sample.size = dataset$sample.size[1]), digits = 3)
         if(P2 < 0.01){
           P2 = as.character("<0.01")
         }
