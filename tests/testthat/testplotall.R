@@ -8,7 +8,7 @@ test_that("plotall produces a graph when all variables provided", {
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
   
-  testdata <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
+  testdata <- slidingwin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                          baseline = lm(Mass ~ 1, data = Mass), range = c(3, 2), 
                          type = "relative", stat = "max", func = "lin", cmissing = FALSE)
   
@@ -22,7 +22,7 @@ test_that("plotall produces a graph when all variables provided", {
                       stat = "mean", func = "lin",
                       type = "relative", cmissing = FALSE, cinterval = "day")
   
-  plotall(dataset = testdata[[1]]$Dataset, datasetrand  = MassRand, bestmodel = single[[1]],
+  plotall(dataset = testdata[[1]]$Dataset, datasetrand  = testdatarand[[1]], bestmodel = single[[1]],
           bestmodeldata = single[[2]], cw1 = 0.95, cw2 = 0.5, cw3 = 0.25)
   
 })
@@ -33,7 +33,7 @@ test_that("plotall produces a graph when datasetrand removed", {
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
   
-  testdata <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
+  testdata <- slidingwin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                          baseline = lm(Mass ~ 1, data = Mass), range = c(3, 2), 
                          type = "relative", stat = "max", func = "lin", cmissing = FALSE)
   
@@ -53,7 +53,7 @@ test_that("plotall produces a graph when bestmodel removed", {
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
   
-  testdata <- climatewin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
+  testdata <- slidingwin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                          baseline = lm(Mass ~ 1, data = Mass), range = c(3, 2), 
                          type = "relative", stat = "max", func = "lin", cmissing = FALSE)
   

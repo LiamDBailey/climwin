@@ -25,7 +25,7 @@ test_that("Check randwin output with slidingwin", {
   expect_equal(length(which(is.na(rand[[1]][, 4]))), 0)
   
   # Test that the randomised output has the right number of columns
-  expect_true(ncol(rand[[1]]) == 18)
+  expect_true(ncol(rand[[1]]) == 19)
   
   # Test that the right number of models has been fitted
   expect_equal(repeats, nrow(rand[[1]]))
@@ -68,7 +68,7 @@ test_that("Check randwin output works with spatial replication", {
   expect_equal(length(which(is.na(rand[[1]][, 4]))), 0)
   
   # Test that the randomised output has the right number of columns
-  expect_true(ncol(rand[[1]]) == 18)
+  expect_true(ncol(rand[[1]]) == 19)
   
   # Test that the right number of models has been fitted
   expect_equal(repeats, nrow(rand[[1]]))
