@@ -15,7 +15,7 @@ test_that("plotall produces a graph when all variables provided", {
   testdatarand <- randwin(repeats = 2, xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                           baseline = lm(Mass ~ 1, data = Mass), range = c(3, 2), 
                           type = "relative", stat = "max", func = "lin", cmissing = FALSE,
-                          window = "Sliding")
+                          window = "sliding")
   
   single <- singlewin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date,
                       baseline = lm(Mass ~ 1, data = Mass), range = c(72, 15),
@@ -60,7 +60,7 @@ test_that("plotall produces a graph when bestmodel removed", {
   testdatarand <- randwin(repeats = 2, xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                           baseline = lm(Mass ~ 1, data = Mass), range = c(3, 2), 
                           type = "relative", stat = "max", func = "lin", cmissing = FALSE,
-                          window = "Sliding")
+                          window = "sliding")
   
   single <- singlewin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date,
                       baseline = lm(Mass ~ 1, data = Mass), range = c(72, 15),

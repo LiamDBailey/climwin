@@ -11,10 +11,10 @@ test_that("pvalue produces Pc metric", {
   testdatarand <- randwin(repeats = 2, xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                           baseline = lm(Mass ~ 1, data = Mass), range = c(3, 2), 
                           type = "relative", stat = "max", func = "lin", cmissing = FALSE,
-                          window = "Sliding")
+                          window = "sliding")
   
-  testpvalue <- pvalue(rand.dataset = testdatarand[[1]], full.dataset = testdata[[1]]$Dataset,
-                       metric = "Spread", sample.size = 47)
+  testpvalue <- pvalue(datasetrand = testdatarand[[1]], dataset = testdata[[1]]$Dataset,
+                       metric = "C", sample.size = 47)
   
   #Test that pvalue produces a number for Pc
   expect_true(is.numeric(testpvalue))
@@ -33,11 +33,11 @@ test_that("pvalue produces PdAICc metric", {
   testdatarand <- randwin(repeats = 2, xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                           baseline = lm(Mass ~ 1, data = Mass), range = c(3, 2), 
                           type = "relative", stat = "max", func = "lin", cmissing = FALSE,
-                          window = "Sliding")
+                          window = "sliding")
   
   testdata[[1]]$Dataset$deltaAICc[1] = testdatarand[[1]]$deltaAICc[1]
   
-  testpvalue <- pvalue(rand.dataset = testdatarand[[1]], full.dataset = testdata[[1]]$Dataset,
+  testpvalue <- pvalue(datasetrand = testdatarand[[1]], dataset = testdata[[1]]$Dataset,
                        metric = "AIC", sample.size = 47)
   
   #Test that pvalue produces a number for PdAICc
@@ -45,7 +45,7 @@ test_that("pvalue produces PdAICc metric", {
   
   testdata[[1]]$Dataset$deltaAICc[1] = -100
   
-  testpvalue <- pvalue(rand.dataset = testdatarand[[1]], full.dataset = testdata[[1]]$Dataset,
+  testpvalue <- pvalue(datasetrand = testdatarand[[1]], dataset = testdata[[1]]$Dataset,
                        metric = "AIC", sample.size = 47)
   
   #Test that pvalue returns <0.001 when percentile is 0

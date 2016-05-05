@@ -13,7 +13,7 @@ test_that("Check randwin output with slidingwin", {
                   bdate = Mass$Date, baseline = lm(Mass ~ 1, data = Mass), 
                   range = c(2, 1), 
                   type = "relative", stat = "max", func = "lin", cmissing = FALSE,
-                  window = "Sliding")
+                  window = "sliding")
   
   duration  <- (furthest - closest) + 1
   maxmodno  <- (duration * (duration + 1)) / 2
@@ -56,7 +56,7 @@ test_that("Check randwin output works with spatial replication", {
                   bdate = Mass$Date, baseline = lm(Mass ~ 1, data = Mass), 
                   range = c(2, 1), spatial = list(Mass$Plot, Clim$Plot),
                   type = "relative", stat = "max", func = "lin", cmissing = FALSE,
-                  window = "Sliding")
+                  window = "sliding")
   
   duration  <- (furthest - closest) + 1
   maxmodno  <- (duration * (duration + 1)) / 2
@@ -93,7 +93,7 @@ test_that("Check randwin output with weightwin", {
                   bdate = Mass$Date, baseline = lm(Mass ~ 1, data = Mass), 
                   range = c(2, 1), 
                   type = "relative", func = "lin", cmissing = FALSE,
-                  window = "Weighted", weightfunc = "W", cinterval = "day", 
+                  window = "weighted", weightfunc = "W", cinterval = "day", 
                   par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)), 
                   method = "L-BFGS-B")
   
