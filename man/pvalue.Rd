@@ -2,27 +2,29 @@
 % Please edit documentation in R/pvalue.R
 \name{pvalue}
 \alias{pvalue}
-\title{Determine the probability that a given climate signal is 'true'}
+\title{Determine the probability that a given climate signal is 'true'.}
 \usage{
-pvalue(rand.dataset, full.dataset, metric, sample.size)
+pvalue(dataset, datasetrand, metric, sample.size)
 }
 \arguments{
-\item{rand.dataset}{Output dataframe of function \code{\link{randwin}}.}
+\item{dataset}{A dataframe containing information on all fitted climate 
+windows. Output from \code{\link{slidingwin}}.}
 
-\item{full.dataset}{Output dataframe of function \code{\link{climatewin}}.}
+\item{datasetrand}{A dataframe containing information on all fitted climate 
+windows using randomised data. Output from \code{\link{randwin}}.}
 
-\item{metric}{"AIC" or "Weight". Determine whether a value of PDAICc or
-Pw will be returned.}
+\item{metric}{"AIC" or "Spread". Determine whether a value of PDAICc or
+Pc will be returned.}
 
-\item{sample.size}{Sample size of analysis. Relevant for metric Pw only.}
+\item{sample.size}{Sample size of analysis.}
 }
 \value{
 Returns a value representing the probability that a given climate 
- window result is a false positive.#'
+ window result is a false positive.
 }
 \description{
-Calculate either PDAICc or Pw of a given climate window. See ___
-for more detail
+Calculate probability that a given climate signal is 'true' using
+either PDAICc or Pc.
 }
 \author{
 Liam D. Bailey and Martijn van de Pol

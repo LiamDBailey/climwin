@@ -2,46 +2,33 @@
 % Please edit documentation in R/plothist.R
 \name{plothist}
 \alias{plothist}
-\title{Create a histogram of deltaAICc values}
+\title{Create a histogram of randomised deltaAICc values}
 \usage{
-plothist(dataset, datasetrand = NULL)
+plothist(dataset, datasetrand)
 }
 \arguments{
-\item{dataset}{A dataframe containing information on all fitted climate 
-windows. Output from \code{\link{climatewin}}.}
+\item{dataset}{A dataframe containing information on all fitted climate
+windows from observed data. Output from \code{\link{slidingwin}}.}
 
 \item{datasetrand}{A dataframe containing information on all fitted climate 
 windows using randomised data. Output from \code{\link{randwin}}.}
-
-\item{histq}{If datasetrand is provided. The quantile of the randomised data 
-that will be compared to non-randomised data. Used to determine the 
-likelihood of finding a climate window model of a given deltaAICc value at 
-random.}
 }
 \value{
-If datasetrand is provided, plothist will return two stacked histograms
- to compare the deltaAICc of non-randomised and randomised data. This can 
- help determine the likelihood of obtaining a deltaAICc value of fitted 
- climate windows at random. Without datasetrand, plotall will create a single
- histogram of deltaAICc values for all fitted climate windows.
+plothist will return a histograms of deltaAICc values from 
+ randomised data. Values of PdeltaAICc and Pc will be provided to help 
+ determine the likelihood that an observed deltaAICc value would occur
+ by chance.
 }
 \description{
-Create a histogram of deltaAICc values for all fitted climate windows. Compare
-with randomised data if provided.
+Create a histogram of deltaAICc values from randomised data.
 }
 \examples{
-# Plot real and randomised data for the Mass dataset
+# Plot randomised data for the Mass dataset
 
 data(MassOutput)
 data(MassRand)
 
-plothist(dataset = MassOutput, datasetrand = MassRand)
-
-# Plot deltaAICc when no randomised data is provided
-
-data(MassOutput)
-
-plothist(dataset = MassOutput)
+plothist(datasetrand = MassRand)
 
 }
 \author{

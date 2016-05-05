@@ -10,17 +10,17 @@ plotall(dataset, datasetrand = NULL, bestmodel = NULL,
 }
 \arguments{
 \item{dataset}{A dataframe containing information on all fitted climate 
-windows. Output from \code{\link{climatewin}}.}
+windows. Output from \code{\link{slidingwin}}.}
 
 \item{datasetrand}{A dataframe containing information on all fitted climate 
 windows using randomised data. Output from \code{\link{randwin}}.}
 
 \item{bestmodel}{A model object. The strongest climate window model. Returned 
-from \code{\link{singlewin}} or \code{\link{climatewin}}.}
+from \code{\link{singlewin}} or \code{\link{slidingwin}}.}
 
 \item{bestmodeldata}{A dataframe containing the biological and climate data
 used to fit the strongest climate window model. Output from
-\code{\link{singlewin}} or \code{\link{climatewin}}.}
+\code{\link{singlewin}} or \code{\link{slidingwin}}.}
 
 \item{cw1, cw2, cw3}{Cumulative weight levels used to visualise model weight 
 distribution. See \code{\link{plotweights}} for more detail.}

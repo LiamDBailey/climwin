@@ -6,7 +6,7 @@
 \usage{
 weightwin(xvar, cdate, bdate, baseline, range, func = "lin", type, refday,
   nrandom = 0, centre = NULL, weightfunc = "W", cinterval = "day",
-  par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)),
+  par = c(3, 0.2, 0), control = list(ndeps = c(0.001, 0.001, 0.001)),
   method = "L-BFGS-B", cutoff.day = NULL, cutoff.month = NULL,
   furthest = NULL, closest = NULL, cohort = NULL, spatial = NULL)
 }

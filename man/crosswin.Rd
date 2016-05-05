@@ -2,7 +2,8 @@
 % Please edit documentation in R/crosswin.R
 \name{crosswin}
 \alias{crosswin}
-\title{Test the correlation between two climate variables}
+\title{Test the correlation between two climate variables across all considered climate
+windows.}
 \usage{
 crosswin(xvar, xvar2, cdate, bdate, range, stat, stat2, type, refday,
   cinterval = "day", cmissing = FALSE, cutoff.day = NULL,

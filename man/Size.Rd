@@ -9,11 +9,14 @@
   \item{Cohort}{Year of breeding season.}
   \item{Helpers}{Total number of non-breeding helpers at the nest.}
   \item{Size}{Average offspring size.}
-  \item{Date}{Date when pffspring size was recorded (dd/mm/yyyy).}
+  \item{Date}{Date when offspring size was recorded (dd/mm/yyyy).}
   }}
 \description{
 Average size (using standardised measures of tarsus length,
 head-bill length and wing length) in red winged fairy wren
 (Malurus elegans) chicks. Measured over 7 years.
+
+Average annual laying date of common chaffinch (Fringilla coelebs)
+measured over 47 years.
 }
 

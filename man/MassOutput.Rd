@@ -2,8 +2,8 @@
 % Please edit documentation in R/datasets.R
 \name{MassOutput}
 \alias{MassOutput}
-\title{Example output dataframe from function climatewin.}
-\format{A data frame with 11,476 rows and 18 variables.
+\title{Example output dataframe from function slidingwin.}
+\format{A data frame with 5,151 rows and 19 variables.
 \describe{
   \item{deltaAICc}{Difference between model AICc of fitted climate window and a null model containing no climate.}
   \item{WindowOpen}{The start day of each tested climate window. Furthest from the biological record.}
@@ -25,7 +25,7 @@
   \item{Randomised}{Whether the data was generated using \code{\link{climatewin}} or \code{\link{randwin}}.}
   }}
 \description{
-Output file from \code{\link{climatewin}} using temperature and body mass data. 
+Output file from \code{\link{slidingwin}} using temperature and body mass data. 
 Generated with \code{\link{Mass}} and \code{\link{MassClimate}} dataframes.
 }
 
