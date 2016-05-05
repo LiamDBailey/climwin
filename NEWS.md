@@ -6,33 +6,30 @@
 climwin aims to distinguish between two separate methods for testing climate windows. The commonly used sliding window approach and less common weighted window approach. To ensure the distinction between these two methods is clear, the function climatewin has been made redundant and been replaced with the function slidingwin. User can now conduct a sliding window analysis with 'slidingwin' and a weighted window analysis with 'weightwin'. 
 
 ### randwin for weighted window analysis
-The function randwin can now also be used to conduct randomisations using a weighted window approach (i.e. using the function weightwin). Users must now define whether randomisations are to be conducted using a sliding window ("Sliding") or weighted window ("Weighted") approach with the argument 'window'. Note that all arguments from weightwin will be required to run randwin using a weighted window approach.
+The function randwin can now also be used to conduct randomisations using a weighted window approach (i.e. using the function weightwin). Users must now define whether randomisations are to be conducted using a sliding window ("sliding") or weighted window ("weighted") approach with the argument 'window'. Note that all arguments from weightwin will be required to run randwin using a weighted window approach.
 
 ### Cohort variable:
-When a group of biological measurements covers two years (e.g. Southern hemisphere species which breed between November - February) use of 'absolute' climate windows will cause these measurements to be split between two different reference days. To overcome this issue, we include a 'cohort' argument to our functions. 
+When a group of biological measurements covers two years (e.g. Southern hemisphere species which breed between November - February) use of 'absolute' climate windows will cause these measurements to be split as they occur in different calendar years. To overcome this issue, we include a 'cohort' argument to our functions. 
 
 The cohort variable will determine which biological measurements should be grouped together (e.g. measurements from the same breeding season), and ensure that these measurements share the same reference day. The cohort variable should come from the same dataset as the 'bdate' argument (i.e. variables should have equal lengths).
 
 ### Spatial variable:
 Climate window analysis often requires large amounts of data to effectively determine periods of climate sensitivity. Often this is achieved through temporal replication, collecting many years of data on the same population, but can also be achieved through spatial replication, collecting data on multiple populations, or, ideally, a combination of the two. The new argument 'spatial' allows users to carry out a climate window analysis with data from multiple populations by linking each set of biological measurements to a corresponding set of climate data.
 
-Users can include data from multiple study sites/populations in their climate dataset (i.e. the dataset used for arguments cdate and xvar), with a new site ID variable included to distinguish between different sites. Similarly, the user can add a new site ID variable to the biological dataset that can be used to link biological measurements to the corresponding climate data. When carrying out a climatewin analysis, the user can then include the argument 'spatial'. 'spatial' is a list item, containing the biological site ID variable and climate site ID variable respectively. During model fitting, the climate window analysis will link extract different climate data for each biological record based on the provided site ID.
+Users can include data from multiple study sites/populations in their climate dataset (i.e. the dataset used for arguments cdate and xvar), with a new site ID variable included to distinguish between different sites. Similarly, the user can add a new site ID variable to the biological dataset that can be used to link biological measurements to the corresponding climate data. When carrying out a climatewin analysis, the user can then include the argument 'spatial'. 'spatial' is a list item, containing the biological site ID variable and climate site ID variable respectively. During model fitting, the climate window analysis will extract different climate data for each biological record based on the provided site ID.
 
 N.B. Spatial replication in climate window analysis works on the assumption that all populations share the same period of climate sensitivity. If this is NOT the case, populations should be analysed separately.
 
 ### Cox proportional hazard models
-Proportional hazard models may often be useful for climate window analyses on phenological data. We have included the ability for users to fit proportiona hazard models for the argument 'baseline' using the function coxph().  For more detail on understanding the use of proportional hazard models for phenology analysis see van de Pol & Cockburn ?????.
+Proportional hazard models may often be useful for climate window analyses on phenological data. We have included the ability for users to fit proportional hazard models for the argument 'baseline' using the function coxph().  For more detail on understanding the use of proportional hazard models for phenology analysis see van de Pol & Cockburn 2011 Am Nat 177(5):698-707 (doi: 10.1086/659101) "Identifying the critical climatic time window that affects trait expression".
 
-### New analysis metric
-In previous versions of `climwin` climate windows have been compared visually using a number of metrics (e.g. deltaAICc distribution, model weights). In this newest version of `climwin` we have included a new standard metric that can allows for a standard method of distinguishing real periods of climate sensitivity in biological data. INFO ABOUT HOW IT IS DISPLAYED/PLOTTED. INFO ON WHAT IT DOES.
+### Function pvalue
+In previous versions of `climwin` climate windows have been compared visually using a number of metrics (e.g. deltaAICc distribution, model weights). In this newest version of `climwin` we have included two metrics that allow for a standard method of distinguishing real periods of climate sensitivity in biological data.
 
-For more information on the effectiveness of the new metric, please see van de Pol et al. 2016 METHODS PAPER.
+These two metrics, Pc and PdeltaAICc, determine the likelihood that a given climate window would occur by chance. They can be calculated using the new function `pvalue`. For more information on the effectiveness of the new metrics, please see van de Pol et al. (in press) Methods in Ecology and Evolution. "Identifying the best climatic predictors in ecology and evolution".
 
 ### 'exclude' parameter
-Added 'exclude' parameter to the `climatewin` and `randwin` functions. #But we may end up removing this!!?
-
-### Removal of cross validation
-May be possible if metric is more effective than cross validation!!
+Added 'exclude' parameter to the `climatewin` and `randwin` functions.
 
 ## Minor changes
 
@@ -41,7 +38,7 @@ Argument changes:
 - 'cutoff.day' and 'cutoff.month' are now combined into a single argument 'refday'
 - 'cvk' argument is now redundant, replaced with argument 'k'
 - 'thresh' argument is now redundant, replaced with argument 'binary'
-- 'type' now accepts possible arguments 'absolute' and 'relative' (rather than 'fixed' and        'variable')
+- 'type' now accepts possible arguments 'absolute' and 'relative' (rather than 'fixed' and 'variable')
 
 # climwin 0.1.2
 
