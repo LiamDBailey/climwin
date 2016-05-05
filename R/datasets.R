@@ -22,11 +22,11 @@ NULL
 #'@name MassClimate
 NULL
 
-#' Example output dataframe from function climatewin.
+#' Example output dataframe from function slidingwin.
 #' 
-#' Output file from \code{\link{climatewin}} using temperature and body mass data. 
+#' Output file from \code{\link{slidingwin}} using temperature and body mass data. 
 #' Generated with \code{\link{Mass}} and \code{\link{MassClimate}} dataframes.
-#' @format A data frame with 11,476 rows and 18 variables.
+#' @format A data frame with 5,151 rows and 19 variables.
 #' \describe{
 #'   \item{deltaAICc}{Difference between model AICc of fitted climate window and a null model containing no climate.}
 #'   \item{WindowOpen}{The start day of each tested climate window. Furthest from the biological record.}
@@ -55,7 +55,7 @@ NULL
 #' 
 #' Output file from function \code{\link{randwin}} using temperature and mass data. 
 #' Generated with \code{\link{Mass}} and \code{\link{MassClimate}} dataframes.
-#' @format A data frame with 57,380 rows and 19 variables.
+#' @format A data frame with 5 rows and 21 variables.
 #' \describe{
 #'   \item{deltaAICc}{Difference between model AICc of fitted climate window and a null model containing no climate.}
 #'   \item{WindowOpen}{The start day of each tested climate window. Furthest from the biological record.}
@@ -72,9 +72,11 @@ NULL
 #'   \item{Type}{Whether "fixed" or "variable" climate windows were tested.}
 #'   \item{K}{Number of folds used for k-fold cross validation.}
 #'   \item{ModWeight}{Model weight of each fitted climate window.}
+#'   \item{sample.size}{Sample size (i.e. number of years or sites) used for climate window analysis.}
 #'   \item{Reference.day,Reference.month}{If type is "absolute", the date from which the climate window was tested.}
 #'   \item{Randomised}{Whether the data was generated using \code{\link{climatewin}} or \code{\link{randwin}}.}
 #'   \item{Repeat}{The number of randomisations carried out.}
+#'   \item{WeightDist}{Model spread of 95% confidence set of models.}
 #'   }
 #'@name MassRand
 NULL
@@ -83,7 +85,7 @@ NULL
 #' 
 #' Artificially generated data representing
 #' reproductive success of birds since 2009.
-#' @format A data frame with 1,619 rows and 4 variables.
+#' @format A data frame with 1,619 rows and 5 variables.
 #' \describe{
 #'   \item{Offspring}{Total number of offspring produced.}
 #'   \item{Date}{Date of hatching (dd/mm/yyyy).}
@@ -119,7 +121,7 @@ NULL
 #'   \item{Cohort}{Year of breeding season.}
 #'   \item{Helpers}{Total number of non-breeding helpers at the nest.}
 #'   \item{Size}{Average offspring size.}
-#'   \item{Date}{Date when pffspring size was recorded (dd/mm/yyyy).}
+#'   \item{Date}{Date when offspring size was recorded (dd/mm/yyyy).}
 #'   }
 #'@name Size
 NULL
@@ -139,4 +141,31 @@ NULL
 #'   \item{Exposure}{?????}
 #'   }
 #'@name SizeClimate
+NULL
+
+#' Annual laying date of breeding common chaffinch (Fringilla coelebs).
+#' 
+#' Average annual laying date of common chaffinch (Fringilla coelebs)
+#' measured over 47 years.
+#' @format A data frame with 47 rows and 3 variables.
+#' \describe{
+#'   \item{Year}{Year of laying date measurement.}
+#'   \item{Date}{Average date of measurement.}
+#'   \item{Laydate}{Average annual laying date in days after January 1st.}
+#'   }
+#'@name Size
+NULL
+
+#' Daily climate data from 1965 to 2012.
+#' 
+#' Maximum daily temperature and average rainfall data 
+#' from 1965 to 2012. Coincides with biological data 
+#' from \code{\link{Chaff}}.
+#' @format A data frame with 17,520 rows and 3 variables.
+#' \describe{
+#'   \item{Date}{Date when climate was recorded (dd/mm/yyyy).}
+#'   \item{Rain}{Average daily rainfall data in mm.}
+#'   \item{Temp}{Maximum daily temperature in degrees centigrade.}
+#'   }
+#'@name ChaffClim
 NULL
