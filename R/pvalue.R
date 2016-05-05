@@ -1,27 +1,30 @@
-#'Determine the probability that a given climate signal is 'true'
+#'Determine the probability that a given climate signal is 'true'.
 #'
-#'Calculate either PDAICc or Pc of a given climate window. See ___
-#'for more detail
-#'@param rand.dataset Output dataframe of function \code{\link{randwin}}.
-#'@param full.dataset Output dataframe of function \code{\link{climatewin}}.
-#'@param metric "AIC" or "Spread". Determine whether a value of PDAICc or
+#'Calculate probability that a given climate signal is 'true' using
+#' either PDAICc or Pc.
+#'
+#'@param dataset A dataframe containing information on all fitted climate 
+#'  windows. Output from \code{\link{slidingwin}}.
+#'@param datasetrand A dataframe containing information on all fitted climate 
+#'  windows using randomised data. Output from \code{\link{randwin}}.
+#'@param metric "AIC" or "C". Determine whether a value of PDAICc or
 #'  Pc will be returned.
-#'@param sample.size Sample size of analysis. Relevant for metric Pw only.
+#'@param sample.size Sample size of analysis.
 
 #'@return Returns a value representing the probability that a given climate 
 #'  window result is a false positive. 
 #'@author Liam D. Bailey and Martijn van de Pol
 #'@export
 
-pvalue <- function(rand.dataset, full.dataset, metric, sample.size){
+pvalue <- function(dataset, datasetrand, metric, sample.size){
   
   if(metric == "AIC"){
     
-    Percentile <- ecdf(rand.dataset$deltaAICc)
-    PDAIC <- ifelse(Percentile(full.dataset$deltaAICc[1]) == 0, "<0.001", Percentile(full.dataset$deltaAICc[1]))
+    Percentile <- ecdf(datasetrand$deltaAICc)
+    PDAIC <- ifelse(Percentile(dataset$deltaAICc[1]) == 0, "<0.001", Percentile(dataset$deltaAICc[1]))
     return(PDAIC)
     
-  } else if(metric == "Spread"){
+  } else if(metric == "C"){
     
     if(is.null(sample.size) == TRUE){
       stop("Please provide a value for sample size")
@@ -35,11 +38,11 @@ pvalue <- function(rand.dataset, full.dataset, metric, sample.size){
       print("Pc will be overly liberal when sample size is less than 10")
     }
     
-    WeightDist <- sum(as.numeric(cumsum(full.dataset$ModWeight) <= 0.95))/nrow(full.dataset)
+    WeightDist <- sum(as.numeric(cumsum(dataset$ModWeight) <= 0.95))/nrow(dataset)
     
-    DeltaW <- WeightDist - median(rand.dataset$WeightDist)
+    DeltaW <- WeightDist - median(datasetrand$WeightDist)
       
-      if(full.dataset$K[1] >= 10){
+      if(dataset$K[1] >= 10){
         Pc <- (1/(1 + exp(-1 * (-0.621031 + 11.563537 * DeltaW + 0.058663 * sample.size + 6.882248 * DeltaW * sample.size))))
       } else {
         Pc <- (1/(1 + exp(-1 * (-0.540324 + 1.947674 * DeltaW + 0.078708 * sample.size + 0.313567 * DeltaW * sample.size))))
@@ -48,6 +51,6 @@ pvalue <- function(rand.dataset, full.dataset, metric, sample.size){
     return(Pc)
     
   } else {
-    stop("'metric' should be either 'AIC' or 'Spread'")
+    stop("'metric' should be either 'AIC' or 'C'")
   }
 }
