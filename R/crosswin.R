@@ -39,6 +39,10 @@
 #'  2. A factor that defines which spatial group (i.e. population) climate data
 #'  corresponds to. This length of this factor should correspond to the length of
 #'  the climate dataset.
+#'@param cohort A variable used to group biological records that occur in the same biological
+#'  season but cover multiple years (e.g. southern hemisphere breeding season). By default,
+#'  autowin will use year (extracted from parameter bdate) as the cohort variable. 
+#'  The cohort variable should be in the same dataset as the variable bdate.
 #'@param cutoff.day,cutoff.month Redundant parameters. Now replaced by refday.
 #'@param furthest,closest Redundant parameters. Now repalced by range.
 #'@return Will return a dataframe containing the correlation between the two

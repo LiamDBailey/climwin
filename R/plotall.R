@@ -12,10 +12,6 @@
 #'  \code{\link{singlewin}} or \code{\link{slidingwin}}.
 #'@param cw1,cw2,cw3 Cumulative weight levels used to visualise model weight 
 #'  distribution. See \code{\link{plotweights}} for more detail.
-#'@param histq If datasetrand is provided. The quantile of the randomised data 
-#'  to be compared with non-randomised data. Can be used to determine the 
-#'  likelihood of finding a climate window model of a given deltaAICc value by
-#'  chance.
 #'@param title Title of the plot panel.
 #'@param arrow TRUE or FALSE. Add arrows to plots to pinpoint best window.
 #'@return Will return a panel of 6-8 plots:
@@ -68,7 +64,7 @@
 #'            
 #'plotall(dataset = MassOutput, bestmodel = single$bestmodel, 
 #'        bestmodeldata = single$bestmodeldata,
-#'        cw1 = 0.95, cw2 = 0.5, cw3 = 0.25, histq = 0.99, title = "Mass")
+#'        cw1 = 0.95, cw2 = 0.5, cw3 = 0.25, title = "Mass")
 #'         
 #'          
 #'@import gridExtra

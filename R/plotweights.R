@@ -3,7 +3,7 @@
 #'Create a plot showing the distribution of cumulative model weights for
 #'all fitted climate windows.
 #'@param dataset A dataframe containing information on all fitted climate 
-#'  windows. Output from \code{\link{climatewin}}.
+#'  windows. Output from \code{\link{slidingwin}}.
 #'@param cw1,cw2,cw3 Cumulative weight levels used to visualise model weight 
 #'  distribution. Cumulative weights represent the chance that the best model is
 #'  contained within a set. For example, there is a 95 percent chance that the best

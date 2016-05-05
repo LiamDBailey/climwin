@@ -2,7 +2,7 @@
 #'
 #'Visualise the opening and closing point for a subset of best climate windows.
 #'@param dataset A dataframe containing information on all fitted climate
-#'  windows. Output from \code{\link{climatewin}}.
+#'  windows. Output from \code{\link{slidingwin}}.
 #'@param cw Cumulative model weight used to subset the group of best models.
 #'@return Creates two boxplots showing the opening and closing point for a subset
 #'  of best climate windows. Best climate windows make up the

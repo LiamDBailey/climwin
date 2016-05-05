@@ -39,7 +39,7 @@
 #'  2. A factor that defines which spatial group (i.e. population) climate data
 #'  corresponds to. This length of this factor should correspond to the length of
 #'  the climate dataset.
-#'@param par Shape, scale and location parameters of the Weibull of GEV weight 
+#'@param par Shape, scale and location parameters of the Weibull or GEV weight 
 #'  function used as start weight function. For Weibull : Shape and scale 
 #'  parameters must be greater than 0, while location parameter must be less 
 #'  than or equal to 0. For GEV : Scale parameter must be greater than 0.
@@ -49,6 +49,13 @@
 #'  \code{\link{optim}} for more detail.
 #'@param cutoff.day,cutoff.month Redundant parameters. Now replaced by refday.
 #'@param furthest,closest Redundant parameters. Now replaced by range.
+#'@param nrandom Used when conducting data randomisation, should not be
+#'  changed manually.
+#'@param centre A list item containing:
+#'  1. The variable used for mean centring (e.g. Year, Site, Individual). 
+#'  Please specify the parent environment and variable name (e.g. Biol$Year).
+#'  2. Whether the model should include both within-group means and variance ("both"),
+#'  only within-group means ("mean"), or only within-group variance ("var").
 #'@references van de Pol & Cockburn 2011 Am Nat 177(5):698-707 (doi: 
 #'  10.1086/659101) "Identifying the critical climatic time window that affects 
 #'  trait expression"
@@ -168,7 +175,7 @@ weightwin <- function(xvar, cdate, bdate, baseline, range,
       
       for(i in levels(as.factor(data$Year))){
         
-        sub <- subset(data, Year == i)
+        sub <- subset(data, data$Year == i)
         sub$spatial <- factor(sub$spatial)
         sample.size <- sample.size + length(levels(sub$spatial))        
         

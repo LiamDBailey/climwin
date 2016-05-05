@@ -21,7 +21,7 @@
 #'@param range Two values signifying respectively the furthest and closest number 
 #'  of time intervals (set by cinterval) back from the cutoff date or biological record to include 
 #'  in the climate window search.
-#'@param stat The aggregate statistic used to analyse the climate data. Can 
+#'@param stat If window = "sliding"; The aggregate statistic used to analyse the climate data. Can 
 #'  currently use basic R statistics (e.g. mean, min), as well as slope. 
 #'  Additional aggregate statistics can be created using the format function(x)
 #'  (...). See FUN in \code{\link{apply}} for more detail.
@@ -40,7 +40,7 @@
 #'  conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the units
 #'  of parameters 'furthest' and 'closest' will differ depending on the choice
 #'  of cinterval.
-#'@param k The number of folds used for k-fold cross validation. By default
+#'@param k If window = "sliding"; the number of folds used for k-fold cross validation. By default
 #'  this value is set to 0, so no cross validation occurs. Value should be a
 #'  minimum of 2 for cross validation to occur.
 #'@param upper Cut-off values used to determine growing degree days or positive 
@@ -69,6 +69,21 @@
 #'  Please specify the parent environment and variable name (e.g. Biol$Year).
 #'  2. Whether the model should include both within-group means and variance ("both"),
 #'  only within-group means ("mean"), or only within-group variance ("var").
+#'@param weightfunc If window = "weighted"; 
+#'  the distribution to be used for optimisation. Can be 
+#'  either a Weibull ("W") or Generalised Extreme Value distribution ("G").
+#'@param par If window = "weighted"; the shape, scale and location parameters 
+#'  of the Weibull or GEV weight function used as start weight function. 
+#'  For Weibull : Shape and scale parameters must be greater than 0, 
+#'  while location parameter must be less than or equal to 0. 
+#'  For GEV : Scale parameter must be greater than 0.
+#'@param control If window = "weighted";
+#'  parameters used to determine step size for the optimisation 
+#'  function. Please see \code{\link{optim}} for more detail.
+#'@param method If window = "weighted"; 
+#'  the method used for the optimisation function. Please see 
+#'  \code{\link{optim}} for more detail.
+
 #'@param cutoff.day,cutoff.month Redundant parameters. Now replaced by refday.
 #'@param furthest,closest Redundant parameters. Now replaced by range.
 #'@param thresh Redundant parameter. Now replaced by binary.

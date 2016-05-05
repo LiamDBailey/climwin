@@ -55,7 +55,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
       
       for(i in levels(as.factor(data$Year))){
         
-        sub <- subset(data, Year == i)
+        sub <- subset(data, data$Year == i)
         sub$spatial <- factor(sub$spatial)
         sample.size <- sample.size + length(levels(sub$spatial))        
         

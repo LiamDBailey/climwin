@@ -16,7 +16,7 @@
 #'data(MassOutput)
 #'data(MassRand)
 #' 
-#'plothist(datasetrand = MassRand)
+#'plothist(datasetrand = MassRand, dataset = MassOutput)
 #' 
 #'@import ggplot2
 #'@export

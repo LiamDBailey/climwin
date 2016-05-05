@@ -37,15 +37,15 @@ NULL
 #'   \item{ModelBetaC}{Cubic beta estimate of the relationship between temperature and mass.}
 #'   \item{ModelInt}{Model intercept.}     
 #'   \item{Function}{The function used to fit climate (e.g. linear ("lin"), quadratic ("quad"))}
-#'   \item{Furthest}{Furthest day back considered in climatewin.}
-#'   \item{Closest}{Closest day back considered in climatewin.}
+#'   \item{Furthest}{Furthest day back considered in slidingwin.}
+#'   \item{Closest}{Closest day back considered in slidingwin.}
 #'   \item{Statistics}{The aggregate statistic used to analyse climate (e.g. mean, max, slope).}
 #'   \item{Type}{Whether "absolute" or "relative" climate windows were tested.}
 #'   \item{K}{Number of folds used for k-fold cross validation.}
 #'   \item{ModWeight}{Model weight of each fitted climate window.}
 #'   \item{sample.size}{Sample size (i.e. number of years or sites) used for climate window analysis.}
 #'   \item{Reference.day,Reference.month}{If type is "absolute", the date from which the climate window was tested.}
-#'   \item{Randomised}{Whether the data was generated using \code{\link{climatewin}} or \code{\link{randwin}}.}
+#'   \item{Randomised}{Whether the data was generated using \code{\link{slidingwin}} or \code{\link{randwin}}.}
 #'   }
 #'@name MassOutput
 NULL
@@ -66,17 +66,17 @@ NULL
 #'   \item{ModelBetaC}{Cubic beta estimate of the relationship between temperature and mass.}
 #'   \item{ModelInt}{Model intercept.}     
 #'   \item{Function}{The function used to fit climate (e.g. linear ("lin"), quadratic ("quad"))}
-#'   \item{Furthest}{Furthest day back considered in climatewin.}
-#'   \item{Closest}{Closest day back considered in climatewin.}
+#'   \item{Furthest}{Furthest day back considered in slidingwin.}
+#'   \item{Closest}{Closest day back considered in slidingwin.}
 #'   \item{Statistics}{The aggregate statistic used to analyse climate (e.g. mean, max, slope).}
 #'   \item{Type}{Whether "fixed" or "variable" climate windows were tested.}
 #'   \item{K}{Number of folds used for k-fold cross validation.}
 #'   \item{ModWeight}{Model weight of each fitted climate window.}
 #'   \item{sample.size}{Sample size (i.e. number of years or sites) used for climate window analysis.}
 #'   \item{Reference.day,Reference.month}{If type is "absolute", the date from which the climate window was tested.}
-#'   \item{Randomised}{Whether the data was generated using \code{\link{climatewin}} or \code{\link{randwin}}.}
+#'   \item{Randomised}{Whether the data was generated using \code{\link{slidingwin}} or \code{\link{randwin}}.}
 #'   \item{Repeat}{The number of randomisations carried out.}
-#'   \item{WeightDist}{Model spread of 95% confidence set of models.}
+#'   \item{WeightDist}{Model spread of 95 percent confidence set of models.}
 #'   }
 #'@name MassRand
 NULL
@@ -153,7 +153,7 @@ NULL
 #'   \item{Date}{Average date of measurement.}
 #'   \item{Laydate}{Average annual laying date in days after January 1st.}
 #'   }
-#'@name Size
+#'@name Chaff
 NULL
 
 #' Daily climate data from 1965 to 2012.

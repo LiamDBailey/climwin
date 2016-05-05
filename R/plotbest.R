@@ -3,12 +3,12 @@
 #'Create a scatterplot showing the fit of the best climate window model through
 #'the biological data.
 #'@param dataset A dataframe containing information on all fitted climate 
-#'  windows. Output from \code{\link{climatewin}}.
+#'  windows. Output from \code{\link{slidingwin}}.
 #'@param bestmodel A model object. The strongest climate window model. Output 
-#'  from \code{\link{singlewin}} or \code{\link{climatewin}}.
+#'  from \code{\link{singlewin}} or \code{\link{slidingwin}}.
 #'@param bestmodeldata A dataframe with the data used to 
 #'  fit the strongest climate window model. Output from \code{\link{singlewin}} 
-#'  or \code{\link{climatewin}}.
+#'  or \code{\link{slidingwin}}.
 #'@return Returns a scatterplot with a fitted line to show the fit of the best 
 #'  model through the data.
 #'@author Liam D. Bailey and Martijn van de Pol

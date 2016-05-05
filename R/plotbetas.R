@@ -3,7 +3,7 @@
 #'Create colour plots of model beta estimates. Will include quadratic and cubic
 #'beta estimates where appropriate.
 #'@param dataset A dataframe containing information on all fitted climate 
-#' windows. Output from \code{\link{climatewin}}.
+#' windows. Output from \code{\link{slidingwin}}.
 #'@param plotall Used in conjunction with function \code{\link{plotall}}. 
 #' Should not be changed manually.
 #'@param plotallenv Used in conjunction with function \code{\link{plotall}}.
