@@ -3,6 +3,7 @@
 export(autowin)
 export(crosswin)
 export(explore)
+export(medwin)
 export(plotall)
 export(plotbest)
 export(plotbetas)
