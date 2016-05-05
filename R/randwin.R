@@ -8,8 +8,8 @@
 #'  These windows are often considered to be biologically implausible.
 #'@param repeats The number of times that data will be randomised and analysed 
 #'  for climate windows.
-#'@param window Whether randomisations are carried out for a sliding window ("Sliding")
-#'  or weighted window ("Weighted") approach.
+#'@param window Whether randomisations are carried out for a sliding window ("sliding")
+#'  or weighted window ("weighted") approach.
 #'@param xvar A list object containing all climate variables of interest. 
 #'  Please specify the parent environment and variable name (e.g. Climate$Temp).
 #'@param cdate The climate date variable (dd/mm/yyyy). Please specify the parent
@@ -89,7 +89,7 @@
 #'# Randomise data twice
 #'# Note all other parameters are fitted in the same way as the climatewin function.
 #' 
-#'rand <- randwin(repeats = 2, window = "Sliding", 
+#'rand <- randwin(repeats = 2, window = "sliding", 
 #'                xvar = list(Temp = MassClimate$Temp), 
 #'                cdate = MassClimate$Date, bdate = Mass$Date,
 #'                baseline = lm(Mass ~ 1, data = Mass), 
@@ -112,7 +112,7 @@
 #'# Randomise data twice
 #'# Note all other parameters are fitted in the same way as the weightwin function.
 #'
-#'weightrand <- weightwin(repeats = 2, window = "Weighted", 
+#'weightrand <- weightwin(repeats = 2, window = "weighted", 
 #'                        xvar = list(Temp = OffspringClimate$Temperature), 
 #'                        cdate = OffspringClimate$Date,
 #'                        bdate = Offspring$Date,
@@ -130,7 +130,7 @@
 #'
 #'@export
 
-randwin <- function(exclude = NA, repeats = 5, window = "Sliding", xvar, cdate, bdate, baseline, 
+randwin <- function(exclude = NA, repeats = 5, window = "sliding", xvar, cdate, bdate, baseline, 
                     stat, range, func, type, refday,
                     cmissing = FALSE, cinterval = "day",
                     upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"), k = 0,
@@ -171,7 +171,7 @@ randwin <- function(exclude = NA, repeats = 5, window = "Sliding", xvar, cdate, 
     stop("cutoff.day and cutoff.month are now redundant. Please use parameter 'refday' instead.")
   }
   
-  if(window == "Sliding"){
+  if(window == "sliding"){
     
     if (is.na(upper) == FALSE && is.na(lower) == FALSE){
       combos       <- expand.grid(list(upper = upper, lower = lower))
@@ -191,7 +191,7 @@ randwin <- function(exclude = NA, repeats = 5, window = "Sliding", xvar, cdate, 
       binarylevel <- "none"
     }
     
-  } else if(window == "Weighted"){
+  } else if(window == "weighted"){
     
     if (is.na(upper) == FALSE && is.na(lower) == FALSE){
       combos       <- expand.grid(list(upper = upper, lower = lower))
@@ -223,7 +223,7 @@ randwin <- function(exclude = NA, repeats = 5, window = "Sliding", xvar, cdate, 
       print (c("randomization number ", r))
       bdateNew  <- sample(bdate)
       
-      if(window == "Sliding"){
+      if(window == "sliding"){
         
         outputrep <- basewin(exclude = exclude, xvar = xvar[[paste(allcombos[combo, 1])]], cdate = cdate, bdate = bdateNew, 
                              baseline = baseline, range = range, stat = paste(allcombos[combo, 3]), 
@@ -246,7 +246,7 @@ randwin <- function(exclude = NA, repeats = 5, window = "Sliding", xvar, cdate, 
           outputrand <- rbind(outputrand, outputrep)
         }
         
-      } else if(window == "Weighted"){
+      } else if(window == "weighted"){
         
         rep <- weightwin(xvar = xvar[[paste(allcombos[combo, 1])]], cdate = cdate, bdate = bdateNew, 
                          baseline = baseline, range = range, func = paste(allcombos[combo, 4]), 
