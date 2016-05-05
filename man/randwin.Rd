@@ -4,14 +4,14 @@
 \alias{randwin}
 \title{Climate window analysis for randomised data}
 \usage{
-randwin(exclude = NA, repeats = 5, window = "Sliding", xvar, cdate, bdate,
+randwin(exclude = NA, repeats = 5, window = "sliding", xvar, cdate, bdate,
   baseline, stat, range, func, type, refday, cmissing = FALSE,
-  cinterval = "day", upper = NA, lower = NA, binary = FALSE,
-  centre = list(NULL, "both"), k = 0, weightfunc = "W", par = c(3, 0.2,
-  0), control = list(ndeps = c(0.01, 0.01, 0.01)), method = "L-BFGS-B",
-  cutoff.day = NULL, cutoff.month = NULL, furthest = NULL,
-  closest = NULL, thresh = NULL, cvk = NULL, spatial = NULL,
-  cohort = NULL)
+  cinterval = "day", spatial = NULL, cohort = NULL, upper = NA,
+  lower = NA, binary = FALSE, centre = list(NULL, "both"), k = 0,
+  weightfunc = "W", par = c(3, 0.2, 0), control = list(ndeps = c(0.01,
+  0.01, 0.01)), method = "L-BFGS-B", cutoff.day = NULL,
+  cutoff.month = NULL, furthest = NULL, closest = NULL, thresh = NULL,
+  cvk = NULL)
 }
 \arguments{
 \item{exclude}{Two values (distance and duration) which allow users
@@ -22,8 +22,8 @@ These windows are often considered to be biologically implausible.}
 \item{repeats}{The number of times that data will be randomised and analysed 
 for climate windows.}
 
-\item{window}{Whether randomisations are carried out for a sliding window ("Sliding")
-or weighted window ("Weighted") approach.}
+\item{window}{Whether randomisations are carried out for a sliding window ("sliding")
+or weighted window ("weighted") approach.}
 
 \item{xvar}{A list object containing all climate variables of interest. 
 Please specify the parent environment and variable name (e.g. Climate$Temp).}
@@ -37,7 +37,7 @@ parent environment and variable name (e.g. Biol$Date).}
 \item{baseline}{The baseline model structure used for testing correlation. 
 Currently known to support lm, glm, lmer and glmer objects.}
 
-\item{stat}{The aggregate statistic used to analyse the climate data. Can 
+\item{stat}{If window = "sliding"; The aggregate statistic used to analyse the climate data. Can 
 currently use basic R statistics (e.g. mean, min), as well as slope. 
 Additional aggregate statistics can be created using the format function(x)
 (...). See FUN in \code{\link{apply}} for more detail.}
@@ -63,8 +63,20 @@ climate data will be removed from climate window analysis.}
 
 \item{cinterval}{The resolution at which climate window analysis will be 
 conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the units
-of parameters 'furthest' and 'closest' will differ depending on the choice
+of parameter 'range' will differ depending on the choice
 of cinterval.}
+
+\item{spatial}{A list item containing:
+1. A factor that defines which spatial group (i.e. population) each biological
+record is taken from. The length of this factor should correspond to the length 
+of the biological dataset.
+2. A factor that defines which spatial group (i.e. population) climate data
+corresponds to. This length of this factor should correspond to the length of
+the climate dataset.}
+
+\item{cohort}{A variable used to group biological records that occur in the same biological
+season but cover multiple years (e.g. southern hemisphere breeding season). Only required
+when type is "absolute". The cohort variable should be in the same dataset as the variable bdate.}
 
 \item{upper}{Cut-off values used to determine growing degree days or positive 
 climate thresholds (depending on parameter thresh). Note that when values
@@ -86,9 +98,27 @@ Please specify the parent environment and variable name (e.g. Biol$Year).
 2. Whether the model should include both within-group means and variance ("both"),
 only within-group means ("mean"), or only within-group variance ("var").}
 
-\item{k}{The number of folds used for k-fold cross validation. By default
+\item{k}{If window = "sliding"; the number of folds used for k-fold cross validation. By default
 this value is set to 0, so no cross validation occurs. Value should be a
 minimum of 2 for cross validation to occur.}
+
+\item{weightfunc}{If window = "weighted"; 
+the distribution to be used for optimisation. Can be 
+either a Weibull ("W") or Generalised Extreme Value distribution ("G").}
+
+\item{par}{If window = "weighted"; the shape, scale and location parameters 
+of the Weibull or GEV weight function used as start weight function. 
+For Weibull : Shape and scale parameters must be greater than 0, 
+while location parameter must be less than or equal to 0. 
+For GEV : Scale parameter must be greater than 0.}
+
+\item{control}{If window = "weighted";
+parameters used to determine step size for the optimisation 
+function. Please see \code{\link{optim}} for more detail.}
+
+\item{method}{If window = "weighted"; 
+the method used for the optimisation function. Please see 
+\code{\link{optim}} for more detail.}
 
 \item{cutoff.day, cutoff.month}{Redundant parameters. Now replaced by refday.}
 
@@ -97,25 +127,13 @@ minimum of 2 for cross validation to occur.}
 \item{thresh}{Redundant parameter. Now replaced by binary.}
 
 \item{cvk}{Redundant parameter. Now replaced by k.}
-
-\item{spatial}{A list item containing:
-1. A factor that defines which spatial group (i.e. population) each biological
-record is taken from. The length of this factor should correspond to the length 
-of the biological dataset.
-2. A factor that defines which spatial group (i.e. population) climate data
-corresponds to. This length of this factor should correspond to the length of
-the climate dataset.}
-
-\item{cohort}{A variable used to group biological records that occur in the same biological
-season but cover multiple years (e.g. southern hemisphere breeding season). Only required
-when type is "absolute". The cohort variable should be in the same dataset as the variable bdate.}
 }
 \value{
-Will return a dataframe containing information on all fitted climate
- windows. See \code{\link{MassRand}} as an example.
+Returns a dataframe containing information on the best climate
+ window from each randomisation. See \code{\link{MassRand}} as an example.
 }
 \description{
-Will randomise biological data and carry out a climate window analysis. Used
+Randomises biological data and carries out a climate window analysis. Used
 to help determine the chance of obtaining an observed result at random.
 }
 \examples{
@@ -131,7 +149,7 @@ data(MassClimate)
 # Randomise data twice
 # Note all other parameters are fitted in the same way as the climatewin function.
 
-rand <- randwin(repeats = 2, window = "Sliding", 
+rand <- randwin(repeats = 2, window = "sliding", 
                xvar = list(Temp = MassClimate$Temp), 
                cdate = MassClimate$Date, bdate = Mass$Date,
                baseline = lm(Mass ~ 1, data = Mass), 
@@ -154,15 +172,15 @@ data(OffspringClimate)
 # Randomise data twice
 # Note all other parameters are fitted in the same way as the weightwin function.
 
-weightrand <- weightwin(repeats = 2, window = "Weighted", 
-                       xvar = list(Temp = OffspringClimate$Temperature), 
-                       cdate = OffspringClimate$Date,
-                       bdate = Offspring$Date,
-                       baseline = glm(Offspring ~ 1, family = poisson, data = Offspring),
-                       range = c(365, 0), func = "quad",
-                       type = "relative", weightfunc = "W", cinterval = "day",
-                       par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)),
-                       method = "L-BFGS-B")
+weightrand <- randwin(repeats = 2, window = "weighted", 
+                     xvar = list(Temp = OffspringClimate$Temperature), 
+                     cdate = OffspringClimate$Date,
+                     bdate = Offspring$Date,
+                     baseline = glm(Offspring ~ 1, family = poisson, data = Offspring),
+                     range = c(365, 0), func = "quad",
+                     type = "relative", weightfunc = "W", cinterval = "day",
+                     par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)),
+                     method = "L-BFGS-B")
                    
 # View output
 

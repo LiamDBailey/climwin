@@ -8,14 +8,14 @@ plotbest(dataset, bestmodel, bestmodeldata)
 }
 \arguments{
 \item{dataset}{A dataframe containing information on all fitted climate 
-windows. Output from \code{\link{climatewin}}.}
+windows. Output from \code{\link{slidingwin}}.}
 
 \item{bestmodel}{A model object. The strongest climate window model. Output 
-from \code{\link{singlewin}} or \code{\link{climatewin}}.}
+from \code{\link{singlewin}} or \code{\link{slidingwin}}.}
 
 \item{bestmodeldata}{A dataframe with the data used to 
 fit the strongest climate window model. Output from \code{\link{singlewin}} 
-or \code{\link{climatewin}}.}
+or \code{\link{slidingwin}}.}
 }
 \value{
 Returns a scatterplot with a fitted line to show the fit of the best 

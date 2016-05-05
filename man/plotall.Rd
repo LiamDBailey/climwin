@@ -28,11 +28,6 @@ distribution. See \code{\link{plotweights}} for more detail.}
 \item{title}{Title of the plot panel.}
 
 \item{arrow}{TRUE or FALSE. Add arrows to plots to pinpoint best window.}
-
-\item{histq}{If datasetrand is provided. The quantile of the randomised data 
-to be compared with non-randomised data. Can be used to determine the 
-likelihood of finding a climate window model of a given deltaAICc value by
-chance.}
 }
 \value{
 Will return a panel of 6-8 plots:
@@ -46,19 +41,19 @@ Will return a panel of 6-8 plots:
  \item Model weight: A plot showing the distribution of cumulative
  model weights. Gradient levels determined by parameters cw1, cw2 and cw3.
  Darker areas have a higher chance of containing the best climate window.
+ Also returns the percentage of models within the 95% confidence set (C).
  
  \item Model betas: A colour plot of model beta estimates. Where applicable,
  2nd order coefficients (quadratic) and 3rd order coefficients (cubic) will
  be plotted separately.
  
- \item Histogram(s): If datasetrand is provided, plotall will create two 
- stacked histograms to compare the deltaAICc of non-randomised and randomised
- data. This can help determine the likelihood of obtaining a deltaAICc value 
- for a fitted climate window model at random. Without datasetrand, plotall
- will create a single histogram of deltaAICc values for all fitted climate 
- windows.
+ \item Histogram(s): If datasetrand is provided, plotall will return a 
+ histogram showing the deltaAICc of randomised data. 
+ This can help determine the likelihood of obtaining a deltaAICc value 
+ for a fitted climate window model at random. plotall will also use
+ \code{\link{pvalue}} to return values of Pc and PdeltaAICc.
  
- \item Boxplots: Two boxplots showing the opening and closing day for a 
+ \item Boxplots: Two boxplots showing the start and end time for a 
  subset of best climate windows. Best climate windows make up the
  cumulative model weight equivalent to the largest value of cw1, cw2 and cw3.
  Values above boxplots represent the median values.
@@ -87,7 +82,7 @@ single <- singlewin(xvar = list(Temp = MassClimate$Temp),
            
 plotall(dataset = MassOutput, bestmodel = single$bestmodel, 
        bestmodeldata = single$bestmodeldata,
-       cw1 = 0.95, cw2 = 0.5, cw3 = 0.25, histq = 0.99, title = "Mass")
+       cw1 = 0.95, cw2 = 0.5, cw3 = 0.25, title = "Mass")
         
          
 }

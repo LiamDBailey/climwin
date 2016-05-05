@@ -28,7 +28,7 @@ Create a histogram of deltaAICc values from randomised data.
 data(MassOutput)
 data(MassRand)
 
-plothist(datasetrand = MassRand)
+plothist(datasetrand = MassRand, dataset = MassOutput)
 
 }
 \author{

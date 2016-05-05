@@ -8,7 +8,7 @@ plotbetas(dataset, arrow = FALSE, plotallenv, plotall = FALSE)
 }
 \arguments{
 \item{dataset}{A dataframe containing information on all fitted climate 
-windows. Output from \code{\link{climatewin}}.}
+windows. Output from \code{\link{slidingwin}}.}
 
 \item{arrow}{TRUE or FALSE. Add arrows to plots to pinpoint best window.}
 

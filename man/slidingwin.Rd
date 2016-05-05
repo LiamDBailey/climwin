@@ -7,9 +7,9 @@
 slidingwin(exclude = NA, xvar, cdate, bdate, baseline, type, refday,
   stat = "mean", func = "lin", range, cmissing = FALSE,
   cinterval = "day", k = 0, upper = NA, lower = NA, binary = FALSE,
-  centre = list(NULL, "both"), spatial = NULL, cutoff.day = NULL,
-  cutoff.month = NULL, furthest = NULL, closest = NULL, thresh = NULL,
-  cvk = NULL, cohort = NULL)
+  centre = list(NULL, "both"), spatial = NULL, cohort = NULL,
+  cutoff.day = NULL, cutoff.month = NULL, furthest = NULL,
+  closest = NULL, thresh = NULL, cvk = NULL)
 }
 \arguments{
 \item{exclude}{Two values (distance and duration) which allow users
@@ -55,7 +55,7 @@ climate data will be removed from climate window analysis.}
 
 \item{cinterval}{The resolution at which climate window analysis will be 
 conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the units
-of parameters 'furthest' and 'closest' will differ depending on the choice
+of parameter 'range' will differ depending on the choice
 of cinterval.}
 
 \item{k}{The number of folds used for k-fold cross validation. By default
@@ -90,6 +90,10 @@ of the biological dataset.
 corresponds to. This length of this factor should correspond to the length of
 the climate dataset.}
 
+\item{cohort}{A variable used to group biological records that occur in the same biological
+season but cover multiple years (e.g. southern hemisphere breeding season). Only required
+when type is "absolute". The cohort variable should be in the same dataset as the variable bdate.}
+
 \item{cutoff.day, cutoff.month}{Redundant parameters. Now replaced by refday.}
 
 \item{furthest, closest}{Redundant parameters. Now replaced by range.}
@@ -97,10 +101,6 @@ the climate dataset.}
 \item{thresh}{Redundant parameter. Now replaced by binary.}
 
 \item{cvk}{Redundant parameter. Now replaced by k.}
-
-\item{cohort}{A variable used to group biological records that occur in the same biological
-season but cover multiple years (e.g. southern hemisphere breeding season). Only required
-when type is "absolute". The cohort variable should be in the same dataset as the variable bdate.}
 }
 \value{
 Will return a list with an output for each tested set of climate

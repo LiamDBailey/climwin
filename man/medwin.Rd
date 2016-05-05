@@ -19,6 +19,14 @@ time of climate windows within the confidence set.
 Determine the median start and end time for climate windows within
 a chosen confidence set.
 }
+\examples{
+\dontrun{
+# Determine median start and end time of MassOutput from the 95\% confidence set
+
+medwin(MassOutput, cw = 0.95)
+
+}
+}
 \author{
 Liam D. Bailey and Martijn van de Pol
 }

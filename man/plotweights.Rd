@@ -9,7 +9,7 @@ plotweights(dataset, cw1 = 0.95, cw2 = 0.5, cw3 = 0.25, arrow = FALSE,
 }
 \arguments{
 \item{dataset}{A dataframe containing information on all fitted climate 
-windows. Output from \code{\link{climatewin}}.}
+windows. Output from \code{\link{slidingwin}}.}
 
 \item{cw1, cw2, cw3}{Cumulative weight levels used to visualise model weight 
 distribution. Cumulative weights represent the chance that the best model is

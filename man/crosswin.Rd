@@ -2,12 +2,12 @@
 % Please edit documentation in R/crosswin.R
 \name{crosswin}
 \alias{crosswin}
-\title{Test the correlation between two climate variables across all considered climate
-windows.}
+\title{Test the correlation between two climate variables.}
 \usage{
 crosswin(xvar, xvar2, cdate, bdate, range, stat, stat2, type, refday,
-  cinterval = "day", cmissing = FALSE, cutoff.day = NULL,
-  cutoff.month = NULL, furthest = NULL, closest = NULL, spatial = NULL)
+  cinterval = "day", cmissing = FALSE, spatial = NULL, cohort = NULL,
+  cutoff.day = NULL, cutoff.month = NULL, furthest = NULL,
+  closest = NULL)
 }
 \arguments{
 \item{xvar}{The first climate variable of interest. Please specify the parent 
@@ -45,17 +45,13 @@ year from which the absolute window analysis will start.}
 
 \item{cinterval}{The resolution at which climate window analysis will be 
 conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the units 
-of parameters 'furthest' and 'closest' will differ depending on the choice 
+of parameter 'range' will differ depending on the choice 
 of cinterval}
 
 \item{cmissing}{TRUE or FALSE, determines what should be done if there are 
 missing climate data. If FALSE, the function will not run if missing climate
 data is encountered. If TRUE, any records affected by missing climate data 
 will be removed from climate window analysis.}
-
-\item{cutoff.day, cutoff.month}{Redundant parameters. Now replaced by refday.}
-
-\item{furthest, closest}{Redundant parameters. Now repalced by range.}
 
 \item{spatial}{A list item containing:
 1. A factor that defines which spatial group (i.e. population) each biological
@@ -64,14 +60,22 @@ of the biological dataset.
 2. A factor that defines which spatial group (i.e. population) climate data
 corresponds to. This length of this factor should correspond to the length of
 the climate dataset.}
+
+\item{cohort}{A variable used to group biological records that occur in the same biological
+season but cover multiple years (e.g. southern hemisphere breeding season). By default,
+autowin will use year (extracted from parameter bdate) as the cohort variable. 
+The cohort variable should be in the same dataset as the variable bdate.}
+
+\item{cutoff.day, cutoff.month}{Redundant parameters. Now replaced by refday.}
+
+\item{furthest, closest}{Redundant parameters. Now repalced by range.}
 }
 \value{
 Will return a dataframe containing the correlation between the two
  climate variables.
 }
 \description{
-Test the correlation between two climate variables across all considered climate
-windows.
+Test the correlation between two climate variables.
 }
 \examples{
 \dontrun{

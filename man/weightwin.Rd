@@ -6,9 +6,10 @@
 \usage{
 weightwin(xvar, cdate, bdate, baseline, range, func = "lin", type, refday,
   nrandom = 0, centre = NULL, weightfunc = "W", cinterval = "day",
-  par = c(3, 0.2, 0), control = list(ndeps = c(0.001, 0.001, 0.001)),
-  method = "L-BFGS-B", cutoff.day = NULL, cutoff.month = NULL,
-  furthest = NULL, closest = NULL, cohort = NULL, spatial = NULL)
+  cohort = NULL, spatial = NULL, par = c(3, 0.2, 0),
+  control = list(ndeps = c(0.001, 0.001, 0.001)), method = "L-BFGS-B",
+  cutoff.day = NULL, cutoff.month = NULL, furthest = NULL,
+  closest = NULL)
 }
 \arguments{
 \item{xvar}{A list object containing all climate variables of interest. 
@@ -37,15 +38,36 @@ linear ("lin"), quadratic ("quad"), cubic ("cub"), inverse ("inv") or log ("log"
 \item{refday}{If type is absolute, the day and month respectively of the 
 year from which the absolute window analysis will start.}
 
+\item{nrandom}{Used when conducting data randomisation, should not be
+changed manually.}
+
+\item{centre}{A list item containing:
+1. The variable used for mean centring (e.g. Year, Site, Individual). 
+Please specify the parent environment and variable name (e.g. Biol$Year).
+2. Whether the model should include both within-group means and variance ("both"),
+only within-group means ("mean"), or only within-group variance ("var").}
+
 \item{weightfunc}{The distribution to be used for optimisation. Can be 
 either a Weibull ("W") or Generalised Extreme Value distribution ("G").}
 
 \item{cinterval}{The resolution at which the climate window analysis will be 
 conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the units 
-of parameters 'furthest' and 'closest' will differ depending on the choice 
+of parameter 'range' will differ depending on the choice 
 of cinterval.}
 
-\item{par}{Shape, scale and location parameters of the Weibull of GEV weight 
+\item{cohort}{A varaible used to group biological records that occur in the same biological
+season but cover multiple years (e.g. southern hemisphere breeding season). Only required
+when type is "absolute". The cohort variable should be in the same dataset as the variable bdate.}
+
+\item{spatial}{A list item containing:
+1. A factor that defines which spatial group (i.e. population) each biological
+record is taken from. The length of this factor should correspond to the length 
+of the biological dataset.
+2. A factor that defines which spatial group (i.e. population) climate data
+corresponds to. This length of this factor should correspond to the length of
+the climate dataset.}
+
+\item{par}{Shape, scale and location parameters of the Weibull or GEV weight 
 function used as start weight function. For Weibull : Shape and scale 
 parameters must be greater than 0, while location parameter must be less 
 than or equal to 0. For GEV : Scale parameter must be greater than 0.}
@@ -59,18 +81,6 @@ function. Please see \code{\link{optim}} for more detail.}
 \item{cutoff.day, cutoff.month}{Redundant parameters. Now replaced by refday.}
 
 \item{furthest, closest}{Redundant parameters. Now replaced by range.}
-
-\item{cohort}{A varaible used to group biological records that occur in the same biological
-season but cover multiple years (e.g. southern hemisphere breeding season). Only required
-when type is "absolute". The cohort variable should be in the same dataset as the variable bdate.}
-
-\item{spatial}{A list item containing:
-1. A factor that defines which spatial group (i.e. population) each biological
-record is taken from. The length of this factor should correspond to the length 
-of the biological dataset.
-2. A factor that defines which spatial group (i.e. population) climate data
-corresponds to. This length of this factor should correspond to the length of
-the climate dataset.}
 }
 \value{
 Produces a constantly updating grid of plots as the optimisation 
@@ -89,12 +99,12 @@ Produces a constantly updating grid of plots as the optimisation
  
  Also returns a list containing three objects: \itemize{ 
  \item BestModel, a model object. The best weighted window model determined
- by AICc.
+ by deltaAICc.
  
  \item BestModelData, a dataframe. Biological and climate data used to fit
  the best weighted window model.
  
- \item WeightedOutput, a list. Parameter values for the best weighted window.
+ \item WeightedOutput. Parameter values for the best weighted window.
  }
 }
 \description{

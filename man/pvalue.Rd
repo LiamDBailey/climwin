@@ -13,7 +13,7 @@ windows. Output from \code{\link{slidingwin}}.}
 \item{datasetrand}{A dataframe containing information on all fitted climate 
 windows using randomised data. Output from \code{\link{randwin}}.}
 
-\item{metric}{"AIC" or "Spread". Determine whether a value of PDAICc or
+\item{metric}{"AIC" or "C". Determine whether a value of PDAICc or
 Pc will be returned.}
 
 \item{sample.size}{Sample size of analysis.}
@@ -25,6 +25,19 @@ Returns a value representing the probability that a given climate
 \description{
 Calculate probability that a given climate signal is 'true' using
 either PDAICc or Pc.
+}
+\examples{
+
+# Calculate PDAICc for the Mass dataset
+
+pvalue(datasetrand = MassRand, dataset = MassOutput, 
+      metric = "AIC", sample.size = 47)
+      
+# Calculate Pc for the Mass dataset
+
+pvalue(datasetrand = MassRand, dataset = MassOutput,
+      metric = "C", sample.size = 47) 
+
 }
 \author{
 Liam D. Bailey and Martijn van de Pol

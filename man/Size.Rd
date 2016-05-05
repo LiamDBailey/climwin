@@ -15,8 +15,5 @@
 Average size (using standardised measures of tarsus length,
 head-bill length and wing length) in red winged fairy wren
 (Malurus elegans) chicks. Measured over 7 years.
-
-Average annual laying date of common chaffinch (Fringilla coelebs)
-measured over 47 years.
 }
 

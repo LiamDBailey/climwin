@@ -2,23 +2,23 @@
 % Please edit documentation in R/plotwin.R
 \name{plotwin}
 \alias{plotwin}
-\title{Plot the opening and closing point of best climate windows}
+\title{Plot the start and end time of best climate windows}
 \usage{
 plotwin(dataset, cw = 0.95)
 }
 \arguments{
 \item{dataset}{A dataframe containing information on all fitted climate
-windows. Output from \code{\link{climatewin}}.}
+windows. Output from \code{\link{slidingwin}}.}
 
 \item{cw}{Cumulative model weight used to subset the group of best models.}
 }
 \value{
-Creates two boxplots showing the opening and closing point for a subset
+Creates two boxplots showing the start and end time for a subset
  of best climate windows. Best climate windows make up the
  cumulative model weight equivalent to the value of cw.
 }
 \description{
-Visualise the opening and closing point for a subset of best climate windows.
+Visualise the start and end time for a subset of best climate windows.
 }
 \examples{
 # View window limits for climate windows in the top 95\% of model weights.
