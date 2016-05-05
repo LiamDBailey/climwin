@@ -106,9 +106,8 @@
 autowin <- function(reference, xvar, cdate, bdate, baseline, range, stat, func, type, refday, 
                     cmissing = FALSE, cinterval = "day", upper = NA,
                     lower = NA, binary = FALSE, centre = list(NULL, "both"), 
-                    cutoff.day = NULL, cutoff.month = NULL,
-                    furthest = NULL, closest = NULL, thresh = NULL, cohort = NULL,
-                    spatial = NULL){
+                    cohort = NULL, spatial = NULL, cutoff.day = NULL, cutoff.month = NULL,
+                    furthest = NULL, closest = NULL, thresh = NULL){
   if(is.null(cohort) == TRUE){
     cohort = lubridate::year(as.Date(bdate, format = "%d/%m/%Y")) 
   }
