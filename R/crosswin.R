@@ -1,5 +1,3 @@
-#'Test the correlation between two climate variables
-#'
 #'Test the correlation between two climate variables across all considered climate
 #'windows.
 #'@param xvar The first climate variable of interest. Please specify the parent 
@@ -74,13 +72,14 @@ crosswin <- function(xvar, xvar2, cdate, bdate, range,
                      stat, stat2, type, refday,
                      cinterval = "day", cmissing = FALSE,
                      cutoff.day = NULL, cutoff.month = NULL,
-                     furthest = NULL, closest = NULL, spatial = NULL){
+                     furthest = NULL, closest = NULL, spatial = NULL,
+                     cohort = NULL){
+  
+  print("Initialising, please wait...")
   
   if(is.null(cohort) == TRUE){
     cohort = lubridate::year(as.Date(bdate, format = "%d/%m/%Y")) 
   }
-  
-  print("Initialising, please wait...")
   
   if(type == "variable" || type == "fixed"){
     stop("Parameter 'type' now uses levels 'relative' and 'absolute' rather than 'variable' and 'fixed'.")
@@ -100,8 +99,8 @@ crosswin <- function(xvar, xvar2, cdate, bdate, range,
   duration <- (range[1] - range[2]) + 1
   maxmodno <- (duration * (duration + 1))/2 
   cont     <- convertdate(bdate = bdate, cdate = cdate, xvar = xvar, xvar2 = xvar2, 
-                            cinterval = cinterval, type = type, 
-                            refday = refday, cross = TRUE, spatial = spatial)   # create new climate dataframe with continuous daynumbers, leap days are not a problem
+                          cinterval = cinterval, type = type, cohort = cohort,
+                          refday = refday, cross = TRUE, spatial = spatial)   # create new climate dataframe with continuous daynumbers, leap days are not a problem
   modno    <- 1  #Create a model number variable that will count up during the loop#
   modlist  <- list()   # dataframes to store ouput
   cmatrix1 <- matrix(ncol = (duration), nrow = length(bdate))  # matrix that stores the weather data for variable or fixed windows
