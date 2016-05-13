@@ -55,7 +55,9 @@ explore <- function(shape = 1, scale = 1, loc = 0, weightfunc = "W"){
     }
     
     title <- c("Weibull", paste("shape=", shape, "scale=", scale, "location=", loc))
-    plot((weight / sum(weight)), type = "l", ylab = "weight", xlab = "timesteps", main = title, xaxt = 'n')
+    plot((weight / sum(weight)), type = "l", ylab = "Weight", xlab = "", main = title, xaxt = 'n',
+         cex.lab = 1.25, cex.axis = 1.25, cex = 1.5, mgp = c(2.5, 1, 0))
+    mtext("Time steps", side = 1 , line = 1, cex = 1.25)
   }
   
   if (weightfunc == "G"){
@@ -69,6 +71,8 @@ explore <- function(shape = 1, scale = 1, loc = 0, weightfunc = "W"){
       weight <- weight + 1
     }
     title <- c("GEV", paste("shape=", shape, "scale=", scale, "location=", loc))
-    plot((weight / sum(weight)), type = "l", ylab = "weight", xlab = "timesteps", main = title, xaxt = 'n')
+    plot((weight / sum(weight)), type = "l", ylab = "Weight", xlab = "", main = title, xaxt = 'n',
+         cex.lab = 1.25, cex.axis = 1.25, cex = 1.5, mgp = c(2.5, 1, 0))
+    mtext("Time steps", side = 1 , line = 1, cex = 1.25)
   }
 }
