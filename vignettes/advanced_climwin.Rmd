@@ -285,7 +285,7 @@ In the above plot, we can see that the importance of temperature declines rapidl
 
 ```{r, eval = FALSE}
 
-weight$WeightedOutput$DeltaAICc
+weight$WeightedOutput$deltaAICc
 
 ```
 
