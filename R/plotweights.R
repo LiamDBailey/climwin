@@ -79,7 +79,7 @@ with(dataset, {
             plot.title = element_text(size = 16),
             legend.position = c(0.75, 0.3),
             panel.border = element_rect(colour = "black", fill = NA))+
-      ggtitle(paste(WeightDist, "% of models fall within the ", 100*cw, "% confidence set", sep = ""))+
+      ggtitle(paste(WeightDist, "% of models fall within the \n", 100*cw, "% confidence set", sep = ""))+
       ylab("Window open")+
       xlab("Window close")
     
@@ -105,7 +105,7 @@ with(dataset, {
             plot.title = element_text(size = 16),
             legend.position = c(0.75, 0.3),
             panel.border = element_rect(colour = "black", fill = NA))+
-      ggtitle(paste(WeightDist, "% of models fall within the ", 100*cw, "% confidence set", sep = ""))+
+      ggtitle(paste(WeightDist, "% of models fall within the \n", 100*cw, "% confidence set", sep = ""))+
       ylab("Window open")+
       xlab("Window close")+
       geom_path(data = CIRC, aes(x = WindowClose, y = WindowOpen), size = 1.2, colour = "black")+

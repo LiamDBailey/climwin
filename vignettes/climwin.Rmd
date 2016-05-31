@@ -1,5 +1,5 @@
 ---
-title: "climwin"
+title: "climwin: An introduction"
 author: "Liam D. Bailey and Martijn van de Pol"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
@@ -13,26 +13,26 @@ vignette: >
 
 ************************************
 
-## Why do we need climwin?
+## Why do we need `climwin`?
 
-The characteristics of an organism are likely to change within a year (e.g. body condition, behaviour), and these will influence the way in which an organism responds to its environment at different points in time. When we are interested in studying the effects of climate on some biological response, therefore, the time period or 'window' over which we choose to collect climate data can strongly influence the outcome and interpretation of our results. Yet there has been a tendency in ecological research to focus on a limited number of windows, often chosen arbitrarily. For example, there has been a strong focus on the biological impacts of average spring conditions. 
+The characteristics of an organism are likely to change within a year (e.g. body condition, behaviour), and these will influence the way in which an organism responds to its environment at different points in time. When we are interested in studying the effects of climate on some biological response therefore, the time period or 'window' over which we choose to collect climate data can strongly influence the outcome and interpretation of our results. Yet there has been a tendency in ecological research to focus on a limited number of windows, often chosen arbitrarily. For example, there has been a strong focus on the biological impacts of average spring conditions [e.g. [1](http://www.nature.com/nature/journal/v399/n6735/abs/399423a0.html)]. 
 
-Without a critical comparison of different possible windows, we limit our ability to make meaningful conclusions from our research. If a biological trait displays no response to an arbitrarily chosen climate period, it is difficult to determine if this is evidence of insensitivity to climate or whether the choice of time period is flawed. Even when we find a relationship between climate and the biological response, we cannot be sure that we have selected the period where the trait is most sensitive. Therefore, there is a need for a more effective method through which we can select our sampling period.
+Without a critical comparison of different possible windows, we limit our ability to make meaningful conclusions from our research. If a biological trait displays no response to an arbitrarily chosen climate window it is difficult to determine if this is evidence of insensitivity to climate or whether the choice of time period is flawed. Even when we find a relationship between climate and the biological response, we cannot be sure that we have selected the period where the trait is most sensitive. Therefore, there is a need for a more effective method through which we can select our sampling period.
 
-Realistically, manually testing and comparing all possible windows can be difficult and time consuming. With `climwin` we hope to overcome this problem by employing an exploratory approach to test and compare the effects of all possible climate windows. This will remove the need to arbitrarily select climate windows, and will consequently improve our research outcomes and conclusions. Below we will outline the basic features of the climwin package, including how to carry out and interpret a climate window analysis.
+Realistically, manually testing and comparing all possible windows can be difficult and time consuming. With `climwin` we hope to overcome this problem by employing an exploratory approach to test and compare the effects of all possible climate windows. This will remove the need to arbitrarily select climate windows, and will consequently improve our research outcomes and conclusions. Below we will outline the basic features of the `climwin` package, including how to carry out and interpret a climate window analysis.
 
 ****************************
 
-## slidingwin: The base function
+## `slidingwin`: The base function
 
-`slidingwin` is the main function of the climwin package. It uses an exploratory approach to investigate all possible windows and compares them using values of AICc.
+`slidingwin` is the main function of the `climwin` package. It uses an exploratory approach to investigate all possible windows and compares them using values of AICc.
 
 ### Under the hood
 
 Let's imagine we have a dataset containing two variables: chick mass at hatching and date of measurement. Chick mass is likely to be measured on different dates due to biological differences (e.g. hatching date, incubation time), therefore our dataset will look something like this:
 
 | Date        | Mass (g) | 
-|:------------|:---------|
+|:-----------:|:--------:|
 | 04/06/2015  |    120   |
 | 05/06/2015  |    123   |
 | 07/06/2015  |    110   |
@@ -43,7 +43,7 @@ Let's imagine we have a dataset containing two variables: chick mass at hatching
 We want to understand the relationship between temperature and chick mass, so we also have a second dataset containing daily temperature data.
 
 | Date        | Temperature | 
-|:------------|:------------|
+|:-----------:|:-----------:|
 | 01/06/2015  |    15       |
 | 02/06/2015  |    16       |
 | 03/06/2015  |    12       |
@@ -57,7 +57,7 @@ We want to understand the relationship between temperature and chick mass, so we
 As is often the case, we have no prior knowledge to help us select the best climate window. To overcome this issue, `slidingwin` will test all possible windows for us. First, lets imagine we start by testing the effect of average temperature 1-2 days before hatching. `slidingwin` will calculate the corresponding average temperature for each biological record and create a new combined dataset.
 
 | Date        | Mass (g) | Temperature [1 - 2 days] | 
-|:------------|:---------|:-------------------------|
+|:-----------:|:--------:|:------------------------:|
 | 04/06/2015  |    120   |14                        |
 | 05/06/2015  |    123   |15                        |
 | 07/06/2015  |    110   |21.5                      |
@@ -65,21 +65,21 @@ As is often the case, we have no prior knowledge to help us select the best clim
 | 08/06/2014  |    138   |22                        |
 |...          |...       |...                       |
 
-Now that we have this new dataset, we can test the relationship between mass and temperature and determine an AICc value (Burnham, Anderson and Hayvaert 2011 [source](http://link.springer.com/article/10.1007/s00265-010-1029-6)). Let's use a basic linear model:
+Now that we have this new dataset, we can test the relationship between mass and temperature and determine an AICc value [[2](http://link.springer.com/article/10.1007/s00265-010-1029-6)]. Let's use a basic linear model:
 
 `lm(Mass ~ Temperature[1 - 2 days])`
 
-We've tested the relationship between temperature and chick mass in one climate window, but we don't yet know how this window compares to others. `slidingwin` will go back and carry out the same process on all other windows and generate a list of AICc values. These values will then be compared to the AICc value of a null model (a model containing no climate). This new value of deltaAICc allows us to not only compare different climate windows with one another but also determine how well each climate window actually explains the biological data. Our final outcome can be seen below:
+We've tested the relationship between temperature and chick mass in one climate window, but we don't yet know how this window compares to others. `slidingwin` will go back and carry out the same process on all other windows and generate a list of AICc values. These values will then be compared to the AICc value of a null model (a model containing no climate). This new value of $\Delta AICc$ allows us to not only compare different climate windows with one another but also determine how well each climate window actually explains the biological data. Our final outcome can be seen below:
 
 |Window      |Model AICc |Null model AICc|Difference |
-|:-----------|:----------|:--------------|:----------|
+|:----------:|:---------:|:-------------:|:---------:|
 | 2 - 4 days | 1006      | 1026          | 20        |
 | 1 - 3 days | 1015      | 1026          | 11        |
 | 1 - 2 days | 1019      | 1026          | 7         |
 | 4 - 5 days | 1020      | 1026          | 6         |
 |...         |...        |...            |...        |
 
-With this simple comparison, we can see that the strength of the window 2 - 4 days before hatching is not only better than a model with no climate (i.e. the value of AICc is 20 AICc units smaller), but also better than other tested climate windows. In this case, we could conclude that chick mass was most strongly influenced by average temperature 2 - 4 days before hatching.
+With this simple comparison, we can see that the strength of the window 2 - 4 days before hatching is not only better than a model with no climate (i.e. the value of AICc is 20 units smaller), but also better than other tested climate windows (i.e. the AICc value is 9 units smaller than the next best window). In this case, we would conclude that chick mass was most strongly influenced by average temperature 2 - 4 days before hatching.
 
 While this example is simplistic, it provides insight into the methodology behind `slidingwin`. In practice, `slidingwin` can be applied to large datasets testing thousands of possible windows, streamlining what would otherwise be a difficult and time consuming process.
 
@@ -89,76 +89,67 @@ Now that we understand how `slidingwin` works, how do we go about using it? As w
 
 To start using `slidingwin` it's important to first understand the basic parameters. Below, we will discuss the parameters required to run a basic climate window analysis. More 'advanced' parameters will be discussed in additional vignettes.
 
-For this example, we will use the `Mass` and `MassClimate` datasets from the `climwin` package.
-
+For this example, we will use the `Mass` and `MassClimate` datasets included with the `climwin` package.
 
 **xvar**
 
-To begin, we need to determine the predictor variable which we want to study. The parameter xvar is a list object containing our variable of interest (e.g. Temperature, Rainfall). While we will focus here on climate, it is possible to apply our `slidingwin` methodology with non-climatic predictors.
+To begin, we need to determine the predictor variable which we want to study. The parameter xvar is a list object containing our variables of interest (e.g. Temperature, Rainfall). While we will focus here on climate, it is possible to apply our `slidingwin` methodology with non-climatic predictors.
 
 `xvar = list(Temp = MassClimate$Temperature)`
-
 
 **cdate/bdate**
 
 Once we have established our predictor variable, we next need to tell `slidingwin` the location of our date data. These two parameters contain the date variable for both the climate dataset (cdate) and biological dataset (bdate).
 
-*NOTE: These date variables should be stored in a dd/mm/yyyy format*
+*N.B.* These date variables should be stored in a dd/mm/yyyy format.
 
 `cdate = MassClimate$Date`
 
 `bdate = Mass$Date`
 
-
 **baseline**
 
-The parameter baseline determines the model structure for the null model. The structure of the baseline model is highly versatile, with the potential to use multiple model types (lm, lmer, glm, glmer, coxph), include covariates and weights.
+The parameter baseline determines the model structure for the null model. The structure of the baseline model is highly versatile, with the potential to use many different model types (lm, lmer, glm, glmer, coxph), include covariates, random effects and weights.
 
 `baseline = lm(Mass ~ 1, data = Mass)`
 
 Climate data from each tested climate window will be added as a predictor to this baseline model, to allow for a direct comparison between the null model and each climate window.
 
-
 **cinterval**
 
-Ideally, our predictive data will be available at a resolution of days. However in some circumstances this may not be possible. With this in mind, cinterval allows users to adjust the resolution of analysis to days, weeks or months. Note that the choice of cinterval will impact our interpretation of parameter range (see below). In our current example, daily data is available and so a resolution of days will be used.
+Ideally, our predictive data will be available at a resolution of days. However in some circumstances this may not be possible. With this in mind, cinterval allows users to adjust the resolution of analysis to days, weeks or months. Note that the choice of 'cinterval' will impact our interpretation of the parameter 'range' (see below). In our current example, daily data is available and so a resolution of days will be used.
 
 `cinterval = "day"`
 
-
-
 **range**
 
-While our above example used a small dataset and tested a limited number of climate windows, the number of tested climate windows can be much larger, set by the parameter range. This parameter contains two value which set the upper and lower range for tested climate windows respectively. The values of range will correspond to the resolution chosen in parameter cinterval. In this example we are interested in testing all possible climate windows anywhere up to 150 days before the biological record.
+While our above example used a small dataset and tested a limited number of climate windows, the number of tested climate windows can be much larger, set by the parameter 'range'. This parameter contains two values which set the upper and lower limit for tested climate windows respectively. The values of range will correspond to the resolution chosen in parameter 'cinterval'. In this example we are interested in testing all possible climate windows anywhere up to 150 days before the biological record.
 
 `range = c(150, 0)`
-
 
 **type**
 
 There are two distinct ways to carry out a climate window analysis. In our simple example of chick mass above we considered 'relative' climate windows, where the placement of the window will vary depending on the time of the biological response (e.g. 1-2 days *before hatching*). These relative windows assume that each individual may have the same *relative* response to climate, but the exact dates will vary between individuals.
 
-Alternatively, there may be situations where we expect all individuals to respond to the same climatic period (e.g. average April temperature). In this case, we assume that all climate windows will have an 'absolute' date that will be taken as day 0. In this case, the additional parameter *refday* will set the day and month of day 0 for the climate window analysis.
+Alternatively, there may be situations where we expect all individuals to respond to the same climatic period (e.g. average April temperature). In this case, we assume that all climate windows will have an 'absolute' date that will be taken as day 0. In this case, the additional parameter 'refday' will set the day and month of day 0 for the climate window analysis.
 
-In this example, we will test for absolute climate windows using a starting date of May 20th.
+In this example, we will test for absolute climate windows using a starting date of May 20th. For more details on different types of climate window analyses see [[3](http://onlinelibrary.wiley.com/doi/10.1111/2041-210X.12590/full)]
 
 `type = "absolute"`
 
 `refday = c(20, 5)`
 
-
 **stat**
 
-While we now have the ability to extract climate data for all possible climate windows, the aggregate statistic with which we analyse this data may also influence our results. Most commonly, we consider the mean value of climate within each window, yet it may be more appropriate to consider other possible aggregate statistics, such as maximum, minimum or slope.
+While we now have the ability to extract climate data for all possible climate windows, the aggregate statistic with which we analyse this data may also influence our results. Most commonly, we consider the mean value of climate within each window, yet it may be more appropriate to consider other possible aggregate statistics, such as maximum, minimum or slope [[3](http://onlinelibrary.wiley.com/doi/10.1111/2041-210X.12590/full)].
 
 The parameter stat allows users to select the aggregate statistic of their choice.
 
 `stat = "mean"`
 
-
 **func**
 
-Although the relationship between climate and our biological response may often be linear, there is a potential for more complex relationships. The parameter func allows users to select from a range of possible relationships, including linear ("lin"), quadratic ("quad"), cubic ("cub"), logarithmic ("log") and inverse ("inv").
+Although the relationship between climate and our biological response may often be linear, there is a potential for more complex relationships. The parameter 'func' allows users to select from a range of possible relationships, including linear ("lin"), quadratic ("quad"), cubic ("cub"), logarithmic ("log") and inverse ("inv").
 
 `func = "lin"`
 
@@ -166,10 +157,10 @@ Although the relationship between climate and our biological response may often 
 
 After choosing each of our parameter values, we can finally input our choices into the `slidingwin` function.
 
-The below `slidingwin` syntax will test the linear effect of mean temperature on mass across all windows between 0 and 150 days before May 20th.
+The below `slidingwin` syntax will test the linear effect of mean temperature on chick mass across all windows between 0 and 150 days before May 20th.
 
-*NOTE: Analysis with climwin can require large amounts of computational power. Please be patient with the results.*
-```{r message = FALSE}
+*NOTE: Analysis with `climwin` can require large amounts of computational power. Please be patient with the results.*
+```{r, message = FALSE}
 library(climwin)
 ```
 
@@ -191,7 +182,7 @@ The product of our climate window analysis is a list object, here we've called i
 
 The object `MassWin` has three key components.
 
-* Dataset is an ordered data frame summarising the results of all tested climate windows. The climate windows are ordered by delta AICc (the difference between the AICc of each model and the null model). Note, when calling the dataset we need to specify that we're interested in the dataset from the first list item (i.e. [[1]]). As we will discuss below, it is possible to test multiple combinations of parameter levels, which will output multiple list items. 
+* Dataset is an ordered data frame summarising the results of all tested climate windows. The climate windows are ordered by $\Delta AICc$ (the difference between the AICc of each model and the null model). Note, when calling the dataset we need to specify that we're interested in the dataset from the first list item (i.e. [[1]]). As we will discuss below, it is possible to test multiple combinations of parameter levels (e.g. climate variables), which will output multiple list items. 
 
 ```{r, eval = FALSE}
 
@@ -200,7 +191,7 @@ The object `MassWin` has three key components.
 ```
 
 | deltaAICc	|WindowOpen	|WindowClose	|ModelBeta	|...     |ModWeight |...   |
-|:----------|:----------|:------------|:----------|:-------|:---------|:-----|
+|:---------:|:---------:|:-----------:|:---------:|:------:|:--------:|:----:|
 |	-64.81496	|72	        | 15	        |-4.481257	|	...    |0.0268355	|...   |
 |	-64.55352	|72	        | 14	        |-4.485161	|	...    |0.0235472	|...   |
 |	-64.53157	|73	        | 15	        |-4.510254	|	...    |0.0232902	|...   | 
@@ -211,7 +202,7 @@ The object `MassWin` has three key components.
 As we can see above, the best climate window is 72 - 15 days before May 20th, equivalent to temperature between March 9th and May 5th.
 
 
-* As the name suggests, BestModel is a model object showing the relationship between temperature and mass within the  strongest climate window.
+* As the name suggests, BestModel is a model object showing the relationship between temperature and mass within the strongest climate window.
 
 ```{r, eval = FALSE}
 
@@ -240,7 +231,7 @@ Coefficients:
 ```
 
 |Yvar  |climate |
-|:-----|:-------|
+|:----:|:------:|
 |140   |6.068966|
 |138   |6.160345|
 |136   |6.781034|
@@ -258,9 +249,9 @@ To overcome this concern, we have designed a number of plotting options that all
 
 We have designed 6 different plotting functions to help users visualise and interpret their `slidingwin` results. Below we will discuss each plot in detail.
 
-*NOTE: For these plotting examples we save the dataset from 'MassWin' in a new object 'MassOutput'*
+*NOTE: For these plotting examples we save the object 'MassWin' (calculated above) as a new object 'MassOutput'*
 
-### Plot delta AICc values
+### Plot $\Delta AICc$ values
 
 As a first step, we can look at the distribution of delta AICc values across all tested climate windows. In the below plot, blue regions represent climate windows with limited strength (AICc values similar to the null model) while red regions show strong models.
 
@@ -272,11 +263,13 @@ plotdelta(dataset = MassOutput)
 
 ```
 
+It's worth noting that some biological data may exhibit multiple periods of sensitivity (e.g. long-lag and short-lag [[3](http://onlinelibrary.wiley.com/doi/10.1111/2041-210X.12590/full)]). These can be detected using the `plotdelta` function.
+
 ### Plot model weights
 
-Another way to visualise the delta AICc data is through the use of model weights (Burnham, Anderson & Huyvaert 2011 [source](http://link.springer.com/article/10.1007/s00265-010-1029-6)). In short, the higher a model weight value the greater confidence we have that this model is the true 'best' model. While our top climate window is the most likely *single* window to best explain the data, our confidence that this top window represents the true 'best' model may still be low.
+Another way to visualise the $\Delta AICc$ data is through the use of model weights [[2](http://link.springer.com/article/10.1007/s00265-010-1029-6)]. In short, the higher a model weight value the greater confidence we have that this model is the true 'best' model. While our top climate window is the most likely **single** window to best explain the data, our confidence that this top window represents the true 'best' model may still be low.
 
-If we sum the weights of multiple models, we can now be more confident that we encompass the true best model, but we are less sure of its exact location. In our model weights plot we shade all models that make up the top 95% of model weights. Therefore, we can be 95% confident that the true 'best' model falls within the shaded region. In our example using the `Mass` dataset, we can see that the top 95% of model weights falls within a small region roughly corresponding to the peak in delta AICc seen above. In fact, we can be 95% sure that the best climate window falls within only 7% of the total fitted models. This weight distribution suggests that the observed period of sensitivity is not produed by chance.
+If we sum the weights of multiple models, we can now be more confident that we encompass the true best model, but we are less sure of its exact location. In our model weights plot we shade all models that make up the top 95% of model weights (the 95% confidence set). Therefore, we can be 95% confident that the true 'best' model falls within the shaded region. In our example using the `Mass` dataset, we can see that the top 95% of model weights falls within a small region roughly corresponding to the peak seen in $\Delta AICc$ above. In fact, we can be 95% confident that the best climate window falls within only 7% of the total fitted models. This weight distribution suggests that the observed period of sensitivity is not produced by chance.
 
 ```{r, fig.width = 4, fig.height = 4}
 
@@ -286,7 +279,7 @@ plotweights(dataset = MassOutput)
 
 ### Plot model coefficients
 
-While we are often interested in estimating the location of the best climate window, we may also be interested in estimating the relationship between climate and our biological response. The `plotbeta` function generates a similar colour plot to that used to model delta AICc, which shows the spread of model coefficients across all fitted climate windows. In the below plot, we can see that windows around our best model show a negative relationship between temperature and mass, while other models show little correlation.
+While we are often interested in estimating the location of the best climate window, we may also be interested in estimating the relationship between climate and our biological response. The `plotbeta` function generates a similar colour plot to that used to model $\Delta AICc$, which shows the spread of model coefficients across all fitted climate windows. In the below plot, we can see that windows around our best model show a negative relationship between temperature and mass, while other models show little correlation.
 
 ```{r, fig.width = 4, fig.height = 4}
 
@@ -294,9 +287,9 @@ plotbetas(dataset = MassOutput)
 
 ```
 
-### Delta AICc histograms
+### $\Delta AICc$ histogram
 
-So far both our plots of delta AICc and model weights seem to suggest that there is a true period of climate sensitivity within our data. To better understand how likely it is that we would achieve such a result by chance we can also compare the outcomes of our climate window analysis with a similar analysis on randomised data (i.e. data with no climate signal). To generate this random data we can use the function `randwin`, which uses a similar syntax to that of `slidingwin`. The additional parameter *repeats* determines the number of times that biological data should be randomised and analysed. We recommend using a minimum of 5 repeats for best results.
+So far both our plots of $\Delta AICc$ and model weights seem to suggest that there is a true period of climate sensitivity within our data. To better understand how likely it is that we would achieve such a result by chance we can also compare the outcomes of our climate window analysis with a similar analysis on randomised data (i.e. data with no climate signal). To generate this random data we can use the function `randwin`, which uses a similar syntax to that of `slidingwin`. The additional parameter *repeats* determines the number of times that biological data should be randomised and analysed. We recommend using a minimum of 5 repeats for best results.
 
 ```{r, eval = FALSE}
 
@@ -312,11 +305,15 @@ MassRand <- randwin(repeats = 5,
                     func = "lin")
 ```
 
-Now we can compare the distribution of delta AICc values for our original climate window analysis and the same analysis on randomised data. If our climate window results are due to statistical chance we would expect to see a similar distribution of delta AICc values between both random and real data.
+Now we can compare the lowest value of $\Delta AICc$ from our original climate window analysis with the same analysis carried out on randomised data. If our climate window results are due to statistical chance we would expect our observed $\Delta AICc$ value to be similar to those results obtained at random.
 
-As we can see below, the distribution of delta AICc values in the real data (top histogram) has a much longer tail than that of the randomised data (bottom histogram). The dashed line on the plot represents the 99th quantile of the randomised data, therefore we can be confident that the large negative values of delta AICc we find in our real data are unlikely to occur by random chance.
+As we can see below, the value of $\Delta AICc$ from the real data (dashed line) is very different to those values obtained from randomised data. However, although it is possible to make this judgment visually it is important that we create a standard metric through which users can compare the likelihood of a given climate window result. This is achieved with the metrics $P_{C}$ and $P_{\Delta AICc}$ provided with the below histogram. These metrics provide the user with the likelihood that a given $\Delta AICc$ result could have occured by chance.
 
-```{r, fig.width = 4, fig.height = 4}
+Ideally, users should conduct large numbers (100+) randomisations using `randwin`. However, many climate window analyses use large datasets and wide ranges, making it extremely time consuming to conduct this many randomisations. The metric $P_{\Delta AICc}$ can be used when a large number of randomisations have been conducted. However, when a large number of randomisations is not possible (as in this example) the metric $P_{C}$ is more appropriate. In this scenario we can conclude that the likelihood of observing the value of $\Delta AICc$ seen in this analysis is <0.001.
+
+These metrics can also determined independently with the function `pvalue`. For more information on these metrics and their effectiveness see [[3](http://onlinelibrary.wiley.com/doi/10.1111/2041-210X.12590/full)].
+
+```{r, fig.width = 4, fig.height = 4, message = FALSE}
 
 plothist(dataset = MassOutput, datasetrand = MassRand)
 
@@ -324,9 +321,11 @@ plothist(dataset = MassOutput, datasetrand = MassRand)
 
 ### Median window
 
-To represent the model weight plot in a different way, `plotwin` shows boxplots of the start and end point of all climate windows that make up the top 95% of model weights. The values above each boxplot represent the median start and end time for these models.
+To represent the model weight plot in a different way, `plotwin` shows boxplots of the start and end point of all climate windows that make up the 95% confidence set. The values above each boxplot represent the median start and end time for these models.
 
-In the below example, the median start and end values of the top models corresponds almost exactly with our best window determined using delta AICc. In situations where model weights are more dispersed such a match would be less likely. 
+In the below example, the median start and end point of the top models corresponds almost exactly with our best window determined using $\Delta AICc$. In situations where model weights are more dispersed such a match would be less likely.
+
+These median values can also be determined with the function `medwin`.
 
 ```{r, fig.width = 4, fig.height = 4}
 
@@ -357,9 +356,9 @@ MassSingle <- singlewin(xvar = list(Temp = MassClimate$Temp),
 
 *NOTE: In the singlewin function the values of range now equate to the start and end time of the single window, rather than the range over which multiple windows will be tested.*
 
-We can use the output from the singlewin function to plot the best data.
+We can use the output from the `singlewin` function to plot the best data.
 
-```{r, fig.width = 4, fig.height = 4}
+```{r, fig.width = 6, fig.height = 6}
 
 plotbest(dataset = MassOutput,
          bestmodel = MassSingle$BestModel, 
@@ -369,7 +368,7 @@ plotbest(dataset = MassOutput,
 
 ### The `plotall` function
 
-While each of these plots provides useful information for the user, they are best viewed in conjunction. The `plotall` function allows users to create an array of all 6 graphics to contrast and compare the different information they provide.
+While each of these plots provide useful information for the user, they are best viewed in conjunction. The `plotall` function allows users to create an array of all 6 graphics to contrast and compare the different information they provide.
 
 ```{r, fig.width = 10, fig.height = 7.5}
 
@@ -419,13 +418,13 @@ MassWin2$combos
 ```
 
 |  |Climate | Type |Stat |func |
-|:-|:-------|:-----|:----|:----|
+|:-|:------:|:----:|:---:|:---:|
 |1 |   Temp |fixed |max  |lin  |
 |2 |   Temp |fixed |mean |lin  |
 |3 |   Temp |fixed |max  |quad |
 |4 |   Temp |fixed |mean |quad |
 
-Using this combos list, we can extract information on each of our tested combinations, as each row in the `combos` table corresponds to a list item in our object MassWin2. For example, the BestModel object of the quadratic relationship using maximum temperature (3rd row in above table) would be called using the following code:
+Using this `combos` list, we can extract information on each of our tested combinations, as each row in the `combos` table corresponds to a list item in our object MassWin2. For example, the BestModel object of the quadratic relationship using maximum temperature (3rd row in above table) would be called using the following code:
 
 ```{r, eval = FALSE}
 
@@ -444,6 +443,6 @@ Coefficients:
 
 ******************************
 
-This covers the basic functions of `climwin`. For more advanced features additional vignettes will be provided with future updates. To ask additional questions or report bugs please e-mail:
+This covers the basic functions of `climwin`. For more advanced features see our extra vignette 'advanced_climwin'. To ask additional questions or report bugs please e-mail:
 
 liam.bailey@anu.edu.au

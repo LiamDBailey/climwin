@@ -4,6 +4,8 @@ Title: Climate Window Analysis
 Version: 1.0.0
 Author: Liam D. Bailey and Martijn van de Pol
 Maintainer: Liam D. Bailey <liam.bailey@anu.edu.au>
+URL: https://github.com/LiamDBailey/climwin
+BugReports: https://github.com/LiamDBailey/climwin/issues
 Description: Contains functions to detect and visualise periods of climate
     sensitivity (climate windows) for a given biological response.
 Depends:

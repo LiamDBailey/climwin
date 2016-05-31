@@ -1,0 +1,25 @@
+bibentry(bibtype = "Article",
+  title        = "Identifying the best climatic predictors in ecology and evolution",
+  author       = c(person(given = "Martijn",
+                          family = "van de Pol"),
+                   person(given = "Liam",
+                          family = "D. Bailey"),
+                   person(given = "Nina",
+                          family = "McLean"),
+                   person(given = "Laurie",
+                          family = "Rijsdijk"),
+                   person(given = "Callum",
+                          family = "R. Lawson"),
+                   person(given = "Lyanne",
+                          family = "Brouwer")),
+  journal      = "Methods in Ecology and Evolution",
+  year         = "2016",
+  doi          = "10.1111/2041-210X.12590",
+
+  header       = "To cite climwin in publications please use:",
+  textVersion  =
+  paste("van de Pol, M., Bailey, L.D., McLean, N., Rijsdijk, L., Lawson, C.R., Brouwer, L. (2016).",
+        "Identifying the best climatic predictors in ecology and evolution",
+        "Methods in Ecology and Evolution",
+        "doi:10.1111/2041-210X.12590")
+)
