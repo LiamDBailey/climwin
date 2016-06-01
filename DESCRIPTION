@@ -22,7 +22,8 @@ Imports:
     plyr
 Suggests:
     testthat,
-    knitr
+    knitr,
+    rmarkdown
 License: GPL-2
 Repository: CRAN
 LazyData: True

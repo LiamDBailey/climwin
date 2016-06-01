@@ -1,10 +1,10 @@
 ---
-title: "climwin"
+title: "Advanced climwin"
 author: "Liam D. Bailey and Martijn van de Pol"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{climwin}
+  %\VignetteIndexEntry{Advanced climwin}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
