@@ -107,11 +107,13 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
       }
     }
     
-    if (cinterval == "month"){
-      if ( (as.numeric(min(as.Date(bdate, format = "%d/%m/%Y")) - months(range[1])) - (as.numeric(min(as.Date(cdate, format = "%d/%m/%Y"))))) <= 0){
-        stop("You do not have enough climate data to search that far back. Please adjust the value of range or add additioNAl climate data.")
-      }
-    }
+    ## MONTHS FUNCTION RETURNS NAs IF COUNTING BACK FROM THE 31ST!! WE NEED TO FIX THIS!!!
+    
+    #if (cinterval == "month"){
+    #  if ( (as.numeric(min(as.Date(bdate, format = "%d/%m/%Y")) - months(range[1])) - (as.numeric(min(as.Date(cdate, format = "%d/%m/%Y"))))) <= 0){
+    #    stop("You do not have enough climate data to search that far back. Please adjust the value of range or add additioNAl climate data.")
+    #  }
+    #}
     
     if (max(cont$bintno$Date) > max(cont$cintno$Date)){
       if (type == "absolute"){
@@ -135,11 +137,11 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
       }
     }
     
-    if (cinterval == "month"){
-      if ( (as.numeric(min(as.Date(bdate, format = "%d/%m/%Y")) - months(range[1])) - (as.numeric(min(as.Date(cdate, format = "%d/%m/%Y"))))) <= 0){
-        stop("You do not have enough climate data to search that far back. Please adjust the value of range or add additioNAl climate data.")
-      }
-    }
+    #if (cinterval == "month"){
+    #  if ( (as.numeric(min(as.Date(bdate, format = "%d/%m/%Y")) - months(range[1])) - (as.numeric(min(as.Date(cdate, format = "%d/%m/%Y"))))) <= 0){
+    #    stop("You do not have enough climate data to search that far back. Please adjust the value of range or add additioNAl climate data.")
+    #  }
+    #}
     
     if (max(cont$bintno) > max(cont$cintno)){
       if (type == "absolute"){
