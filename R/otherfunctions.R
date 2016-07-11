@@ -1063,23 +1063,6 @@ skim <- function(winoutput, duration, cutoff) {
 
 ##################################################################################
 
-merge_results <- function(dataset1, dataset2){
-  
-  new_combos <- rbind.fill(dataset1$combos, dataset2$combos)
-  rownames(new_combos) <- seq(length = nrow(new_combos))
-  
-  dataset1[[length(dataset1)]] <- NULL
-  dataset2[[length(dataset2)]] <- NULL
-  
-  new_dataset <- c(dataset1, dataset2)
-  new_dataset$combos <- new_combos
-  
-  return(new_dataset)
-  
-}
-
-##################################################################################
-
 circle <- function(centre = c(0,0), diameter = 1, npoints = 100){
   r = diameter / 2
   tt <- seq(0,2*pi,length.out = npoints)
