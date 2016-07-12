@@ -127,19 +127,19 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     
     if (cinterval == "day"){
       if ( (min(cont$bintno) - range[1]) < min(cont$cintno)){
-        stop("You do not have enough climate data to search that far back. Please adjust the value of range or add additioNAl climate data.")
+        stop("You do not have enough climate data to search that far back. Please adjust the value of range or add additional climate data.")
       }
     }
     
     if (cinterval == "week"){
-      if ( (min(cont$bintno) - range[1] * 7) < min(cont$cintno)){
-        stop("You do not have enough climate data to search that far back. Please adjust the value of range or add additioNAl climate data.")
+      if ((min(cont$bintno) - range[1]) < min(cont$cintno)){
+        stop("You do not have enough climate data to search that far back. Please adjust the value of range or add additional climate data.")
       }
     }
     
     #if (cinterval == "month"){
     #  if ( (as.numeric(min(as.Date(bdate, format = "%d/%m/%Y")) - months(range[1])) - (as.numeric(min(as.Date(cdate, format = "%d/%m/%Y"))))) <= 0){
-    #    stop("You do not have enough climate data to search that far back. Please adjust the value of range or add additioNAl climate data.")
+    #    stop("You do not have enough climate data to search that far back. Please adjust the value of range or add additional climate data.")
     #  }
     #}
     
