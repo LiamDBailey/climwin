@@ -55,7 +55,7 @@
 #'  1. The variable used for mean centring (e.g. Year, Site, Individual). 
 #'  Please specify the parent environment and variable name (e.g. Biol$Year).
 #'  2. Whether the model should include both within-group means and variance ("both"),
-#'  only within-group means ("mean"), or only within-group variance ("var").
+#'  only within-group means ("mean"), or only within-group variance ("dev").
 #'@references van de Pol & Cockburn 2011 Am Nat 177(5):698-707 (doi: 
 #'  10.1086/659101) "Identifying the critical climatic time window that affects 
 #'  trait expression"

@@ -73,7 +73,7 @@ growing degree days (binary = FALSE).}
 1. The variable used for mean centring (e.g. Year, Site, Individual). 
 Please specify the parent environment and variable name (e.g. Biol$Year).
 2. Whether the model should include both within-group means and variance ("both"),
-only within-group means ("mean"), or only within-group variance ("var").}
+only within-group means ("mean"), or only within-group variance ("dev").}
 
 \item{cohort}{A variable used to group biological records that occur in the same biological
 season but cover multiple years (e.g. southern hemisphere breeding season). By default,

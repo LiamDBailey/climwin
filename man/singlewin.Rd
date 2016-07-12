@@ -82,7 +82,7 @@ growing degree days (thresh = FALSE).}
 1. The variable used for mean centring (e.g. Year, Site, Individual). 
 Please specify the parent environment and variable name (e.g. Biol$Year).
 2. Whether the model should include both within-group means and variance ("both"),
-only within-group means ("mean"), or only within-group variance ("var").}
+only within-group means ("mean"), or only within-group variance ("dev").}
 
 \item{cutoff.day, cutoff.month}{Redundant parameters. Now replaced by refday.}
 
