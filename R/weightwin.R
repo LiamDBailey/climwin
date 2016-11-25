@@ -55,7 +55,7 @@
 #'  1. The variable used for mean centring (e.g. Year, Site, Individual). 
 #'  Please specify the parent environment and variable name (e.g. Biol$Year).
 #'  2. Whether the model should include both within-group means and variance ("both"),
-#'  only within-group means ("mean"), or only within-group variance ("dev").
+#'  only within-group means ("mean"), or only within-group variance ("var").
 #'@references van de Pol & Cockburn 2011 Am Nat 177(5):698-707 (doi: 
 #'  10.1086/659101) "Identifying the critical climatic time window that affects 
 #'  trait expression"
@@ -127,7 +127,7 @@ weightwin <- function(xvar, cdate, bdate, baseline, range,
                       weightfunc = "W", cinterval = "day", cohort = NULL, spatial = NULL,
                       par = c(3, 0.2, 0), control = list(ndeps = c(0.001, 0.001, 0.001)), 
                       method = "L-BFGS-B", cutoff.day = NULL, cutoff.month = NULL,
-                      furthest = NULL, closest = NULL){
+                      furthest = NULL, closest = NULL, grad = FALSE){
   
   if(is.null(cohort) == TRUE){
     cohort = lubridate::year(as.Date(bdate, format = "%d/%m/%Y")) 
@@ -227,36 +227,45 @@ weightwin <- function(xvar, cdate, bdate, baseline, range,
       cmatrix[i, ] <- cont$xvar[which(cont$cintno %in% (cont$bintno[i] - c(range[2]:range[1])))]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
     } 
   }
+  
   cmatrix <- as.matrix(cmatrix[, c(ncol(cmatrix):1)])
   
-  modeldat$climate <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
-  
-  if (func == "lin"){
-    modeloutput <- update(baseline, .~. + climate, data = modeldat)
-  } else if (func == "quad") {
-    modeloutput <- update(baseline, .~. + climate + I(climate ^ 2), data = modeldat)
-  } else if (func == "cub") {
-    modeloutput <- update(baseline, .~. + climate + I(climate ^ 2) + I(climate ^ 3), data = modeldat)
-  } else if (func == "log") {
-    modeloutput <- update(baseline, .~. + log(climate), data = modeldat)
-  } else if (func == "inv") {
-    modeloutput <- update(baseline, .~. + I(climate ^ -1), data = modeldat)
-  } else if (func == "centre"){
-    if(centre[[2]] == "both"){
-      modeldat$wgdev  <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
-      modeldat$wgmean <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
-      modeloutput <- update(baseline, yvar ~. + wgdev + wgmean, data = modeldat)
-    }
-    if(centre[[2]] == "mean"){
-      modeldat$wgmean <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
-      modeloutput <- update(baseline, yvar ~. + wgmean, data = modeldat)
-    }
-    if(centre[[2]] == "dev"){
-      modeldat$wgdev  <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
-      modeloutput <- update(baseline, yvar ~. + wgdev, data = modeldat)
-    }
+  if(all(!colnames(modeldat) %in% "climate")){
+    
+    modeldat$climate <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
+    
+    if (func == "lin"){
+      modeloutput <- update(baseline, .~. + climate, data = modeldat)
+    } else if (func == "quad") {
+      modeloutput <- update(baseline, .~. + climate + I(climate ^ 2), data = modeldat)
+    } else if (func == "cub") {
+      modeloutput <- update(baseline, .~. + climate + I(climate ^ 2) + I(climate ^ 3), data = modeldat)
+    } else if (func == "log") {
+      modeloutput <- update(baseline, .~. + log(climate), data = modeldat)
+    } else if (func == "inv") {
+      modeloutput <- update(baseline, .~. + I(climate ^ -1), data = modeldat)
+    } else if (func == "centre"){
+      if(centre[[2]] == "both"){
+        modeldat$wgdev  <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
+        modeldat$wgmean <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
+        modeloutput <- update(baseline, yvar ~. + wgdev + wgmean, data = modeldat)
+      }
+      if(centre[[2]] == "mean"){
+        modeldat$wgmean <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
+        modeloutput <- update(baseline, yvar ~. + wgmean, data = modeldat)
+      }
+      if(centre[[2]] == "dev"){
+        modeldat$wgdev  <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
+        modeloutput <- update(baseline, yvar ~. + wgdev, data = modeldat)
+      }
+    } else {
+      print("Define func")
+    } 
+    
   } else {
-    print("Define func")
+    
+    modeloutput <- update(baseline, yvar~., data = modeldat)
+    
   }
   
   # now run one of two optimization functions
@@ -283,12 +292,28 @@ weightwin <- function(xvar, cdate, bdate, baseline, range,
     #                 modeloutput = modeloutput, modeldat = modeldat, 
     #                 funcenv = funcenv,  
     #                 cmatrix = cmatrix, nullmodel = nullmodel)  
-    result <- optim(par = par, fn = modloglik_W, control = control, 
-                    method = method, lower = c(0.0001, 0.0001, -Inf), 
-                    upper = c(Inf, Inf, 0), duration = duration, 
-                    modeloutput = modeloutput, modeldat = modeldat, 
-                    funcenv = funcenv,  
-                    cmatrix = cmatrix, nullmodel = nullmodel)
+    if(grad == TRUE){
+      
+      result <- optim(par = par, fn = modloglik_W, 
+                      gr = Uni_grad_W, 
+                      control = control, 
+                      method = method, lower = c(0.0001, 0.0001, -Inf), 
+                      upper = c(Inf, Inf, 0), duration = duration, 
+                      modeloutput = modeloutput, modeldat = modeldat, 
+                      funcenv = funcenv,  
+                      cmatrix = cmatrix, nullmodel = nullmodel) 
+      
+    } else {
+      
+      result <- optim(par = par, fn = modloglik_W,
+                      control = control, 
+                      method = method, lower = c(0.0001, 0.0001, -Inf), 
+                      upper = c(Inf, Inf, 0), duration = duration, 
+                      modeloutput = modeloutput, modeldat = modeldat, 
+                      funcenv = funcenv,  
+                      cmatrix = cmatrix, nullmodel = nullmodel)
+      
+    }
     #result  <- nlminb(start = par, objective = modloglik_W, control = list(step.min = 0.001, step.max = 0.001),
     #                  lower = c(0.0001, 0.0001, -100), upper = c(100, 100, 0),
     #                  duration = duration, modeloutput = modeloutput, modeldat = modeldat,
@@ -311,32 +336,117 @@ weightwin <- function(xvar, cdate, bdate, baseline, range,
       stop("GEV scale parameter should be >0")
     }
     j      <- seq(-10, 10, by = (2 * 10 / duration))
-    result <- optim(par = par, fn = modloglik_G, control = control, 
-                    method = method, lower = c(-Inf, 0.0001, -Inf), 
-                    upper = c(Inf, Inf, Inf), duration = duration, 
-                    modeloutput = modeloutput, funcenv = funcenv,
-                    cmatrix = cmatrix, nullmodel = nullmodel)
+    
+    if(grad == TRUE){
+      
+      result <- optim(par = par, fn = modloglik_G, 
+                      gr = Uni_grad_G, 
+                      control = control, 
+                      method = method, lower = c(-Inf, 0.0001, -Inf), 
+                      upper = c(Inf, Inf, Inf), duration = duration, 
+                      modeloutput = modeloutput, funcenv = funcenv,
+                      cmatrix = cmatrix, nullmodel = nullmodel)
+      
+    } else {
+      
+      result <- optim(par = par, fn = modloglik_G, 
+                      gr = Uni_grad_G, 
+                      control = control, 
+                      method = method, lower = c(-Inf, 0.0001, -Inf), 
+                      upper = c(Inf, Inf, Inf), duration = duration, 
+                      modeloutput = modeloutput, funcenv = funcenv,
+                      cmatrix = cmatrix, nullmodel = nullmodel)
+      
+    }
+    
+    print(result)
+  } else if (weightfunc == "U"){
+    
+    if(length(par) > 2){
+      print("Uniform distribution only uses two parameters (start and end). All other parameter values are ignored.")
+    }
+    
+    if(par[1] > range[1]){
+      stop(paste("Uniform scale parameter 1 must be less than the possible window range (", range[1], ")"))
+    }
+    
+    if(par[2] > range[1]){
+      stop(paste("Uniform scale parameter 2 must be less than the possible window range (", range[1], ")"))
+    }
+    
+    if(par[1] < par[2]){
+      stop(paste("The end parameter must be larger than the start parameter"))
+    }
+    
+    j <- seq(0, 1, length.out = duration)
+    
+    if(grad == TRUE){
+      
+      result <- optim(par = par, fn = modloglik_Uni, 
+                      gr = Uni_grad,
+                      control = control,
+                      method = method, lower = c(0, 0), upper = c(range[1], range[1]), duration = duration,
+                      modeloutput = modeloutput, funcenv = funcenv,
+                      cmatrix = cmatrix, nullmodel = nullmodel) 
+      
+    } else {
+      
+      result <- optim(par = par, fn = modloglik_Uni, 
+                      gr = Uni_grad,
+                      control = control,
+                      method = method, lower = c(0, 0), upper = c(range[1], range[1]), duration = duration,
+                      modeloutput = modeloutput, funcenv = funcenv,
+                      cmatrix = cmatrix, nullmodel = nullmodel)
+      
+    }
+    
     print(result)
   } else {
-    stop("Please choose Method to equal either W or G")
-  } 
-  WeightedOutput                <- data.frame(DelatAICc = as.numeric(result$value),
-                                              duration = duration,
-                                              shape = as.numeric(result$par[1]),
-                                              scale = as.numeric(result$par[2]),
-                                              location = as.numeric(result$par[3]),
-                                              Function = func, Weight_function = weightfunc,
-                                              sample.size = sample.size)
-  colnames(WeightedOutput) <- c("deltaAICc", "duration", "shape", "scale", "location", "function", "Weight_function", "sample.size")
+    stop("Please choose Method to equal either W, U or G")
+  }
   
-  ifelse (weightfunc == "W", 
-          weight <- weibull3(x = j[1:duration], shape = as.numeric(result$par[1]), 
-                                                scale = as.numeric(result$par[2]), 
-                                                location = as.numeric(result$par[3])),
-          weight <- dgev(j[1:duration], shape = as.numeric(result$par[1]), 
-                         scale = as.numeric(result$par[2]), 
-                         loc = as.numeric(result$par[3]), 
-                         log = FALSE))
+  if(weightfunc == "U"){
+    
+    WeightedOutput           <- data.frame(DelatAICc = as.numeric(result$value),
+                                           duration = duration,
+                                           start = as.numeric(result$par[1]),
+                                           end = as.numeric(result$par[2]),
+                                           Function = func, Weight_function = weightfunc,
+                                           sample.size = sample.size)
+    colnames(WeightedOutput) <- c("deltaAICc", "duration", "start", "end", "function", "Weight_function", "sample.size")
+    
+  } else {
+    
+    WeightedOutput                <- data.frame(DelatAICc = as.numeric(result$value),
+                                                duration = duration,
+                                                shape = as.numeric(result$par[1]),
+                                                scale = as.numeric(result$par[2]),
+                                                location = as.numeric(result$par[3]),
+                                                Function = func, Weight_function = weightfunc,
+                                                sample.size = sample.size)
+    colnames(WeightedOutput) <- c("deltaAICc", "duration", "shape", "scale", "location", "function", "Weight_function", "sample.size") 
+    
+  }
+  
+  if(weightfunc == "W"){
+    
+    weight <- weibull3(x = j[1:duration], shape = as.numeric(result$par[1]), 
+                       scale = as.numeric(result$par[2]), 
+                       location = as.numeric(result$par[3]))
+    
+  } else if(weightfunc == "G"){
+    
+    weight <- dgev(j[1:duration], shape = as.numeric(result$par[1]), 
+                   scale = as.numeric(result$par[2]), 
+                   loc = as.numeric(result$par[3]), 
+                   log = FALSE)
+    
+  } else if(weightfunc == "U"){
+    
+    weight  <- rep(0, times = duration)
+    weight[par[1]:par[2]] <- 1
+    
+  }
   
   weight[is.na(weight)] <- 0
   if (sum(weight) == 0){

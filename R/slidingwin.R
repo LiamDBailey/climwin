@@ -59,7 +59,7 @@
 #'  1. The variable used for mean centring (e.g. Year, Site, Individual). 
 #'  Please specify the parent environment and variable name (e.g. Biol$Year).
 #'  2. Whether the model should include both within-group means and variance ("both"),
-#'  only within-group means ("mean"), or only within-group variance ("dev").
+#'  only within-group means ("mean"), or only within-group variance ("var").
 #'@param cohort A variable used to group biological records that occur in the same biological
 #'  season but cover multiple years (e.g. southern hemisphere breeding season). Only required
 #'  when type is "absolute". The cohort variable should be in the same dataset as the variable bdate.
@@ -257,39 +257,44 @@ slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
                     lower = ifelse(binarylevel == "two" || binarylevel == "lower", allcombos$lower[combo], NA),
                     binary = paste(allcombos$binary[combo]), centre = centre, cohort = cohort,
                     spatial = spatial)
+    
     combined[[combo]]            <- runs
     allcombos$DeltaAICc[combo]   <- round(runs$Dataset$deltaAICc[1], digits = 2)
     allcombos$WindowOpen[combo]  <- runs$Dataset$WindowOpen[1]
     allcombos$WindowClose[combo] <- runs$Dataset$WindowClose[1]
-    if(length(which("lin" == levels(allcombos$func))) >0){
-      allcombos$betaL[combo] <- round(runs$Dataset$ModelBeta[1], digits = 2)
-    }
-    if(allcombos$func[1] == "centre"){
-      if(centre[[2]] == "both"){
-        allcombos$WithinGrpMean <- round(runs$Dataset$WithinGrpMean[1], digits = 2)
-        allcombos$WithinGrpDev  <- round(runs$Dataset$WithinGrpDev[1], digits = 2)
+    
+    if(all(!colnames(baseline) %in% "climate")){
+      
+      if(length(which("lin" == levels(allcombos$func))) >0){
+        allcombos$betaL[combo] <- round(runs$Dataset$ModelBeta[1], digits = 2)
       }
-      if(centre[[2]] == "dev"){
-        allcombos$WithinGrpDev  <- round(runs$Dataset$WithinGrpDev[1], digits = 2)
+      if(allcombos$func[1] == "centre"){
+        if(centre[[2]] == "both"){
+          allcombos$WithinGrpMean <- round(runs$Dataset$WithinGrpMean[1], digits = 2)
+          allcombos$WithinGrpDev  <- round(runs$Dataset$WithinGrpDev[1], digits = 2)
+        }
+        if(centre[[2]] == "dev"){
+          allcombos$WithinGrpDev  <- round(runs$Dataset$WithinGrpDev[1], digits = 2)
+        }
+        if(centre[[2]] == "mean"){
+          allcombos$WithinGrpMean <- round(runs$Dataset$WithinGrpMean[1], digits = 2)
+        }
       }
-      if(centre[[2]] == "mean"){
-        allcombos$WithinGrpMean <- round(runs$Dataset$WithinGrpMean[1], digits = 2)
+      if(length(which("quad" == levels(allcombos$func))) > 0){
+        allcombos$betaL[combo]   <- round(runs$Dataset$ModelBeta[1], digits = 2)
+        allcombos$betaQ[combo]   <- round(runs$Dataset$ModelBetaQ[1], digits = 2)
       }
-    }
-    if(length(which("quad" == levels(allcombos$func))) > 0){
-      allcombos$betaL[combo]   <- round(runs$Dataset$ModelBeta[1], digits = 2)
-      allcombos$betaQ[combo]   <- round(runs$Dataset$ModelBetaQ[1], digits = 2)
-    }
-    if(length(which("cub" == levels(allcombos$func))) > 0){
-      allcombos$betaL[combo]   <- round(runs$Dataset$ModelBeta[1], digits = 2)
-      allcombos$betaQ[combo]   <- round(runs$Dataset$ModelBetaQ[1], digits = 2)
-      allcombos$betaC[combo]   <- round(runs$Dataset$ModelBetaC[1], digits = 2)
-    }
-    if(length(which("inv" == levels(allcombos$func))) > 0){
-      allcombos$betaInv[combo] <- round(runs$Dataset$ModelBeta[1], digits = 2)
-    }
-    if(length(which("log" == levels(allcombos$func))) > 0){
-      allcombos$betaLog[combo] <- round(runs$Dataset$ModelBeta[1], digits = 2)
+      if(length(which("cub" == levels(allcombos$func))) > 0){
+        allcombos$betaL[combo]   <- round(runs$Dataset$ModelBeta[1], digits = 2)
+        allcombos$betaQ[combo]   <- round(runs$Dataset$ModelBetaQ[1], digits = 2)
+        allcombos$betaC[combo]   <- round(runs$Dataset$ModelBetaC[1], digits = 2)
+      }
+      if(length(which("inv" == levels(allcombos$func))) > 0){
+        allcombos$betaInv[combo] <- round(runs$Dataset$ModelBeta[1], digits = 2)
+      }
+      if(length(which("log" == levels(allcombos$func))) > 0){
+        allcombos$betaLog[combo] <- round(runs$Dataset$ModelBeta[1], digits = 2)
+      } 
     }
   }
   allcombos <- cbind(response = colnames(model.frame(baseline))[1], allcombos)
