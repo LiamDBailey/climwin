@@ -4,7 +4,8 @@
 \alias{plotdelta}
 \title{Plot deltaAICc of models}
 \usage{
-plotdelta(dataset, arrow = FALSE, plotall = FALSE, plotallenv)
+plotdelta(dataset, arrow = FALSE, plotall = FALSE, plotallenv,
+  ThreeD = FALSE)
 }
 \arguments{
 \item{dataset}{A dataframe containing information on all fitted climate 
@@ -17,6 +18,8 @@ Should not be changed manually.}
 
 \item{plotallenv}{Used in conjunction with function \code{\link{plotall}}.
 Should not be changed manually.}
+
+\item{ThreeD}{TRUE or FALSE. Generate a 3-dimensional plot of the deltaAICc landscape.}
 }
 \value{
 Returns a colour plot of model deltaAICc values (larger negative

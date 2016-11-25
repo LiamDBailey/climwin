@@ -9,7 +9,7 @@ weightwin(xvar, cdate, bdate, baseline, range, func = "lin", type, refday,
   cohort = NULL, spatial = NULL, par = c(3, 0.2, 0),
   control = list(ndeps = c(0.001, 0.001, 0.001)), method = "L-BFGS-B",
   cutoff.day = NULL, cutoff.month = NULL, furthest = NULL,
-  closest = NULL)
+  closest = NULL, grad = FALSE)
 }
 \arguments{
 \item{xvar}{A list object containing all climate variables of interest. 
@@ -45,7 +45,7 @@ changed manually.}
 1. The variable used for mean centring (e.g. Year, Site, Individual). 
 Please specify the parent environment and variable name (e.g. Biol$Year).
 2. Whether the model should include both within-group means and variance ("both"),
-only within-group means ("mean"), or only within-group variance ("dev").}
+only within-group means ("mean"), or only within-group variance ("var").}
 
 \item{weightfunc}{The distribution to be used for optimisation. Can be 
 either a Weibull ("W") or Generalised Extreme Value distribution ("G").}
@@ -81,6 +81,9 @@ function. Please see \code{\link{optim}} for more detail.}
 \item{cutoff.day, cutoff.month}{Redundant parameters. Now replaced by refday.}
 
 \item{furthest, closest}{Redundant parameters. Now replaced by range.}
+
+\item{grad}{Run the optimisation procedure with a numerically derived gradient function.
+This can improve model convergence but will increase computational time.}
 }
 \value{
 Produces a constantly updating grid of plots as the optimisation 

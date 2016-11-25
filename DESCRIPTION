@@ -19,7 +19,9 @@ Imports:
     lme4,
     MuMIn,
     reshape,
-    plyr
+    plyr,
+    rgl,
+    numDeriv
 Suggests:
     testthat,
     knitr,

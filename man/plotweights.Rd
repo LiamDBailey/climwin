@@ -5,7 +5,7 @@
 \title{Plot distribution of model weights}
 \usage{
 plotweights(dataset, cw1 = 0.95, cw2 = 0.5, cw3 = 0.25, arrow = FALSE,
-  plotall = FALSE, plotallenv)
+  plotall = FALSE, plotallenv, ThreeD = FALSE)
 }
 \arguments{
 \item{dataset}{A dataframe containing information on all fitted climate 
@@ -24,6 +24,8 @@ Should not be changed manually.}
 
 \item{plotallenv}{Used in conjunction with function \code{\link{plotall}}.
 Should not be changed manually.}
+
+\item{ThreeD}{TRUE or FALSE. Generate a 3-dimensional plot of the model weight landscape.}
 }
 \value{
 Returns a plot showing the distribution of cumulative model

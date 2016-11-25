@@ -21,6 +21,7 @@
 #'plotdelta(dataset = MassOutput)
 #'@import ggplot2
 #'@import rgl
+#'@importFrom grDevices colorRampPalette
 #'@export
 
 plotdelta <- function(dataset, arrow = FALSE, plotall = FALSE, plotallenv, ThreeD = FALSE){

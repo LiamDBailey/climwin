@@ -386,7 +386,7 @@ weightwin <- function(xvar, cdate, bdate, baseline, range,
     if(grad == TRUE){
       
       result <- optim(par = par, fn = modloglik_Uni, 
-                      gr = Uni_grad,
+                      gr = Uni_grad_U,
                       control = control,
                       method = method, lower = c(0, 0), upper = c(range[1], range[1]), duration = duration,
                       modeloutput = modeloutput, funcenv = funcenv,
@@ -394,8 +394,7 @@ weightwin <- function(xvar, cdate, bdate, baseline, range,
       
     } else {
       
-      result <- optim(par = par, fn = modloglik_Uni, 
-                      gr = Uni_grad,
+      result <- optim(par = par, fn = modloglik_Uni,
                       control = control,
                       method = method, lower = c(0, 0), upper = c(range[1], range[1]), duration = duration,
                       modeloutput = modeloutput, funcenv = funcenv,
