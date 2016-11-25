@@ -56,6 +56,8 @@
 #'  Please specify the parent environment and variable name (e.g. Biol$Year).
 #'  2. Whether the model should include both within-group means and variance ("both"),
 #'  only within-group means ("mean"), or only within-group variance ("var").
+#'@param grad Run the optimisation procedure with a numerically derived gradient function.
+#'  This can improve model convergence but will increase computational time. 
 #'@references van de Pol & Cockburn 2011 Am Nat 177(5):698-707 (doi: 
 #'  10.1086/659101) "Identifying the critical climatic time window that affects 
 #'  trait expression"
@@ -120,6 +122,7 @@
 #'  }
 #'
 #'@importFrom evd dgev
+#'@import numDeriv
 #'@export
 
 weightwin <- function(xvar, cdate, bdate, baseline, range, 
