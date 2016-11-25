@@ -457,79 +457,88 @@ weightwin <- function(xvar, cdate, bdate, baseline, range,
   modeldat$climate      <- apply(cmatrix, 1, FUN = function(x) {sum(x * weight)})
   LocalModel            <- update(modeloutput, .~., data = modeldat)
   
-  #return(list(DAICc = funcenv$DAICc, shape = funcenv$par_shape, scale = funcenv$par_scale, location = funcenv$par_location, Weight = weightfunc, weight = weight))
-  
-  if (class(LocalModel)[length(class(LocalModel))]=="coxph") {
-    if (func == "quad"){
-      WeightedOutput$ModelBeta  <- coef(LocalModel)[length(coef(LocalModel))-1]
-      WeightedOutput$Std.Error  <- coef(summary(LocalModel))[, "se(coef)"][length(coef(LocalModel))-1]
-      WeightedOutput$ModelBetaQ <- coef(LocalModel)[length(coef(LocalModel))]
-      WeightedOutput$Std.ErrorQ <- coef(summary(LocalModel))[, "se(coef)"][length(coef(LocalModel))]
-      WeightedOutput$ModelBetaC <- NA
-      WeightedOutput$ModelInt   <- 0
-    } else if (func == "cub"){
-      WeightedOutput$ModelBeta  <- coef(LocalModel)[length(coef(LocalModel))-2]
-      WeightedOutput$Std.Error  <- coef(summary(LocalModel))[, "se(coef)"][length(coef(LocalModel))-2]
-      WeightedOutput$ModelBetaQ <- coef(LocalModel)[length(coef(LocalModel))-1]
-      WeightedOutput$Std.ErrorQ <- coef(summary(LocalModel))[, "se(coef)"][length(coef(LocalModel))-1]
-      WeightedOutput$ModelBetaC <- coef(LocalModel)[length(coef(LocalModel))]
-      WeightedOutput$Std.ErrorC <- coef(summary(LocalModel))[, "se(coef)"][length(coef(LocalModel))]
-      WeightedOutput$ModelInt   <- 0
-    } else {
-      WeightedOutput$ModelBeta  <- coef(LocalModel)[length(coef(LocalModel))]
-      WeightedOutput$Std.Error  <- coef(summary(LocalModel))[, "se(coef)"][length(coef(LocalModel))]
-      WeightedOutput$ModelBetaQ <- NA
-      WeightedOutput$ModelBetaC <- NA
-      WeightedOutput$ModelInt   <- 0
-    }
-  } 
-  else if (length(attr(class(LocalModel),"package")) > 0 && attr(class(LocalModel), "package") == "lme4"){            
-    if (func == "quad"){
-      WeightedOutput$ModelBeta  <- fixef(LocalModel)[length(fixef(LocalModel)) - 1]
-      WeightedOutput$Std.Error  <- coef(summary(LocalModel))[, "Std. Error"][2]
-      WeightedOutput$ModelBetaQ <- fixef(LocalModel)[length(fixef(LocalModel))]
-      WeightedOutput$Std.ErrorQ <- coef(summary(LocalModel))[, "Std. Error"][3]
-      WeightedOutput$ModelBetaC <- NA
-      WeightedOutput$ModelInt   <- fixef(LocalModel)[1]
-    } else if (func == "cub"){
-      WeightedOutput$ModelBeta  <- fixef(LocalModel)[length(fixef(LocalModel)) - 2]
-      WeightedOutput$Std.Error  <- coef(summary(LocalModel))[, "Std. Error"][2]
-      WeightedOutput$ModelBetaQ <- fixef(LocalModel)[length(fixef(LocalModel)) - 1]
-      WeightedOutput$Std.ErrorQ <- coef(summary(LocalModel))[, "Std. Error"][3]
-      WeightedOutput$ModelBetaC <- fixef(LocalModel)[length(fixef(LocalModel))]
-      WeightedOutput$Std.ErrorC <- coef(summary(LocalModel))[, "Std. Error"][3]
-      WeightedOutput$ModelInt   <- fixef(LocalModel)[1]
-    } else {
-      WeightedOutput$ModelBeta  <- fixef(LocalModel)[length(fixef(LocalModel))]
-      WeightedOutput$Std.Error  <- coef(summary(LocalModel))[, "Std. Error"][2]
-      WeightedOutput$ModelBetaQ <- NA
-      WeightedOutput$ModelBetaC <- NA
-      WeightedOutput$ModelInt   <- fixef(LocalModel)[1]
-    }
+  if(any(colnames(model.frame(baseline)) %in% "climate")){
+    
+    coefs <- coef(summary(LocalModel))[, 1:2]
+    
+    temp.df <- data.frame("Y", t(coefs[-1, 1]), t(coefs[-1, 2]))
+    
+    colnames(temp.df) <- c("Custom.mod", colnames(model.frame(LocalModel)[-1]), paste(colnames(model.frame(LocalModel)[-1]), "SE", sep = ""))
+    
   } else {
-    if (func == "quad"){
-      WeightedOutput$ModelBeta  <- coef(LocalModel)[length(coef(LocalModel)) - 1]
-      WeightedOutput$Std.Error  <- coef(summary(LocalModel))[, "Std. Error"][2]
-      WeightedOutput$ModelBetaQ <- coef(LocalModel)[length(coef(LocalModel))]
-      WeightedOutput$Std.ErrorQ <- coef(summary(LocalModel))[, "Std. Error"][3]
-      WeightedOutput$ModelBetaC <- NA
-      WeightedOutput$ModelInt   <- coef(LocalModel)[1]
-    } else if (func == "cub"){
-      WeightedOutput$ModelBeta  <- coef(LocalModel)[length(coef(LocalModel)) - 2]
-      WeightedOutput$Std.Error  <- coef(summary(LocalModel))[, "Std. Error"][2]
-      WeightedOutput$ModelBetaQ <- coef(LocalModel)[length(coef(LocalModel)) - 1]
-      WeightedOutput$Std.ErrorQ <- coef(summary(LocalModel))[, "Std. Error"][3]
-      WeightedOutput$ModelBetaC <- coef(LocalModel)[length(coef(LocalModel))]
-      WeightedOutput$Std.ErrorC <- coef(summary(LocalModel))[, "Std. Error"][4]
-      WeightedOutput$ModelInt   <- coef(LocalModel)[1]
+    
+    if (class(LocalModel)[length(class(LocalModel))]=="coxph") {
+      if (func == "quad"){
+        WeightedOutput$ModelBeta  <- coef(LocalModel)[length(coef(LocalModel))-1]
+        WeightedOutput$Std.Error  <- coef(summary(LocalModel))[, "se(coef)"][length(coef(LocalModel))-1]
+        WeightedOutput$ModelBetaQ <- coef(LocalModel)[length(coef(LocalModel))]
+        WeightedOutput$Std.ErrorQ <- coef(summary(LocalModel))[, "se(coef)"][length(coef(LocalModel))]
+        WeightedOutput$ModelBetaC <- NA
+        WeightedOutput$ModelInt   <- 0
+      } else if (func == "cub"){
+        WeightedOutput$ModelBeta  <- coef(LocalModel)[length(coef(LocalModel))-2]
+        WeightedOutput$Std.Error  <- coef(summary(LocalModel))[, "se(coef)"][length(coef(LocalModel))-2]
+        WeightedOutput$ModelBetaQ <- coef(LocalModel)[length(coef(LocalModel))-1]
+        WeightedOutput$Std.ErrorQ <- coef(summary(LocalModel))[, "se(coef)"][length(coef(LocalModel))-1]
+        WeightedOutput$ModelBetaC <- coef(LocalModel)[length(coef(LocalModel))]
+        WeightedOutput$Std.ErrorC <- coef(summary(LocalModel))[, "se(coef)"][length(coef(LocalModel))]
+        WeightedOutput$ModelInt   <- 0
+      } else {
+        WeightedOutput$ModelBeta  <- coef(LocalModel)[length(coef(LocalModel))]
+        WeightedOutput$Std.Error  <- coef(summary(LocalModel))[, "se(coef)"][length(coef(LocalModel))]
+        WeightedOutput$ModelBetaQ <- NA
+        WeightedOutput$ModelBetaC <- NA
+        WeightedOutput$ModelInt   <- 0
+      }
+    } 
+    else if (length(attr(class(LocalModel),"package")) > 0 && attr(class(LocalModel), "package") == "lme4"){            
+      if (func == "quad"){
+        WeightedOutput$ModelBeta  <- fixef(LocalModel)[length(fixef(LocalModel)) - 1]
+        WeightedOutput$Std.Error  <- coef(summary(LocalModel))[, "Std. Error"][2]
+        WeightedOutput$ModelBetaQ <- fixef(LocalModel)[length(fixef(LocalModel))]
+        WeightedOutput$Std.ErrorQ <- coef(summary(LocalModel))[, "Std. Error"][3]
+        WeightedOutput$ModelBetaC <- NA
+        WeightedOutput$ModelInt   <- fixef(LocalModel)[1]
+      } else if (func == "cub"){
+        WeightedOutput$ModelBeta  <- fixef(LocalModel)[length(fixef(LocalModel)) - 2]
+        WeightedOutput$Std.Error  <- coef(summary(LocalModel))[, "Std. Error"][2]
+        WeightedOutput$ModelBetaQ <- fixef(LocalModel)[length(fixef(LocalModel)) - 1]
+        WeightedOutput$Std.ErrorQ <- coef(summary(LocalModel))[, "Std. Error"][3]
+        WeightedOutput$ModelBetaC <- fixef(LocalModel)[length(fixef(LocalModel))]
+        WeightedOutput$Std.ErrorC <- coef(summary(LocalModel))[, "Std. Error"][3]
+        WeightedOutput$ModelInt   <- fixef(LocalModel)[1]
+      } else {
+        WeightedOutput$ModelBeta  <- fixef(LocalModel)[length(fixef(LocalModel))]
+        WeightedOutput$Std.Error  <- coef(summary(LocalModel))[, "Std. Error"][2]
+        WeightedOutput$ModelBetaQ <- NA
+        WeightedOutput$ModelBetaC <- NA
+        WeightedOutput$ModelInt   <- fixef(LocalModel)[1]
+      }
     } else {
-      WeightedOutput$ModelBeta  <- coef(LocalModel)[length(coef(LocalModel))]
-      WeightedOutput$Std.Error  <- coef(summary(LocalModel))[, "Std. Error"][2]
-      WeightedOutput$ModelBetaQ <- NA
-      WeightedOutput$ModelBetaC <- NA
-      WeightedOutput$ModelInt   <- coef(LocalModel)[1]
-    }
-  }  
+      if (func == "quad"){
+        WeightedOutput$ModelBeta  <- coef(LocalModel)[length(coef(LocalModel)) - 1]
+        WeightedOutput$Std.Error  <- coef(summary(LocalModel))[, "Std. Error"][2]
+        WeightedOutput$ModelBetaQ <- coef(LocalModel)[length(coef(LocalModel))]
+        WeightedOutput$Std.ErrorQ <- coef(summary(LocalModel))[, "Std. Error"][3]
+        WeightedOutput$ModelBetaC <- NA
+        WeightedOutput$ModelInt   <- coef(LocalModel)[1]
+      } else if (func == "cub"){
+        WeightedOutput$ModelBeta  <- coef(LocalModel)[length(coef(LocalModel)) - 2]
+        WeightedOutput$Std.Error  <- coef(summary(LocalModel))[, "Std. Error"][2]
+        WeightedOutput$ModelBetaQ <- coef(LocalModel)[length(coef(LocalModel)) - 1]
+        WeightedOutput$Std.ErrorQ <- coef(summary(LocalModel))[, "Std. Error"][3]
+        WeightedOutput$ModelBetaC <- coef(LocalModel)[length(coef(LocalModel))]
+        WeightedOutput$Std.ErrorC <- coef(summary(LocalModel))[, "Std. Error"][4]
+        WeightedOutput$ModelInt   <- coef(LocalModel)[1]
+      } else {
+        WeightedOutput$ModelBeta  <- coef(LocalModel)[length(coef(LocalModel))]
+        WeightedOutput$Std.Error  <- coef(summary(LocalModel))[, "Std. Error"][2]
+        WeightedOutput$ModelBetaQ <- NA
+        WeightedOutput$ModelBetaC <- NA
+        WeightedOutput$ModelInt   <- coef(LocalModel)[1]
+      }
+    } 
+  }
 
   if(nrandom == 0){
     Return.list <- list()
@@ -537,6 +546,13 @@ weightwin <- function(xvar, cdate, bdate, baseline, range,
     Return.list$BestModelData <- model.frame(LocalModel)
     Return.list$WeightedOutput <- WeightedOutput
     Return.list$WeightedOutput$Randomised <- "no"
+    
+    if(any(colnames(model.frame(baseline)) %in% "climate")){
+      
+      Return.list$WeightedOutput <- merge(Return.list$WeightedOutput, temp.df)
+      
+    }
+    
     Return.list$Weights <- weight
     return(Return.list)     
   } else {
@@ -545,6 +561,13 @@ weightwin <- function(xvar, cdate, bdate, baseline, range,
     Return.list$BestModelData <- model.frame(LocalModel)
     Return.list$WeightedOutput <- WeightedOutput
     Return.list$WeightedOutput$Randomised <- "yes"
+    
+    if(any(colnames(model.frame(baseline)) %in% "climate")){
+      
+      Return.list$WeightedOutput <- merge(Return.list$WeightedOutput, temp.df)
+      
+    }
+    
     Return.list$Weights <- weight
     return(Return.list)
   }

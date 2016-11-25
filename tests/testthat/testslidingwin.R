@@ -1090,3 +1090,46 @@ test_that("spatial replication works with slidingwin with NAs and cmissing TRUE"
   expect_true(ncol(test[[1]]$BestModelData) >= 2)
   
 })
+
+############################################################
+
+#Test that custom models work in slidingwin
+# Test regular output #
+test_that("slidingwin produces the right output", {
+  
+  data(Mass, envir = environment())
+  data(MassClimate, envir = environment())
+  Mass$climate <- 1
+  
+  furthest = 2
+  closest = 2
+  
+  test <- slidingwin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
+                     baseline = lm(Mass ~ climate, data = Mass), range = c(2, 2), 
+                     type = "relative", stat = "max", func = "lin", cmissing = FALSE)
+  
+  duration  <- (furthest - closest) + 1
+  maxmodno  <- (duration * (duration + 1))/2
+  
+  # Test that a list has been produced
+  expect_true(is.list(test))
+  
+  # Test that a best model was returned
+  expect_false(is.na((test[[1]]$BestModel)[1]))
+  
+  # Test that there are no NAs in the best model data
+  expect_equal(length(which(is.na(test[[1]]$BestModelData))), 0)
+  
+  # Test that the best model data has at least 2 columns
+  expect_true(ncol(test[[1]]$BestModelData) >= 2)
+  
+  # Test that there are no NAs in the output dataset
+  expect_equal(length(which(is.na(test[[1]]$Dataset[, 4]))), 0)
+  
+  # Test that the correct number of models were recorded in the dataset
+  expect_equal(maxmodno, nrow(test[[1]]$Dataset))
+  
+  # Test that data was not randomised
+  expect_true((test[[1]]$Dataset["Randomised"])[1, ] == "no")
+  
+})

@@ -419,19 +419,19 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
           modlist$WindowOpen[[modno]]  <- m
           modlist$WindowClose[[modno]] <- m - n + 1
           
-          #if(any(colnames(modeldat) %in% "climate")){
+          if(any(colnames(model.frame(baseline)) %in% "climate")){
               
-          #    coefs <- coef(summary(modeloutput))[-1, 1:2]
+              coefs <- coef(summary(modeloutput))[, 1:2]
               
-          #    coef_data[[modno]] <- cbind(cast(melt(coefs), X2 ~ X1, mean)[1, -1], cast(melt(coefs), X2 ~ X1, mean)[2, -1])
+              temp.df <- data.frame("Y", t(coefs[-1, 1]), t(coefs[-1, 2]))
               
-          #    colnames(coef_data[[modno]])[(nrow(coefs) + 1):ncol(coef_data[[modno]])] <- paste(colnames(coef_data[[modno]])[(nrow(coefs) + 1):ncol(coef_data[[modno]])], "SE")
+              colnames(temp.df) <- c("Custom.mod", colnames(model.frame(modeloutput)[-1]), paste(colnames(model.frame(modeloutput)[-1]), "SE", sep = ""))
               
-          #    print(coef_data[[modno]])
+              coef_data[[modno]] <- temp.df
             
-          #} else {
+          } else {
             
-            if (class(baseline)[length(class(baseline))]=="coxph") {
+            if (class(baseline)[length(class(baseline))] == "coxph") {
               if (func == "quad"){
                 modlist$ModelBeta[[modno]]  <- coef(modeloutput)[length(coef(modeloutput))-1]
                 modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "se(coef)"][length(coef(modeloutput))-1]
@@ -556,7 +556,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
                 modlist$ModelInt[[modno]]   <- coef(modeloutput)[1]
               }
             }
-          #}
+          }
           modno <- modno + 1        #Increase modno#
         }
       }
@@ -599,12 +599,6 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     modlist$Function <- func
   }
   
-  #if(any(colnames(modeldat) %in% "climate")){
-    
-  #  modlist <- cbind(modlist, as.data.frame(coef_data))
-    
-  #}
-  
   modlist$Furthest     <- range[1]
   modlist$Closest      <- range[2]
   modlist$Statistics   <- stat
@@ -616,6 +610,12 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   if (type == "absolute"){
     modlist$Reference.day   <- refday[1]
     modlist$Reference.month <- refday[2]
+  }
+  
+  if(exists("coef_data")){
+    
+    modlist <- cbind(modlist, plyr::rbind.fill(coef_data))
+    
   }
   
   if (nrandom == 0){

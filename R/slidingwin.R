@@ -263,7 +263,7 @@ slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
     allcombos$WindowOpen[combo]  <- runs$Dataset$WindowOpen[1]
     allcombos$WindowClose[combo] <- runs$Dataset$WindowClose[1]
     
-    if(all(!colnames(baseline) %in% "climate")){
+    if(all(!colnames(model.frame(baseline)) %in% "climate")){
       
       if(length(which("lin" == levels(allcombos$func))) >0){
         allcombos$betaL[combo] <- round(runs$Dataset$ModelBeta[1], digits = 2)
