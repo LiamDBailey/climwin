@@ -81,13 +81,26 @@ plotall <- function(dataset, datasetrand = NULL,
       print("sorry plotall cannot yet plot the best model panel for a coxph model")
     }
   
-  
   a       <- c(cw1, cw2, cw3)
   b       <- a[order (-a)]
   cwa     <- b[1]
   cwb     <- b[2]
   cwc     <- b[3]
   plotenv <- environment()
+  
+  if(length(levels(dataset$Custom.mod)) == 1){
+    
+    plotdelta(dataset = dataset, arrow = arrow, plotall = TRUE, plotallenv = plotenv)
+    
+    plotweights(dataset = dataset, cw1 = cwa, cw2 = cwb, cw3 = cwc, arrow = arrow, plotall = TRUE, plotallenv = plotenv)
+    
+    window <- plotwin(dataset = dataset, cw = cwa)
+    
+    print("Plot of model coefficients and best model output is unavailable when using custom models.")
+    
+    gridExtra::grid.arrange(plotenv$delta, plotenv$cw, window, nrow = 1, ncol = 3, top = paste(title))
+    
+  } else {
   
   plotbetas(dataset = dataset, arrow = arrow, plotall = TRUE, plotallenv = plotenv)
   
@@ -181,4 +194,5 @@ plotall <- function(dataset, datasetrand = NULL,
     } 
   } 
 }
+  }
 }

@@ -27,7 +27,7 @@
 #'@import ggplot2
 #'@export
 
-plotweights <- function(dataset, cw1 = 0.95, cw2 = 0.5, cw3 = 0.25, arrow = FALSE, plotall = FALSE, plotallenv){
+plotweights <- function(dataset, cw1 = 0.95, cw2 = 0.5, cw3 = 0.25, arrow = FALSE, plotall = FALSE, plotallenv, ThreeD = FALSE){
 
   #Order cw1, cw2 and cw3 so that cw1 is always the largest value
   a          <- c(cw1, cw2, cw3)
@@ -62,11 +62,43 @@ plotweights <- function(dataset, cw1 = 0.95, cw2 = 0.5, cw3 = 0.25, arrow = FALS
   dataset$cw3    <- as.numeric(cumsum(dataset$ModWeight) <= cw3)
   dataset$cw.full <- dataset$cw1 + dataset$cw2 + dataset$cw3
   
+  if(ThreeD == TRUE){
+    
+    Matrix_3d <- matrix(nrow = max(dataset$WindowOpen), ncol = max(dataset$WindowOpen), data = 0)
+    Matrix_cw <- matrix(nrow = max(dataset$WindowOpen), ncol = max(dataset$WindowOpen), data = 0)
+    for(i in 1:nrow(dataset)){
+      
+      Matrix_3d[dataset$WindowOpen[i], dataset$WindowClose[i]] <- dataset$ModWeight[i]
+      
+    }
+    
+    for(i in 1:nrow(dataset)){
+      
+      Matrix_cw[dataset$WindowOpen[i], dataset$WindowClose[i]] <- dataset$cw.full[i] + 1
+      
+    }
+    
+    norm_palette <- colorRampPalette(c("white", "grey", "black"))
+    
+    cw <- Matrix_cw + 1
+    z <- Matrix_3d;
+    x <- (1:nrow(z));
+    y <- (1:nrow(z));
+    zlim <- range(z);
+    z2 <- ((z/zlim[2])*100)
+    colourlut <- norm_palette(5);
+    col <- colourlut[cw];
+    open3d();
+    rgl.surface(x, y, z2, color = col, alpha = 1, back = "lines");
+    rgl.surface(x, y, matrix(0, nrow(z), ncol(z)), color = "grey", alpha = 0.5, back = "fill")
+    
+  } else {
+  
   dataset$cw.full[which(dataset$cw.full == 3)] <- cw3
   dataset$cw.full[which(dataset$cw.full == 2)] <- cw2
   dataset$cw.full[which(dataset$cw.full == 1)] <- cw1
   dataset$cw.full[which(dataset$cw.full == 0)] <- 1
-  
+
 with(dataset, {
   if(arrow == FALSE){
     ARR <- ggplot(dataset, aes(x = WindowClose, y = WindowOpen, z = cw.full))+
@@ -123,5 +155,6 @@ with(dataset, {
   }
 
 }
-)  
+)
+  }
 }
