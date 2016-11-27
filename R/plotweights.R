@@ -65,33 +65,35 @@ plotweights <- function(dataset, cw1 = 0.95, cw2 = 0.5, cw3 = 0.25, arrow = FALS
   
   if(ThreeD == TRUE){
     
-    Matrix_3d <- matrix(nrow = max(dataset$WindowOpen), ncol = max(dataset$WindowOpen), data = 0)
-    Matrix_cw <- matrix(nrow = max(dataset$WindowOpen), ncol = max(dataset$WindowOpen), data = 0)
-    for(i in 1:nrow(dataset)){
-      
-      Matrix_3d[dataset$WindowOpen[i], dataset$WindowClose[i]] <- dataset$ModWeight[i]
-      
-    }
+    stop("3D plotting temporarily disabled due to issues with the rgl package.")
     
-    for(i in 1:nrow(dataset)){
+    #Matrix_3d <- matrix(nrow = max(dataset$WindowOpen), ncol = max(dataset$WindowOpen), data = 0)
+    #Matrix_cw <- matrix(nrow = max(dataset$WindowOpen), ncol = max(dataset$WindowOpen), data = 0)
+    #for(i in 1:nrow(dataset)){
       
-      Matrix_cw[dataset$WindowOpen[i], dataset$WindowClose[i]] <- dataset$cw.full[i] + 1
+    #  Matrix_3d[dataset$WindowOpen[i], dataset$WindowClose[i]] <- dataset$ModWeight[i]
       
-    }
+    #}
     
-    norm_palette <- colorRampPalette(c("white", "grey", "black"))
+    #for(i in 1:nrow(dataset)){
+      
+    #  Matrix_cw[dataset$WindowOpen[i], dataset$WindowClose[i]] <- dataset$cw.full[i] + 1
+      
+    #}
     
-    cw <- Matrix_cw + 1
-    z <- Matrix_3d;
-    x <- (1:nrow(z));
-    y <- (1:nrow(z));
-    zlim <- range(z);
-    z2 <- ((z/zlim[2])*100)
-    colourlut <- norm_palette(5);
-    col <- colourlut[cw];
-    open3d();
-    rgl.surface(x, y, z2, color = col, alpha = 1, back = "lines");
-    rgl.surface(x, y, matrix(0, nrow(z), ncol(z)), color = "grey", alpha = 0.5, back = "fill")
+    #norm_palette <- colorRampPalette(c("white", "grey", "black"))
+    
+    #cw <- Matrix_cw + 1
+    #z <- Matrix_3d;
+    #x <- (1:nrow(z));
+    #y <- (1:nrow(z));
+    #zlim <- range(z);
+    #z2 <- ((z/zlim[2])*100)
+    #colourlut <- norm_palette(5);
+    #col <- colourlut[cw];
+    #open3d();
+    #rgl.surface(x, y, z2, color = col, alpha = 1, back = "lines");
+    #rgl.surface(x, y, matrix(0, nrow(z), ncol(z)), color = "grey", alpha = 0.5, back = "fill")
     
   } else {
   

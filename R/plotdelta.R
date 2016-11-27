@@ -28,25 +28,27 @@ plotdelta <- function(dataset, arrow = FALSE, plotall = FALSE, plotallenv, Three
   
   if(ThreeD == TRUE){
     
-    Matrix_3d <- matrix(nrow = max(dataset$WindowOpen), ncol = max(dataset$WindowOpen), data = 0)
-    for(i in 1:nrow(dataset)){
+    stop("3D plotting temporarily disabled due to issues with the rgl package.")
     
-      Matrix_3d[dataset$WindowOpen[i], dataset$WindowClose[i]] <- dataset$deltaAICc[i]
+    #Matrix_3d <- matrix(nrow = max(dataset$WindowOpen), ncol = max(dataset$WindowOpen), data = 0)
+    #for(i in 1:nrow(dataset)){
     
-    }
+    #  Matrix_3d[dataset$WindowOpen[i], dataset$WindowClose[i]] <- dataset$deltaAICc[i]
     
-    norm_palette <- colorRampPalette(c("blue", "yellow", "red"))
+    #}
     
-    z <- -(Matrix_3d);
-    x <- (1:nrow(z));
-    y <- (1:nrow(z));
-    zlim <- range(z);
-    zlen <- zlim[2] - zlim[1]+1;
-    colourlut <- norm_palette(zlen);
-    col <- colourlut[z-zlim[1]+1];
-    open3d();
-    rgl.surface(x, y, z, color = col, alpha = 1, back = "lines");
-    rgl.surface(x, y, matrix(1, nrow(z), ncol(z)), color = "grey", alpha = 0.5, back = "fill")
+    #norm_palette <- colorRampPalette(c("blue", "yellow", "red"))
+    
+    #z <- -(Matrix_3d);
+    #x <- (1:nrow(z));
+    #y <- (1:nrow(z));
+    #zlim <- range(z);
+    #zlen <- zlim[2] - zlim[1]+1;
+    #colourlut <- norm_palette(zlen);
+    #col <- colourlut[z-zlim[1]+1];
+    #open3d();
+    #rgl.surface(x, y, z, color = col, alpha = 1, back = "lines");
+    #rgl.surface(x, y, matrix(1, nrow(z), ncol(z)), color = "grey", alpha = 0.5, back = "fill")
     
   } else {
   
