@@ -20,7 +20,6 @@ Imports:
     MuMIn,
     reshape,
     plyr,
-    rgl,
     numDeriv
 Suggests:
     testthat,

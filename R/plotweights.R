@@ -25,7 +25,6 @@
 #' 
 #'plotweights(dataset = MassOutput, cw1 = 0.95, cw2 = 0.75, cw3 = 0.25)
 #'@import ggplot2
-#'@import rgl
 #'@export
 
 plotweights <- function(dataset, cw1 = 0.95, cw2 = 0.5, cw3 = 0.25, arrow = FALSE, plotall = FALSE, plotallenv, ThreeD = FALSE){

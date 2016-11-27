@@ -20,7 +20,6 @@
 #' 
 #'plotdelta(dataset = MassOutput)
 #'@import ggplot2
-#'@import rgl
 #'@importFrom grDevices colorRampPalette
 #'@export
 
