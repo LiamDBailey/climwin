@@ -4,14 +4,18 @@
 \alias{weightwin}
 \title{Find a weighted climate window}
 \usage{
-weightwin(xvar, cdate, bdate, baseline, range, func = "lin", type, refday,
-  nrandom = 0, centre = NULL, weightfunc = "W", cinterval = "day",
-  cohort = NULL, spatial = NULL, par = c(3, 0.2, 0),
+weightwin(n = 1, xvar, cdate, bdate, baseline, range, func = "lin", type,
+  refday, nrandom = 0, centre = NULL, weightfunc = "W",
+  cinterval = "day", cohort = NULL, spatial = NULL, par = c(3, 0.2, 0),
   control = list(ndeps = c(0.001, 0.001, 0.001)), method = "L-BFGS-B",
   cutoff.day = NULL, cutoff.month = NULL, furthest = NULL,
   closest = NULL, grad = FALSE)
 }
 \arguments{
+\item{n}{The number of iterations used to run weightwin. If n > 1, iterations 
+will use randomly generated starting parameters. These are stored in the 
+output data frame `iterations`.}
+
 \item{xvar}{A list object containing all climate variables of interest. 
 Please specify the parent environment and variable name (e.g. Climate$Temp).}
 
@@ -108,6 +112,9 @@ Produces a constantly updating grid of plots as the optimisation
  the best weighted window model.
  
  \item WeightedOutput. Parameter values for the best weighted window.
+ 
+ \item iterations. If n > 1, the starting parameters and deltaAICc values
+ from each iteration of weightwin.
  }
 }
 \description{
