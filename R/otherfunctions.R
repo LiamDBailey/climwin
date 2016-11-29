@@ -383,8 +383,8 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
               train                    <- subset(modeldat, modeldat$K != k) # Create the train dataset
               baselinecv               <- update(baseline, yvar~., data = train) # Refit the model without climate using the train dataset
               modeloutputcv            <- update(modeloutput, yvar~., data = train)  # Refit the model with climate using the train dataset
-              test$predictions         <- predict(modeloutputcv, newdata = test, allow.new.levels = TRUE) # Test the output of the climate model fitted using the test data
-              test$predictionsbaseline <- predict(baselinecv, newdata = test, allow.new.levels = TRUE) # Test the output of the null models fitted using the test data
+              test$predictions         <- predict(modeloutputcv, newdata = test, allow.new.levels = TRUE, type = "response") # Test the output of the climate model fitted using the test data
+              test$predictionsbaseline <- predict(baselinecv, newdata = test, allow.new.levels = TRUE, type = "response") # Test the output of the null models fitted using the test data
               
               num        <- length(test$predictions) # Determine the length of the test dataset
               p          <- num - df.residual(modeloutputcv)  # Determine df for the climate model
