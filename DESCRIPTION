@@ -20,7 +20,8 @@ Imports:
     MuMIn,
     reshape,
     plyr,
-    numDeriv
+    numDeriv,
+    RcppRoll
 Suggests:
     testthat,
     knitr,

@@ -262,7 +262,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
         
         for(j in 1:nrow(cdate_new)){
           
-          cdate_new$Week[j] <- ceiling((as.numeric(cdate_new$Date[j]) - min(as.numeric(subset(cdate_new, Year == cdate_new$Year[j])$Date)) + 1) / 7)
+          cdate_new$Week[j] <- ceiling((as.numeric(cdate_new$Date[j]) - min(as.numeric(subset(cdate_new, cdate_new$Year == cdate_new$Year[j])$Date)) + 1) / 7)
           
         }
         

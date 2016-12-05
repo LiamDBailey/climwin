@@ -273,13 +273,13 @@ test_that("Error returned when cmissing FALSE with NAs, cinterval = week", {
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
   
-  MassClimate2 <- MassClimate[-491, ]
+  MassClimate2 <- MassClimate[-c(491:505), ]
   
   # Test that an error is returned
   expect_error(slidingwin(xvar = list(MassClimate2$Temp), cdate = MassClimate2$Date, bdate = Mass$Date, 
                           baseline = lm(Mass ~ 1, data = Mass), range = c(2, 0), 
                           type = "relative", stat = "max", func = "lin", cinterval = "week",
-                          cmissing=FALSE))
+                          cmissing = FALSE))
   
   # Test that an object missing was created
   expect_true(exists("missing"))
@@ -296,13 +296,13 @@ test_that("Error returned when cmissing FALSE with NAs, cinterval = month", {
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
   
-  MassClimate2 <- MassClimate[-491, ]
+  MassClimate2 <- MassClimate[-c(1000:2000), ]
   
   # Test that an error is returned #
   expect_error(slidingwin(xvar = list(MassClimate2$Temp), cdate = MassClimate2$Date, bdate = Mass$Date, 
                           baseline = lm(Mass ~ 1, data = Mass), range = c(1, 0), 
                           type = "relative", stat = "max", func = "lin", cinterval = "month",
-                          cmissing=FALSE))
+                          cmissing = FALSE))
   
   # Test that an object missing has been produced #
   expect_true(exists("missing"))
@@ -1090,3 +1090,5 @@ test_that("spatial replication works with slidingwin with NAs and cmissing TRUE"
   expect_true(ncol(test[[1]]$BestModelData) >= 2)
   
 })
+
+#######################################################################
