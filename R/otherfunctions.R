@@ -26,9 +26,9 @@ climatewin <- function(exclude = NA, xvar, cdate, bdate, baseline,
 #Basewin function that is combined with manywin to test multiple climate window characteristics
 basewin <- function(exclude, xvar, cdate, bdate, baseline, range, 
                     type, stat = "mean", func = "lin", refday,
-                    cmissing = FALSE, cinterval = "day",  nrandom = 0, k = 0,
+                    cmissing = FALSE, cinterval = "day", nrandom = 0, k = 0,
                     spatial, upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"),
-                    cohort = NULL){
+                    cohort = NULL, fast){
   
   print("Initialising, please wait...")
   
@@ -85,7 +85,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   
   duration  <- (range[1] - range[2]) + 1
   maxmodno  <- (duration * (duration + 1))/2
-  if (length(exclude) == 2 ){ maxmodno  <- maxmodno- exclude[1]*(duration-exclude[2]-1)+(exclude[1]-1)*exclude[1]/2 }
+  if (length(exclude) == 2){ maxmodno  <- maxmodno- exclude[1]*(duration-exclude[2]-1)+(exclude[1]-1)*exclude[1]/2 }
   if (stat == "slope") { 
     ifelse(is.na(exclude[2])==TRUE,  maxmodno  <- maxmodno - duration, maxmodno  <- maxmodno-exclude[2]-1)
   } 
@@ -95,60 +95,22 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   
   if(is.null(spatial) == FALSE){
     
-    if (cinterval == "day"){
-      if ( (min(cont$bintno$Date) - range[1]) < min(cont$cintno$Date)){
-        stop("You do not have enough climate data to search that far back. Please adjust the value of range or add additioNAl climate data.")
-      }
+    if ((min(cont$bintno$Date) - range[1]) < min(cont$cintno$Date)){
+      stop(paste("You do not have enough climate data to search ", range[1], " ", cinterval, "s before ", min(as.Date(bdate, format = "%d/%m/%Y")), ". Please adjust the value of range or add additional climate data.", sep = ""))
     }
     
-    if (cinterval == "week"){
-      if ( (min(cont$bintno$Date) - range[1] * 7) < min(cont$cintno$Date)){
-        stop("You do not have enough climate data to search that far back. Please adjust the value of range or add additioNAl climate data.")
-      }
-    }
-    
-    ## MONTHS FUNCTION RETURNS NAs IF COUNTING BACK FROM THE 31ST!! WE NEED TO FIX THIS!!!
-    
-    #if (cinterval == "month"){
-    #  if ( (as.numeric(min(as.Date(bdate, format = "%d/%m/%Y")) - months(range[1])) - (as.numeric(min(as.Date(cdate, format = "%d/%m/%Y"))))) <= 0){
-    #    stop("You do not have enough climate data to search that far back. Please adjust the value of range or add additioNAl climate data.")
-    #  }
-    #}
-    
-    if (max(cont$bintno$Date) > max(cont$cintno$Date)){
-      if (type == "absolute"){
-        stop("You need more recent biological data. This error may be caused by your choice of refday")
-      } else {
-        stop("You need more recent biological data")
-      }
+    if (max(cont$bintno$Date) - range[2] > max(cont$cintno$Date)){
+      stop(paste("You need more recent climate data. The most recent climate data is from ", max(as.Date(cdate, format = "%d/%m/%Y")), " while the most recent biological data is from ", max(as.Date(cdate, format = "%d/%m/%Y")), sep = ""))
     }
     
   } else {
-    
-    if (cinterval == "day"){
-      if ( (min(cont$bintno) - range[1]) < min(cont$cintno)){
-        stop("You do not have enough climate data to search that far back. Please adjust the value of range or add additioNAl climate data.")
-      }
+
+    if ((min(cont$bintno) - range[1]) < min(cont$cintno)){
+      stop(paste("You do not have enough climate data to search ", range[1], " ", cinterval, "s before ", min(as.Date(bdate, format = "%d/%m/%Y")), ". Please adjust the value of range or add additional climate data.", sep = ""))
     }
     
-    if (cinterval == "week"){
-      if ( (min(cont$bintno) - range[1] * 7) < min(cont$cintno)){
-        stop("You do not have enough climate data to search that far back. Please adjust the value of range or add additioNAl climate data.")
-      }
-    }
-    
-    #if (cinterval == "month"){
-    #  if ( (as.numeric(min(as.Date(bdate, format = "%d/%m/%Y")) - months(range[1])) - (as.numeric(min(as.Date(cdate, format = "%d/%m/%Y"))))) <= 0){
-    #    stop("You do not have enough climate data to search that far back. Please adjust the value of range or add additioNAl climate data.")
-    #  }
-    #}
-    
-    if (max(cont$bintno) > max(cont$cintno)){
-      if (type == "absolute"){
-        stop("You need more recent biological data. This error may be caused by your choice of refday")
-      } else {
-        stop("You need more recent biological data")
-      }
+    if ((max(cont$bintno) - range[2] - 1) > max(cont$cintno)){
+      stop(paste("You need more recent climate data. The most recent climate data is from ", max(as.Date(cdate, format = "%d/%m/%Y")), " while the most recent biological data is from ", max(as.Date(cdate, format = "%d/%m/%Y")), sep = ""))
     }
     
   }
@@ -240,6 +202,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
       cmatrix[i, ] <- cont$xvar[which(cont$cintno %in% (cont$bintno[i] - c(range[2]:range[1])))]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
     } 
   }
+  
   cmatrix <- as.matrix(cmatrix[, c(ncol(cmatrix):1)])
   
   if(cmissing == FALSE && length(which(is.na(cmatrix))) > 0){
@@ -262,21 +225,80 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
         .GlobalEnv$missing <- as.Date(cont$cintno[is.na(cont$xvar)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1)
       }
       if (cinterval == "month"){
-        .GlobalEnv$missing <- c(paste("Month:", lubridate::month(as.Date(cont$cintno[is.na(cont$xvar)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1)),
-                                      "Year:", lubridate::year(as.Date(cont$cintno[is.na(cont$xvar)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1))))
+        .GlobalEnv$missing <- c(paste("Month:", (lubridate::month(min(as.Date(cdate, format = "%d/%m/%Y"))) + (which(is.na(cont$xvar)) - 1)) - (floor((lubridate::month(min(as.Date(cdate, format = "%d/%m/%Y"))) + (which(is.na(cont$xvar)) - 1))/12)*12),
+                                      "Year:", (floor((which(is.na(cont$xvar)) - 1)/12) + lubridate::year(min(as.Date(cdate, format = "%d/%m/%Y"))))))
       }
       if (cinterval == "week"){
-        .GlobalEnv$missing <- c(paste("Week:", lubridate::month(as.Date(cont$cintno[is.na(cont$xvar)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1)),
-                                      "Year:", lubridate::year(as.Date(cont$cintno[is.na(cont$xvar)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1))))
+        .GlobalEnv$missing <- c(paste("Week:", ceiling(((as.numeric((as.Date(bdate[which(is.na(cmatrix)) - floor(which(is.na(cmatrix))/nrow(cmatrix))*nrow(cmatrix)], format = "%d/%m/%Y"))) - (floor(which(is.na(cmatrix))/nrow(cmatrix))*7)) - as.numeric(as.Date(paste("01/01/", lubridate::year(as.Date(bdate[which(is.na(cmatrix)) - floor(which(is.na(cmatrix))/nrow(cmatrix))*nrow(cmatrix)], format = "%d/%m/%Y")), sep = ""), format = "%d/%m/%Y")) + 1) / 7),
+                                      "Year:", lubridate::year(as.Date(bdate[which(is.na(cmatrix)) - floor(which(is.na(cmatrix))/nrow(cmatrix))*nrow(cmatrix)], format = "%d/%m/%Y"))))
       }
     }
 
     stop(c("Climate data should not contain NA values: ", length(.GlobalEnv$missing),
            " NA value(s) found. Please add missing climate data or set cmissing=TRUE.
-           See object missing for all missing climate data"))
+           See object 'missing' for all missing climate data"))
   }
   
-  if (cmissing == TRUE && length(which(is.na(cmatrix))) > 0){
+  if (cmissing != FALSE && length(which(is.na(cmatrix))) > 0){
+    
+    print("Missing climate data detected. Please wait while appropriate data is calculated to replace NAs.")
+    
+    if(cmissing == "method1"){
+      
+      for(i in which(is.na(cmatrix))){
+        
+        cmatrix[i] <- mean(c(cmatrix[i - (1:2)], cmatrix[i + (1:2)]))
+        
+      }
+      
+    } else if(cmissing == "method2"){
+      
+      cdate_new <- data.frame(Date = as.Date(cdate, format = "%d/%m/%Y"),
+                              Year  = lubridate::year(as.Date(cdate, format = "%d/%m/%Y")),
+                              Month = lubridate::month(as.Date(cdate, format = "%d/%m/%Y")),
+                              Day   = lubridate::day(as.Date(cdate, format = "%d/%m/%Y")))
+      
+      if(cinterval == "week"){
+        
+        for(j in 1:nrow(cdate_new)){
+          
+          cdate_new$Week[j] <- ceiling((as.numeric(cdate_new$Date[j]) - min(as.numeric(subset(cdate_new, Year == cdate_new$Year[j])$Date)) + 1) / 7)
+          
+        }
+        
+      }
+      
+      for(i in which(is.na(cmatrix))){
+        
+        col <- floor(i/nrow(cmatrix))
+        
+        brecord <- cont$bintno[i - col*nrow(cmatrix)] - (range[2] + col) - 1
+        
+        min_date <- min(as.Date(cdate, format = "%d/%m/%Y"))
+        
+        if(cinterval == "day"){
+          
+          missing_rec <- as.Date(brecord, format = "%d/%m/%Y", origin = min_date)
+          
+          cmatrix[i] <- mean(xvar[which(cdate_new$Month == lubridate::month(missing_rec) & cdate_new$Day == lubridate::day(missing_rec))], na.rm = T)
+
+        } else if(cinterval == "week"){
+          
+          missing_week <- ceiling(((as.numeric((as.Date(bdate[i - col*nrow(cmatrix)], format = "%d/%m/%Y"))) - (col*7)) - as.numeric(as.Date(paste("01/01/", lubridate::year(as.Date(bdate[i - col*nrow(cmatrix)], format = "%d/%m/%Y")), sep = ""), format = "%d/%m/%Y")) + 1) / 7)
+          
+          cmatrix[i] <- mean(xvar[which(cdate_new$Week == missing_week)], na.rm = T)
+
+        } else if(cinterval == "month"){
+          
+          missing_month <- (lubridate::month(min(as.Date(cdate, format = "%d/%m/%Y"))) + (which(is.na(cont$xvar)) - 1)) - (floor((lubridate::month(min(as.Date(cdate, format = "%d/%m/%Y"))) + (which(is.na(cont$xvar)) - 1))/12)*12)
+          
+          cmatrix[i] <- mean(xvar[which(cdate_new$Month == missing_month)], na.rm = T)
+          
+        }
+        
+      }
+      
+    }
     modeldat <- modeldat[complete.cases(cmatrix), ]
     baseline <- update(baseline, yvar~., data = modeldat)
     cmatrix  <- cmatrix[complete.cases(cmatrix), ]
@@ -335,6 +357,47 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   }   # create labels k-fold crossvalidation
   
   pb <- txtProgressBar(min = 0, max = maxmodno, style = 3, char = "|")
+  
+  if(stat == "mean" && fast == TRUE){
+    for(n in 1:duration){
+      
+      if(n == 1){
+        
+        new_cmatrix <- t(cmatrix)
+        
+      } else {
+        
+        new_cmatrix <- roll_mean(t(cmatrix), n = n)
+        
+      }
+      
+      for(m in 1:nrow(new_cmatrix)){
+        
+       modeldat$climate <- new_cmatrix[m, ]
+       
+       modeloutput <- my_update(modeloutput, .~., data = modeldat)
+       
+       modlist$deltaAICc[[modno]] <- AICc(modeloutput) - AICc(baseline)
+       modlist$ModelAICc[[modno]] <- AICc(modeloutput)
+       
+       modlist$WindowOpen[[modno]]  <- ((m + range[2]) - 1) + (n - 1)
+       modlist$WindowClose[[modno]] <- ((m + range[2]) - 1)
+       
+       modlist$ModelBeta[[modno]]  <- coef(modeloutput)[length(coef(modeloutput))]
+       modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][2]
+       modlist$ModelBetaQ[[modno]] <- NA
+       modlist$ModelBetaC[[modno]] <- NA
+       modlist$ModelInt[[modno]]   <- coef(modeloutput)[1]
+       
+       modno <- modno + 1
+       
+       setTxtProgressBar(pb, modno - 1)
+       
+      }
+      
+    }
+       
+  } else {
   
   #CREATE A FOR LOOP TO FIT DIFFERENT CLIMATE WINDOWS#
   for (m in range[2]:range[1]){
@@ -563,6 +626,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     }  
     #Fill progress bar
     setTxtProgressBar(pb, modno - 1)
+  }
   }
   
   #Save the best model output
@@ -1120,6 +1184,11 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
 convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type, 
                         refday, cross = FALSE, cohort, spatial){
   
+  
+  if (cinterval != "day" && cinterval != "week" && cinterval != "month"){
+    stop("cinterval should be either day, week or month")
+  }
+  
   bdate  <- as.Date(bdate, format = "%d/%m/%Y") # Convert the date variables into the R date format
   if(is.null(spatial) == FALSE) {
     SUB.DATE <- list()
@@ -1154,12 +1223,9 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
         stop("Climate data does not cover all years of biological data. Please increase range of climate data")
       }
     }
-  } else if (min(cdate) > min(bdate) | max(cdate) < max(bdate)){
-    stop("Climate data does not cover all years of biological data. Please increase range of climate data")
+  } else if (min(cdate) > min(bdate)){
+    stop(paste("Climate data does not cover all years of biological data. Earliest climate data is ", min(cdate), ". Earliest biological data is ", min(bdate), sep = ""))
   }
-  
-  ### NEED TO CHANGE THIS. MAKE IT TEST THIS ONCE ABSOLUTE DATE HAS BEEN CALCULATED!! ###
-
   
   if (is.null(xvar2) == FALSE){
     if(is.null(spatial) == FALSE){
@@ -1207,13 +1273,6 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
   } else {
     xvar    <- xvar[match(cdate2, cdate)]
   }
-
-  
-  
-  
-  if (cinterval != "day" && cinterval != "week" && cinterval != "month"){
-    stop("cinterval should be either day, week or month")
-  }
   
   if (cross == FALSE){
     if (cinterval == "day"){  
@@ -1238,7 +1297,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       if(is.null(spatial) == FALSE){
         newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "spatial" = climspatial)
         newclim2    <- melt(newclim, id = c("cintno", "spatial"))
-        newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean)
+        newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean, na.rm = T)
         newclim3    <- newclim3[order(newclim3$spatial, newclim3$cintno), ]
         cintno      <- newclim3$cintno
         xvar        <- newclim3$xvar
@@ -1246,7 +1305,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       } else {
         newclim     <- data.frame("cintno" = cintno, "xvar" = xvar)
         newclim2    <- melt(newclim, id = "cintno")
-        newclim3    <- cast(newclim2, cintno ~ variable, mean)
+        newclim3    <- cast(newclim2, cintno ~ variable, mean, na.rm = T)
         cintno      <- newclim3$cintno
         xvar        <- newclim3$xvar
       }
@@ -1273,7 +1332,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       if(is.null(spatial) == FALSE){
         newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "spatial" = climspatial)
         newclim2    <- melt(newclim, id = c("cintno", "spatial"))
-        newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean)
+        newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean, na.rm = T)
         newclim3    <- newclim3[order(newclim3$spatial, newclim3$cintno), ]
         cintno      <- newclim3$cintno
         xvar        <- newclim3$xvar
@@ -1281,7 +1340,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       } else {
         newclim    <- data.frame("cintno" = cintno, "xvar" = xvar)
         newclim2   <- melt(newclim, id = "cintno")
-        newclim3   <- cast(newclim2, cintno ~ variable, mean)
+        newclim3   <- cast(newclim2, cintno ~ variable, mean, na.rm = T)
         cintno     <- newclim3$cintno
         xvar       <- newclim3$xvar 
       }
@@ -1295,7 +1354,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
             bintno[as.numeric(rownames(sub))] <- refday[2] + 12 * (min(lubridate::year(sub$bdate)) - min(lubridate::year(cdate2)))
           }
         } else {
-          bintno            <- refday[2] + 12 * (year(bdate) - min(year(cdate2)))
+          bintno <- refday[2] + 12 * (year(bdate) - min(year(cdate2)))
         }
       } else {
         bintno <- realbintno
@@ -1324,7 +1383,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       if(is.null(spatial) == FALSE){
         newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "xvar2" = xvar2, "spatial" = climspatial)
         newclim2    <- melt(newclim, id = c("cintno", "spatial"))
-        newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean)
+        newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean, na.rm = T)
         cintno      <- newclim3$cintno
         xvar        <- newclim3$xvar
         xvar2       <- newclim3$xvar2
@@ -1332,7 +1391,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       } else {
         newclim    <- data.frame("cintno" = cintno, "xvar" = xvar, "xvar2" = xvar2)
         newclim2   <- melt(newclim, id = "cintno")
-        newclim3   <- cast(newclim2, cintno ~ variable, mean)
+        newclim3   <- cast(newclim2, cintno ~ variable, mean, na.rm = T)
         cintno     <- newclim3$cintno
         xvar       <- newclim3$xvar
         xvar2      <- newclim3$xvar2 
@@ -1360,7 +1419,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       if(is.null(spatial) == FALSE){
         newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "xvar2" = xvar2, "spatial" = climspatial)
         newclim2    <- melt(newclim, id = c("cintno", "spatial"))
-        newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean)
+        newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean, na.rm = T)
         cintno      <- newclim3$cintno
         xvar        <- newclim3$xvar
         xvar2       <- newclim3$xvar2
@@ -1368,7 +1427,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       } else {
         newclim    <- data.frame("cintno" = cintno, "xvar" = xvar, "xvar2" = xvar2)
         newclim2   <- melt(newclim, id = "cintno")
-        newclim3   <- cast(newclim2, cintno ~ variable, mean)
+        newclim3   <- cast(newclim2, cintno ~ variable, mean, na.rm = T)
         cintno     <- newclim3$cintno
         xvar       <- newclim3$xvar
         xvar2      <- newclim3$xvar2 
