@@ -181,6 +181,8 @@ slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
                        furthest = NULL, closest = NULL,
                        thresh = NULL, cvk = NULL){
   
+  fast = FALSE
+  
   if(is.null(cohort) == TRUE){
     cohort = lubridate::year(as.Date(bdate, format = "%d/%m/%Y")) 
   }
@@ -256,7 +258,7 @@ slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
                     upper = ifelse(binarylevel == "two" || binarylevel == "upper", allcombos$upper[combo], NA),
                     lower = ifelse(binarylevel == "two" || binarylevel == "lower", allcombos$lower[combo], NA),
                     binary = paste(allcombos$binary[combo]), centre = centre, cohort = cohort,
-                    spatial = spatial)
+                    spatial = spatial, fast = fast)
     
     combined[[combo]]            <- runs
     allcombos$DeltaAICc[combo]   <- round(runs$Dataset$deltaAICc[1], digits = 2)
