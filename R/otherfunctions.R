@@ -299,9 +299,6 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
       }
       
     }
-    modeldat <- modeldat[complete.cases(cmatrix), ]
-    baseline <- update(baseline, yvar~., data = modeldat)
-    cmatrix  <- cmatrix[complete.cases(cmatrix), ]
   }
   
   if (is.null(weights(baseline)) == FALSE){
