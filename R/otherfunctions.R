@@ -247,7 +247,13 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
       
       for(i in which(is.na(cmatrix))){
         
-        cmatrix[i] <- mean(c(cmatrix[i - (1:2)], cmatrix[i + (1:2)]))
+        cmatrix[i] <- mean(c(cmatrix[i - (1:2)], cmatrix[i + (1:2)]), na.rm = T)
+        
+        if(is.na(cmatrix[i])){
+          
+          stop("Too many consecutive NAs present in the data. Consider using method2 or manually replacing NAs.")
+          
+        }
         
       }
       
@@ -293,6 +299,12 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
           missing_month <- (lubridate::month(min(as.Date(cdate, format = "%d/%m/%Y"))) + (which(is.na(cont$xvar)) - 1)) - (floor((lubridate::month(min(as.Date(cdate, format = "%d/%m/%Y"))) + (which(is.na(cont$xvar)) - 1))/12)*12)
           
           cmatrix[i] <- mean(xvar[which(cdate_new$Month == missing_month)], na.rm = T)
+          
+        }
+        
+        if(is.na(cmatrix[i])){
+          
+          stop("There is no data available for certain climate records across all years. Consider using method1 or manually replacing NAs.")
           
         }
         

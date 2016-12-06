@@ -192,6 +192,18 @@ slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
   
   fast = FALSE
   
+  if(cmissing != FALSE & cmissing != "method1" & cmissing != "method2"){
+    
+    stop("cmissing must be FALSE, method1 or method2.")
+    
+  }
+  
+  if(type != "absolute" & type != "relative"){
+    
+    stop("type must be either absolute or relative.")
+    
+  }
+  
   if(is.null(cohort) == TRUE){
     cohort = lubridate::year(as.Date(bdate, format = "%d/%m/%Y")) 
   }
