@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="climwin : climwin is a software package for detecting and analysing climate windows in the R statistical computing environment">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>climwin</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/LiamDBailey/climwin">View on GitHub</a>
+
+          <h1 id="project_title">climwin</h1>
+          <h2 id="project_tagline">climwin is a software package for detecting and analysing climate windows in the R statistical computing environment</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/LiamDBailey/climwin/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/LiamDBailey/climwin/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <p>To get started read our published work in <a href="http://onlinelibrary.wiley.com/doi/10.1111/2041-210X.12590/full">Methods in Ecology and Evolution</a> and <a href="http://biorxiv.org/content/early/2016/08/14/069427">PLoS ONE</a>.</p>
+
+<p>Our package documentation includes both an <a href="https://cran.r-project.org/web/packages/climwin/vignettes/climwin.html">introductory</a> and an <a href="https://cran.r-project.org/web/packages/climwin/vignettes/advanced_climwin.html">advanced</a> vignette that provide an overview of important features included with the package. A fully inclusive user manual with FAQs is currently a top priority and will replace these vignettes.</p>
+
+<p><em>climwin</em> is a versatile toolbox for climate window analyses in the R statistical computing environment. Climate window analysis is an exploratory method in which users can test for periods of climatic sensitivity, where variation in climate strongly drives variation in a biological trait. <em>climwin</em> allows users to test the impact of all possible climate windows within a specified range, comparing windows using an information criterion approach. This approach removes the need to designate arbitrary windows over which we measure climate, which often occurs with little biological justification.</p>
+
+<h1>
+<a id="main-features-of-the-package" class="anchor" href="#main-features-of-the-package" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Main features of the package:</h1>
+
+<h2>
+<a id="statistical-analysis" class="anchor" href="#statistical-analysis" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Statistical analysis</h2>
+
+<ul>
+<li>Sliding window analysis.</li>
+<li>Weighted window analysis (Weibull and Generalised Extreme Value distributions).</li>
+<li>k-fold cross validation in window selection.</li>
+<li>Methods to guard against false positive results (comparison to randomised data).</li>
+<li>Range of summary statistics for testing climate impacts (e.g. mean, max, slope).</li>
+<li>Ability to test linear, quadratic, cubic, logarithmic and inverse impacts of climate.</li>
+<li>Compatibility with a range of model functions (e.g. lmer, glmer, coxph).</li>
+</ul>
+
+<h2>
+<a id="visualisation" class="anchor" href="#visualisation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Visualisation</h2>
+
+<ul>
+<li>AICc values of all tested climate windows.</li>
+<li>Model beta values of all tested climate windows (including potential quadratic and cubic terms).</li>
+<li>Model weight values of all tested climate windows, highlighting the 95% confidence set.</li>
+<li>Boxplot climate window range within the 95% confidence set.</li>
+<li>3D visualisation of AICc and model weights.</li>
+</ul>
+
+<p>Over time we hope to include additional features to improve the versatility of <em>climwin</em>.</p>
+
+<p>Developers: <a href="liam.bailey@anu.edu.au">Liam D. Bailey</a> and <a href="martijn.vandepol@anu.edu.au">Martijn van de Pol</a>.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">climwin maintained by <a href="https://github.com/LiamDBailey">LiamDBailey</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
