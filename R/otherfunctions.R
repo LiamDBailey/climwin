@@ -278,8 +278,16 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
         
         col <- floor(i/nrow(cmatrix))
         
-        brecord <- cont$bintno[i - col*nrow(cmatrix)] - (range[2] + col) - 1
-        
+        if(is.null(spatial)){
+          
+          brecord <- cont$bintno[i - col*nrow(cmatrix)] - (range[2] + col) - 1
+          
+        } else {
+          
+          brecord <- cont$bintno$Date[i - col*nrow(cmatrix)] - (range[2] + col) - 1
+          
+        }
+
         min_date <- min(as.Date(cdate, format = "%d/%m/%Y"))
         
         if(cinterval == "day"){
