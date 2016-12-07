@@ -500,12 +500,12 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
           modlist$WindowClose[[modno]] <- m - n + 1
           
           if(any(colnames(model.frame(baseline)) %in% "climate")){
-              
+  
               coefs <- coef(summary(modeloutput))[, 1:2]
               
               temp.df <- data.frame("Y", t(coefs[-1, 1]), t(coefs[-1, 2]))
               
-              colnames(temp.df) <- c("Custom.mod", colnames(model.frame(modeloutput)[-1]), paste(colnames(model.frame(modeloutput)[-1]), "SE", sep = ""))
+              colnames(temp.df) <- c("Custom.mod", rownames(coefs)[-1], paste(rownames(coefs)[-1], "SE", sep = ""))
               
               coef_data[[modno]] <- temp.df
             
