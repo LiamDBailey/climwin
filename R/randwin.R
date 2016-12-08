@@ -154,6 +154,8 @@ randwin <- function(exclude = NA, repeats = 5, window = "sliding", xvar, cdate, 
                     method = "L-BFGS-B", cutoff.day = NULL, cutoff.month = NULL,
                     furthest = NULL, closest = NULL, thresh = NULL, cvk = NULL){
   
+  fast = FALSE
+  
   #Create a centre function that over-rides quadratics etc. when centre != NULL
   if(is.null(centre[[1]]) == FALSE){
     func = "centre"
@@ -248,7 +250,7 @@ randwin <- function(exclude = NA, repeats = 5, window = "sliding", xvar, cdate, 
                              upper = ifelse(binarylevel == "two" || binarylevel == "upper", allcombos$upper[combo], NA),
                              lower = ifelse(binarylevel == "two" || binarylevel == "lower", allcombos$lower[combo], NA),
                              binary = paste(allcombos$binary[combo]), centre = centre, k = k, spatial = spatial,
-                             cohort = cohort)
+                             cohort = cohort, fast = fast)
         
         outputrep$Repeat <- r
         WeightDist <- sum(as.numeric(cumsum(outputrep$ModWeight) <= 0.95))/nrow(outputrep)
