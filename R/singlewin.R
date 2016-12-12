@@ -382,10 +382,86 @@ singlewin <- function(xvar, cdate, bdate, baseline,
            See object missing for all missing climate data"))
   }
   
-  if (cmissing == TRUE && length(which(is.na(cmatrix))) > 0){
-    modeldat      <- modeldat[complete.cases(cmatrix), ]
-    baseline      <- update(baseline, yvar~., data = modeldat)
-    cmatrix       <- cmatrix[complete.cases(cmatrix), ]
+  if (cmissing != FALSE && length(which(is.na(cmatrix))) > 0){
+    
+    print("Missing climate data detected. Please wait while appropriate data is calculated to replace NAs.")
+    
+    if(cmissing == "method1"){
+      
+      for(i in which(is.na(cmatrix))){
+        
+        cmatrix[i] <- mean(c(cmatrix[i - (1:2)], cmatrix[i + (1:2)]), na.rm = T)
+        
+        if(is.na(cmatrix[i])){
+          
+          stop("Too many consecutive NAs present in the data. Consider using method2 or manually replacing NAs.")
+          
+        }
+        
+      }
+      
+    } else if(cmissing == "method2"){
+      
+      cdate_new <- data.frame(Date = as.Date(cdate, format = "%d/%m/%Y"),
+                              Year  = lubridate::year(as.Date(cdate, format = "%d/%m/%Y")),
+                              Month = lubridate::month(as.Date(cdate, format = "%d/%m/%Y")),
+                              Day   = lubridate::day(as.Date(cdate, format = "%d/%m/%Y")))
+      
+      if(cinterval == "week"){
+        
+        for(j in 1:nrow(cdate_new)){
+          
+          cdate_new$Week[j] <- ceiling((as.numeric(cdate_new$Date[j]) - min(as.numeric(subset(cdate_new, cdate_new$Year == cdate_new$Year[j])$Date)) + 1) / 7)
+          
+        }
+        
+      }
+      
+      for(i in which(is.na(cmatrix))){
+        
+        col <- floor(i/nrow(cmatrix))
+        
+        if(is.null(spatial)){
+          
+          brecord <- cont$bintno[i - col*nrow(cmatrix)] - (range[2] + col) - 1
+          
+        } else {
+          
+          brecord <- cont$bintno$Date[i - col*nrow(cmatrix)] - (range[2] + col) - 1
+          
+        }
+        
+        min_date <- min(as.Date(cdate, format = "%d/%m/%Y"))
+        
+        if(cinterval == "day"){
+          
+          missing_rec <- as.Date(brecord, format = "%d/%m/%Y", origin = min_date)
+          
+          cmatrix[i] <- mean(xvar[which(cdate_new$Month == lubridate::month(missing_rec) & cdate_new$Day == lubridate::day(missing_rec))], na.rm = T)
+          
+        } else if(cinterval == "week"){
+          
+          missing_week <- ceiling(((as.numeric((as.Date(bdate[i - col*nrow(cmatrix)], format = "%d/%m/%Y"))) - (col*7)) - as.numeric(as.Date(paste("01/01/", lubridate::year(as.Date(bdate[i - col*nrow(cmatrix)], format = "%d/%m/%Y")), sep = ""), format = "%d/%m/%Y")) + 1) / 7)
+          
+          cmatrix[i] <- mean(xvar[which(cdate_new$Week == missing_week)], na.rm = T)
+          
+        } else if(cinterval == "month"){
+          
+          missing_month <- (lubridate::month(min(as.Date(cdate, format = "%d/%m/%Y"))) + (which(is.na(cont$xvar)) - 1)) - (floor((lubridate::month(min(as.Date(cdate, format = "%d/%m/%Y"))) + (which(is.na(cont$xvar)) - 1))/12)*12)
+          
+          cmatrix[i] <- mean(xvar[which(cdate_new$Month == missing_month)], na.rm = T)
+          
+        }
+        
+        if(is.na(cmatrix[i])){
+          
+          stop("There is no data available for certain climate records across all years. Consider using method1 or manually replacing NAs.")
+          
+        }
+        
+      }
+      
+    }
   }
   
   modeldat           <- model.frame(baseline)
