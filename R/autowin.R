@@ -348,7 +348,12 @@ autowin <- function(reference, xvar, cdate, bdate, baseline, range, stat, func, 
         
       }
       
+    } else {
+      
+      stop("cmissing should be FALSE, 'method1' or 'method2'")
+      
     }
+    
   } 
 
   modeldat           <- model.frame(baseline)

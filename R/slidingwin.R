@@ -194,7 +194,7 @@ slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
   
   if(cmissing != FALSE & cmissing != "method1" & cmissing != "method2"){
     
-    stop("cmissing must be FALSE, method1 or method2.")
+    stop("cmissing must be FALSE, 'method1' or 'method2'.")
     
   }
   

@@ -318,7 +318,12 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
         
       }
       
+    } else {
+      
+      stop("cmissing should be FALSE, 'method1' or 'method2'")
+      
     }
+    
   }
   
   if (is.null(weights(baseline)) == FALSE){

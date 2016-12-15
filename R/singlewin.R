@@ -461,7 +461,12 @@ singlewin <- function(xvar, cdate, bdate, baseline,
         
       }
       
+    } else {
+      
+      stop("cmissing should be FALSE, 'method1' or 'method2'")
+      
     }
+    
   }
   
   modeldat           <- model.frame(baseline)
