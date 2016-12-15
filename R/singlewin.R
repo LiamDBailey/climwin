@@ -423,11 +423,11 @@ singlewin <- function(xvar, cdate, bdate, baseline,
         
         if(is.null(spatial)){
           
-          brecord <- cont$bintno[i - col*nrow(cmatrix)] - (range[2] + col) - 1
+          brecord <- bintno[i - col*nrow(cmatrix)] - (range[2] + col) - 1
           
         } else {
           
-          brecord <- cont$bintno$Date[i - col*nrow(cmatrix)] - (range[2] + col) - 1
+          brecord <- bintno$Date[i - col*nrow(cmatrix)] - (range[2] + col) - 1
           
         }
         
@@ -447,7 +447,7 @@ singlewin <- function(xvar, cdate, bdate, baseline,
           
         } else if(cinterval == "month"){
           
-          missing_month <- (lubridate::month(min(as.Date(cdate, format = "%d/%m/%Y"))) + (which(is.na(cont$xvar)) - 1)) - (floor((lubridate::month(min(as.Date(cdate, format = "%d/%m/%Y"))) + (which(is.na(cont$xvar)) - 1))/12)*12)
+          missing_month <- (lubridate::month(min(as.Date(cdate, format = "%d/%m/%Y"))) + (which(is.na(xvar)) - 1)) - (floor((lubridate::month(min(as.Date(cdate, format = "%d/%m/%Y"))) + (which(is.na(xvar)) - 1))/12)*12)
           
           cmatrix[i] <- mean(xvar[which(cdate_new$Month == missing_month)], na.rm = T)
           

@@ -191,7 +191,7 @@ crosswin <- function(xvar, xvar2, cdate, bdate, range,
     } 
   }
   
-  if (cmissing != FALSE && length(which(is.na(cmatrix))) > 0){
+  if (cmissing != FALSE && length(which(is.na(cmatrix1))) > 0 | cmissing != FALSE && length(which(is.na(cmatrix2))) > 0){
     
     print("Missing climate data detected. Please wait while appropriate data is calculated to replace NAs.")
     

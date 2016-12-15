@@ -80,8 +80,8 @@ test_that("singlewin creates an output when cinterval = month", {
 
 # Test different settings of cmissing #
 
-# Test when cmissing is TRUE and no NA is present#
-test_that("No errors return when cmissing TRUE and full dataset", {
+# Test when cmissing is method1 and no NA is present#
+test_that("No errors return when cmissing method1 and full dataset", {
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -91,7 +91,7 @@ test_that("No errors return when cmissing TRUE and full dataset", {
                     baseline = lm(Mass ~ 1, data = Mass), 
                     range = c(2, 2), 
                     type = "relative", stat = "max", 
-                    func = "lin", cmissing = TRUE)
+                    func = "lin", cmissing = "method1")
   
   # Test that singlewin produces an output
   expect_true(is.list(test))  
@@ -107,8 +107,35 @@ test_that("No errors return when cmissing TRUE and full dataset", {
   
 })
 
-#Test when cmissing is TRUE and NA is present#
-test_that("No errors return when cmissing TRUE with NAs", {
+# Test when cmissing is method1 and no NA is present#
+test_that("No errors return when cmissing method2 and full dataset", {
+  
+  data(Mass, envir = environment())
+  data(MassClimate, envir = environment())
+  
+  test <- singlewin(xvar = list(Temp = MassClimate$Temp), 
+                    cdate = MassClimate$Date, bdate = Mass$Date, 
+                    baseline = lm(Mass ~ 1, data = Mass), 
+                    range = c(2, 2), 
+                    type = "relative", stat = "max", 
+                    func = "lin", cmissing = "method2")
+  
+  # Test that singlewin produces an output
+  expect_true(is.list(test))  
+  
+  # Test that singlewin best model is created
+  expect_false(is.na(test[[1]][1]))
+  
+  # Test that best model data contains no NAs
+  expect_equal(length(which(is.na(test[[2]]))), 0)
+  
+  # Test that best model data has at least 2 parameters
+  expect_true(ncol(test[[2]]) >= 2)
+  
+})
+
+#Test when cmissing is method1 and NA is present#
+test_that("No errors return when cmissing method1 with NAs", {
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -119,7 +146,35 @@ test_that("No errors return when cmissing TRUE with NAs", {
                     baseline = lm(Mass ~ 1, data = Mass), 
                     range = c(2, 0), 
                     type = "relative", stat = "max", 
-                    func = "lin", cmissing = TRUE)
+                    func = "lin", cmissing = "method1")
+  
+  # Test that singlewin produces an output
+  expect_true(is.list(test))  
+  
+  # Test that singlewin best model is created
+  expect_false(is.na(test[[1]][1]))
+  
+  # Test that best model data contains no NAs
+  expect_equal(length(which(is.na(test[[2]]))), 0)
+  
+  # Test that best model data has at least 2 parameters
+  expect_true(ncol(test[[2]]) >= 2)
+  
+})
+
+#Test when cmissing is method1 and NA is present#
+test_that("No errors return when cmissing method2 with NAs", {
+  
+  data(Mass, envir = environment())
+  data(MassClimate, envir = environment())
+  
+  MassClimate2 <- MassClimate[-300, ]
+  test <- singlewin(xvar = list(Temp = MassClimate2$Temp), 
+                    cdate = MassClimate2$Date, bdate = Mass$Date, 
+                    baseline = lm(Mass ~ 1, data = Mass), 
+                    range = c(2, 0), 
+                    type = "relative", stat = "max", 
+                    func = "lin", cmissing = "method2")
   
   # Test that singlewin produces an output
   expect_true(is.list(test))  
