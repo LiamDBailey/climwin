@@ -1,3 +1,32 @@
+# climwin 1.1.0
+
+Our newest version adds a number of useful features to `climwin` as well as a few bug fixes. In addition, we have now created a climwin [google group](https://groups.google.com/forum/?utm_medium=email&utm_source=footer#!forum/climwin-r-group) for users to ask questions about the package. Please report any errors or bugs on this forum.
+
+## Major changes
+
+### Custom model structure
+
+In older versions of `climwin`, climate data was extracted from the fitted climate window and included as a fixed effect in the specified baseline model. This precluded the use of more complex model structures, such as interactions between climate and other fixed effects or mixed effects models with random climate slopes. We now include a more versatile method for specifying model structure in `climwin`. This involves the inclusion of a dummy 'climate' variable in the baseline model (**N.B.** the variable must be called 'climate'). This dummy variable will then be replaced with climate data from each fitted climate window, maintaining the original model structure. See an example of baseline model structure below:
+
+`baseline = lm(response ~ climate*sex)`
+
+Using this more versatile model construction makes the argument `func` redundant (i.e. the argument used to specify quadratic, cubic etc. terms). Users can now structure their model manually to test for these effects. 
+
+**Note:** We have maintained functionality for the original baseline model design. If no variable called 'climate' is provided the original method will be used.
+
+### Dealing with missing data
+
+In previous verisons, the argument `cmissing` could be designated as either TRUE or FALSE. When FALSE, the presence of missing values in any tested climate window would return an error. When TRUE, all climate windows containing missing values would be removed from our analysis. On further consideration, we felt it was unwise to remove data from our analysis. As an alternative, we now provide two methods to estimate the value of NA records. "method1" will replace the value of a missing cell with the mean of the two preceding and following records. "method2" will replace the value of a missing cell with the mean of all other records on the same date. For more detial on dealing with missing data please read our [FAQ](https://github.com/LiamDBailey/climwin/wiki/FAQs).
+
+### Multiple iterations with weightwin
+
+As weightwin uses an optimisation function, there is the possibility that the function may fail to converge or will converge on a local optima. Because of these issues, a single run of weightwin may not provide an accurate measure of the climate landscape. Users should instead run multiple iterations of weightwin with varying starting parameters to help find the global optima. The argument `n` in weightwin allows users to specify the number of iterations to run, with starting parameters randomly assigned in each run. weightwin will then return a summary table of results from all iterations. 
+## Minor changes
+
+### Non-daily data
+
+The original design of `climwin` required users to provide their climate data at a daily resolution, even if users had only a single recorded value across each month/week. This caused some confusion with users. `climwin` can now deal with climate data at a monthly or weekly resolution (i.e. one record for each month/week). Running climate window analysis at a monthly or weekly scale also provides a method for dealing with [missing climate data](https://github.com/LiamDBailey/climwin/wiki/FAQs).
+
 # climwin 1.0.0
 
 ## Major changes

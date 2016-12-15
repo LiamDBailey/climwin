@@ -14,3 +14,5 @@ How to use climwin:
 Examples for both climate window analysis and plotting are provided in the package help documentation. See `library(help = "climwin")` once installed for more detail.
 
 For more detailed insight on how to use climwin to investigate climate data see our introductory vignette using `vignette("climwin", package = "climwin")`, or our more advanced vignette with `vignette("advanced_climwin", package = "climwin")`.
+
+To access the current beta version please visit our github repository.
