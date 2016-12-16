@@ -4,15 +4,11 @@ author: "Liam D. Bailey"
 output: html_document
 ---
 
-##Resubmission
-This is a resubmission. In this version I have:
-
-* Updated to the latest version of R to build the package.
-
-* Re-built vignettes to remove previous Note: "Package has a VignetteBuilder field but no prebuilt vignette index."
+##New submission
+This is a new submission for this package.
 
 ## Test environments
-* ubuntu 12.04.5 (on travis-ci), R 3.3.0
+* ubuntu 12.04.5 (on travis-ci), R 3.3.1
 * win-builder (devel and release)
 
 ## R CMD check results

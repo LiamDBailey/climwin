@@ -1,7 +1,8 @@
 Package: climwin
 Type: Package
 Title: Climate Window Analysis
-Version: 1.0.0
+Version: 1.1.0
+Date: 2016-12-16
 Author: Liam D. Bailey and Martijn van de Pol
 Maintainer: Liam D. Bailey <liam.bailey@anu.edu.au>
 URL: https://github.com/LiamDBailey/climwin
