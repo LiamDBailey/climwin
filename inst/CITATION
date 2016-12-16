@@ -24,20 +24,3 @@ bibentry(bibtype = "Article",
         "Methods in Ecology and Evolution", "7: 1246–1257",
         "doi:10.1111/2041-210X.12590")
 )
-
-bibentry(bibtype = "Article",
-  title        = "climwin: An R Toolbox for Climate Window Analysis",
-  author       = c(person(given = "Liam",
-                          family = "D. Bailey"),
-                   person(given = "Martijn",
-                          family = "van de Pol")),
-  journal      = "PLoS ONE",
-  year         = "2016",
-  doi          = "10.1371/journal.pone.0167980",
-  volume       = "11",
-  textVersion  =
-  paste("Bailey, L.D., van de Pol, M. (2016).",
-        "climwin: An R Toolbox for Climate Window Analysis",
-        "PLoS ONE", "11(12): e0167980", 
-        "doi:10.1371/journal.pone.0167980")
-)
