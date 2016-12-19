@@ -1,9 +1,13 @@
-bibentry(bibtype = "Article",
+year <- sub("-.*", "", meta$Date)
+note <- sprintf("R package version %s", meta$Version)
+
+bref <- c(
+   bibentry(bibtype = "Article",
   title        = "Identifying the best climatic predictors in ecology and evolution",
   author       = c(person(given = "Martijn",
                           family = "van de Pol"),
                    person(given = "Liam D.",
-                          family = "D. Bailey"),
+                          family = "Bailey"),
                    person(given = "Nina",
                           family = "McLean"),
                    person(given = "Laurie",
@@ -15,12 +19,31 @@ bibentry(bibtype = "Article",
   journal      = "Methods in Ecology and Evolution",
   year         = "2016",
   doi          = "10.1111/2041-210X.12590",
-  pages        = "1246 - 1257",
+  pages        = "1246--1257",
   volume       = "7",
   header       = "To cite 'climwin' in publications please use:",
   textVersion  =
   paste("van de Pol, M., Bailey, L.D., McLean, N., Rijsdijk, L., Lawson, C.R., Brouwer, L. (2016).",
         "Identifying the best climatic predictors in ecology and evolution",
-        "Methods in Ecology and Evolution", "7: 1246–1257",
+        "Methods in Ecology and Evolution", "7: 1246-1257",
         "doi:10.1111/2041-210X.12590")
+),
+
+   bibentry(
+     bibtype = "Article",
+     title = "climwin: An R Toolbox for Climate Window Analysis",
+     author = c(person(given = "Liam D.", family = "Bailey"),
+                person(given = "Martijn", family = "van de Pol")),
+     journal = "PLoS ONE",
+     year = "2016",
+     doi = "10.1371/journal.pone.0167980",
+     pages = "e0167980",
+     volume = "11",
+     number = "12",
+     textVersion = 
+     paste("Bailey, L.D. and van de Pol, M. (2016).",
+     "climwin: An R Toolbox for Climate Window Analysis",
+     "PLoS ONE", "11(12): e0167980",
+     "doi:10.1371/journal.pone.0167980")
+   )
 )
