@@ -35,7 +35,7 @@ plotbetas <- function(dataset, arrow = FALSE, plotallenv, plotall = FALSE){
         theme(panel.grid.major = element_blank(),
               panel.grid.minor = element_blank(),
               axis.line = element_line(size = 0.25, colour = "black"),
-              plot.title = element_text(size = 16),
+              plot.title = element_text(size = 16, hjust = 0.5),
               legend.position = c(0.75,0.3),
               panel.border = element_rect(colour = "black", fill = NA)) +
         ggtitle("Beta linear") +
@@ -69,7 +69,7 @@ plotbetas <- function(dataset, arrow = FALSE, plotallenv, plotall = FALSE){
         theme(panel.grid.major = element_blank(),
               panel.grid.minor = element_blank(),
               axis.line = element_line(size = 0.25, colour = "black"),
-              plot.title = element_text(size = 16),
+              plot.title = element_text(size = 16, hjust = 0.5),
               legend.position = c(0.75,0.3),
               panel.border = element_rect(colour = "black", fill = NA)) +
         ggtitle("Beta linear") +
@@ -83,7 +83,7 @@ plotbetas <- function(dataset, arrow = FALSE, plotallenv, plotall = FALSE){
         theme(panel.grid.major = element_blank(),
               panel.grid.minor = element_blank(),
               axis.line = element_line(size = 0.25, colour = "black"),
-              plot.title = element_text(size = 16),
+              plot.title = element_text(size = 16, hjust = 0.5),
               legend.position = c(0.75, 0.3),
               panel.border = element_rect(colour = "black", fill = NA)) +
         ggtitle("Beta quadratic") +
@@ -125,7 +125,7 @@ plotbetas <- function(dataset, arrow = FALSE, plotallenv, plotall = FALSE){
         theme(panel.grid.major = element_blank(),
               panel.grid.minor = element_blank(),
               axis.line = element_line(size = 0.25, colour = "black"),
-              plot.title = element_text(size = 16),
+              plot.title = element_text(size = 16, hjust = 0.5),
               legend.position = c(0.75,0.3),
               panel.border = element_rect(colour = "black", fill = NA)) +
         ggtitle("Beta linear") +
@@ -139,7 +139,7 @@ plotbetas <- function(dataset, arrow = FALSE, plotallenv, plotall = FALSE){
           theme(panel.grid.major = element_blank(),
                 panel.grid.minor = element_blank(),
                 axis.line = element_line(size = 0.25, colour = "black"),
-                plot.title = element_text(size = 16),
+                plot.title = element_text(size = 16, hjust = 0.5),
                 legend.position = c(0.75, 0.3),
                 panel.border = element_rect(colour = "black", fill = NA)) +
           ggtitle("Beta quadratic") +
@@ -153,7 +153,7 @@ plotbetas <- function(dataset, arrow = FALSE, plotallenv, plotall = FALSE){
           theme(panel.grid.major = element_blank(),
                 panel.grid.minor = element_blank(),
                 axis.line = element_line(size = 0.25, colour = "black"),
-                plot.title = element_text(size = 16),
+                plot.title = element_text(size = 16, hjust = 0.5),
                 legend.position = c(0.75, 0.3),
                 panel.border = element_rect(colour = "black", fill = NA)) +
           ggtitle("Beta cubic") +
@@ -203,7 +203,7 @@ plotbetas <- function(dataset, arrow = FALSE, plotallenv, plotall = FALSE){
         theme(panel.grid.major = element_blank(),
               panel.grid.minor = element_blank(),
               axis.line = element_line(size = 0.25, colour = "black"),
-              plot.title = element_text(size = 16),
+              plot.title = element_text(size = 16, hjust = 0.5),
               legend.position = c(0.75,0.3),
               panel.border = element_rect(colour = "black", fill = NA)) +
         ggtitle("Within group mean coefficient") +
@@ -217,7 +217,7 @@ plotbetas <- function(dataset, arrow = FALSE, plotallenv, plotall = FALSE){
         theme(panel.grid.major = element_blank(),
               panel.grid.minor = element_blank(),
               axis.line = element_line(size = 0.25, colour = "black"),
-              plot.title = element_text(size = 16),
+              plot.title = element_text(size = 16, hjust = 0.5),
               legend.position = c(0.75,0.3),
               panel.border = element_rect(colour = "black", fill = NA)) +
         ggtitle("Within group deviation coefficient") +

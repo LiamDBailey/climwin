@@ -28,7 +28,7 @@
 #'@param refday If type is "absolute", the day and month respectively of the 
 #'  year from which the absolute window analysis will start.
 #'@param cmissing cmissing Determines what should be done if there are 
-#'  missing climate data. Three approaches are possible: 
+#'  missing climate data. Three approaches are possible:
 #'   - FALSE; the function will not run if missing climate data is encountered.
 #'   An object 'missing' will be returned containing the dates of missing climate.
 #'   - "method1"; missing climate data will be replaced with the mean climate

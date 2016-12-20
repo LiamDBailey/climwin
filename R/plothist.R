@@ -49,7 +49,7 @@ if(max(datasetrand$Repeat) <= 100){
                               panel.grid.minor = element_blank(),
                               axis.line = element_line(size = 0.25, colour = "black"),
                               legend.position = "none",
-                              plot.title = element_text(size = 16))+
+                              plot.title = element_text(size = 16, hjust = 0.5)) +
                         geom_vline(aes(xintercept = dataset$deltaAICc[1]), linetype = "dashed", size = 1.5)+
                         ggtitle(bquote(atop(Histogram~of~Delta*AICc,P[Delta*AICc]~.(P2)~~P[C]~.(P))))+
                         ylab("Proportion")+
@@ -70,7 +70,7 @@ if(max(datasetrand$Repeat) <= 100){
                   panel.grid.minor = element_blank(),
                   axis.line = element_line(size = 0.25, colour = "black"),
                   legend.position = "none",
-                  plot.title = element_text(size = 16),
+                  plot.title = element_text(size = 16, hjust = 0.5),
                   panel.border = element_rect(colour = "black", fill = NA))+
             geom_vline(aes(xintercept = dataset$deltaAICc[1]), linetype = "dashed", size = 1.5)+
             ggtitle(bquote(atop(Histogram~of~Delta*AICc,P[Delta*AICc]~.(P2)))) +

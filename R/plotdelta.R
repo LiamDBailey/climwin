@@ -60,7 +60,7 @@ with(dataset, {
       theme(panel.grid.major = element_blank(),
             panel.grid.minor = element_blank(),
             axis.line = element_line(size=0.25, colour = "black"),
-            plot.title = element_text(size = 16),
+            plot.title = element_text(size = 16, hjust = 0.5),
             legend.position = c(0.75, 0.3),
             panel.border = element_rect(colour = "black", fill = NA))+
       ggtitle(expression(paste(Delta, "AICc (compared to null model)")))+
@@ -84,7 +84,7 @@ with(dataset, {
       theme(panel.grid.major = element_blank(),
             panel.grid.minor = element_blank(),
             axis.line = element_line(size=0.25, colour = "black"),
-            plot.title = element_text(size = 16),
+            plot.title = element_text(size = 16, hjust = 0.5),
             legend.position = c(0.75, 0.3),
             panel.border = element_rect(colour = "black", fill = NA))+
       ggtitle(expression(paste(Delta, "AICc (compared to null model)")))+

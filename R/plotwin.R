@@ -47,7 +47,7 @@ plotwin <- function(dataset, cw = 0.95){
             panel.grid.minor = element_blank(),
             axis.line = element_line(size = 0.25, colour = "black"),
             axis.text.y = element_text(angle = 90, hjust = 0.5,size = 10),
-            plot.title = element_text(size = 16),
+            plot.title = element_text(size = 16, hjust = 0.5),
             panel.border = element_rect(colour = "black", fill = NA))+
       ggtitle(paste("Climate window range for \n", (cw*100), "% confidence set"))+
       xlab("")+

@@ -58,7 +58,8 @@ plotcor <- function(cor.output, type, arrow = FALSE){
         theme_classic()+
         theme(panel.grid.major = element_blank(),
               panel.grid.minor = element_blank(),
-              axis.line = element_line(size = 0.25, colour = "black"))+
+              axis.line = element_line(size = 0.25, colour = "black"),
+              plot.title = element_text(size = 16, hjust = 0.5))+
         ggtitle(title)+
         ylab("Window open")+
         xlab("Window close")
@@ -71,7 +72,8 @@ plotcor <- function(cor.output, type, arrow = FALSE){
           theme_classic()+
           theme(panel.grid.major = element_blank(),
                 panel.grid.minor = element_blank(),
-                axis.line = element_line(size = 0.25, colour = "black"))+
+                axis.line = element_line(size = 0.25, colour = "black"),
+                plot.title = element_text(size = 16, hjust = 0.5))+
           ggtitle(title)+
           ylab("Window open")+
           xlab("Window close")
@@ -88,7 +90,8 @@ plotcor <- function(cor.output, type, arrow = FALSE){
           theme_classic()+
           theme(panel.grid.major = element_blank(),
                 panel.grid.minor = element_blank(),
-                axis.line = element_line(size = 0.25, colour = "black"))+
+                axis.line = element_line(size = 0.25, colour = "black"),
+                plot.title = element_text(size = 16, hjust = 0.5))+
           ggtitle(title)+
           ylab("Window open")+
           xlab("Window close")+
