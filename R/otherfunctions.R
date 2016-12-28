@@ -123,6 +123,16 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   nullmodel <- AICc(baseline)
   modeldat  <- model.frame(baseline)
   
+  if(attr(baseline, "class") == "lme"){
+    
+    non_rand <- ncol(modeldat)
+    
+    modeldat <- cbind(modeldat, baseline$data[, colnames(baseline$fitted)[-which(colnames(baseline$fitted) %in% "fixed")]])
+    
+    colnames(modeldat)[-(1:non_rand)] <- colnames(baseline$fitted)[-which(colnames(baseline$fitted) %in% "fixed")]
+    
+  }
+  
   if(class(baseline)[length(class(baseline))]=="coxph" & grepl("frailty\\(", colnames(modeldat)[ncol(modeldat)])){
     colnames(modeldat)[ncol(modeldat)] <- gsub("frailty\\(", "", colnames(modeldat)[ncol(modeldat)])
     colnames(modeldat)[ncol(modeldat)] <- gsub("\\)", "", colnames(modeldat)[ncol(modeldat)])
@@ -338,6 +348,8 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     
     modeldat$climate <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
     
+    print(modeldat)
+    
     if (func == "lin"){
       modeloutput <- update(baseline, yvar~. + climate, data = modeldat)
     } else if (func == "quad") {
@@ -458,7 +470,16 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
               modeloutput     <- update(modeloutput, .~., data = modeldat)
             }
           } else {
-            modeloutput <- my_update(modeloutput, .~., data = modeldat)
+            
+            if(attr(modeloutput, "class") == "lme"){
+              
+              modeloutput <- update(modeloutput, .~., data = modeldat)
+              
+            } else {
+              
+              modeloutput <- my_update(modeloutput, .~., data = modeldat) 
+              
+            }
           }
           
           # If valid, perform k-fold crossvalidation
@@ -557,8 +578,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
                 modlist$ModelBetaC[[modno]] <- NA
                 modlist$ModelInt[[modno]]   <- 0
               }
-            } 
-            else if (length(attr(class(modeloutput),"package")) > 0 && attr(class(modeloutput), "package") == "lme4"){            
+            } else if (length(attr(class(modeloutput),"package")) > 0 && attr(class(modeloutput), "package") == "lme4"){            
               if (func == "quad"){
                 modlist$ModelBeta[[modno]]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
                 modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][2]
@@ -593,12 +613,59 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
                   modlist$ModelInt[[modno]]      <- fixef(modeloutput)[1]
                 }
               } else {
+                
                 modlist$ModelBeta[[modno]]  <- fixef(modeloutput)[length(fixef(modeloutput))]
+                
                 modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][2]
                 modlist$ModelBetaQ[[modno]] <- NA
                 modlist$ModelBetaC[[modno]] <- NA
                 modlist$ModelInt[[modno]]   <- fixef(modeloutput)[1]
               }
+              
+            } else if(attr(baseline, "class") == "lme"){
+              
+              if (func == "quad"){
+                modlist$ModelBeta[[modno]]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
+                modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "Std.Error"][2]
+                modlist$ModelBetaQ[[modno]] <- fixef(modeloutput)[length(fixef(modeloutput))]
+                modlist$Std.ErrorQ[[modno]]  <- coef(summary(modeloutput))[, "Std.Error"][3]
+                modlist$ModelBetaC[[modno]] <- NA
+                modlist$ModelInt[[modno]]   <- fixef(modeloutput)[1]
+              } else if (func == "cub"){
+                modlist$ModelBeta[[modno]]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 2]
+                modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "Std.Error"][2]
+                modlist$ModelBetaQ[[modno]] <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
+                modlist$Std.ErrorQ[[modno]]  <- coef(summary(modeloutput))[, "Std.Error"][3]
+                modlist$ModelBetaC[[modno]] <- fixef(modeloutput)[length(fixef(modeloutput))]
+                modlist$Std.ErrorC[[modno]]  <- coef(summary(modeloutput))[, "Std.Error"][3]
+                modlist$ModelInt[[modno]]   <- fixef(modeloutput)[1]
+              } else if (func == "centre"){
+                if(centre[[2]] == "both"){
+                  modlist$WithinGrpMean[[modno]] <- fixef(modeloutput)[length(fixef(modeloutput))]
+                  modlist$Std.ErrorMean[[modno]] <- coef(summary(modeloutput))[, "Std.Error"][2]
+                  modlist$WithinGrpDev[[modno]]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
+                  modlist$Std.ErrorDev[[modno]]  <- coef(summary(modeloutput))[, "Std.Error"][3]
+                  modlist$ModelInt[[modno]]      <- fixef(modeloutput)[1]
+                }
+                if(centre[[2]] == "mean"){
+                  modlist$WithinGrpMean[[modno]] <- fixef(modeloutput)[length(fixef(modeloutput))]
+                  modlist$Std.Error[[modno]]     <- coef(summary(modeloutput))[, "Std.Error"][2]
+                  modlist$ModelInt[[modno]]      <- fixef(modeloutput)[1]
+                }
+                if(centre[[2]] == "dev"){
+                  modlist$WithinGrpDev[[modno]]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
+                  modlist$Std.Error[[modno]]     <- coef(summary(modeloutput))[, "Std.Error"][2]
+                  modlist$ModelInt[[modno]]      <- fixef(modeloutput)[1]
+                }
+              } else {
+                
+                modlist$ModelBeta[[modno]]  <- fixef(modeloutput)[length(fixef(modeloutput))]
+                modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "Std.Error"][2]
+                modlist$ModelBetaQ[[modno]] <- NA
+                modlist$ModelBetaC[[modno]] <- NA
+                modlist$ModelInt[[modno]]   <- fixef(modeloutput)[1]
+              }
+              
             } else {
               if (func == "quad"){
                 modlist$ModelBeta[[modno]]  <- coef(modeloutput)[length(coef(modeloutput)) - 1]
