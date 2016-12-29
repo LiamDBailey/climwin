@@ -775,6 +775,17 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
       LocalData$climate <- modeldat$climate
     } else {
       LocalData <- model.frame(LocalModel)
+      
+      if(attr(LocalModel, "class") == "lme"){
+        
+        non_rand <- ncol(LocalData)
+        
+        LocalData <- cbind(LocalData, LocalModel$data[, colnames(LocalModel$fitted)[-which(colnames(LocalModel$fitted) %in% "fixed")]])
+        
+        colnames(LocalData)[-(1:non_rand)] <- colnames(LocalModel$fitted)[-which(colnames(LocalModel$fitted) %in% "fixed")]
+        
+      }
+      
     }
     modlist$Randomised    <- "no"
     modlist               <- as.data.frame(modlist)
