@@ -1153,30 +1153,3 @@ test_that("spatial replication works with slidingwin with NAs and cmissing metho
   expect_true(ncol(test[[1]]$BestModelData) >= 2)
   
 })
-
-#######################################################################
-
-# Test lme models work #
-test_that("lme models work in slidingwin", {
-  
-  data("Offspring", envir = environment())
-  data("OffspringClimate", envir = environment())
-  
-  test <- slidingwin(xvar = list(OffspringClimate$Temp), cdate = OffspringClimate$Date, bdate = Offspring$Date, 
-                     baseline = lme(Cohort ~ 1, random = ~1|BirdID, data = Offspring), range = c(2, 2), 
-                     type = "relative", 
-                     stat = "max", func = "lin", cmissing=FALSE)
-  
-  # Test that slidingwin has produced an output
-  expect_true(is.list(test))
-  
-  # Test that a best model has been fitted
-  expect_false(is.na((test[[1]]$BestModel)[1]))
-  
-  # Test there are no NAs in the best model data
-  expect_equal(length(which(is.na(test[[1]]$BestModelData))), 0)
-  
-  # Test that the best model data has at least 2 parameters
-  expect_true(ncol(test[[1]]$BestModelData) >= 2)
-  
-})

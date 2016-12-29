@@ -99,7 +99,6 @@
 #'@import utils
 #'@import graphics
 #'@import lme4
-#'@import nlme
 #'@importFrom plyr rbind.fill
 #'@importFrom lubridate weeks
 #'@importFrom MuMIn AICc
