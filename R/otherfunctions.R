@@ -348,8 +348,6 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     
     modeldat$climate <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
     
-    print(modeldat)
-    
     if (func == "lin"){
       modeloutput <- update(baseline, yvar~. + climate, data = modeldat)
     } else if (func == "quad") {
