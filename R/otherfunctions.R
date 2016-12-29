@@ -123,7 +123,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   nullmodel <- AICc(baseline)
   modeldat  <- model.frame(baseline)
   
-  if(attr(baseline, "class") == "lme"){
+  if(attr(baseline, "class")[1] == "lme"){
     
     non_rand <- ncol(modeldat)
     
@@ -469,7 +469,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
             }
           } else {
             
-            if(attr(modeloutput, "class") == "lme"){
+            if(attr(modeloutput, "class")[1] == "lme"){
               
               modeloutput <- update(modeloutput, .~., data = modeldat)
               
@@ -620,7 +620,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
                 modlist$ModelInt[[modno]]   <- fixef(modeloutput)[1]
               }
               
-            } else if(attr(baseline, "class") == "lme"){
+            } else if(attr(baseline, "class")[1] == "lme"){
               
               if (func == "quad"){
                 modlist$ModelBeta[[modno]]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
@@ -776,7 +776,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     } else {
       LocalData <- model.frame(LocalModel)
       
-      if(attr(LocalModel, "class") == "lme"){
+      if(attr(LocalModel, "class")[1] == "lme"){
         
         non_rand <- ncol(LocalData)
         
