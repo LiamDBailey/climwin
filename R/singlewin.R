@@ -320,6 +320,30 @@ singlewin <- function(xvar, cdate, bdate, baseline,
   cmatrix   <- matrix(ncol = (duration), nrow = length(bdate))
   
   modeldat      <- model.frame(baseline)
+  
+  if(attr(baseline, "class")[1] == "lme"){
+    
+    if(is.null(baseline$modelStruct$varStruct) == FALSE){
+      
+      modeldat <- cbind(modeldat, attr(baseline$modelStruct$varStruct, "groups"))
+      
+      colnames(modeldat)[ncol(modeldat)] <- strsplit(x = as.character(attr(baseline$modelStruct$varStruct, "formula"))[2], split = " | ")[[1]][3]
+      
+      if(attr(modeloutput, "class")[1] == "lme"){
+        
+        modeloutput <- update(modeloutput, .~., data = modeldat)
+        
+      }
+    }
+    
+    non_rand <- ncol(modeldat)
+    
+    modeldat <- cbind(modeldat, baseline$data[, colnames(baseline$fitted)[-which(colnames(baseline$fitted) %in% "fixed")]])
+    
+    colnames(modeldat)[-(1:non_rand)] <- colnames(baseline$fitted)[-which(colnames(baseline$fitted) %in% "fixed")]
+    
+  }
+  
   modeldat$yvar <- modeldat[, 1]
 
   if(is.null(centre[[1]]) == FALSE){
@@ -473,8 +497,6 @@ singlewin <- function(xvar, cdate, bdate, baseline,
     
   }
   
-  modeldat           <- model.frame(baseline)
-  modeldat$yvar      <- modeldat[, 1]
   modeldat$climate   <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
 
   if (is.null(weights(baseline)) == FALSE){

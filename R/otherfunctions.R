@@ -125,6 +125,14 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   
   if(attr(baseline, "class")[1] == "lme"){
     
+    if(is.null(baseline$modelStruct$varStruct) == FALSE){
+      
+      modeldat <- cbind(modeldat, attr(baseline$modelStruct$varStruct, "groups"))
+      
+      colnames(modeldat)[ncol(modeldat)] <- strsplit(x = as.character(attr(baseline$modelStruct$varStruct, "formula"))[2], split = " | ")[[1]][3]
+      
+    }
+    
     non_rand <- ncol(modeldat)
     
     modeldat <- cbind(modeldat, baseline$data[, colnames(baseline$fitted)[-which(colnames(baseline$fitted) %in% "fixed")]])
