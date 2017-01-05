@@ -12,7 +12,7 @@ slidingwin(exclude = NA, xvar, cdate, bdate, baseline, type, refday,
   closest = NULL, thresh = NULL, cvk = NULL)
 }
 \arguments{
-\item{exclude}{Two values (distance and duration) which allow users
+\item{exclude}{Two values (duration and distance) which allow users
 to exclude short-duration long-lag climate windows from analysis (e.g., 
 windows with a duration of 10 days which occur over a month ago).
 These windows are often considered to be biologically implausible.}

@@ -7,7 +7,7 @@
 #'
 #'Note that slidingwin allows you to test multiple possible parameters with the
 #'same code (e.g. func, stat, xvar). See examples for more detail.
-#'@param exclude Two values (distance and duration) which allow users
+#'@param exclude Two values (duration and distance) which allow users
 #'  to exclude short-duration long-lag climate windows from analysis (e.g., 
 #'  windows with a duration of 10 days which occur over a month ago).
 #'  These windows are often considered to be biologically implausible.
