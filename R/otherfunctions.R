@@ -146,7 +146,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     colnames(modeldat)[ncol(modeldat)] <- gsub("\\)", "", colnames(modeldat)[ncol(modeldat)])
   }
   
-  modeldat$yvar <- modeldat[, 1]
+  colnames(modeldat)[1] <- "yvar"
   
   if (is.null(centre[[1]]) == FALSE){
     func <- "centre"
@@ -392,6 +392,8 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     
   }
   
+  dummymod <- modeloutput
+  
   if (k > 1){
     modeldat$K <- sample(seq(from = 1, to = length(modeldat$climate), by = 1) %% k + 1)
   }   # create labels k-fold crossvalidation
@@ -456,10 +458,21 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
             ifelse (n == 1, modeldat$climate <- cmatrix[, windowclose:windowopen], 
                     modeldat$climate <- apply(cmatrix[, windowclose:windowopen], 1, FUN = stat))
           }
+          
           if (min(modeldat$climate) <= 0 & func == "log" || min(modeldat$climate) <= 0 & func == "inv"){
             stop("func = log or inv cannot be used with climate values <= 0. 
                  Consider adding a constant to climate data to remove these values")
           }
+          
+          print(modeldat)
+          
+          if(var(modeldat$climate) == 0){
+            
+            modeloutput  <- dummymod
+            AICc_cv_avg  <- AICc(dummymod)
+            deltaAICc_cv <- AICc(dummymod) - AICc(baseline)
+            
+          } else {
           
           if (is.null(centre[[1]]) == FALSE){
             if(centre[[2]] == "both"){
@@ -495,6 +508,9 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
               train                    <- subset(modeldat, modeldat$K != k) # Create the train dataset
               baselinecv               <- update(baseline, yvar~., data = train) # Refit the model without climate using the train dataset
               modeloutputcv            <- update(modeloutput, yvar~., data = train)  # Refit the model with climate using the train dataset
+              
+              print(modeloutputcv)
+              
               test$predictions         <- predict(modeloutputcv, newdata = test, allow.new.levels = TRUE, type = "response") # Test the output of the climate model fitted using the test data
               test$predictionsbaseline <- predict(baselinecv, newdata = test, allow.new.levels = TRUE, type = "response") # Test the output of the null models fitted using the test data
               
@@ -502,23 +518,28 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
               p          <- num - df.residual(modeloutputcv)  # Determine df for the climate model
               mse        <- sum((test$predictions - test[, 1]) ^ 2) / num
               p_baseline <- num - df.residual(baselinecv)  # Determine df for the baseline model
+
               #calculate mean standard errors for climate model
               #calc mse only works non-categorical yvars, e.g. normal, binary, count data 
               mse_baseline <- sum((test$predictionsbaseline - test[, 1]) ^ 2) / num
               #calculate mean standard errors for null model
               AICc_cv          <- num * log(mse) + (2 * p * (p + 1)) / (num - p - 1)
               AICc_cv_baseline <- num * log(mse_baseline) + (2 * p_baseline * (p_baseline + 1)) / (num - p_baseline - 1)
+
               #Calculate AICc values for climate and baseline models
               #rmse_corrected<-sqrt(sum((test$predictions-test[,1])^2)/modeloutputcv$df[1])
               ifelse (k == 1, AICc_cvtotal <- AICc_cv, AICc_cvtotal <- AICc_cvtotal + AICc_cv)              
               ifelse (k == 1, AICc_cv_basetotal <- AICc_cv_baseline, AICc_cv_basetotal <- AICc_cv_basetotal + AICc_cv_baseline)
               #Add up the AICc values for all iterations of crossvalidation
             }
+            
             AICc_cv_avg          <- AICc_cvtotal / k # Determine the average AICc value of the climate model from cross validations
             AICc_cv_baseline_avg <- AICc_cv_basetotal / k # Determine the average AICc value of the null model from cross validations
             deltaAICc_cv         <- AICc_cv_avg - AICc_cv_baseline_avg # Calculate delta AICc
           }
           
+          }
+            
           #Add model parameters to list
           if (k > 1){
             modlist$ModelAICc[[modno]]    <- AICc_cv_avg
