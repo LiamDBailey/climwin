@@ -464,8 +464,6 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
                  Consider adding a constant to climate data to remove these values")
           }
           
-          print(modeldat)
-          
           if(var(modeldat$climate) == 0){
             
             modeloutput  <- dummymod
