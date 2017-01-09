@@ -1153,3 +1153,53 @@ test_that("spatial replication works with slidingwin with NAs and cmissing metho
   expect_true(ncol(test[[1]]$BestModelData) >= 2)
   
 })
+
+test_that("spatial replication works with completely different years", {
+  
+  data(Mass, envir = environment())
+  Mass$Plot <- "A"
+  Mass$Date <- as.Date(Mass$Date, format = "%d/%m/%Y")
+  Mass2 <- Mass
+  Mass2$Date <- as.Date(Mass2$Date, format = "%d/%m/%Y") - (365 * 100)
+  Mass2$Plot <- "B"
+  Mass_full <- rbind(Mass, Mass2)
+  data(MassClimate, envir = environment())
+  MassClimate$Plot <- "A"
+  MassClimate$Date <- as.Date(MassClimate$Date, format = "%d/%m/%Y")
+  MassClimate2 <- MassClimate
+  MassClimate2$Plot <- "B"
+  MassClimate2$Date <- MassClimate2$Date - (365 * 100)
+  Clim <- rbind(MassClimate, MassClimate2)
+  
+  test <- slidingwin(xvar = list(Clim$Temp), cdate = Clim$Date, bdate = Mass_full$Date, 
+                     baseline = lm(Mass ~ 1, data = Mass_full), range = c(1, 0), 
+                     type = "absolute", refday = c(20, 5), 
+                     cinterval = "day",
+                     stat = "max", func = "lin", cmissing = "method2",
+                     spatial = list(Mass_full$Plot, Clim$Plot))
+  
+})
+
+test_that("spatial replication returns an error when 1 plot is wrong", {
+  
+  data(Mass, envir = environment())
+  Mass$Plot <- "A"
+  Mass$Date <- as.Date(Mass$Date, format = "%d/%m/%Y")
+  Mass2 <- Mass
+  Mass2$Date <- as.Date(Mass2$Date, format = "%d/%m/%Y") - (365 * 100)
+  Mass2$Plot <- "B"
+  Mass_full <- rbind(Mass, Mass2)
+  data(MassClimate, envir = environment())
+  MassClimate$Plot <- "A"
+  MassClimate2 <- MassClimate
+  MassClimate2$Plot <- "B"
+  Clim <- rbind(MassClimate, MassClimate2)
+  
+  expect_error(slidingwin(xvar = list(Clim$Temp), cdate = Clim$Date, bdate = Mass_full$Date, 
+                     baseline = lm(Mass ~ 1, data = Mass_full), range = c(1, 0), 
+                     type = "absolute", refday = c(20, 5), 
+                     cinterval = "day",
+                     stat = "max", func = "lin", cmissing = "method2",
+                     spatial = list(Mass_full$Plot, Clim$Plot)))
+  
+})

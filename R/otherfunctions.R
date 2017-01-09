@@ -95,12 +95,18 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   
   if(is.null(spatial) == FALSE){
     
-    if ((min(cont$bintno$Date) - range[1]) < min(cont$cintno$Date)){
-      stop(paste("You do not have enough climate data to search ", range[1], " ", cinterval, "s before ", min(as.Date(bdate, format = "%d/%m/%Y")), ". Please adjust the value of range or add additional climate data.", sep = ""))
-    }
-    
-    if (max(cont$bintno$Date) - range[2] > max(cont$cintno$Date)){
-      stop(paste("You need more recent climate data. The most recent climate data is from ", max(as.Date(cdate, format = "%d/%m/%Y")), " while the most recent biological data is from ", max(as.Date(cdate, format = "%d/%m/%Y")), sep = ""))
+    for(i in levels(as.factor(spatial[[1]]))){
+      
+      SUB_clim <- subset(cont$cintno, spatial == i)
+      SUB_biol <- subset(cont$bintno, spatial == i)
+      
+      if ((min(SUB_biol$Date) - range[1]) < min(SUB_clim$Date)){
+        stop(paste("At site ", i, " you do not have enough climate data to search ", range[1], " ", cinterval, "s back. Please adjust the value of range or add additional climate data.", sep = ""))
+      }
+      
+      if (max(SUB_biol$Date) - range[2] > max(SUB_clim$Date)){
+        stop(paste("At site ", i, " you need more recent climate data. The most recent climate data is from ", max(SUB_clim$Date), " while the most recent biological data is from ", max(SUB_biol$Date), sep = ""))
+      }
     }
     
   } else {
@@ -1340,12 +1346,16 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
     }
   }
   cdate  <- as.Date(cdate, format = "%d/%m/%Y")
-  
+
   if(is.null(spatial) == FALSE){
     for(i in levels(as.factor(spatial[[2]]))){
       SUB <- cdate[which(spatial[[2]] == i)]
-      if (min(SUB) > min(bdate) | max(SUB) < max(bdate)){
-        stop("Climate data does not cover all years of biological data. Please increase range of climate data")
+      SUB_biol <- bdate[which(spatial[[1]] == i)]
+      if (min(SUB) > min(SUB_biol)){
+        stop(paste("Climate data does not cover all years of biological data at site ", i ,". Earliest climate data is ", min(cdate), " Earliest biological data is ", min(bdate), ". Please increase range of climate data", sep = ""))
+      }
+      if (max(SUB) < max(SUB_biol)){
+        stop(paste("Climate data does not cover all years of biological data at site ", i ,". Latest climate data is ", max(cdate), " Latest biological data is ", min(bdate), ". Please increase range of climate data", sep = ""))
       }
     }
   } else if (min(cdate) > min(bdate)){
