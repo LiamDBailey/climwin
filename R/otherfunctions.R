@@ -158,11 +158,11 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     func <- "centre"
   }
   
-  # BH - probably needs updating here for cw_diff: 
-  tmp = diff(modeldat$yvar)
-  modeldat = data.frame(yvar = tmp)
-  # bdate = bdate[2:length(bdate)] --> !!!NOT!!!!
-  # cont$bintno = cont$bintno[2:length(cont$bintno)] --> NOT!!
+  # update in case of differencing 
+  if (cw_diff){
+    tmp = diff(modeldat$yvar)
+    modeldat = data.frame(yvar = tmp)
+  }
   
   ifelse(class(baseline)[length(class(baseline))]=="coxph", leng<-length(modeldat$yvar[,1]), leng<-length(modeldat$yvar))
   if ((leng != length(bdate)) && (!cw_diff)){
