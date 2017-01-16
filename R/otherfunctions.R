@@ -28,7 +28,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
                     type, stat = "mean", func = "lin", refday,
                     cmissing = FALSE, cinterval = "day", nrandom = 0, k = 0,
                     spatial, upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"),
-                    cohort = NULL, fast){
+                    cohort = NULL, fast, cw_diff = FALSE){
   
   print("Initialising, please wait...")
   
@@ -127,7 +127,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   modlist   <- list()   # dataframes to store ouput
   baseline  <- update(baseline, .~.)
   nullmodel <- AICc(baseline)
-  modeldat  <- model.frame(baseline)
+  modeldat  <- model.frame(baseline)    
   
   if(attr(baseline, "class")[1] == "lme"){
     
@@ -158,8 +158,16 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     func <- "centre"
   }
   
+  # BH - probably needs updating here for cw_diff: 
+  tmp = diff(modeldat$yvar)
+  modeldat = data.frame(yvar = tmp)
+  # bdate = bdate[2:length(bdate)] --> !!!NOT!!!!
+  # cont$bintno = cont$bintno[2:length(cont$bintno)] --> NOT!!
+  
   ifelse(class(baseline)[length(class(baseline))]=="coxph", leng<-length(modeldat$yvar[,1]), leng<-length(modeldat$yvar))
-  if (leng != length(bdate)){
+  if ((leng != length(bdate)) && (!cw_diff)){
+      stop("NA values present in biological response. Please remove NA values")
+  } else if ((leng != (length(bdate)-1)) && (cw_diff)){
       stop("NA values present in biological response. Please remove NA values")
   }
 
@@ -228,6 +236,9 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   }
   
   cmatrix <- as.matrix(cmatrix[, c(ncol(cmatrix):1)])
+  
+  # BH insert: delete the final row for cw_diff = TRUE --> NOT!!
+  # cmatrix = cmatrix[-nrow(cmatrix),]
   
   if(cmissing == FALSE && length(which(is.na(cmatrix))) > 0){
     if(is.null(spatial) == FALSE){
@@ -461,8 +472,16 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
             time             <- seq(1, n, 1)
             modeldat$climate <- apply(cmatrix[, windowclose:windowopen], 1, FUN = function(x) coef(lm(x ~ time))[2])
           } else { 
-            ifelse (n == 1, modeldat$climate <- cmatrix[, windowclose:windowopen], 
+            # Case: NOT differencing
+              if (!cw_diff){
+                ifelse (n == 1, modeldat$climate <- cmatrix[, windowclose:windowopen], 
                     modeldat$climate <- apply(cmatrix[, windowclose:windowopen], 1, FUN = stat))
+            # Case: Differencing
+              } else {
+                ifelse (n == 1, modeldat$climate <- diff(cmatrix[, windowclose:windowopen]), 
+                    modeldat$climate <- diff(apply(cmatrix[, windowclose:windowopen], 1, FUN = stat)))
+              }
+            
           }
           
           if (min(modeldat$climate) <= 0 & func == "log" || min(modeldat$climate) <= 0 & func == "inv"){
@@ -758,9 +777,17 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     time      <- seq(1, n[1], 1)
     modeldat$climate <- apply(cmatrix[, windowclose:windowopen], 1, FUN = function(x) coef(lm(x ~ time))[2])
   } else {
-    ifelse (windowopen - windowclose == 0, 
+    # CASE: NOT differencing
+    if (!cw_diff){
+      ifelse (windowopen - windowclose == 0, 
             modeldat$climate <- cmatrix[, windowclose:windowopen], 
             modeldat$climate <- apply(cmatrix[, windowclose:windowopen], 1, FUN = stat))
+    # CASE: differencing
+    } else {
+      ifelse (windowopen - windowclose == 0, 
+            modeldat$climate <- diff(cmatrix[, windowclose:windowopen]), 
+            modeldat$climate <- diff(apply(cmatrix[, windowclose:windowopen], 1, FUN = stat)))
+    }
   }
   
   if (is.null(centre[[1]]) == FALSE){

@@ -188,7 +188,8 @@ slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
                        spatial = NULL, cohort = NULL, 
                        cutoff.day = NULL, cutoff.month = NULL, 
                        furthest = NULL, closest = NULL,
-                       thresh = NULL, cvk = NULL){
+                       thresh = NULL, cvk = NULL,
+                       cw_diff = FALSE){
   
   fast = FALSE
   
@@ -272,6 +273,7 @@ slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
   print(allcombos)
   
   combined <- list()
+  
   for (combo in 1:nrow(allcombos)){
     runs <- basewin(exclude = exclude, xvar = xvar[[paste(allcombos[combo, 1])]], cdate = cdate, bdate = bdate, baseline = baseline,
                     range = range, type = paste(allcombos[combo, 2]), refday = refday, stat = paste(allcombos[combo, 3]), func = paste(allcombos[combo, 4]),
@@ -279,7 +281,7 @@ slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
                     upper = ifelse(binarylevel == "two" || binarylevel == "upper", allcombos$upper[combo], NA),
                     lower = ifelse(binarylevel == "two" || binarylevel == "lower", allcombos$lower[combo], NA),
                     binary = paste(allcombos$binary[combo]), centre = centre, cohort = cohort,
-                    spatial = spatial, fast = fast)
+                    spatial = spatial, fast = fast, cw_diff = cw_diff)
     
     combined[[combo]]            <- runs
     allcombos$DeltaAICc[combo]   <- round(runs$Dataset$deltaAICc[1], digits = 2)
