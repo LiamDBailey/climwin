@@ -237,9 +237,6 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   
   cmatrix <- as.matrix(cmatrix[, c(ncol(cmatrix):1)])
   
-  # BH insert: delete the final row for cw_diff = TRUE --> NOT!!
-  # cmatrix = cmatrix[-nrow(cmatrix),]
-  
   if(cmissing == FALSE && length(which(is.na(cmatrix))) > 0){
     if(is.null(spatial) == FALSE){
       
