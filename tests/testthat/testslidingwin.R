@@ -133,7 +133,7 @@ test_that("slidingwin produces non-binary values with lower and binary = FALSE",
   test <- slidingwin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), range = c(1, 0), 
                      type = "relative", stat = "max", func = "lin", cmissing = FALSE,
-                     lower = 10, upper = 15, binary = FALSE)
+                     lower = 10, binary = FALSE)
   
   # Test that the minumum value of climate is set at 0
   expect_equal(min(test[[1]]$BestModelData$climate), 0)

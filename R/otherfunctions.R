@@ -209,9 +209,9 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     
     if (is.na(lower) == FALSE && is.na(upper) == FALSE){
       if (binary == TRUE){
-        cont$xvar <- ifelse (cont$xvar > lower && cont$xvar < upper, 1, 0)
+        cont$xvar <- ifelse (cont$xvar > lower & cont$xvar < upper, 1, 0)
       } else {
-        cont$xvar <- ifelse (cont$xvar > lower && cont$xvar < upper, cont$xvar - lower, 0)
+        cont$xvar <- ifelse (cont$xvar > lower & cont$xvar < upper, cont$xvar - lower, 0)
       } 
     } 
     
@@ -219,7 +219,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   
   if(is.null(spatial) == FALSE){
     for (i in 1:length(bdate)){
-      cmatrix[i, ] <- cont$xvar[which(cont$cintno$spatial %in% cont$bintno$spatial[i] && cont$cintno$Date %in% (cont$bintno$Date[i] - c(range[2]:range[1]))), 1]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
+      cmatrix[i, ] <- cont$xvar[which(cont$cintno$spatial %in% cont$bintno$spatial[i] & cont$cintno$Date %in% (cont$bintno$Date[i] - c(range[2]:range[1]))), 1]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
     }
   } else {
     for (i in 1:length(bdate)){
@@ -259,7 +259,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     }
 
     stop(c("Climate data should not contain NA values: ", length(.GlobalEnv$missing),
-           " NA value(s) found. Please add missing climate data or set cmissing=TRUE.
+           " NA value(s) found. Please add missing climate data or set cmissing to `method1` or `method2`.
            See object 'missing' for all missing climate data"))
   }
   
@@ -318,7 +318,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
           
           missing_rec <- as.Date(brecord, format = "%d/%m/%Y", origin = min_date)
           
-          cmatrix[i] <- mean(xvar[which(cdate_new$Month == lubridate::month(missing_rec) && cdate_new$Day == lubridate::day(missing_rec))], na.rm = T)
+          cmatrix[i] <- mean(xvar[which(cdate_new$Month == lubridate::month(missing_rec) & cdate_new$Day == lubridate::day(missing_rec))], na.rm = T)
 
         } else if(cinterval == "week"){
           
@@ -958,7 +958,7 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
   
   if(is.null(spatial) == FALSE){
     for (i in 1:length(bdate)){
-      cmatrix[i, ] <- cont$xvar[which(cont$cintno$spatial %in% cont$bintno$spatial[i] && cont$cintno$Date %in% (cont$bintno$Date[i] - c(range[2]:range[1]))), 1]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
+      cmatrix[i, ] <- cont$xvar[which(cont$cintno$spatial %in% cont$bintno$spatial[i] & cont$cintno$Date %in% (cont$bintno$Date[i] - c(range[2]:range[1]))), 1]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
     }
   } else {
     for (i in 1:length(bdate)){
@@ -1915,7 +1915,7 @@ wgmean <- function(covar, groupvar){
 skim <- function(winoutput, duration, cutoff) {
   winoutput$Duration <- winoutput$WindowOpen - winoutput$WindowClose
   winoutput$Filter   <- winoutput$WindowOpen * 0
-  winoutput$Filter[which(winoutput$WindowOpen >= cutoff &&  winoutput$WindowClose >= cutoff && winoutput$Duration < duration)] <- 1
+  winoutput$Filter[which(winoutput$WindowOpen >= cutoff &  winoutput$WindowClose >= cutoff & winoutput$Duration < duration)] <- 1
   winoutput<-subset(winoutput, winoutput$Filter == 0)
   return(winoutput)
 }
