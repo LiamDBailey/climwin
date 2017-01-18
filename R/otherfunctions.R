@@ -74,12 +74,12 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   
   if(is.null(centre[[1]]) == FALSE){
     func = "centre"
-    if(centre[[2]] != "both" & centre[[2]] != "dev" & centre[[2]] != "mean"){
+    if(centre[[2]] != "both" && centre[[2]] != "dev" && centre[[2]] != "mean"){
       stop("Please set centre to one of 'both', 'dev', or 'mean'. See help file for details.")
     }
   }
   
-  if (stat == "slope" & func == "log" || stat == "slope" & func == "inv"){
+  if (stat == "slope" && func == "log" || stat == "slope" && func == "inv"){
     stop("stat = slope cannot be used with func = log or inv as negative values may be present")
   }
   
@@ -131,7 +131,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   
   if(attr(baseline, "class")[1] == "lme"){
     
-    if(is.null(baseline$modelStruct$varStruct) == FALSE){
+    if(is.null(baseline$modelStruct$varStruct) == FALSE && !is.null(attr(baseline$modelStruct$varStruct, "groups"))){
       
       modeldat <- cbind(modeldat, attr(baseline$modelStruct$varStruct, "groups"))
       
@@ -147,7 +147,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     
   }
   
-  if(class(baseline)[length(class(baseline))]=="coxph" & grepl("frailty\\(", colnames(modeldat)[ncol(modeldat)])){
+  if(class(baseline)[length(class(baseline))]=="coxph" && grepl("frailty\\(", colnames(modeldat)[ncol(modeldat)])){
     colnames(modeldat)[ncol(modeldat)] <- gsub("frailty\\(", "", colnames(modeldat)[ncol(modeldat)])
     colnames(modeldat)[ncol(modeldat)] <- gsub("\\)", "", colnames(modeldat)[ncol(modeldat)])
   }
@@ -183,9 +183,9 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     
     if (is.na(lower) == FALSE && is.na(upper) == FALSE){
       if (binary == TRUE){
-        cont$xvar$Clim <- ifelse (cont$xvar$Clim > lower & cont$xvar$Clim < upper, 1, 0)
+        cont$xvar$Clim <- ifelse (cont$xvar$Clim > lower && cont$xvar$Clim < upper, 1, 0)
       } else {
-        cont$xvar$Clim <- ifelse (cont$xvar$Clim > lower & cont$xvar$Clim < upper, cont$xvar$Clim - lower, 0)
+        cont$xvar$Clim <- ifelse (cont$xvar$Clim > lower && cont$xvar$Clim < upper, cont$xvar$Clim - lower, 0)
       } 
     }
     
@@ -209,9 +209,9 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     
     if (is.na(lower) == FALSE && is.na(upper) == FALSE){
       if (binary == TRUE){
-        cont$xvar <- ifelse (cont$xvar > lower & cont$xvar < upper, 1, 0)
+        cont$xvar <- ifelse (cont$xvar > lower && cont$xvar < upper, 1, 0)
       } else {
-        cont$xvar <- ifelse (cont$xvar > lower & cont$xvar < upper, cont$xvar - lower, 0)
+        cont$xvar <- ifelse (cont$xvar > lower && cont$xvar < upper, cont$xvar - lower, 0)
       } 
     } 
     
@@ -219,7 +219,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   
   if(is.null(spatial) == FALSE){
     for (i in 1:length(bdate)){
-      cmatrix[i, ] <- cont$xvar[which(cont$cintno$spatial %in% cont$bintno$spatial[i] & cont$cintno$Date %in% (cont$bintno$Date[i] - c(range[2]:range[1]))), 1]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
+      cmatrix[i, ] <- cont$xvar[which(cont$cintno$spatial %in% cont$bintno$spatial[i] && cont$cintno$Date %in% (cont$bintno$Date[i] - c(range[2]:range[1]))), 1]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
     }
   } else {
     for (i in 1:length(bdate)){
@@ -318,7 +318,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
           
           missing_rec <- as.Date(brecord, format = "%d/%m/%Y", origin = min_date)
           
-          cmatrix[i] <- mean(xvar[which(cdate_new$Month == lubridate::month(missing_rec) & cdate_new$Day == lubridate::day(missing_rec))], na.rm = T)
+          cmatrix[i] <- mean(xvar[which(cdate_new$Month == lubridate::month(missing_rec) && cdate_new$Day == lubridate::day(missing_rec))], na.rm = T)
 
         } else if(cinterval == "week"){
           
@@ -351,7 +351,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   }
   
   if (is.null(weights(baseline)) == FALSE){
-    if (class(baseline)[1] == "glm" & sum(weights(baseline)) == nrow(model.frame(baseline)) || attr(class(baseline), "package") == "lme4" & sum(weights(baseline)) == nrow(model.frame(baseline))){
+    if (class(baseline)[1] == "glm" && sum(weights(baseline)) == nrow(model.frame(baseline)) || attr(class(baseline), "package") == "lme4" && sum(weights(baseline)) == nrow(model.frame(baseline))){
     } else {
       modeldat$modweights <- weights(baseline)
       baseline <- update(baseline, .~., weights = modeldat$modweights, data = modeldat)
@@ -450,7 +450,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   #CREATE A FOR LOOP TO FIT DIFFERENT CLIMATE WINDOWS#
   for (m in range[2]:range[1]){
     for (n in 1:duration){
-        if (length(exclude) == 2 && m >= exclude[2] & (m-n) >= exclude[2] & n <= exclude[1]){
+        if (length(exclude) == 2 && m >= exclude[2] && (m-n) >= exclude[2] && n <= exclude[1]){
           next
         }
       if ( (m - n) >= (range[2] - 1)){  # do not use windows that overshoot the closest possible day in window
@@ -465,7 +465,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
                     modeldat$climate <- apply(cmatrix[, windowclose:windowopen], 1, FUN = stat))
           }
           
-          if (min(modeldat$climate) <= 0 & func == "log" || min(modeldat$climate) <= 0 & func == "inv"){
+          if (min(modeldat$climate) <= 0 && func == "log" || min(modeldat$climate) <= 0 && func == "inv"){
             stop("func = log or inv cannot be used with climate values <= 0. 
                  Consider adding a constant to climate data to remove these values")
           }
@@ -857,17 +857,17 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
     stop("Parameter 'type' now uses levels 'relative' and 'absolute' rather than 'variable' and 'fixed'.")
   }
   
-  if(is.null(furthest) == FALSE & is.null(closest) == FALSE){
+  if(is.null(furthest) == FALSE && is.null(closest) == FALSE){
     stop("furthest and closest are now redundant. Please use parameter 'range' instead.")
   }
   
-  if(is.null(cutoff.day) == FALSE & is.null(cutoff.month) == FALSE){
+  if(is.null(cutoff.day) == FALSE && is.null(cutoff.month) == FALSE){
     stop("cutoff.day and cutoff.month are now redundant. Please use parameter 'refday' instead.")
   }
   
   if(is.null(centre[[1]]) == FALSE){
     func = "centre"
-    if(centre[[2]] != "both" & centre[[2]] != "dev" & centre[[2]] != "mean"){
+    if(centre[[2]] != "both" && centre[[2]] != "dev" && centre[[2]] != "mean"){
       stop("Please set centre to one of 'both', 'dev', or 'mean'. See help file for details.")
     }
   }
@@ -938,9 +938,27 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
   modeldat      <- model.frame(baseline)
   modeldat$yvar <- modeldat[, 1]
   
+  if(attr(baseline, "class")[1] == "lme"){
+    
+    if(is.null(baseline$modelStruct$varStruct) == FALSE && !is.null(attr(baseline$modelStruct$varStruct, "groups"))){
+      
+      modeldat <- cbind(modeldat, attr(baseline$modelStruct$varStruct, "groups"))
+      
+      colnames(modeldat)[ncol(modeldat)] <- strsplit(x = as.character(attr(baseline$modelStruct$varStruct, "formula"))[2], split = " | ")[[1]][3]
+      
+    }
+    
+    non_rand <- ncol(modeldat)
+    
+    modeldat <- cbind(modeldat, baseline$data[, colnames(baseline$fitted)[-which(colnames(baseline$fitted) %in% "fixed")]])
+    
+    colnames(modeldat)[-(1:non_rand)] <- colnames(baseline$fitted)[-which(colnames(baseline$fitted) %in% "fixed")]
+    
+  }
+  
   if(is.null(spatial) == FALSE){
     for (i in 1:length(bdate)){
-      cmatrix[i, ] <- cont$xvar[which(cont$cintno$spatial %in% cont$bintno$spatial[i] & cont$cintno$Date %in% (cont$bintno$Date[i] - c(range[2]:range[1]))), 1]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
+      cmatrix[i, ] <- cont$xvar[which(cont$cintno$spatial %in% cont$bintno$spatial[i] && cont$cintno$Date %in% (cont$bintno$Date[i] - c(range[2]:range[1]))), 1]   #Create a matrix which contains the climate data from furthest to furthest from each biological record#    
     }
   } else {
     for (i in 1:length(bdate)){
@@ -1249,6 +1267,31 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
         WeightedOutput$ModelBetaC <- NA
         WeightedOutput$ModelInt   <- fixef(LocalModel)[1]
       }
+    } else if(attr(baseline, "class")[1] == "lme"){
+      
+      if (func == "quad"){
+        WeightedOutput$ModelBeta  <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
+        WeightedOutput$Std.Error  <- coef(summary(modeloutput))[, "Std.Error"][2]
+        WeightedOutput$ModelBetaQ <- fixef(modeloutput)[length(fixef(modeloutput))]
+        WeightedOutput$Std.ErrorQ <- coef(summary(modeloutput))[, "Std.Error"][3]
+        WeightedOutput$ModelBetaC <- NA
+        WeightedOutput$ModelInt   <- fixef(modeloutput)[1]
+      } else if (func == "cub"){
+        WeightedOutput$ModelBeta  <- fixef(modeloutput)[length(fixef(modeloutput)) - 2]
+        WeightedOutput$Std.Error  <- coef(summary(modeloutput))[, "Std.Error"][2]
+        WeightedOutput$ModelBetaQ <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
+        WeightedOutput$Std.ErrorQ <- coef(summary(modeloutput))[, "Std.Error"][3]
+        WeightedOutput$ModelBetaC <- fixef(modeloutput)[length(fixef(modeloutput))]
+        WeightedOutput$Std.ErrorC <- coef(summary(modeloutput))[, "Std.Error"][3]
+        WeightedOutput$ModelInt   <- fixef(modeloutput)[1]
+      } else {
+        WeightedOutput$ModelBeta  <- fixef(modeloutput)[length(fixef(modeloutput))]
+        WeightedOutput$Std.Error  <- coef(summary(modeloutput))[, "Std.Error"][2]
+        WeightedOutput$ModelBetaQ <- NA
+        WeightedOutput$ModelBetaC <- NA
+        WeightedOutput$ModelInt   <- fixef(modeloutput)[1]
+      }
+      
     } else {
       if (func == "quad"){
         WeightedOutput$ModelBeta  <- coef(LocalModel)[length(coef(LocalModel)) - 1]
@@ -1872,7 +1915,7 @@ wgmean <- function(covar, groupvar){
 skim <- function(winoutput, duration, cutoff) {
   winoutput$Duration <- winoutput$WindowOpen - winoutput$WindowClose
   winoutput$Filter   <- winoutput$WindowOpen * 0
-  winoutput$Filter[which(winoutput$WindowOpen >= cutoff &  winoutput$WindowClose >= cutoff & winoutput$Duration < duration)] <- 1
+  winoutput$Filter[which(winoutput$WindowOpen >= cutoff &&  winoutput$WindowClose >= cutoff && winoutput$Duration < duration)] <- 1
   winoutput<-subset(winoutput, winoutput$Filter == 0)
   return(winoutput)
 }

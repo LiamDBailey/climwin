@@ -192,13 +192,13 @@ slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
   
   fast = FALSE
   
-  if(cmissing != FALSE & cmissing != "method1" & cmissing != "method2"){
+  if(cmissing != FALSE && cmissing != "method1" && cmissing != "method2"){
     
     stop("cmissing must be FALSE, 'method1' or 'method2'.")
     
   }
   
-  if(type != "absolute" & type != "relative"){
+  if(type != "absolute" && type != "relative"){
     
     stop("type must be either absolute or relative.")
     
@@ -224,11 +224,11 @@ slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
     stop("Parameter 'type' now uses levels 'relative' and 'absolute' rather than 'variable' and 'fixed'.")
   }
   
-  if(is.null(cutoff.day) == FALSE & is.null(cutoff.month) == FALSE){
+  if(is.null(cutoff.day) == FALSE && is.null(cutoff.month) == FALSE){
     stop("cutoff.day and cutoff.month are now redundant. Please use parameter 'refday' instead.")
   }
   
-  if(is.null(furthest) == FALSE & is.null(closest) == FALSE){
+  if(is.null(furthest) == FALSE && is.null(closest) == FALSE){
     stop("furthest and closest are now redundant. Please use parameter 'range' instead.")
   }
   

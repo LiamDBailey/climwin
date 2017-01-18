@@ -322,7 +322,7 @@ singlewin <- function(xvar, cdate, bdate, baseline,
   
   if(attr(baseline, "class")[1] == "lme"){
     
-    if(is.null(baseline$modelStruct$varStruct) == FALSE){
+    if(is.null(baseline$modelStruct$varStruct) == FALSE && !is.null(attr(baseline$modelStruct$varStruct, "groups"))){
       
       modeldat <- cbind(modeldat, attr(baseline$modelStruct$varStruct, "groups"))
       
