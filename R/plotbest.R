@@ -36,6 +36,12 @@
 plotbest <- function(dataset, bestmodel, bestmodeldata){
   names(bestmodeldata)[1] <- "Yvar"
   
+  if(attr(bestmodel, "class")[1] == "lme"){
+    
+    stop("plotbest is currently not available with nlme models. Consider plotting best model manually.")
+    
+  }
+  
   if(is.null(bestmodeldata$WGdev) == FALSE){
     with(bestmodeldata, {
       ggplot(bestmodeldata, aes(y = Yvar, x = climate))+

@@ -336,7 +336,7 @@ singlewin <- function(xvar, cdate, bdate, baseline,
     
     colnames(modeldat)[-(1:non_rand)] <- colnames(baseline$fitted)[-which(colnames(baseline$fitted) %in% "fixed")]
     
-    modeloutput <- update(modeloutput, .~., data = modeldat)
+    modeloutput <- update(baseline, .~., data = modeldat)
     
   }
   

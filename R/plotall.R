@@ -113,7 +113,8 @@ plotall <- function(dataset, datasetrand = NULL,
   if(is.null(datasetrand) == FALSE){
     hist   <- plothist(dataset = dataset, datasetrand = datasetrand)    
     
-  if(is.null(bestmodel) == FALSE && is.null(bestmodeldata) == FALSE){
+  if(attr(baseline, "class")[1] != "lme" && is.null(bestmodel) == FALSE && is.null(bestmodeldata) == FALSE){
+    
   best  <- plotbest(dataset = dataset, bestmodel = bestmodel, bestmodeldata = bestmodeldata)
   
   if (dataset$Function[1] == "lin"){
@@ -134,6 +135,13 @@ plotall <- function(dataset, datasetrand = NULL,
     gridExtra::grid.arrange(plotenv$beta, plotenv$delta, plotenv$cw, hist, window, best, nrow = 2, top = paste(title))
   }
   } else {
+    
+    if(attr(baseline, "class")[1] == "lme"){
+      
+      warning("plotbest is currently not available for nlme models.")
+      
+    }
+    
     if (dataset$Function[1] == "lin"){
       gridExtra::grid.arrange(plotenv$delta, plotenv$cw, plotenv$beta, hist, window, nrow = 2, ncol = 3, top = paste(title))
     } else if (dataset$Function[1] == "quad"){
@@ -154,7 +162,7 @@ plotall <- function(dataset, datasetrand = NULL,
   }
 } else {
   
-  if(is.null(bestmodel) == FALSE && is.null(bestmodeldata) == FALSE){
+  if(attr(baseline, "class")[1] != "lme" && is.null(bestmodel) == FALSE && is.null(bestmodeldata) == FALSE){
     best  <- plotbest(dataset = dataset, bestmodel = bestmodel, bestmodeldata = bestmodeldata)
     
     if (dataset$Function[1] == "lin"){
@@ -175,6 +183,13 @@ plotall <- function(dataset, datasetrand = NULL,
       gridExtra::grid.arrange(plotenv$beta, plotenv$delta, plotenv$cw, window, best, nrow = 2, top = paste(title))
     }
   } else {
+    
+    if(attr(baseline, "class")[1] == "lme"){
+      
+      warning("plotbest is currently not available for nlme models.")
+      
+    }
+    
     if (dataset$Function[1] == "lin"){
       gridExtra::grid.arrange(plotenv$delta, plotenv$cw, plotenv$beta, window, nrow = 2, ncol = 3, top = paste(title))
     } else if (dataset$Function[1] == "quad"){
