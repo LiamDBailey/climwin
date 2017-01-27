@@ -113,7 +113,7 @@ plotall <- function(dataset, datasetrand = NULL,
   if(is.null(datasetrand) == FALSE){
     hist   <- plothist(dataset = dataset, datasetrand = datasetrand)    
     
-  if(attr(baseline, "class")[1] != "lme" && is.null(bestmodel) == FALSE && is.null(bestmodeldata) == FALSE){
+  if(attr(bestmodel, "class")[1] != "lme" && is.null(bestmodel) == FALSE && is.null(bestmodeldata) == FALSE){
     
   best  <- plotbest(dataset = dataset, bestmodel = bestmodel, bestmodeldata = bestmodeldata)
   
@@ -136,7 +136,7 @@ plotall <- function(dataset, datasetrand = NULL,
   }
   } else {
     
-    if(attr(baseline, "class")[1] == "lme"){
+    if(attr(bestmodel, "class")[1] == "lme"){
       
       warning("plotbest is currently not available for nlme models.")
       
@@ -162,7 +162,7 @@ plotall <- function(dataset, datasetrand = NULL,
   }
 } else {
   
-  if(attr(baseline, "class")[1] != "lme" && is.null(bestmodel) == FALSE && is.null(bestmodeldata) == FALSE){
+  if(attr(bestmodel, "class")[1] != "lme" && is.null(bestmodel) == FALSE && is.null(bestmodeldata) == FALSE){
     best  <- plotbest(dataset = dataset, bestmodel = bestmodel, bestmodeldata = bestmodeldata)
     
     if (dataset$Function[1] == "lin"){
@@ -184,7 +184,7 @@ plotall <- function(dataset, datasetrand = NULL,
     }
   } else {
     
-    if(attr(baseline, "class")[1] == "lme"){
+    if(attr(bestmodel, "class")[1] == "lme"){
       
       warning("plotbest is currently not available for nlme models.")
       
