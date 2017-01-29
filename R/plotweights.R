@@ -41,7 +41,7 @@ plotweights <- function(dataset, cw1 = 0.95, cw2 = 0.5, cw3 = 0.25, arrow = FALS
   WeightDist <- ceiling(100*mean(as.numeric(cumsum(dataset$ModWeight) <= cw1)))
   
   #Create a subset of the models that fall within the 95% confidence set
-  ConfidenceSet <- dataset[which(cumsum(dataset$ModWeight) <= cw1), ]
+  ConfidenceSet <- dataset[which(cumsum(dataset$ModWeight) <= cw1), ] 
     
   #Create an empty matrix equivalent length to the confidence set
   SpreadMatrix <- matrix(nrow = (nrow(ConfidenceSet)- 1), ncol = 2)
