@@ -156,7 +156,8 @@ randwin <- function(exclude = NA, repeats = 5, window = "sliding", xvar, cdate, 
                     upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"), k = 0,
                     weightfunc = "W", par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)), 
                     method = "L-BFGS-B", cutoff.day = NULL, cutoff.month = NULL,
-                    furthest = NULL, closest = NULL, thresh = NULL, cvk = NULL){
+                    furthest = NULL, closest = NULL, thresh = NULL, cvk = NULL, 
+                    cw_diff = FALSE){
   
   fast = FALSE
   
@@ -254,7 +255,7 @@ randwin <- function(exclude = NA, repeats = 5, window = "sliding", xvar, cdate, 
                              upper = ifelse(binarylevel == "two" || binarylevel == "upper", allcombos$upper[combo], NA),
                              lower = ifelse(binarylevel == "two" || binarylevel == "lower", allcombos$lower[combo], NA),
                              binary = paste(allcombos$binary[combo]), centre = centre, k = k, spatial = spatial,
-                             cohort = cohort, fast = fast)
+                             cohort = cohort, fast = fast, cw_diff = cw_diff)
         
         outputrep$Repeat <- r
         WeightDist <- sum(as.numeric(cumsum(outputrep$ModWeight) <= 0.95))/nrow(outputrep)
