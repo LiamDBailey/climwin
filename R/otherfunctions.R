@@ -1425,7 +1425,6 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       xvar2    <- xvar2[match(cdate2, cdate)]
     }
   }
-  
 
   if(is.null(spatial) == FALSE){
     xvar       <- data.frame(Clim = xvar, spatial = spatial[[2]])

@@ -242,8 +242,21 @@ randwin <- function(exclude = NA, repeats = 5, window = "sliding", xvar, cdate, 
   for (combo in 1:nrow(allcombos)){
     for (r in 1:repeats){
       print (c("randomization number ", r))
-      bdateNew  <- sample(bdate)
       
+      rand.rows <- sample(length(bdate))
+      
+      bdateNew  <- bdate[rand.rows]
+      
+      if(is.null(spatial) == TRUE){
+        
+        spatialNew <- NULL
+        
+      } else {
+        
+        spatialNew <- list(spatial[[1]][rand.rows], spatial[[2]])
+        
+      }
+
       if(window == "sliding"){
         
         outputrep <- basewin(exclude = exclude, xvar = xvar[[paste(allcombos[combo, 1])]], cdate = cdate, bdate = bdateNew, 
@@ -253,7 +266,7 @@ randwin <- function(exclude = NA, repeats = 5, window = "sliding", xvar, cdate, 
                              nrandom = repeats, cmissing = cmissing, cinterval = cinterval,
                              upper = ifelse(binarylevel == "two" || binarylevel == "upper", allcombos$upper[combo], NA),
                              lower = ifelse(binarylevel == "two" || binarylevel == "lower", allcombos$lower[combo], NA),
-                             binary = paste(allcombos$binary[combo]), centre = centre, k = k, spatial = spatial,
+                             binary = paste(allcombos$binary[combo]), centre = centre, k = k, spatial = spatialNew,
                              cohort = cohort, fast = fast)
         
         outputrep$Repeat <- r
@@ -273,7 +286,7 @@ randwin <- function(exclude = NA, repeats = 5, window = "sliding", xvar, cdate, 
                          baseline = baseline, range = range, func = paste(allcombos[combo, 4]), 
                          type = paste(allcombos[combo, 2]), refday = refday,
                          nrandom = repeats, cinterval = cinterval,
-                         centre = centre, spatial = spatial,
+                         centre = centre, spatial = spatialNew,
                          cohort = cohort, weightfunc = weightfunc, par = par, 
                          control = control, method = method)
         
