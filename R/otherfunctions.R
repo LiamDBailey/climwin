@@ -398,8 +398,6 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     
   }
   
-  dummymod <- modeloutput
-  
   if (k > 1){
     modeldat$K <- sample(seq(from = 1, to = length(modeldat$climate), by = 1) %% k + 1)
   }   # create labels k-fold crossvalidation
@@ -472,9 +470,9 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
           
           if(var(modeldat$climate) == 0){
             
-            modeloutput  <- dummymod
-            AICc_cv_avg  <- AICc(dummymod)
-            deltaAICc_cv <- AICc(dummymod) - AICc(baseline)
+            modeloutput  <- baseline
+            AICc_cv_avg  <- AICc(baseline)
+            deltaAICc_cv <- AICc(baseline) - AICc(baseline)
             
           } else {
           
