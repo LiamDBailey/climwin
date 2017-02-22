@@ -468,14 +468,14 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
                  Consider adding a constant to climate data to remove these values")
           }
           
-          if(var(modeldat$climate) == 0){
+          if(attr(modeloutput, "class")[1] == "lme" & var(modeldat$climate) == 0){
             
             modeloutput  <- baseline
             AICc_cv_avg  <- AICc(baseline)
             deltaAICc_cv <- AICc(baseline) - AICc(baseline)
             
           } else {
-          
+            
           if (is.null(centre[[1]]) == FALSE){
             if(centre[[2]] == "both"){
               modeldat$wgdev  <- wgdev(modeldat$climate, centre[[1]])
