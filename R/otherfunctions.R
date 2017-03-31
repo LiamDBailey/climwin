@@ -162,6 +162,8 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   if (cw_diff){
     tmp = diff(modeldat$yvar)
     modeldat = data.frame(yvar = tmp)
+    baseline  <- update(baseline, formula = yvar~., data = modeldat)
+    nullmodel <- AICc(baseline)
   }
   
   ifelse(class(baseline)[length(class(baseline))]=="coxph", leng<-length(modeldat$yvar[,1]), leng<-length(modeldat$yvar))
