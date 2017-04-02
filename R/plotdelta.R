@@ -73,7 +73,7 @@ with(dataset, {
     }
   } else if(arrow == TRUE){
     
-    CIRC <- circle(centre = c(dataset$WindowClose[1], dataset$WindowOpen[1]), diameter = 5, npoints = 1000)
+    CIRC <- circle(centre = c(dataset$WindowClose[1], dataset$WindowOpen[1]), diameter = 5, npoints = 100)
     colnames(CIRC) <- c("WindowClose", "WindowOpen")
     CIRC$deltaAICc <- 0
     

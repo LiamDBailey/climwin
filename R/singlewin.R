@@ -318,9 +318,29 @@ singlewin <- function(xvar, cdate, bdate, baseline,
   nullmodel <- AICc(baseline)  
   modlist   <- list()   # dataframes to store ouput
   cmatrix   <- matrix(ncol = (duration), nrow = length(bdate))
+  modeldat  <- model.frame(baseline)
   
-  modeldat      <- model.frame(baseline)
-  modeldat$yvar <- modeldat[, 1]
+  if(attr(baseline, "class")[1] == "lme"){
+    
+    if(is.null(baseline$modelStruct$varStruct) == FALSE && !is.null(attr(baseline$modelStruct$varStruct, "groups"))){
+      
+      modeldat <- cbind(modeldat, attr(baseline$modelStruct$varStruct, "groups"))
+      
+      colnames(modeldat)[ncol(modeldat)] <- strsplit(x = as.character(attr(baseline$modelStruct$varStruct, "formula"))[2], split = " | ")[[1]][3]
+
+    }
+    
+    non_rand <- ncol(modeldat)
+    
+    modeldat <- cbind(modeldat, baseline$data[, colnames(baseline$fitted)[-which(colnames(baseline$fitted) %in% "fixed")]])
+    
+    colnames(modeldat)[-(1:non_rand)] <- colnames(baseline$fitted)[-which(colnames(baseline$fitted) %in% "fixed")]
+    
+    modeloutput <- update(baseline, .~., data = modeldat)
+    
+  }
+  
+  colnames(modeldat)[1] <- "yvar"
 
   if(is.null(centre[[1]]) == FALSE){
     func = "centre"
@@ -473,9 +493,7 @@ singlewin <- function(xvar, cdate, bdate, baseline,
     
   }
   
-  modeldat           <- model.frame(baseline)
-  modeldat$yvar      <- modeldat[, 1]
-  modeldat$climate   <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
+  modeldat$climate <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
 
   if (is.null(weights(baseline)) == FALSE){
     if (class(baseline)[1] == "glm" & sum(weights(baseline)) == nrow(model.frame(baseline)) || attr(class(baseline), "package") == "lme4" & sum(weights(baseline)) == nrow(model.frame(baseline))){

@@ -74,12 +74,12 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   
   if(is.null(centre[[1]]) == FALSE){
     func = "centre"
-    if(centre[[2]] != "both" & centre[[2]] != "dev" & centre[[2]] != "mean"){
+    if(centre[[2]] != "both" && centre[[2]] != "dev" && centre[[2]] != "mean"){
       stop("Please set centre to one of 'both', 'dev', or 'mean'. See help file for details.")
     }
   }
   
-  if (stat == "slope" & func == "log" || stat == "slope" & func == "inv"){
+  if (stat == "slope" && func == "log" || stat == "slope" && func == "inv"){
     stop("stat = slope cannot be used with func = log or inv as negative values may be present")
   }
   
@@ -95,12 +95,18 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   
   if(is.null(spatial) == FALSE){
     
-    if ((min(cont$bintno$Date) - range[1]) < min(cont$cintno$Date)){
-      stop(paste("You do not have enough climate data to search ", range[1], " ", cinterval, "s before ", min(as.Date(bdate, format = "%d/%m/%Y")), ". Please adjust the value of range or add additional climate data.", sep = ""))
-    }
-    
-    if (max(cont$bintno$Date) - range[2] > max(cont$cintno$Date)){
-      stop(paste("You need more recent climate data. The most recent climate data is from ", max(as.Date(cdate, format = "%d/%m/%Y")), " while the most recent biological data is from ", max(as.Date(cdate, format = "%d/%m/%Y")), sep = ""))
+    for(i in levels(as.factor(spatial[[1]]))){
+      
+      SUB_clim <- subset(cont$cintno, spatial == i)
+      SUB_biol <- subset(cont$bintno, spatial == i)
+      
+      if ((min(SUB_biol$Date) - range[1]) < min(SUB_clim$Date)){
+        stop(paste("At site ", i, " you do not have enough climate data to search ", range[1], " ", cinterval, "s back. Please adjust the value of range or add additional climate data.", sep = ""))
+      }
+      
+      if (max(SUB_biol$Date) - range[2] > max(SUB_clim$Date)){
+        stop(paste("At site ", i, " you need more recent climate data. The most recent climate data is from ", max(SUB_clim$Date), " while the most recent biological data is from ", max(SUB_biol$Date), sep = ""))
+      }
     }
     
   } else {
@@ -123,12 +129,30 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   nullmodel <- AICc(baseline)
   modeldat  <- model.frame(baseline)
   
-  if(class(baseline)[length(class(baseline))]=="coxph" & grepl("frailty\\(", colnames(modeldat)[ncol(modeldat)])){
+  if(attr(baseline, "class")[1] == "lme"){
+    
+    if(is.null(baseline$modelStruct$varStruct) == FALSE && !is.null(attr(baseline$modelStruct$varStruct, "groups"))){
+      
+      modeldat <- cbind(modeldat, attr(baseline$modelStruct$varStruct, "groups"))
+      
+      colnames(modeldat)[ncol(modeldat)] <- strsplit(x = as.character(attr(baseline$modelStruct$varStruct, "formula"))[2], split = " | ")[[1]][3]
+      
+    }
+    
+    non_rand <- ncol(modeldat)
+    
+    modeldat <- cbind(modeldat, baseline$data[, colnames(baseline$fitted)[-which(colnames(baseline$fitted) %in% "fixed")]])
+    
+    colnames(modeldat)[-(1:non_rand)] <- colnames(baseline$fitted)[-which(colnames(baseline$fitted) %in% "fixed")]
+    
+  }
+  
+  if(class(baseline)[length(class(baseline))]=="coxph" && grepl("frailty\\(", colnames(modeldat)[ncol(modeldat)])){
     colnames(modeldat)[ncol(modeldat)] <- gsub("frailty\\(", "", colnames(modeldat)[ncol(modeldat)])
     colnames(modeldat)[ncol(modeldat)] <- gsub("\\)", "", colnames(modeldat)[ncol(modeldat)])
   }
   
-  modeldat$yvar <- modeldat[, 1]
+  colnames(modeldat)[1] <- "yvar"
   
   if (is.null(centre[[1]]) == FALSE){
     func <- "centre"
@@ -161,9 +185,9 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     
     if (is.na(lower) == FALSE && is.na(upper) == FALSE){
       if (binary == TRUE){
-        cont$xvar$Clim <- ifelse (cont$xvar$Clim > lower & cont$xvar$Clim < upper, 1, 0)
+        cont$xvar$Clim <- ifelse (cont$xvar$Clim > lower && cont$xvar$Clim < upper, 1, 0)
       } else {
-        cont$xvar$Clim <- ifelse (cont$xvar$Clim > lower & cont$xvar$Clim < upper, cont$xvar$Clim - lower, 0)
+        cont$xvar$Clim <- ifelse (cont$xvar$Clim > lower && cont$xvar$Clim < upper, cont$xvar$Clim - lower, 0)
       } 
     }
     
@@ -239,7 +263,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     }
 
     stop(c("Climate data should not contain NA values: ", length(.GlobalEnv$missing),
-           " NA value(s) found. Please add missing climate data or set cmissing=TRUE.
+           " NA value(s) found. Please add missing climate data or set cmissing to `method1` or `method2`.
            See object 'missing' for all missing climate data"))
   }
   
@@ -331,7 +355,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   }
   
   if (is.null(weights(baseline)) == FALSE){
-    if (class(baseline)[1] == "glm" & sum(weights(baseline)) == nrow(model.frame(baseline)) || attr(class(baseline), "package") == "lme4" & sum(weights(baseline)) == nrow(model.frame(baseline))){
+    if (class(baseline)[1] == "glm" && sum(weights(baseline)) == nrow(model.frame(baseline)) || attr(class(baseline), "package") == "lme4" && sum(weights(baseline)) == nrow(model.frame(baseline))){
     } else {
       modeldat$modweights <- weights(baseline)
       baseline <- update(baseline, .~., weights = modeldat$modweights, data = modeldat)
@@ -428,7 +452,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   #CREATE A FOR LOOP TO FIT DIFFERENT CLIMATE WINDOWS#
   for (m in range[2]:range[1]){
     for (n in 1:duration){
-        if (length(exclude) == 2 && m >= exclude[2] & (m-n) >= exclude[2] & n <= exclude[1]){
+        if (length(exclude) == 2 && m >= exclude[2] && (m-n) >= exclude[2] && n <= exclude[1]){
           next
         }
       if ( (m - n) >= (range[2] - 1)){  # do not use windows that overshoot the closest possible day in window
@@ -442,11 +466,20 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
             ifelse (n == 1, modeldat$climate <- cmatrix[, windowclose:windowopen], 
                     modeldat$climate <- apply(cmatrix[, windowclose:windowopen], 1, FUN = stat))
           }
-          if (min(modeldat$climate) <= 0 & func == "log" || min(modeldat$climate) <= 0 & func == "inv"){
+          
+          if (min(modeldat$climate) <= 0 && func == "log" || min(modeldat$climate) <= 0 && func == "inv"){
             stop("func = log or inv cannot be used with climate values <= 0. 
                  Consider adding a constant to climate data to remove these values")
           }
           
+          if(attr(modeloutput, "class")[1] == "lme" & var(modeldat$climate) == 0){
+            
+            modeloutput  <- baseline
+            AICc_cv_avg  <- AICc(baseline)
+            deltaAICc_cv <- AICc(baseline) - AICc(baseline)
+            
+          } else {
+            
           if (is.null(centre[[1]]) == FALSE){
             if(centre[[2]] == "both"){
               modeldat$wgdev  <- wgdev(modeldat$climate, centre[[1]])
@@ -462,7 +495,16 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
               modeloutput     <- update(modeloutput, .~., data = modeldat)
             }
           } else {
-            modeloutput <- my_update(modeloutput, .~., data = modeldat)
+            
+            if(attr(modeloutput, "class")[1] == "lme"){
+              
+              modeloutput <- update(modeloutput, .~., data = modeldat)
+              
+            } else {
+              
+              modeloutput <- my_update(modeloutput, .~., data = modeldat) 
+              
+            }
           }
           
           # If valid, perform k-fold crossvalidation
@@ -479,23 +521,28 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
               p          <- num - df.residual(modeloutputcv)  # Determine df for the climate model
               mse        <- sum((test$predictions - test[, 1]) ^ 2) / num
               p_baseline <- num - df.residual(baselinecv)  # Determine df for the baseline model
+
               #calculate mean standard errors for climate model
               #calc mse only works non-categorical yvars, e.g. normal, binary, count data 
               mse_baseline <- sum((test$predictionsbaseline - test[, 1]) ^ 2) / num
               #calculate mean standard errors for null model
               AICc_cv          <- num * log(mse) + (2 * p * (p + 1)) / (num - p - 1)
               AICc_cv_baseline <- num * log(mse_baseline) + (2 * p_baseline * (p_baseline + 1)) / (num - p_baseline - 1)
+
               #Calculate AICc values for climate and baseline models
               #rmse_corrected<-sqrt(sum((test$predictions-test[,1])^2)/modeloutputcv$df[1])
               ifelse (k == 1, AICc_cvtotal <- AICc_cv, AICc_cvtotal <- AICc_cvtotal + AICc_cv)              
               ifelse (k == 1, AICc_cv_basetotal <- AICc_cv_baseline, AICc_cv_basetotal <- AICc_cv_basetotal + AICc_cv_baseline)
               #Add up the AICc values for all iterations of crossvalidation
             }
+            
             AICc_cv_avg          <- AICc_cvtotal / k # Determine the average AICc value of the climate model from cross validations
             AICc_cv_baseline_avg <- AICc_cv_basetotal / k # Determine the average AICc value of the null model from cross validations
             deltaAICc_cv         <- AICc_cv_avg - AICc_cv_baseline_avg # Calculate delta AICc
           }
           
+          }
+            
           #Add model parameters to list
           if (k > 1){
             modlist$ModelAICc[[modno]]    <- AICc_cv_avg
@@ -561,8 +608,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
                 modlist$ModelBetaC[[modno]] <- NA
                 modlist$ModelInt[[modno]]   <- 0
               }
-            } 
-            else if (length(attr(class(modeloutput),"package")) > 0 && attr(class(modeloutput), "package") == "lme4"){            
+            } else if (length(attr(class(modeloutput),"package")) > 0 && attr(class(modeloutput), "package") == "lme4"){            
               if (func == "quad"){
                 modlist$ModelBeta[[modno]]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
                 modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][2]
@@ -597,12 +643,59 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
                   modlist$ModelInt[[modno]]      <- fixef(modeloutput)[1]
                 }
               } else {
+                
                 modlist$ModelBeta[[modno]]  <- fixef(modeloutput)[length(fixef(modeloutput))]
+                
                 modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][2]
                 modlist$ModelBetaQ[[modno]] <- NA
                 modlist$ModelBetaC[[modno]] <- NA
                 modlist$ModelInt[[modno]]   <- fixef(modeloutput)[1]
               }
+              
+            } else if(attr(baseline, "class")[1] == "lme"){
+              
+              if (func == "quad"){
+                modlist$ModelBeta[[modno]]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
+                modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "Std.Error"][2]
+                modlist$ModelBetaQ[[modno]] <- fixef(modeloutput)[length(fixef(modeloutput))]
+                modlist$Std.ErrorQ[[modno]]  <- coef(summary(modeloutput))[, "Std.Error"][3]
+                modlist$ModelBetaC[[modno]] <- NA
+                modlist$ModelInt[[modno]]   <- fixef(modeloutput)[1]
+              } else if (func == "cub"){
+                modlist$ModelBeta[[modno]]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 2]
+                modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "Std.Error"][2]
+                modlist$ModelBetaQ[[modno]] <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
+                modlist$Std.ErrorQ[[modno]]  <- coef(summary(modeloutput))[, "Std.Error"][3]
+                modlist$ModelBetaC[[modno]] <- fixef(modeloutput)[length(fixef(modeloutput))]
+                modlist$Std.ErrorC[[modno]]  <- coef(summary(modeloutput))[, "Std.Error"][3]
+                modlist$ModelInt[[modno]]   <- fixef(modeloutput)[1]
+              } else if (func == "centre"){
+                if(centre[[2]] == "both"){
+                  modlist$WithinGrpMean[[modno]] <- fixef(modeloutput)[length(fixef(modeloutput))]
+                  modlist$Std.ErrorMean[[modno]] <- coef(summary(modeloutput))[, "Std.Error"][2]
+                  modlist$WithinGrpDev[[modno]]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
+                  modlist$Std.ErrorDev[[modno]]  <- coef(summary(modeloutput))[, "Std.Error"][3]
+                  modlist$ModelInt[[modno]]      <- fixef(modeloutput)[1]
+                }
+                if(centre[[2]] == "mean"){
+                  modlist$WithinGrpMean[[modno]] <- fixef(modeloutput)[length(fixef(modeloutput))]
+                  modlist$Std.Error[[modno]]     <- coef(summary(modeloutput))[, "Std.Error"][2]
+                  modlist$ModelInt[[modno]]      <- fixef(modeloutput)[1]
+                }
+                if(centre[[2]] == "dev"){
+                  modlist$WithinGrpDev[[modno]]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
+                  modlist$Std.Error[[modno]]     <- coef(summary(modeloutput))[, "Std.Error"][2]
+                  modlist$ModelInt[[modno]]      <- fixef(modeloutput)[1]
+                }
+              } else {
+                
+                modlist$ModelBeta[[modno]]  <- fixef(modeloutput)[length(fixef(modeloutput))]
+                modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "Std.Error"][2]
+                modlist$ModelBetaQ[[modno]] <- NA
+                modlist$ModelBetaC[[modno]] <- NA
+                modlist$ModelInt[[modno]]   <- fixef(modeloutput)[1]
+              }
+              
             } else {
               if (func == "quad"){
                 modlist$ModelBeta[[modno]]  <- coef(modeloutput)[length(coef(modeloutput)) - 1]
@@ -714,6 +807,17 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
       LocalData$climate <- modeldat$climate
     } else {
       LocalData <- model.frame(LocalModel)
+      
+      if(attr(LocalModel, "class")[1] == "lme"){
+        
+        non_rand <- ncol(LocalData)
+        
+        LocalData <- cbind(LocalData, LocalModel$data[, colnames(LocalModel$fitted)[-which(colnames(LocalModel$fitted) %in% "fixed")]])
+        
+        colnames(LocalData)[-(1:non_rand)] <- colnames(LocalModel$fitted)[-which(colnames(LocalModel$fitted) %in% "fixed")]
+        
+      }
+      
     }
     modlist$Randomised    <- "no"
     modlist               <- as.data.frame(modlist)
@@ -752,17 +856,17 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
     stop("Parameter 'type' now uses levels 'relative' and 'absolute' rather than 'variable' and 'fixed'.")
   }
   
-  if(is.null(furthest) == FALSE & is.null(closest) == FALSE){
+  if(is.null(furthest) == FALSE && is.null(closest) == FALSE){
     stop("furthest and closest are now redundant. Please use parameter 'range' instead.")
   }
   
-  if(is.null(cutoff.day) == FALSE & is.null(cutoff.month) == FALSE){
+  if(is.null(cutoff.day) == FALSE && is.null(cutoff.month) == FALSE){
     stop("cutoff.day and cutoff.month are now redundant. Please use parameter 'refday' instead.")
   }
   
   if(is.null(centre[[1]]) == FALSE){
     func = "centre"
-    if(centre[[2]] != "both" & centre[[2]] != "dev" & centre[[2]] != "mean"){
+    if(centre[[2]] != "both" && centre[[2]] != "dev" && centre[[2]] != "mean"){
       stop("Please set centre to one of 'both', 'dev', or 'mean'. See help file for details.")
     }
   }
@@ -832,6 +936,24 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
   nullmodel     <- AICc(baseline)
   modeldat      <- model.frame(baseline)
   modeldat$yvar <- modeldat[, 1]
+  
+  if(attr(baseline, "class")[1] == "lme"){
+    
+    if(is.null(baseline$modelStruct$varStruct) == FALSE && !is.null(attr(baseline$modelStruct$varStruct, "groups"))){
+      
+      modeldat <- cbind(modeldat, attr(baseline$modelStruct$varStruct, "groups"))
+      
+      colnames(modeldat)[ncol(modeldat)] <- strsplit(x = as.character(attr(baseline$modelStruct$varStruct, "formula"))[2], split = " | ")[[1]][3]
+      
+    }
+    
+    non_rand <- ncol(modeldat)
+    
+    modeldat <- cbind(modeldat, baseline$data[, colnames(baseline$fitted)[-which(colnames(baseline$fitted) %in% "fixed")]])
+    
+    colnames(modeldat)[-(1:non_rand)] <- colnames(baseline$fitted)[-which(colnames(baseline$fitted) %in% "fixed")]
+    
+  }
   
   if(is.null(spatial) == FALSE){
     for (i in 1:length(bdate)){
@@ -1144,6 +1266,31 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
         WeightedOutput$ModelBetaC <- NA
         WeightedOutput$ModelInt   <- fixef(LocalModel)[1]
       }
+    } else if(attr(baseline, "class")[1] == "lme"){
+      
+      if (func == "quad"){
+        WeightedOutput$ModelBeta  <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
+        WeightedOutput$Std.Error  <- coef(summary(modeloutput))[, "Std.Error"][2]
+        WeightedOutput$ModelBetaQ <- fixef(modeloutput)[length(fixef(modeloutput))]
+        WeightedOutput$Std.ErrorQ <- coef(summary(modeloutput))[, "Std.Error"][3]
+        WeightedOutput$ModelBetaC <- NA
+        WeightedOutput$ModelInt   <- fixef(modeloutput)[1]
+      } else if (func == "cub"){
+        WeightedOutput$ModelBeta  <- fixef(modeloutput)[length(fixef(modeloutput)) - 2]
+        WeightedOutput$Std.Error  <- coef(summary(modeloutput))[, "Std.Error"][2]
+        WeightedOutput$ModelBetaQ <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
+        WeightedOutput$Std.ErrorQ <- coef(summary(modeloutput))[, "Std.Error"][3]
+        WeightedOutput$ModelBetaC <- fixef(modeloutput)[length(fixef(modeloutput))]
+        WeightedOutput$Std.ErrorC <- coef(summary(modeloutput))[, "Std.Error"][3]
+        WeightedOutput$ModelInt   <- fixef(modeloutput)[1]
+      } else {
+        WeightedOutput$ModelBeta  <- fixef(modeloutput)[length(fixef(modeloutput))]
+        WeightedOutput$Std.Error  <- coef(summary(modeloutput))[, "Std.Error"][2]
+        WeightedOutput$ModelBetaQ <- NA
+        WeightedOutput$ModelBetaC <- NA
+        WeightedOutput$ModelInt   <- fixef(modeloutput)[1]
+      }
+      
     } else {
       if (func == "quad"){
         WeightedOutput$ModelBeta  <- coef(LocalModel)[length(coef(LocalModel)) - 1]
@@ -1241,12 +1388,16 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
     }
   }
   cdate  <- as.Date(cdate, format = "%d/%m/%Y")
-  
+
   if(is.null(spatial) == FALSE){
     for(i in levels(as.factor(spatial[[2]]))){
       SUB <- cdate[which(spatial[[2]] == i)]
-      if (min(SUB) > min(bdate) | max(SUB) < max(bdate)){
-        stop("Climate data does not cover all years of biological data. Please increase range of climate data")
+      SUB_biol <- bdate[which(spatial[[1]] == i)]
+      if (min(SUB) > min(SUB_biol)){
+        stop(paste("Climate data does not cover all years of biological data at site ", i ,". Earliest climate data is ", min(cdate), " Earliest biological data is ", min(bdate), ". Please increase range of climate data", sep = ""))
+      }
+      if (max(SUB) < max(SUB_biol)){
+        stop(paste("Climate data does not cover all years of biological data at site ", i ,". Latest climate data is ", max(cdate), " Latest biological data is ", min(bdate), ". Please increase range of climate data", sep = ""))
       }
     }
   } else if (min(cdate) > min(bdate)){
@@ -1276,7 +1427,6 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       xvar2    <- xvar2[match(cdate2, cdate)]
     }
   }
-  
 
   if(is.null(spatial) == FALSE){
     xvar       <- data.frame(Clim = xvar, spatial = spatial[[2]])

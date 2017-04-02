@@ -76,9 +76,9 @@ plotall <- function(dataset, datasetrand = NULL,
                     cw1 = 0.95, cw2 = 0.5, cw3 = 0.25,
                     title = NULL, arrow = FALSE){
 
-    if (class(bestmodel)[length(class(bestmodel))]=="coxph") {
+    if (class(bestmodel)[length(class(bestmodel))] == "coxph" | class(bestmodel)[1] == "lme") {
       bestmodel = NULL
-      print("sorry plotall cannot yet plot the best model panel for a coxph model")
+      print("sorry plotall cannot yet plot the best model panel for a coxph or nlme models")
     }
   
   a       <- c(cw1, cw2, cw3)
@@ -109,11 +109,12 @@ plotall <- function(dataset, datasetrand = NULL,
   plotweights(dataset = dataset, cw1 = cwa, cw2 = cwb, cw3 = cwc, arrow = arrow, plotall = TRUE, plotallenv = plotenv)
   
   window <- plotwin(dataset = dataset, cw = cwa)
-  
+
   if(is.null(datasetrand) == FALSE){
     hist   <- plothist(dataset = dataset, datasetrand = datasetrand)    
     
   if(is.null(bestmodel) == FALSE && is.null(bestmodeldata) == FALSE){
+    
   best  <- plotbest(dataset = dataset, bestmodel = bestmodel, bestmodeldata = bestmodeldata)
   
   if (dataset$Function[1] == "lin"){
@@ -134,6 +135,7 @@ plotall <- function(dataset, datasetrand = NULL,
     gridExtra::grid.arrange(plotenv$beta, plotenv$delta, plotenv$cw, hist, window, best, nrow = 2, top = paste(title))
   }
   } else {
+    
     if (dataset$Function[1] == "lin"){
       gridExtra::grid.arrange(plotenv$delta, plotenv$cw, plotenv$beta, hist, window, nrow = 2, ncol = 3, top = paste(title))
     } else if (dataset$Function[1] == "quad"){
@@ -175,6 +177,7 @@ plotall <- function(dataset, datasetrand = NULL,
       gridExtra::grid.arrange(plotenv$beta, plotenv$delta, plotenv$cw, window, best, nrow = 2, top = paste(title))
     }
   } else {
+    
     if (dataset$Function[1] == "lin"){
       gridExtra::grid.arrange(plotenv$delta, plotenv$cw, plotenv$beta, window, nrow = 2, ncol = 3, top = paste(title))
     } else if (dataset$Function[1] == "quad"){
