@@ -91,7 +91,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   } 
   cont      <- convertdate(bdate = bdate, cdate = cdate, xvar = xvar, 
                            cinterval = cinterval, type = type, 
-                           refday = refday, cohort = cohort, spatial = spatial)   # create new climate dataframe with continuous daynumbers, leap days are not a problem
+                           refday = refday, cohort = cohort, spatial = spatial, stat = stat, upper = upper, lower = lower)   # create new climate dataframe with continuous daynumbers, leap days are not a problem
   
   if(is.null(spatial) == FALSE){
     
@@ -138,6 +138,8 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   if (leng != length(bdate)){
       stop("NA values present in biological response. Please remove NA values")
   }
+  
+  if(cinterval == "day"){
 
   if(is.null(spatial) == FALSE){
     
@@ -192,6 +194,8 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     } 
     
   }
+    
+  }
   
   if(is.null(spatial) == FALSE){
     for (i in 1:length(bdate)){
@@ -204,7 +208,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   }
   
   cmatrix <- as.matrix(cmatrix[, c(ncol(cmatrix):1)])
-  
+
   if(cmissing == FALSE && length(which(is.na(cmatrix))) > 0){
     if(is.null(spatial) == FALSE){
       
@@ -1204,7 +1208,7 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
 
 #Function to convert dates into day/week/month number
 convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type, 
-                        refday, cross = FALSE, cohort, spatial){
+                        refday, cross = FALSE, cohort, spatial, stat, upper, lower){
   
   
   if (cinterval != "day" && cinterval != "week" && cinterval != "month"){
@@ -1314,6 +1318,21 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
         bintno <- realbintno
       }
     } else if (cinterval == "week"){
+      
+      if(is.na(upper) == FALSE && is.na(lower) == TRUE){
+        
+        xvar <- ifelse(xvar > upper, 1, 0)
+        
+      } else if(is.na(upper) == TRUE && is.na(lower) == FALSE){
+        
+        xvar <- ifelse(xvar < lower, 1, 0)
+        
+      } else if(is.na(upper) == FALSE && is.na(lower) == FALSE){
+        
+        xvar <- ifelse(xvar > lower & xvar < upper, 1, 0)
+        
+      }
+      
       cintno      <- ceiling((as.numeric(cdate2) - min(as.numeric(cdate2)) + 1) / 7)   # atrribute weeknumbers for both datafiles with first week in CLimateData set to cintno 1
       realbintno  <- ceiling((as.numeric(bdate) - min(as.numeric(cdate2)) + 1) / 7)
       if(is.null(spatial) == FALSE){
@@ -1327,10 +1346,11 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       } else {
         newclim     <- data.frame("cintno" = cintno, "xvar" = xvar)
         newclim2    <- melt(newclim, id = "cintno")
-        newclim3    <- cast(newclim2, cintno ~ variable, mean, na.rm = T)
+        newclim3    <- cast(newclim2, cintno ~ variable, fun.aggregate = stat, na.rm = T)
         cintno      <- newclim3$cintno
         xvar        <- newclim3$xvar
       }
+      
       if (type == "absolute"){
         if(is.null(cohort) == FALSE){
           newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort))
@@ -1346,7 +1366,22 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       } else {
         bintno <- realbintno
       }
-    } else if (cinterval == "month"){ 
+    } else if (cinterval == "month"){
+      
+      if(is.na(upper) == FALSE && is.na(lower) == TRUE){
+        
+        xvar <- ifelse(xvar > upper, 1, 0)
+        
+      } else if(is.na(upper) == TRUE && is.na(lower) == FALSE){
+        
+        xvar <- ifelse(xvar < lower, 1, 0)
+        
+      } else if(is.na(upper) == FALSE && is.na(lower) == FALSE){
+        
+        xvar <- ifelse(xvar > lower & xvar < upper, 1, 0)
+        
+      }
+      
       cmonth     <- lubridate::month(cdate2)
       cyear      <- year(cdate2) - min(year(cdate2))
       cintno     <- cmonth + 12 * cyear
@@ -1362,7 +1397,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       } else {
         newclim    <- data.frame("cintno" = cintno, "xvar" = xvar)
         newclim2   <- melt(newclim, id = "cintno")
-        newclim3   <- cast(newclim2, cintno ~ variable, mean, na.rm = T)
+        newclim3   <- cast(newclim2, cintno ~ variable, fun.aggregate = stat, na.rm = T)
         cintno     <- newclim3$cintno
         xvar       <- newclim3$xvar 
       }
@@ -1400,6 +1435,21 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
         bintno <- realbintno
       }    
     } else if (cinterval == "week"){
+      
+      if(is.na(upper) == FALSE && is.na(lower) == TRUE){
+        
+        xvar <- ifelse(xvar > upper, 1, 0)
+        
+      } else if(is.na(upper) == TRUE && is.na(lower) == FALSE){
+        
+        xvar <- ifelse(xvar < lower, 1, 0)
+        
+      } else if(is.na(upper) == FALSE && is.na(lower) == FALSE){
+        
+        xvar <- ifelse(xvar > lower & xvar < upper, 1, 0)
+        
+      }
+      
       cintno     <- ceiling((as.numeric(cdate2) - min(as.numeric(cdate2)) + 1) / 7)   # atrribute weeknumbers for both datafiles with first week in CLimateData set to cintno 1
       realbintno <- ceiling((as.numeric(bdate) - min(as.numeric(cdate2)) + 1) / 7)
       if(is.null(spatial) == FALSE){
@@ -1433,7 +1483,22 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       } else {
         bintno <- realbintno
       }
-    } else if (cinterval == "month"){ 
+    } else if (cinterval == "month"){
+      
+      if(is.na(upper) == FALSE && is.na(lower) == TRUE){
+        
+        xvar <- ifelse(xvar > upper, 1, 0)
+        
+      } else if(is.na(upper) == TRUE && is.na(lower) == FALSE){
+        
+        xvar <- ifelse(xvar < lower, 1, 0)
+        
+      } else if(is.na(upper) == FALSE && is.na(lower) == FALSE){
+        
+        xvar <- ifelse(xvar > lower & xvar < upper, 1, 0)
+        
+      }
+      
       cmonth     <- lubridate::month(cdate2)
       cyear      <- year(cdate2) - min(year(cdate2))
       cintno     <- cmonth + 12 * cyear
