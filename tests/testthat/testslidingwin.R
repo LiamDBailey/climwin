@@ -275,8 +275,8 @@ test_that("No errors return when cmissing method1 with NAs", {
   
 })
 
-# Test when cmissing is FALSE and NA is present (cinterval = "day") #
-test_that("Error returned when cmissing FALSE with NAs, cinterval = day", {
+# Test when cmissing is method1 and NA is present (cinterval = "day") #
+test_that("Error returned when cmissing method1 with NAs, cinterval = day", {
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -284,22 +284,37 @@ test_that("Error returned when cmissing FALSE with NAs, cinterval = day", {
   MassClimate2 <- MassClimate[-491, ]
   
   # Test that an error was returned
-  expect_error(slidingwin(xvar = list(MassClimate2$Temp), cdate = MassClimate2$Date, bdate = Mass$Date, 
+  test <- slidingwin(xvar = list(MassClimate2$Temp), cdate = MassClimate2$Date, bdate = Mass$Date, 
                           baseline = lm(Mass ~ 1, data = Mass), range = c(2, 2), 
                           type = "relative", stat = "max", func = "lin", 
-                          cmissing=FALSE))
+                          cmissing = "method1")
   
-  # Test that an object missing was returned
-  expect_true(exists("missing"))
-  
-  # Test that the length of missing was as expected
-  expect_equal(length(missing), 1)
-  rm("missing", envir = .GlobalEnv)
+  # Test that slidingwin ran without an error
+  expect_true(is.list(test))
   
   })
 
-# Test when cmissing is FALSE and NA is present (cinterval = "week") #
-test_that("Error returned when cmissing FALSE with NAs, cinterval = week", {
+# Test when cmissing is method2 and NA is present (cinterval = "day") #
+test_that("Error returned when cmissing method2 with NAs, cinterval = day", {
+  
+  data(Mass, envir = environment())
+  data(MassClimate, envir = environment())
+  
+  MassClimate2 <- MassClimate[-491, ]
+  
+  # Test that an error was returned
+  test <- slidingwin(xvar = list(MassClimate2$Temp), cdate = MassClimate2$Date, bdate = Mass$Date, 
+                     baseline = lm(Mass ~ 1, data = Mass), range = c(2, 2), 
+                     type = "relative", stat = "max", func = "lin", 
+                     cmissing = "method2")
+  
+  # Test that slidingwin ran without an error
+  expect_true(is.list(test))
+  
+})
+
+# Test when cmissing is method1 and NA is present (cinterval = "week") #
+test_that("Error returned when cmissing method1 with NAs, cinterval = week", {
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -307,22 +322,37 @@ test_that("Error returned when cmissing FALSE with NAs, cinterval = week", {
   MassClimate2 <- MassClimate[-c(491:505), ]
   
   # Test that an error is returned
-  expect_error(slidingwin(xvar = list(MassClimate2$Temp), cdate = MassClimate2$Date, bdate = Mass$Date, 
+  test <- slidingwin(xvar = list(MassClimate2$Temp), cdate = MassClimate2$Date, bdate = Mass$Date, 
                           baseline = lm(Mass ~ 1, data = Mass), range = c(2, 0), 
                           type = "relative", stat = "max", func = "lin", cinterval = "week",
-                          cmissing = FALSE))
+                          cmissing = "method1")
   
-  # Test that an object missing was created
-  expect_true(exists("missing"))
-  
-  # Test that the length of missing is as expected
-  expect_equal(length(missing), 1)
-  rm("missing", envir = .GlobalEnv)
+  # Test that slidingwin ran without an error
+  expect_true(is.list(test))
   
 })
 
-# Test when cmissing is FALSE and NA is present (cinterval = "month") #
-test_that("Error returned when cmissing FALSE with NAs, cinterval = month", {
+# Test when cmissing is method2 and NA is present (cinterval = "week") #
+test_that("Error returned when cmissing method2 with NAs, cinterval = week", {
+  
+  data(Mass, envir = environment())
+  data(MassClimate, envir = environment())
+  
+  MassClimate2 <- MassClimate[-c(491:505), ]
+  
+  # Test that an error is returned
+  test <- slidingwin(xvar = list(MassClimate2$Temp), cdate = MassClimate2$Date, bdate = Mass$Date, 
+                     baseline = lm(Mass ~ 1, data = Mass), range = c(2, 0), 
+                     type = "relative", stat = "max", func = "lin", cinterval = "week",
+                     cmissing = "method2")
+  
+  # Test that slidingwin ran without an error
+  expect_true(is.list(test))
+  
+})
+
+# Test when cmissing is method1 and NA is present (cinterval = "month") #
+test_that("Error returned when cmissing method1 with NAs, cinterval = month", {
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -330,17 +360,32 @@ test_that("Error returned when cmissing FALSE with NAs, cinterval = month", {
   MassClimate2 <- MassClimate[-c(1000:2000), ]
   
   # Test that an error is returned #
-  expect_error(slidingwin(xvar = list(MassClimate2$Temp), cdate = MassClimate2$Date, bdate = Mass$Date, 
+  test <- slidingwin(xvar = list(MassClimate2$Temp), cdate = MassClimate2$Date, bdate = Mass$Date, 
                           baseline = lm(Mass ~ 1, data = Mass), range = c(1, 0), 
                           type = "relative", stat = "max", func = "lin", cinterval = "month",
-                          cmissing = FALSE))
+                          cmissing = "method1")
   
-  # Test that an object missing has been produced #
-  expect_true(exists("missing"))
+  # Test that slidingwin ran without an error
+  expect_true(is.list(test))
   
-  # Test that the length of missing is as expected #
-  expect_equal(length(missing), 1)
-  rm("missing", envir = .GlobalEnv)
+})
+
+# Test when cmissing is method2 and NA is present (cinterval = "month") #
+test_that("Error returned when cmissing method2 with NAs, cinterval = month", {
+  
+  data(Mass, envir = environment())
+  data(MassClimate, envir = environment())
+  
+  MassClimate2 <- MassClimate[-c(1000:2000), ]
+  
+  # Test that an error is returned #
+  test <- slidingwin(xvar = list(MassClimate2$Temp), cdate = MassClimate2$Date, bdate = Mass$Date, 
+                     baseline = lm(Mass ~ 1, data = Mass), range = c(1, 0), 
+                     type = "relative", stat = "max", func = "lin", cinterval = "month",
+                     cmissing = "method2")
+  
+  # Test that slidingwin ran without an error
+  expect_true(is.list(test))
   
 })
 

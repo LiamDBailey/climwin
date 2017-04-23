@@ -267,7 +267,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
            See object 'missing' for all missing climate data"))
   }
   
-  if (cmissing != FALSE && length(which(is.na(cmatrix))) > 0){
+  if (cmissing != FALSE && any(!is.numeric(cmatrix)) > 0){
     
     print("Missing climate data detected. Please wait while appropriate data is calculated to replace NAs.")
     
@@ -459,6 +459,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
         if (stat != "slope" || n > 1){
           windowopen  <- m - range[2] + 1
           windowclose <- windowopen - n + 1
+          
           if (stat == "slope"){ 
             time             <- seq(1, n, 1)
             modeldat$climate <- apply(cmatrix[, windowclose:windowopen], 1, FUN = function(x) coef(lm(x ~ time))[2])
@@ -1686,6 +1687,15 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       }
     }
   }
+  
+  xvar <- ifelse(is.infinite(xvar), NA, xvar)
+  
+  if(is.null(xvar2) == FALSE){
+    
+    xvar2 <- ifelse(is.infinite(xvar2), NA, xvar2)
+    
+  }
+  
   if(is.null(spatial) == FALSE){
     if(is.null(xvar2) == FALSE){
       return(list(cintno = data.frame(Date = cintno, spatial = climspatial),
