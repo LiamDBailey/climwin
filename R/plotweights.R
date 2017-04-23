@@ -41,18 +41,29 @@ plotweights <- function(dataset, cw1 = 0.95, cw2 = 0.5, cw3 = 0.25, arrow = FALS
   WeightDist <- ceiling(100*mean(as.numeric(cumsum(dataset$ModWeight) <= cw1)))
   
   #Create a subset of the models that fall within the 95% confidence set
-  ConfidenceSet <- dataset[which(cumsum(dataset$ModWeight) <= cw1), ] 
+  ConfidenceSet <- dataset[which(cumsum(dataset$ModWeight) <= cw1), ]
+  
+  #If the best model is above cw1 just include the best model
+  if(nrow(ConfidenceSet) == 0){
     
-  #Create an empty matrix equivalent length to the confidence set
-  SpreadMatrix <- matrix(nrow = (nrow(ConfidenceSet)- 1), ncol = 2)
-  #Determine Euclidan distances between each model and the best model
-  for(i in 2:nrow(ConfidenceSet)){
-    SpreadMatrix[i - 1, 1] <- i
-    SpreadMatrix[i - 1, 2] <- sqrt((ConfidenceSet$WindowOpen[1] - ConfidenceSet$WindowOpen[i])^2 + 
-                               (ConfidenceSet$WindowClose[1] - ConfidenceSet$WindowClose[i])^2)
+    ConfidenceSet <- dataset[1, ]
+    
   }
+    
+  #This measure of spread is not currently used. It causes problems with small powerful windows. Remove it for now.
+  
+  #Create an empty matrix equivalent length to the confidence set
+  #SpreadMatrix <- matrix(nrow = (nrow(ConfidenceSet)- 1), ncol = 2)
+  
+  #Determine Euclidan distances between each model and the best model
+  #for(i in 2:nrow(ConfidenceSet)){
+  #  SpreadMatrix[i - 1, 1] <- i
+  #  SpreadMatrix[i - 1, 2] <- sqrt((ConfidenceSet$WindowOpen[1] - ConfidenceSet$WindowOpen[i])^2 + 
+  #                             (ConfidenceSet$WindowClose[1] - ConfidenceSet$WindowClose[i])^2)
+  #}
+  
   #Determine the maximum Euclidian distance
-  WeightSpread <- ceiling(max(SpreadMatrix[, 2]))
+  #WeightSpread <- ceiling(max(SpreadMatrix[, 2]))
   #N.B. This metric is currently not used in our code
   
   #Order models by weight#
@@ -60,6 +71,27 @@ plotweights <- function(dataset, cw1 = 0.95, cw2 = 0.5, cw3 = 0.25, arrow = FALS
   dataset$cw1    <- as.numeric(cumsum(dataset$ModWeight) <= cw1)
   dataset$cw2    <- as.numeric(cumsum(dataset$ModWeight) <= cw2)
   dataset$cw3    <- as.numeric(cumsum(dataset$ModWeight) <= cw3)
+  
+  #If there is no ONE model that fits in one of the confidence sets (e.g. the top model is > 0.25) we currently will not plot that point. This is a bit misleading. The top model does occur in the 25% confidence set (i.e. we can be at least 25% confident that this is the best model). Therefore, if there is a scenario where the top model not included in a set, we make the best model part of that set.
+  
+  if(all(dataset$cw3 == 0)){
+    
+    dataset$cw3[1] <- 1
+    
+  }
+  
+  if(all(dataset$cw2 == 0)){
+    
+    dataset$cw2[1] <- 1
+    
+  }
+  
+  if(all(dataset$cw1 == 0)){
+    
+    dataset$cw1[1] <- 1
+    
+  }
+  
   dataset$cw.full <- dataset$cw1 + dataset$cw2 + dataset$cw3
   
   if(ThreeD == TRUE){

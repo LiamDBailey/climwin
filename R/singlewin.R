@@ -296,7 +296,7 @@ singlewin <- function(xvar, cdate, bdate, baseline,
 
   #if(cinterval == "week"){
   #  if((min(bintno) - range[1] * 7) < min(cintno)){
-  #    stop("You do not have enough climate data to search that far back. Please adjust the value of range or add additional climate data.")
+  #    stop("You do not have enough climate data to search that far back. Please adjust the value of range or add additional climate data."#)
   #  }
   #}
   
