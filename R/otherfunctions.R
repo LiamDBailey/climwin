@@ -358,7 +358,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     if (class(baseline)[1] == "glm" && sum(weights(baseline)) == nrow(model.frame(baseline)) || attr(class(baseline), "package") == "lme4" && sum(weights(baseline)) == nrow(model.frame(baseline))){
     } else {
       modeldat$modweights <- weights(baseline)
-      baseline <- update(baseline, .~., weights = modeldat$modweights, data = modeldat)
+      baseline <- update(baseline, yvar~., weights = modweights, data = modeldat)
     }
   }
 
