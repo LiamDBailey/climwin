@@ -15,20 +15,30 @@
 #'@examples
 #'\dontrun{
 #'
+#'#Load data
+#'data(Monthly_data)
 #'
+#'#View original data to see monthly format.
+#'head(Monthly_data)
 #'
+#'#Convert data into a daily data format.
+#'newdat <- daily_data(date = Monthly_data$Date, climate = Monthly_data$Temp, scale = "month")
 #'
+#'#View new data to see daily format.
+#'head(newdat, 35)
+#'
+#'#Note that data from each month has been duplicated across all days within the month.
+#'#This is needed to work within climwin. Results will not be impacted.
 #'
 #'}
 #'
-#'@import lubridate
 #'@export
 
 #Function to turn weekly/monthly data into a daily format
 
 daily_data <- function(date, climate, scale){
   
-  dates <- data.frame(date = as.Date(cdate, format = "%d/%m/%Y"), clim = xvar)
+  dates <- data.frame(date = as.Date(date, format = "%d/%m/%Y"), clim = climate)
   
   dates$year <- lubridate::year(dates$date)
   
