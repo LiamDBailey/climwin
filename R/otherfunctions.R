@@ -477,8 +477,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     }
   }
   
-  ##GOT HERE YESTERDAY##
-  
+  #Check to see if the model contains a weight function. If so, incorporate this into the data used for updating the model.
   if (is.null(weights(baseline)) == FALSE){
     if (class(baseline)[1] == "glm" && sum(weights(baseline)) == nrow(model.frame(baseline)) || attr(class(baseline), "package") == "lme4" && sum(weights(baseline)) == nrow(model.frame(baseline))){
     } else {
@@ -487,6 +486,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     }
   }
   
+  #If using a mixed model, ensure that maximum likelihood is specified (because we are comparing models with different fixed effects)
   if(!is.null(attr(class(baseline), "package")) && attr(class(baseline), "package") == "lme4" && class(baseline)[1] == "lmerMod" && baseline@resp$REML == 1){
       
     print("Linear mixed effects models must be run in climwin using maximum likelihood. Models have been changed to use maximum likelihood.")
@@ -503,10 +503,13 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     
   }
 
+  #If there are no variables in the baseline model called climate (i.e. the user has not specified more complex role for climate in the model, such as an interaction or random effects.)
   if(all(!colnames(modeldat) %in% "climate")){
     
+    #Create a new dummy variable called climate, that is made up all of 1s.
     modeldat$climate <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
     
+    #Update the baseline model to include this new variable in the required format (e.g. linear, quadratic etc.)
     if (func == "lin"){
       modeloutput <- update(baseline, yvar~. + climate, data = modeldat)
     } else if (func == "quad") {
@@ -537,91 +540,60 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     
   } else {
     
+    #If climate has already been provided, simply update the model with the new term yvar.
     modeloutput <- update(baseline, yvar ~., data = modeldat)
     
     coef_data <- list()
     
   }
   
+  #If cross validation has been specified...
   if (k > 1){
     modeldat$K <- sample(seq(from = 1, to = length(modeldat$climate), by = 1) %% k + 1)
   }   # create labels k-fold crossvalidation
   
+  #Create the progress bar
   pb <- txtProgressBar(min = 0, max = maxmodno, style = 3, char = "|")
   
-  if(stat == "mean" && fast == TRUE){
-    for(n in 1:duration){
-      
-      if(n == 1){
-        
-        new_cmatrix <- t(cmatrix)
-        
-      } else {
-        
-        new_cmatrix <- roll_mean(t(cmatrix), n = n)
-        
-      }
-      
-      for(m in 1:nrow(new_cmatrix)){
-        
-       modeldat$climate <- new_cmatrix[m, ]
-       
-       modeloutput <- my_update(modeloutput, .~., data = modeldat)
-       
-       modlist$deltaAICc[[modno]] <- AICc(modeloutput) - AICc(baseline)
-       modlist$ModelAICc[[modno]] <- AICc(modeloutput)
-       
-       modlist$WindowOpen[[modno]]  <- ((m + range[2]) - 1) + (n - 1)
-       modlist$WindowClose[[modno]] <- ((m + range[2]) - 1)
-       
-       modlist$ModelBeta[[modno]]  <- coef(modeloutput)[length(coef(modeloutput))]
-       modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][2]
-       modlist$ModelBetaQ[[modno]] <- NA
-       modlist$ModelBetaC[[modno]] <- NA
-       modlist$ModelInt[[modno]]   <- coef(modeloutput)[1]
-       
-       modno <- modno + 1
-       
-       setTxtProgressBar(pb, modno - 1)
-       
-      }
-      
-    }
-       
-  } else {
-  
   #CREATE A FOR LOOP TO FIT DIFFERENT CLIMATE WINDOWS#
-  for (m in range[2]:range[1]){
-    for (n in 1:duration){
+  for (m in range[2]:range[1]){ #For every day in the given range...
+    for (n in 1:duration){ #And for each possible window duration...
         if (length(exclude) == 2 && m >= exclude[2] && (m-n) >= exclude[2] && n <= exclude[1]){
-          next
+          next #If an exclude term has been provided, skip those windows that are meant to be excluded.
         }
       if ( (m - n) >= (range[2] - 1)){  # do not use windows that overshoot the closest possible day in window
-        if (stat != "slope" || n > 1){
-          windowopen  <- m - range[2] + 1
-          windowclose <- windowopen - n + 1
+        if (stat != "slope" || n > 1){ #Don't use windows one day long with function slope...
+          windowopen  <- m - range[2] + 1 #Determine the windowopen time (i.e. the point in the past where the window STARTS)
+          windowclose <- windowopen - n + 1 #Determine the windowclose time (i.e. the more recent point where the window FINISHES)
           
-          if (stat == "slope"){ 
-            time             <- seq(1, n, 1)
-            modeldat$climate <- apply(cmatrix[, windowclose:windowopen], 1, FUN = function(x) coef(lm(x ~ time))[2])
-          } else { 
-            ifelse (n == 1, modeldat$climate <- cmatrix[, windowclose:windowopen], 
-                    modeldat$climate <- apply(cmatrix[, windowclose:windowopen], 1, FUN = stat))
+          if (stat == "slope"){ #If we are using the slope function
+            time             <- seq(1, n, 1) #Determine the number of days over which we will calculate slope.
+            #Determine the slope (i.e. change in climate over time)
+            modeldat$climate <- apply(cmatrix[, windowopen:windowclose], 1, FUN = function(x) coef(lm(x ~ time))[2])
+          } else {
+            #If slopes is not specified, apply the chosen aggregate statistic (e.g. mean, mass) to the window.
+            ifelse (n == 1, modeldat$climate <- cmatrix[, windowopen:windowclose], 
+                    modeldat$climate <- apply(cmatrix[, windowopen:windowclose], 1, FUN = stat))
           }
           
+          #Stop climwin if there are values <=0 and func is log or inverse.
           if (min(modeldat$climate) <= 0 && func == "log" || min(modeldat$climate) <= 0 && func == "inv"){
             stop("func = log or inv cannot be used with climate values <= 0. 
                  Consider adding a constant to climate data to remove these values")
           }
           
+          #If using models from nlme and there is an issue where climate has no variance (e.g. short windows where rainfall is all 0)
           if(attr(modeloutput, "class")[1] == "lme" & var(modeldat$climate) == 0){
             
+            #skip the fitting of the climate data and just treat it has deltaAICc of 0
+            #This is necessary as nlme doesn't have a way to deal with rank deficiency (unlike lme4) and will give an error
             modeloutput  <- baseline
             AICc_cv_avg  <- AICc(baseline)
             deltaAICc_cv <- AICc(baseline) - AICc(baseline)
             
           } else {
             
+          #If mean centring is specified, carry this out on the data from the climate window.
           if (is.null(centre[[1]]) == FALSE){
             if(centre[[2]] == "both"){
               modeldat$wgdev  <- wgdev(modeldat$climate, centre[[1]])
@@ -638,6 +610,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
             }
           } else {
             
+            #Update models with this new climate data (syntax is a bit different for nlme v. other models)
             if(attr(modeloutput, "class")[1] == "lme"){
               
               modeloutput <- update(modeloutput, .~., data = modeldat)
@@ -697,6 +670,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
           modlist$WindowOpen[[modno]]  <- m
           modlist$WindowClose[[modno]] <- m - n + 1
           
+          #Extract model coefficients (syntax is slightly different depending on the model type e.g. lme4 v. nlme v. lm)
           if(any(colnames(model.frame(baseline)) %in% "climate")){
   
               coefs <- coef(summary(modeloutput))[, 1:2]
