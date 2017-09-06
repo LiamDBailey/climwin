@@ -486,6 +486,22 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
       baseline <- update(baseline, yvar~., weights = modweights, data = modeldat)
     }
   }
+  
+  if(!is.null(attr(class(baseline), "package")) && attr(class(baseline), "package") == "lme4" && class(baseline)[1] == "lmerMod" && baseline@resp$REML == 1){
+      
+    print("Linear mixed effects models must be run in climwin using maximum likelihood. Models have been changed to use maximum likelihood.")
+    
+    baseline <- update(baseline, yvar ~., data = modeldat, REML = F)
+      
+  }
+  
+  if(attr(baseline, "class")[1] == "lme" && baseline$method == "REML"){
+    
+    print("Linear mixed effects models must be run in climwin using maximum likelihood. Models have been changed to use maximum likelihood.")
+    
+    baseline <- update(baseline, yvar ~., data = modeldat, method = "ML")
+    
+  }
 
   if(all(!colnames(modeldat) %in% "climate")){
     
@@ -2166,8 +2182,7 @@ circle <- function(centre = c(0,0), diameter = 1, npoints = 100){
 
 #Function to temporarily adjust global R options (used in pvalue to enforce scientific notation)
 
-withOptions <- function(optlist, expr)
-{
+withOptions <- function(optlist, expr){
   oldopt <- options(optlist)
   on.exit(options(oldopt))
   expr <- substitute(expr)
@@ -2175,5 +2190,3 @@ withOptions <- function(optlist, expr)
 }
 
 #################################################################################
-
-#Function to turn weekly/monthly data into a daily format

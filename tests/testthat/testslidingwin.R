@@ -544,7 +544,7 @@ test_that("glmer [lme4] models can run in slidingwin", {
   # Warnings created due to convergence issues with such a small data set
   suppressWarnings(test <- slidingwin(xvar = list(OffspringClimate$Temp), cdate = OffspringClimate$Date, 
                      bdate = Offspring$Date, 
-                     baseline = glmer(Offspring ~ 1 + (1|Order), data = Offspring, family = "poisson", REML = F),  
+                     baseline = glmer(Offspring ~ 1 + (1|Order), data = Offspring, family = "poisson"),  
                      range = c(1, 0), type = "relative", 
                      stat = "max", func = "lin", cmissing=FALSE))
   
