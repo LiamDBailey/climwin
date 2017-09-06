@@ -14,4 +14,3 @@ Maximum daily temperature and average rainfall data
 from 1965 to 2012. Coincides with biological data 
 from \code{\link{Chaff}}.
 }
-

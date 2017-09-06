@@ -47,4 +47,3 @@ plotbest(dataset = MassOutput, bestmodel = single$BestModel,
 \author{
 Liam D. Bailey and Martijn van de Pol
 }
-

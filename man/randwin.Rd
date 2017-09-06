@@ -196,4 +196,3 @@ head(weightrand)
 \author{
 Liam D. Bailey and Martijn van de Pol
 }
-

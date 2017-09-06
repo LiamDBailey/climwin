@@ -89,4 +89,3 @@ plotall(dataset = MassOutput, bestmodel = single$bestmodel,
 \author{
 Liam D. Bailey and Martijn van de Pol
 }
-

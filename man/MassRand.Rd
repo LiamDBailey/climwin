@@ -30,4 +30,3 @@
 Output file from function \code{\link{randwin}} using temperature and mass data. 
 Generated with \code{\link{Mass}} and \code{\link{MassClimate}} dataframes.
 }
-

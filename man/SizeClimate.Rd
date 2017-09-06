@@ -16,4 +16,3 @@ Average, maximum and minimum daily temperature data, average rainfall data
 from 2006 to 2015. 
 Coincides with biological data from \code{\link{Size}}.
 }
-

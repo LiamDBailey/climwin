@@ -16,4 +16,3 @@
 Artificially generated data representing
 reproductive success of birds since 2009.
 }
-

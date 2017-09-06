@@ -42,4 +42,3 @@ explore(shape = 3, scale = 5, loc = -5, weightfunc = "G")
 \author{
 Martijn van de Pol and Liam D. Bailey
 }
-

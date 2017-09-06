@@ -213,6 +213,133 @@ test_that("slidingwin produces non-binary values with lower/upper and binary = F
 
 # Test different settings of cmissing #
 
+# Test when cmissing is FALSE and NAs are present (daily)#
+test_that("Errors return when cmissing FALSE and NA present at a daily scale", {
+  
+  data(Mass, envir = environment())
+  data(MassClimate, envir = environment())
+  
+  MassClimate2 <- MassClimate[-491, ]
+  expect_error(slidingwin(xvar = list(MassClimate2$Temp), cdate = MassClimate2$Date, bdate = Mass$Date, 
+                     baseline = lm(Mass ~ 1, data = Mass), range = c(2, 0), 
+                     type = "relative", stat = "max", func = "lin", cmissing = FALSE))
+  
+  expect_true(exists("missing"))
+  
+  rm("missing", envir = .GlobalEnv)
+  
+})
+
+# Test when cmissing is FALSE and NAs are present (weekly)#
+test_that("Errors return when cmissing FALSE and NA present at a weekly scale", {
+  
+  data(Mass, envir = environment())
+  data(MassClimate, envir = environment())
+  
+  MassClimate2 <- MassClimate[-c(491:505), ]
+  expect_error(slidingwin(xvar = list(MassClimate2$Temp), cdate = MassClimate2$Date, bdate = Mass$Date, 
+                          baseline = lm(Mass ~ 1, data = Mass), range = c(2, 0), 
+                          type = "relative", stat = "max", func = "lin", cmissing = FALSE,
+                          cinterval = "week"))
+  
+  expect_true(exists("missing"))
+  
+  rm("missing", envir = .GlobalEnv)
+  
+})
+
+# Test when cmissing is FALSE and NAs are present (monthly)#
+test_that("Errors return when cmissing FALSE and NA present at a monthly scale", {
+  
+  data(Mass, envir = environment())
+  data(MassClimate, envir = environment())
+  
+  MassClimate2 <- MassClimate[-c(480:520), ]
+  expect_error(slidingwin(xvar = list(MassClimate2$Temp), cdate = MassClimate2$Date, bdate = Mass$Date, 
+                          baseline = lm(Mass ~ 1, data = Mass), range = c(2, 0), 
+                          type = "relative", stat = "max", func = "lin", cmissing = FALSE,
+                          cinterval = "month"))
+  
+  expect_true(exists("missing"))
+  
+  rm("missing", envir = .GlobalEnv)
+  
+})
+
+# Test cmissing = FALSE with spatial replication (daily)
+test_that("cmissing = FALSE with NAs and spatial replication (daily)", {
+  
+  data(Mass, envir = environment())
+  Mass$Plot <- c(rep(c("A", "B"), 23), "A")
+  data(MassClimate, envir = environment())
+  MassClimate$Plot <- "A"
+  MassClimate2 <- MassClimate
+  MassClimate2$Plot <- "B"
+  Clim  <- rbind(MassClimate, MassClimate2)
+  Clim2 <- Clim[-which(Clim$Plot == "B" & Clim$Date == "8/05/1966"), ]
+  
+  expect_error(slidingwin(xvar = list(Clim2$Temp), cdate = Clim2$Date, bdate = Mass$Date, 
+                     baseline = lm(Mass ~ 1, data = Mass), range = c(2, 0), 
+                     type = "relative", 
+                     stat = "max", func = "lin", cmissing = FALSE,
+                     spatial = list(Mass$Plot, Clim2$Plot)))
+  
+  expect_true(exists("missing"))
+  
+  rm("missing", envir = .GlobalEnv)
+  
+})
+
+# Test cmissing = FALSE with spatial replication (weekly)
+test_that("cmissing = FALSE with NAs and spatial replication (weekly)", {
+  
+  data(Mass, envir = environment())
+  Mass$Plot <- c(rep(c("A", "B"), 23), "A")
+  data(MassClimate, envir = environment())
+  MassClimate$Plot <- "A"
+  MassClimate2 <- MassClimate
+  MassClimate2$Plot <- "B"
+  Clim  <- rbind(MassClimate, MassClimate2)
+  Clim2 <- Clim[-c(18025:18015), ]
+  
+  expect_error(slidingwin(xvar = list(Clim2$Temp), cdate = Clim2$Date, bdate = Mass$Date, 
+                          baseline = lm(Mass ~ 1, data = Mass), range = c(2, 0), 
+                          type = "relative", 
+                          stat = "max", func = "lin", cmissing = FALSE,
+                          spatial = list(Mass$Plot, Clim2$Plot),
+                          cinterval = "week"))
+  
+  expect_true(exists("missing"))
+  
+  rm("missing", envir = .GlobalEnv)
+  
+})
+
+# Test cmissing = FALSE with spatial replication (monthly)
+test_that("cmissing = FALSE with NAs and spatial replication (monthly)", {
+  
+  data(Mass, envir = environment())
+  Mass$Plot <- c(rep(c("A", "B"), 23), "A")
+  data(MassClimate, envir = environment())
+  MassClimate$Plot <- "A"
+  MassClimate2 <- MassClimate
+  MassClimate2$Plot <- "B"
+  Clim  <- rbind(MassClimate, MassClimate2)
+  Clim2 <- Clim[-c(18000:18050), ]
+  
+  expect_error(slidingwin(xvar = list(Clim2$Temp), cdate = Clim2$Date, bdate = Mass$Date, 
+                          baseline = lm(Mass ~ 1, data = Mass), range = c(2, 0), 
+                          type = "relative", 
+                          stat = "max", func = "lin", cmissing = FALSE,
+                          spatial = list(Mass$Plot, Clim2$Plot),
+                          cinterval = "month"))
+  
+  expect_true(exists("missing"))
+  
+  rm("missing", envir = .GlobalEnv)
+  
+})
+
 # Test when cmissing is method1 and no NA is present #
 test_that("No errors return when cmissing method1 and full dataset", {
   
@@ -223,7 +350,7 @@ test_that("No errors return when cmissing method1 and full dataset", {
                      baseline = lm(Mass ~ 1, data = Mass), range = c(2, 2), 
                      type = "relative", stat = "max", func = "lin", cmissing = "method1")
   
-  # Test that slidingwin ran without an error
+  #Test that slidingwin ran without an error
   expect_true(is.list(test))
 
 })
@@ -243,8 +370,8 @@ test_that("No errors return when cmissing method2 and full dataset", {
   
 })
 
-# Test when cmissing is method1 and NA is present #
-test_that("No errors return when cmissing method1 with NAs", {
+# Test when cmissing is method1 and NA is present (daily) #
+test_that("No errors return when cmissing method1 with NAs (daily)", {
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -259,8 +386,8 @@ test_that("No errors return when cmissing method1 with NAs", {
   
 })
 
-# Test when cmissing is method2 and NA is present #
-test_that("No errors return when cmissing method1 with NAs", {
+# Test when cmissing is method2 and NA is present (daily)#
+test_that("No errors return when cmissing method2 with NAs (daily)", {
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -275,46 +402,8 @@ test_that("No errors return when cmissing method1 with NAs", {
   
 })
 
-# Test when cmissing is method1 and NA is present (cinterval = "day") #
-test_that("Error returned when cmissing method1 with NAs, cinterval = day", {
-  
-  data(Mass, envir = environment())
-  data(MassClimate, envir = environment())
-  
-  MassClimate2 <- MassClimate[-491, ]
-  
-  # Test that an error was returned
-  test <- slidingwin(xvar = list(MassClimate2$Temp), cdate = MassClimate2$Date, bdate = Mass$Date, 
-                          baseline = lm(Mass ~ 1, data = Mass), range = c(2, 2), 
-                          type = "relative", stat = "max", func = "lin", 
-                          cmissing = "method1")
-  
-  # Test that slidingwin ran without an error
-  expect_true(is.list(test))
-  
-  })
-
-# Test when cmissing is method2 and NA is present (cinterval = "day") #
-test_that("Error returned when cmissing method2 with NAs, cinterval = day", {
-  
-  data(Mass, envir = environment())
-  data(MassClimate, envir = environment())
-  
-  MassClimate2 <- MassClimate[-491, ]
-  
-  # Test that an error was returned
-  test <- slidingwin(xvar = list(MassClimate2$Temp), cdate = MassClimate2$Date, bdate = Mass$Date, 
-                     baseline = lm(Mass ~ 1, data = Mass), range = c(2, 2), 
-                     type = "relative", stat = "max", func = "lin", 
-                     cmissing = "method2")
-  
-  # Test that slidingwin ran without an error
-  expect_true(is.list(test))
-  
-})
-
 # Test when cmissing is method1 and NA is present (cinterval = "week") #
-test_that("Error returned when cmissing method1 with NAs, cinterval = week", {
+test_that("No errors returned when cmissing method1 with NAs, cinterval = week", {
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -357,7 +446,7 @@ test_that("Error returned when cmissing method1 with NAs, cinterval = month", {
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
   
-  MassClimate2 <- MassClimate[-c(1000:2000), ]
+  MassClimate2 <- MassClimate[-c(1900:2000), ]
   
   # Test that an error is returned #
   test <- slidingwin(xvar = list(MassClimate2$Temp), cdate = MassClimate2$Date, bdate = Mass$Date, 
@@ -417,15 +506,15 @@ test_that("glm models can run in slidingwin", {
   
 })
 
-# Test mixed effects models
-test_that("lmer models can run in slidingwin", {
+# Test mixed effects models (lme4) #
+test_that("lmer [lme4] models can run in slidingwin", {
   
   data(Offspring, envir = environment())
   data(OffspringClimate, envir = environment())
   
   test <- slidingwin(xvar = list(OffspringClimate$Temp), cdate = OffspringClimate$Date, 
                      bdate = Offspring$Date, 
-                     baseline = lmer(Offspring ~ 1 + (1|BirdID), data = Offspring),  
+                     baseline = lmer(Offspring ~ 1 + (1|BirdID), data = Offspring, REML = F),  
                      range = c(2, 2), type = "relative", 
                      stat = "max", func = "lin", cmissing=FALSE)
   
@@ -446,8 +535,8 @@ test_that("lmer models can run in slidingwin", {
   
 })
 
-# Test glmer models #
-test_that("glmer models can run in slidingwin", {
+# Test glmer models (lme4) #
+test_that("glmer [lme4] models can run in slidingwin", {
   
   data(Offspring, envir = environment())
   data(OffspringClimate, envir = environment())
@@ -455,7 +544,7 @@ test_that("glmer models can run in slidingwin", {
   # Warnings created due to convergence issues with such a small data set
   suppressWarnings(test <- slidingwin(xvar = list(OffspringClimate$Temp), cdate = OffspringClimate$Date, 
                      bdate = Offspring$Date, 
-                     baseline = glmer(Offspring ~ 1 + (1|Order), data = Offspring, family = "poisson"),  
+                     baseline = glmer(Offspring ~ 1 + (1|Order), data = Offspring, family = "poisson", REML = F),  
                      range = c(1, 0), type = "relative", 
                      stat = "max", func = "lin", cmissing=FALSE))
   
@@ -476,6 +565,100 @@ test_that("glmer models can run in slidingwin", {
   
 })
 
+# Test mixed effects models (nlme) #
+test_that("basic lme [nlme] models can run in slidingwin", {
+  
+  data(Offspring, envir = environment())
+  data(OffspringClimate, envir = environment())
+  
+  test <- slidingwin(xvar = list(OffspringClimate$Temp), cdate = OffspringClimate$Date, 
+                     bdate = Offspring$Date, 
+                     baseline = lme(Offspring ~ 1, random = ~ 1 | BirdID, data = Offspring, method = "ML"),  
+                     range = c(2, 2), type = "relative", 
+                     stat = "max", func = "lin", cmissing=FALSE)
+  
+  # Test that slidingwin produced an output
+  expect_true(is.list(test))
+  
+  # Test that lmer model produced an intercept
+  expect_false(is.na(fixef(test[[1]]$BestModel)[1]))
+  
+  # Test that lmer model produced a climate beta estimate
+  expect_false(is.na(fixef(test[[1]]$BestModel)[2]))
+  
+  # Test that best model data doesn't contain NAs
+  expect_equal(length(which(is.na(test[[1]]$BestModelData))), 0)
+  
+  # Test that best model data has at least 2 parameters
+  expect_true(ncol(test[[1]]$BestModelData) >= 2)
+  
+})
+
+# Test mixed effects models (nlme) #
+test_that("lme [nlme] model with VarIdent can run in slidingwin", {
+  
+  data(Offspring, envir = environment())
+  data(OffspringClimate, envir = environment())
+  
+  assign("vI", varIdent(value = 10, form =~ Order), envir=globalenv())
+  
+  test <- slidingwin(xvar = list(OffspringClimate$Temp), cdate = OffspringClimate$Date, 
+                     bdate = Offspring$Date, 
+                     baseline = lme(Offspring ~ Order, random = ~ 1 | BirdID, data = Offspring, weights = vI, method = "ML"),  
+                     range = c(2, 2), type = "relative", 
+                     stat = "max", func = "lin", cmissing = FALSE)
+  
+  # Test that slidingwin produced an output
+  expect_true(is.list(test))
+  
+  # Test that lmer model produced an intercept
+  expect_false(is.na(fixef(test[[1]]$BestModel)[1]))
+  
+  # Test that lmer model produced a climate beta estimate
+  expect_false(is.na(fixef(test[[1]]$BestModel)[2]))
+  
+  # Test that best model data doesn't contain NAs
+  expect_equal(length(which(is.na(test[[1]]$BestModelData))), 0)
+  
+  # Test that best model data has at least 2 parameters
+  expect_true(ncol(test[[1]]$BestModelData) >= 2)
+  
+  rm("vI", envir = .GlobalEnv)
+  
+})
+
+# Test mixed effects models (nlme) #
+test_that("lme [nlme] model with VarExp can run in slidingwin", {
+  
+  data(Offspring, envir = environment())
+  data(OffspringClimate, envir = environment())
+  
+  assign("vE", varExp(form =~ Order), envir=globalenv())
+  
+  test <- slidingwin(xvar = list(OffspringClimate$Temp), cdate = OffspringClimate$Date, 
+                     bdate = Offspring$Date, 
+                     baseline = lme(Offspring ~ Order, random = ~ 1 | BirdID, data = Offspring, weights = vE, method = "ML"),  
+                     range = c(2, 2), type = "relative", 
+                     stat = "max", func = "lin", cmissing = FALSE)
+  
+  # Test that slidingwin produced an output
+  expect_true(is.list(test))
+  
+  # Test that lmer model produced an intercept
+  expect_false(is.na(fixef(test[[1]]$BestModel)[1]))
+  
+  # Test that lmer model produced a climate beta estimate
+  expect_false(is.na(fixef(test[[1]]$BestModel)[2]))
+  
+  # Test that best model data doesn't contain NAs
+  expect_equal(length(which(is.na(test[[1]]$BestModelData))), 0)
+  
+  # Test that best model data has at least 2 parameters
+  expect_true(ncol(test[[1]]$BestModelData) >= 2)
+  
+  rm("vE", envir = .GlobalEnv)
+  
+})
 
 ### TEST COXPH MODELS!!!!!!!!! ###
 
@@ -991,7 +1174,7 @@ test_that("absolute window works", {
 
 ###############################################################
 
-# Test spatial replication #
+# Test spatial replication
 test_that("spatial replication works in slidingwin", {
   
   data(Mass, envir = environment())
@@ -1000,12 +1183,12 @@ test_that("spatial replication works in slidingwin", {
   MassClimate$Plot <- "A"
   MassClimate2 <- MassClimate
   MassClimate2$Plot <- "B"
-  Clim <- rbind(MassClimate, MassClimate2)
+  Clim  <- rbind(MassClimate, MassClimate2)
   
   test <- slidingwin(xvar = list(Clim$Temp), cdate = Clim$Date, bdate = Mass$Date, 
                      baseline = lm(Mass ~ 1, data = Mass), range = c(2, 2), 
                      type = "absolute", refday = c(20, 5), 
-                     stat = "max", func = "lin", cmissing=FALSE,
+                     stat = "max", func = "lin", cmissing = FALSE,
                      spatial = list(Mass$Plot, Clim$Plot))
   
   # Test that slidingwin has produced an output
@@ -1132,6 +1315,10 @@ test_that("spatial replication with slidingwin returns an error with NAs and cmi
                      cinterval = "day",
                      stat = "max", func = "lin", cmissing = FALSE,
                      spatial = list(Mass$Plot, Clim$Plot)))
+  
+  expect_true(exists("missing"))
+  
+  rm("missing", envir = .GlobalEnv)
   
 })
 

@@ -13,4 +13,3 @@
 Average annual laying date of common chaffinch (Fringilla coelebs)
 measured over 47 years.
 }
-

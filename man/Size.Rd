@@ -16,4 +16,3 @@ Average size (using standardised measures of tarsus length,
 head-bill length and wing length) in red winged fairy wren
 (Malurus elegans) chicks. Measured over 7 years.
 }
-

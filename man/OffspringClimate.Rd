@@ -13,4 +13,3 @@
 Daily temperature and rainfall data since 2009.
 Coincides with biological data from \code{\link{Offspring}}.
 }
-

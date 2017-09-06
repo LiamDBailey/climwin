@@ -28,4 +28,3 @@
 Output file from \code{\link{slidingwin}} using temperature and body mass data. 
 Generated with \code{\link{Mass}} and \code{\link{MassClimate}} dataframes.
 }
-

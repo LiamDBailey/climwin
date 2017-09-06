@@ -144,4 +144,3 @@ plotcor(auto, type = "A")
 \author{
 Liam D. Bailey and Martijn van de Pol
 }
-

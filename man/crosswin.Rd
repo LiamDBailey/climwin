@@ -107,4 +107,3 @@ plotcor(cross, type = "C")
 \author{
 Liam D. Bailey and Martijn van de Pol
 }
-

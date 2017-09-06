@@ -38,4 +38,3 @@ plotbetas(dataset = MassOutput)
 \author{
 Liam D. Bailey and Martijn van de Pol
 }
-

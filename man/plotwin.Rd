@@ -31,4 +31,3 @@ plotwin(dataset = MassOutput, cw = 0.95)
 \author{
 Liam D. Bailey and Martijn van de Pol
 }
-

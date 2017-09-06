@@ -45,4 +45,3 @@ plotweights(dataset = MassOutput, cw1 = 0.95, cw2 = 0.75, cw3 = 0.25)
 \author{
 Liam D. Bailey and Martijn van de Pol
 }
-

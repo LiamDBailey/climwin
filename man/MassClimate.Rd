@@ -12,4 +12,3 @@
 \description{
 Daily temperature and rainfall data since 1979.
 }
-

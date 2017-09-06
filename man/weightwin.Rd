@@ -160,12 +160,11 @@ head(weight[[2]])
  }
 
 }
-\author{
-Martijn van de Pol and Liam D. Bailey
-}
 \references{
 van de Pol & Cockburn 2011 Am Nat 177(5):698-707 (doi: 
  10.1086/659101) "Identifying the critical climatic time window that affects 
  trait expression"
 }
-
+\author{
+Martijn van de Pol and Liam D. Bailey
+}

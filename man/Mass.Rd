@@ -12,4 +12,3 @@
 Artificially generated data representing
 average body mass since 1979.
 }
-

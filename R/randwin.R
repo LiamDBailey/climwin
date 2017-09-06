@@ -165,6 +165,10 @@ randwin <- function(exclude = NA, repeats = 5, window = "sliding", xvar, cdate, 
     func = "centre"
   }
   
+  if(is.null(cohort) == TRUE){
+    cohort = lubridate::year(as.Date(bdate, format = "%d/%m/%Y"))
+  }
+  
   if(is.null(cvk) == FALSE){
     stop("Parameter 'cvk' is now redundant. Please use parameter 'k' instead.")
   }

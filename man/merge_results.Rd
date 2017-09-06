@@ -61,4 +61,3 @@ head(OffspringWin_comb[[1]]$Dataset)
 \author{
 Liam D. Bailey and Martijn van de Pol
 }
-

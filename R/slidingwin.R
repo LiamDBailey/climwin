@@ -38,12 +38,13 @@
 #'   - FALSE; the function will not run if missing climate data is encountered.
 #'   An object 'missing' will be returned containing the dates of missing climate.
 #'   - "method1"; missing climate data will be replaced with the mean climate
-#'   of the preceding and following 2 days.
+#'   of the preceding and following 2 records.
 #'   - "method2"; missing climate data will be replaced with the mean climate
 #'   of all records on the same date.
 #'   
 #'   Note: Other methods are possible. Users should consider those methods most
-#'   appropriate for their data.
+#'   appropriate for their data and apply them manually before using climwin if
+#'   required.
 #'
 #'@param cinterval The resolution at which climate window analysis will be 
 #'  conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the units
@@ -205,7 +206,7 @@ slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
   }
   
   if(is.null(cohort) == TRUE){
-    cohort = lubridate::year(as.Date(bdate, format = "%d/%m/%Y")) 
+    cohort = lubridate::year(as.Date(bdate, format = "%d/%m/%Y"))
   }
   
   if(k > 0 && class(baseline)[length(class(baseline))]=="coxph"){
@@ -280,6 +281,8 @@ slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
                     lower = ifelse(binarylevel == "two" || binarylevel == "lower", allcombos$lower[combo], NA),
                     binary = paste(allcombos$binary[combo]), centre = centre, cohort = cohort,
                     spatial = spatial, fast = fast)
+    
+    #return(runs)
     
     combined[[combo]]            <- runs
     allcombos$DeltaAICc[combo]   <- round(runs$Dataset$deltaAICc[1], digits = 2)
