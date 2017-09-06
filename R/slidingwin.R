@@ -104,7 +104,11 @@
 #'@importFrom lubridate weeks
 #'@importFrom MuMIn AICc
 #'@importFrom Matrix Matrix
-#'@importFrom RcppRoll roll_mean  
+#'@importFrom RcppRoll roll_mean
+#'@importFrom nlme lme
+#'@importFrom nlme varIdent
+#'@importFrom nlme varExp  
+#'@importFrom nlme lme.formula
 #'@examples
 #'\dontrun{
 #'##EXAMPLE 1## 
