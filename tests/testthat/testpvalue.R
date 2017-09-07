@@ -19,6 +19,9 @@ test_that("pvalue produces Pc metric", {
   #Test that pvalue produces a number for Pc
   expect_true(is.numeric(testpvalue))
   
+  #Test that value is the same as current R version
+  expect_true(round(testpvalue, 2) == 0.96)
+  
 })
 
 test_that("pvalue produces PdAICc metric", {
@@ -42,6 +45,9 @@ test_that("pvalue produces PdAICc metric", {
   
   #Test that pvalue produces a number for PdAICc
   expect_true(is.numeric(testpvalue))
+  
+  #Test that value is the same as current R version
+  expect_true(testpvalue == 1)
   
   testdata[[1]]$Dataset$deltaAICc[1] = -100
   

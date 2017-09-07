@@ -22,6 +22,10 @@ test_that("singlewin creates an output when cinterval = day", {
   # Test that best model data has at least 2 parameters
   expect_true(ncol(test[[2]]) >= 2)
   
+  #Test that values match those from previous R version
+  expect_true(round(test$Dataset$deltaAICc, 1) == -14.2)
+  expect_true(round(test$Dataset$ModelAICc, 1) == 274.1)
+  
 })
 
 # Test that cinterval = week works
@@ -48,6 +52,11 @@ test_that("singlewin creates an output when cinterval = week", {
   # Test that best model data has at least 2 parameters
   expect_true(ncol(test[[2]]) >= 2)
   
+  #Test that values match those from github (7-9-17)
+  #N.B. The way we calculate week has changed slightly
+  expect_true(round(test$Dataset$deltaAICc, 1) == 1.3)
+  expect_true(round(test$Dataset$ModelAICc, 1) == 289.7)
+  
 })
 
 # Test that cinterval = month works
@@ -73,6 +82,10 @@ test_that("singlewin creates an output when cinterval = month", {
   
   # Test that best model data has at least 2 parameters
   expect_true(ncol(test[[2]]) >= 2)
+  
+  #Test that values match those from previous R version
+  expect_true(round(test$Dataset$deltaAICc, 1) == -4.9)
+  expect_true(round(test$Dataset$ModelAICc, 1) == 283.5)
   
 })
 
@@ -105,6 +118,10 @@ test_that("No errors return when cmissing method1 and full dataset", {
   # Test that best model data has at least 2 parameters
   expect_true(ncol(test[[2]]) >= 2)
   
+  #Test that values match those from previous R version
+  expect_true(round(test$Dataset$deltaAICc, 1) == -2.7)
+  expect_true(round(test$Dataset$ModelAICc, 1) == 285.6)
+  
 })
 
 # Test when cmissing is method1 and no NA is present#
@@ -131,6 +148,10 @@ test_that("No errors return when cmissing method2 and full dataset", {
   
   # Test that best model data has at least 2 parameters
   expect_true(ncol(test[[2]]) >= 2)
+  
+  #Test that values match those from previous R version
+  expect_true(round(test$Dataset$deltaAICc, 1) == -2.7)
+  expect_true(round(test$Dataset$ModelAICc, 1) == 285.6)
   
 })
 
@@ -160,6 +181,10 @@ test_that("No errors return when cmissing method1 with NAs", {
   # Test that best model data has at least 2 parameters
   expect_true(ncol(test[[2]]) >= 2)
   
+  #Test that values match those from previous R version
+  expect_true(round(test$Dataset$deltaAICc, 1) == 1.9)
+  expect_true(round(test$Dataset$ModelAICc, 1) == 290.2)
+  
 })
 
 #Test when cmissing is method1 and NA is present#
@@ -187,6 +212,10 @@ test_that("No errors return when cmissing method2 with NAs", {
   
   # Test that best model data has at least 2 parameters
   expect_true(ncol(test[[2]]) >= 2)
+  
+  #Test that values match those from previous R version
+  expect_true(round(test$Dataset$deltaAICc, 1) == 1.9)
+  expect_true(round(test$Dataset$ModelAICc, 1) == 290.2)
   
 })
 
@@ -238,6 +267,10 @@ test_that("glm models can run in singlewin", {
   # Test that best model data has at least 2 parameters
   expect_true(ncol(test[[2]]) >= 2)
   
+  #Test that values match those from previous R version
+  expect_true(round(test$Dataset$deltaAICc, 1) == 1.3)
+  expect_true(round(test$Dataset$ModelAICc, 1) == 327.1)
+  
 })
 
 # Test lmer models
@@ -267,6 +300,11 @@ test_that("lmer models can run in singlewin", {
   
   # Test that best model data includes at least 2 parameters
   expect_true(ncol(test[[2]]) >= 2)
+  
+  #Test that values match those from github (7-9-17)
+  #N.B. Have to use different approach as we now force mixed models to use ML
+  expect_true(round(test$Dataset$deltaAICc, 1) == -59.3)
+  expect_true(round(test$Dataset$ModelAICc, 1) == 4994.6)
   
 })
 
@@ -299,6 +337,10 @@ test_that("glmer models can run in singlewin", {
   # Test that best model data has atleast two parameters
   expect_true(ncol(test$BestModelData) >= 2)
   
+  #Test that values match those from previous R version
+  expect_true(round(test$Dataset$deltaAICc, 1) == -23.3)
+  expect_true(round(test$Dataset$ModelAICc, 1) == 4896.9)
+  
 })
 
 ## COXPH ##
@@ -320,6 +362,10 @@ test_that("Absolute window works", {
   
   # Test that singlewin produces an object
   expect_true(is.list(test))
+  
+  #Test that values match those from previous R version
+  expect_true(round(test$Dataset$deltaAICc, 1) == -2.2)
+  expect_true(round(test$Dataset$ModelAICc, 1) == 286.2)
   
 })
 
@@ -349,6 +395,10 @@ test_that("slope stats work", {
   
   # Test that best model data has atleast 2 columns
   expect_true(ncol(test[[2]]) >= 2)
+  
+  #Test that values match those from previous R version
+  expect_true(round(test$Dataset$deltaAICc, 1) == -1.3)
+  expect_true(round(test$Dataset$ModelAICc, 1) == 287.1)
   
 })
 
@@ -381,6 +431,10 @@ test_that("Quadratic function works in singlewin", {
   # Test that best model data has atleast 3 columns
   expect_true(ncol(test[[2]]) >= 3)
   
+  #Test that values match those from previous R version
+  expect_true(round(test$Dataset$deltaAICc, 1) == -1.0)
+  expect_true(round(test$Dataset$ModelAICc, 1) == 287.3)
+  
 })
 
 #Test cubic function
@@ -407,6 +461,10 @@ test_that("Cubic function works in singlewin", {
   
   # Test that best model data has atleast 4 columns
   expect_true(ncol(test[[2]]) >= 4)
+  
+  #Test that values match those from previous R version
+  expect_true(round(test$Dataset$deltaAICc, 1) == 1.3)
+  expect_true(round(test$Dataset$ModelAICc, 1) == 289.7)
   
 })
 
@@ -435,6 +493,10 @@ test_that("Log function works in singlewin", {
   # Test that best model data has atleast 2 columns
   expect_true(ncol(test[[2]]) >= 2)
   
+  #Test that values match those from previous R version
+  expect_true(round(test$Dataset$deltaAICc, 1) == -3.1)
+  expect_true(round(test$Dataset$ModelAICc, 1) == 285.3)
+  
 })
 
 #Test log function#
@@ -461,6 +523,10 @@ test_that("Inverse function works in singlewin", {
   
   # Test that best model data has atleast 2 columns
   expect_true(ncol(test[[2]]) >= 2)
+  
+  #Test that values match those from previous R version
+  expect_true(round(test$Dataset$deltaAICc, 1) == -3.1)
+  expect_true(round(test$Dataset$ModelAICc, 1) == 285.2)
   
 })
 
@@ -514,5 +580,9 @@ test_that("spatial replication works with singlewin", {
   
   # Test that best model data has atleast 2 columns
   expect_true(ncol(test[[2]]) >= 2)
+  
+  #Test that values match those from previous R version
+  expect_true(round(test$Dataset$deltaAICc, 1) == -2.7)
+  expect_true(round(test$Dataset$ModelAICc, 1) == 285.6)
   
 })

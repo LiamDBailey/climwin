@@ -1,5 +1,6 @@
 # Test the outcome of crosswin #
 test_that("crosswin produces output", {
+  
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
   
@@ -26,6 +27,9 @@ test_that("crosswin produces output", {
   
   # Test that the right number of models were fitted
   expect_equal(maxmodno, nrow(test))
+  
+  #Test the values we get out have stayed the same as our last R version
+  expect_true(round(test$cor[1], 1) == -0.3)
   
 })
 
@@ -66,5 +70,8 @@ test_that("Spatial replication works with crosswin", {
   
   # Test that the right number of models were fitted
   expect_equal(maxmodno, nrow(test))
+  
+  #Test the values we get out have stayed the same as our last R version
+  expect_true(round(test$cor[1], 1) == -0.3)
   
 })

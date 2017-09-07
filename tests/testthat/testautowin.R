@@ -35,6 +35,10 @@ test_that("AutoWinOutput has created an output", {
   # Expect that the number of rows is equal to the number of possible windows
   expect_equal(maxmodno, nrow(test))
   
+  #Test the values we get out have stayed the same as our last R version
+  expect_true(round(test$cor[2], 1) == 0.8)
+  expect_true(test$BestWindowOpen[1] == 1 & test$BestWindowOpen[1] == 1)
+  
 })
 
 ###############################################################
@@ -79,5 +83,9 @@ test_that("Spatial replication works with autowin", {
   
   # Expect that the number of rows is equal to the number of possible windows
   expect_equal(maxmodno, nrow(test))
+  
+  #Test the values we get out have stayed the same as our last R version
+  expect_true(round(test$cor[2], 1) == 0.8)
+  expect_true(test$BestWindowOpen[1] == 1 & test$BestWindowOpen[1] == 1)
   
 })

@@ -1,5 +1,7 @@
 # Test randwin function #
-test_that("Check randwin output with slidingwin", {
+test_that("Check randwin output with slidingwin and max", {
+  
+  set.seed(666)
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -33,12 +35,19 @@ test_that("Check randwin output with slidingwin", {
   # Test that data has been stored as randomised
   expect_true((rand[[1]]["Randomised"])[1,] == "yes")
   
+  #Test that values match previous R version
+  expect_true(round(rand[[1]]$deltaAICc[1], 1) == 1.2)
+  expect_true(rand[[1]]$WindowOpen[1] == 1 & rand[[1]]$WindowClose[1] == 1)
+  expect_true(round(rand[[1]]$ModelBeta[1], 1) == -0.4)
+  
 })
 
 ############################################################
 
 # Test randwin function with mean climate#
-test_that("Check randwin output with slidingwin", {
+test_that("Check randwin output with slidingwin and mean", {
+  
+  set.seed(666)
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -72,11 +81,18 @@ test_that("Check randwin output with slidingwin", {
   # Test that data has been stored as randomised
   expect_true((rand[[1]]["Randomised"])[1,] == "yes")
   
+  #Test that values match previous R version
+  expect_true(round(rand[[1]]$deltaAICc[1], 1) == 1.2)
+  expect_true(rand[[1]]$WindowOpen[1] == 1 & rand[[1]]$WindowClose[1] == 1)
+  expect_true(round(rand[[1]]$ModelBeta[1], 1) == -0.4)
+  
 })
 
 ############################################################
 
 test_that("Check randwin output works with spatial replication", {
+  
+  set.seed(666)
   
   data(Mass, envir = environment())
   Mass$Plot <- c(rep(c("A", "B"), 23), "A")
@@ -115,11 +131,18 @@ test_that("Check randwin output works with spatial replication", {
   # Test that data has been stored as randomised
   expect_true((rand[[1]]["Randomised"])[1,] == "yes")
   
+  #Test that values match previous R version
+  expect_true(round(rand[[1]]$deltaAICc[1], 1) == 1.2)
+  expect_true(rand[[1]]$WindowOpen[1] == 1 & rand[[1]]$WindowClose[1] == 1)
+  expect_true(round(rand[[1]]$ModelBeta[1], 1) == -0.4)
+  
 })
 
 #############################################################
 
 test_that("Check randwin output with weightwin", {
+  
+  set.seed(666)
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -153,5 +176,10 @@ test_that("Check randwin output with weightwin", {
   
   # Test that data has been stored as randomised
   expect_true((rand[[1]]["Randomised"])[1,] == "yes")
+  
+  #Test that values match previous R version
+  expect_true(round(rand[[1]]$deltaAICc[1], 1) == 1.2)
+  expect_true(round(rand[[1]]$ModelBeta[1], 1) == -0.4)
+  expect_true(round(rand[[1]]$ModelInt[1], 1) == 132.6)
   
 })

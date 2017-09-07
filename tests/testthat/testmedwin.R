@@ -18,4 +18,8 @@ test_that("medwin returns two values", {
   expect_true(is.numeric(testmedwin[2]$'Median Window Close'))
   expect_true(is.numeric(testmedwin[1]$'Median Window Open'))
   
+  #Test that values returned are the same as previous R version
+  expect_true(testmedwin[[1]] == 2.5)
+  expect_true(testmedwin[[2]] == 2)
+  
 })

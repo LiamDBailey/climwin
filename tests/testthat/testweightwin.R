@@ -1,6 +1,8 @@
 # Test weightwin function #
 test_that("weightwin works properly", {
   
+  set.seed(666)
+  
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
   
@@ -62,12 +64,18 @@ test_that("weightwin works properly", {
   # Test that optimisation data contains no NAs
   expect_equal(length(which(is.na(test[[3]]$ModelBeta))), 0)
   
+  #Test that results are the same as previous R version
+  expect_true(round(test$WeightedOutput$deltaAICc, 1) == 1.3)
+  expect_true(round(test$WeightedOutput$ModelBeta, 1) == -0.4)
+  
 })
 
 #################################################################
 
 # Test that spatial replication works with weightwin #
 test_that("Spatial replication works with weightwin", {
+  
+  set.seed(666)
   
   data(Mass, envir = environment())
   Mass$Plot <- c(rep(c("A", "B"), 23), "A")
@@ -101,5 +109,9 @@ test_that("Spatial replication works with weightwin", {
   
   # Test that optimisation data contains no NAs
   expect_equal(length(which(is.na(test[[3]]$ModelBeta))), 0)
+  
+  #Test that results are the same as previous R version
+  expect_true(round(test$WeightedOutput$deltaAICc, 1) == 1.3)
+  expect_true(round(test$WeightedOutput$ModelBeta, 1) == -0.4)
   
 })

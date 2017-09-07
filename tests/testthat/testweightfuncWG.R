@@ -46,6 +46,9 @@ test_that("GEV loglik test", {
   # Test that the output is less than 2 (i.e. AIC value is reasonable)
   expect_true(test <= 2)
   
+  #Test that values are the same as previous R version
+  expect_true(round(test, 1) == -2.7)
+  
 })
 
 # Test Weibull function #
@@ -93,5 +96,8 @@ test_that("Weibull loglik test", {
   
   # Test that deltaAICc value is less than 2
   expect_true(test <= 2)
+  
+  #Test that values are the same as previous R version
+  expect_true(round(test, 1) == 1.3)
   
 })
