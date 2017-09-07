@@ -32,6 +32,23 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   
   print("Initialising, please wait...")
   
+  thresholdQ <- "N"
+  
+  if((!is.na(upper) || !is.na(lower)) && (cinterval == "week" || cinterval == "month")){
+    
+    thresholdQ <- readline("You specified a climate threshold using upper and/or lower and are working at a weekly or monthly scale. 
+                           Do you want to apply this threshold before calculating weekly/monthly means (i.e. calculate thresholds for each day)? Y/N")
+    
+    thresholdQ <- toupper(thresholdQ)
+    
+    if(thresholdQ != "Y" & thresholdQ != "N"){
+      
+      thresholdQ <- readline("Please specify yes (Y) or no (N)")
+      
+    }
+    
+  }
+  
   if(is.null(spatial) == FALSE){
       
     sample.size <- 0
@@ -71,7 +88,8 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   #Convert date information in to numbers and apply absolute window info (if appropriate)
   cont      <- convertdate(bdate = bdate, cdate = cdate, xvar = xvar, 
                            cinterval = cinterval, type = type, 
-                           refday = refday, cohort = cohort, spatial = spatial, stat = stat, binary = binary, upper = upper, lower = lower)   # create new climate dataframe with continuous daynumbers, leap days are not a problem
+                           refday = refday, cohort = cohort, spatial = spatial, stat = stat, 
+                           binary = binary, upper = upper, lower = lower, thresholdQ = thresholdQ)   # create new climate dataframe with continuous daynumbers, leap days are not a problem
   
   #return(cont)
   
@@ -112,7 +130,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   
   modlist   <- list()   # dataframes to store ouput
   baseline  <- update(baseline, .~.)
-  nullmodel <- AICc(baseline)
+  nullmodel <- MuMIn::AICc(baseline)
   modeldat  <- model.frame(baseline)
   
   if(attr(baseline, "class")[1] == "lme"){ #If model is fitted using nlme package
@@ -156,7 +174,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
       stop("NA values present in biological response. Please remove NA values")
   }
   
-  if(cinterval == "day"){ #If using daily intervals...
+  if(cinterval == "day" || (!is.na(thresholdQ) && thresholdQ == "N")){ #If dealing with daily data OR user chose to apply threshold later...
 
   if(is.null(spatial) == FALSE){ #...and spatial information is provided...
     
@@ -212,7 +230,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     
   }
     
-  } # If data is not daily, we assume that it was done in convertdate (THIS NEEDS TO BE UPDATED!!)
+  }
   
   if(is.null(spatial) == FALSE){ #If spatial information is provided...
     for (i in 1:length(bdate)){ #For each biological record we have...
@@ -230,7 +248,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   
   #return(list(cmatrix, cont))
 
-  if(cmissing == FALSE && any(is.na(cmatrix))){ #If the user doesn't expect missing climate data BUT there are missing data present...
+  if(cmissing == FALSE & any(is.na(cmatrix))){ #If the user doesn't expect missing climate data BUT there are missing data present...
     if(is.null(spatial) == FALSE){ #And spatial data has been provided...
       
       if (cinterval == "day"){ #Where a daily interval is used...
@@ -481,8 +499,8 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   if (is.null(weights(baseline)) == FALSE){
     if (class(baseline)[1] == "glm" && sum(weights(baseline)) == nrow(model.frame(baseline)) || attr(class(baseline), "package") == "lme4" && sum(weights(baseline)) == nrow(model.frame(baseline))){
     } else {
-      modeldat$modweights <- weights(baseline)
-      baseline <- update(baseline, yvar~., weights = modweights, data = modeldat)
+      modeldat$model_weights <- weights(baseline)
+      with(modeldat, baseline <- update(baseline, yvar~., weights = model_weights))
     }
   }
   
@@ -1470,7 +1488,8 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
 
 #Function to convert dates into day/week/month number
 convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type, 
-                        refday, cross = FALSE, cohort, spatial, stat, upper, lower, binary){
+                        refday, cross = FALSE, cohort, spatial, stat, 
+                        upper, lower, binary, thresholdQ = NA){
   
   
   if (cinterval != "day" && cinterval != "week" && cinterval != "month"){
@@ -1596,23 +1615,47 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       #For daily data, we can determine upper and lower binary limits AFTER calculating cdate info.
       #However, for weekly and monthly data, we need to group our daily data into weeks or months.
       
-      #if(binary == TRUE){
+      #If the user has specified a threshold, they may want to apply this to the daily data 
+      #(i.e. if they have daily data but are using weekly/monthly to speed up analysis)
+      #We have checked to see if this is the case using 'thresholdQ'.
+      #If 'thresholdQ' is Y, the user wants thresholds estimated BEFORE calculated weekly/monthly data.
+      
+      if(!is.na(thresholdQ) && thresholdQ == "Y"){
         
-        #if(is.na(upper) == FALSE && is.na(lower) == TRUE){
+        if(binary == T){
           
-          #xvar <- ifelse(xvar > upper, 1, 0)
+          if(is.na(upper) == FALSE && is.na(lower) == TRUE){
+            
+            xvar <- ifelse(xvar > upper, 1, 0)
+            
+          } else if(is.na(upper) == TRUE && is.na(lower) == FALSE){
+            
+            xvar <- ifelse(xvar < lower, 1, 0)
+            
+          } else if(is.na(upper) == FALSE && is.na(lower) == FALSE){
+            
+            xvar <- ifelse(xvar > lower & xvar < upper, 1, 0)
+            
+          }
           
-        #} else if(is.na(upper) == TRUE && is.na(lower) == FALSE){
+        } else {
           
-          #xvar <- ifelse(xvar < lower, 1, 0)
+          if(is.na(upper) == FALSE && is.na(lower) == TRUE){
+            
+            xvar <- ifelse(xvar > upper, xvar, 0)
+            
+          } else if(is.na(upper) == TRUE && is.na(lower) == FALSE){
+            
+            xvar <- ifelse(xvar < lower, xvar, 0)
+            
+          } else if(is.na(upper) == FALSE && is.na(lower) == FALSE){
+            
+            xvar <- ifelse(xvar > lower & xvar < upper, xvar, 0)
+            
+          }
           
-        #} else if(is.na(upper) == FALSE && is.na(lower) == FALSE){
-          
-          #xvar <- ifelse(xvar > lower & xvar < upper, 1, 0)
-          
-        #}
-        
-      #}
+        }
+      }
       
       cweek      <- lubridate::week(cdate2) # atrribute week numbers for both datafiles with first week in climate data set to cintno 1
       #A year doesn't divide evenly into weeks (what a silly method of splitting up a year!)
@@ -1655,24 +1698,49 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       }
     } else if (cinterval == "month"){ # If cinterval is month instead...
       
-      #if(is.na(upper) == FALSE && is.na(lower) == TRUE){
+      #Once again, check if the user wants to calculate thresholds before determining weekly/monthly means.
+      
+      if(!is.na(thresholdQ) && thresholdQ == "Y"){
         
-        #xvar <- ifelse(xvar > upper, 1, 0)
-        
-      #} else if(is.na(upper) == TRUE && is.na(lower) == FALSE){
-        
-        #xvar <- ifelse(xvar < lower, 1, 0)
-        
-      #} else if(is.na(upper) == FALSE && is.na(lower) == FALSE){
-        
-        #xvar <- ifelse(xvar > lower & xvar < upper, 1, 0)
-        
-      #}
+        if(binary == T){
+          
+          if(is.na(upper) == FALSE && is.na(lower) == TRUE){
+            
+            xvar <- ifelse(xvar > upper, 1, 0)
+            
+          } else if(is.na(upper) == TRUE && is.na(lower) == FALSE){
+            
+            xvar <- ifelse(xvar < lower, 1, 0)
+            
+          } else if(is.na(upper) == FALSE && is.na(lower) == FALSE){
+            
+            xvar <- ifelse(xvar > lower & xvar < upper, 1, 0)
+            
+          }
+          
+        } else {
+          
+          if(is.na(upper) == FALSE && is.na(lower) == TRUE){
+            
+            xvar <- ifelse(xvar > upper, xvar, 0)
+            
+          } else if(is.na(upper) == TRUE && is.na(lower) == FALSE){
+            
+            xvar <- ifelse(xvar < lower, xvar, 0)
+            
+          } else if(is.na(upper) == FALSE && is.na(lower) == FALSE){
+            
+            xvar <- ifelse(xvar > lower & xvar < upper, xvar, 0)
+            
+          }
+          
+        }
+      }
       
       cmonth     <- lubridate::month(cdate2) # Determine month numbers for all data...
       cyear      <- lubridate::year(cdate2) - min(lubridate::year(cdate2))
       cintno     <- cmonth + 12 * cyear
-      realbintno <- lubridate::month(bdate) + 12 * (year(bdate) - min(year(cdate2)))
+      realbintno <- lubridate::month(bdate) + 12 * (lubridate::year(bdate) - min(lubridate::year(cdate2)))
       
       if(is.null(spatial) == FALSE){ # If spatial replication is used...
         newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "spatial" = climspatial) #Create a new dataframe with month number, climate data and site ID
@@ -1684,8 +1752,8 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
         climspatial <- newclim3$spatial
       } else { #If there is no spatial data...
         newclim    <- data.frame("cintno" = cintno, "xvar" = xvar) #Determine mean climate data for each month.
-        newclim2   <- melt(newclim, id = "cintno")
-        newclim3   <- cast(newclim2, cintno ~ variable, mean, na.rm = T)
+        newclim2   <- reshape::melt(newclim, id = "cintno")
+        newclim3   <- reshape::cast(newclim2, cintno ~ variable, mean, na.rm = T)
         cintno     <- newclim3$cintno
         xvar       <- newclim3$xvar 
       }
@@ -1717,20 +1785,6 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
         bintno <- realbintno
       }    
     } else if (cinterval == "week"){ #If using weekly data...
-      
-      #if(is.na(upper) == FALSE && is.na(lower) == TRUE){
-        
-        #xvar <- ifelse(xvar > upper, 1, 0)
-        
-      #} else if(is.na(upper) == TRUE && is.na(lower) == FALSE){
-        
-        #xvar <- ifelse(xvar < lower, 1, 0)
-        
-      #} else if(is.na(upper) == FALSE && is.na(lower) == FALSE){
-        
-        #xvar <- ifelse(xvar > lower & xvar < upper, 1, 0)
-        
-      #}
       
       cweek      <- lubridate::week(cdate2) # atrribute week numbers for both datafiles with first week in climate data set to cintno 1
       cyear      <- lubridate::year(cdate2) - min(lubridate::year(cdate2))
@@ -1768,20 +1822,6 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
         bintno <- realbintno
       }
     } else if (cinterval == "month"){ #If using monthly data...
-      
-      #if(is.na(upper) == FALSE && is.na(lower) == TRUE){
-        
-        #xvar <- ifelse(xvar > upper, 1, 0)
-        
-      #} else if(is.na(upper) == TRUE && is.na(lower) == FALSE){
-        
-        #xvar <- ifelse(xvar < lower, 1, 0)
-        
-      #} else if(is.na(upper) == FALSE && is.na(lower) == FALSE){
-        
-        #xvar <- ifelse(xvar > lower & xvar < upper, 1, 0)
-        
-      #}
       
       cmonth     <- lubridate::month(cdate2) #Determine month number
       cyear      <- year(cdate2) - min(year(cdate2))

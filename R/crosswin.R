@@ -77,8 +77,8 @@
 
 crosswin <- function(xvar, xvar2, cdate, bdate, range, 
                      stat, stat2, type, refday,
-                     cinterval = "day", cmissing = FALSE, 
-                     spatial = NULL, cohort = NULL,
+                     cinterval = "day", 
+                     cmissing = FALSE, spatial = NULL, cohort = NULL,
                      cutoff.day = NULL, cutoff.month = NULL,
                      furthest = NULL, closest = NULL){
   
@@ -108,6 +108,7 @@ crosswin <- function(xvar, xvar2, cdate, bdate, range,
   cont     <- convertdate(bdate = bdate, cdate = cdate, xvar = xvar, xvar2 = xvar2, 
                           cinterval = cinterval, type = type, cohort = cohort,
                           refday = refday, cross = TRUE, spatial = spatial)   # create new climate dataframe with continuous daynumbers, leap days are not a problem
+  
   modno    <- 1  #Create a model number variable that will count up during the loop#
   modlist  <- list()   # dataframes to store ouput
   cmatrix1 <- matrix(ncol = (duration), nrow = length(bdate))  # matrix that stores the weather data for variable or fixed windows

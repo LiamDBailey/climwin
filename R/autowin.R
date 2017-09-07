@@ -112,6 +112,24 @@ autowin <- function(reference, xvar, cdate, bdate, baseline, range, stat, func, 
                     lower = NA, binary = FALSE, centre = list(NULL, "both"), 
                     cohort = NULL, spatial = NULL, cutoff.day = NULL, cutoff.month = NULL,
                     furthest = NULL, closest = NULL, thresh = NULL){
+  
+  thresholdQ <- "N"
+  
+  if((!is.na(upper) || !is.na(lower)) && (cinterval == "week" || cinterval == "month")){
+    
+    thresholdQ <- readline("You specified a climate threshold using upper and/or lower and are working at a weekly or monthly scale. 
+Do you want to apply this threshold before calculating weekly/monthly means (i.e. calculate thresholds for each day)? Y/N")
+    
+    thresholdQ <- toupper(thresholdQ)
+    
+    if(thresholdQ != "Y" & thresholdQ != "N"){
+      
+      thresholdQ <- readline("Please specify yes (Y) or no (N)")
+      
+    }
+    
+  }
+  
   if(is.null(cohort) == TRUE){
     cohort = lubridate::year(as.Date(bdate, format = "%d/%m/%Y")) 
   }
@@ -166,63 +184,68 @@ autowin <- function(reference, xvar, cdate, bdate, baseline, range, stat, func, 
   maxmodno   <- (duration * (duration + 1)) / 2 
   cont       <- convertdate(bdate = bdate, cdate = cdate, xvar = xvar, 
                             cinterval = cinterval, type = type, 
-                            refday = refday, cohort = cohort, spatial = spatial)
+                            refday = refday, cohort = cohort, spatial = spatial,
+                            thresholdQ = thresholdQ)
   modno      <- 1
   modlist    <- list()
   cmatrix    <- matrix(ncol = (duration), nrow = length(bdate))
   climate1   <- matrix(ncol = 1, nrow = length(bdate), 1)
   
-  if(is.null(spatial) == FALSE){
+  if(cinterval == "day" || (!is.na(thresholdQ) && thresholdQ == "N")){ #If dealing with daily data OR user chose to apply threshold later...
     
-    if (is.na(upper) == FALSE && is.na(lower) == TRUE){
-      if (thresh == TRUE){
-        cont$xvar$Clim <- ifelse (cont$xvar$Clim > upper, 1, 0)
-      } else {
-        cont$xvar$Clim <- ifelse (cont$xvar$Clim > upper, cont$xvar$Clim, 0)
+    if(is.null(spatial) == FALSE){ #...and spatial information is provided...
+      
+      if (is.na(upper) == FALSE && is.na(lower) == TRUE){ #...and an upper bound is provided...
+        if (binary == TRUE){ #...and we want data to be binary (i.e. it's above the value or it's not)
+          cont$xvar$Clim <- ifelse (cont$xvar$Clim > upper, 1, 0) #Then turn climate data into binary data.
+        } else { #Otherwise, if binary is not true, simply make all data below the upper limit into 0.
+          cont$xvar$Clim <- ifelse (cont$xvar$Clim > upper, cont$xvar$Clim, 0)
+        }
       }
-    }
-    
-    if (is.na(lower) == FALSE && is.na(upper) == TRUE){
-      if (thresh == TRUE){
-        cont$xvar$Clim <- ifelse (cont$xvar$Clim < lower, 1, 0)
-      } else {
-        cont$xvar$Clim <- ifelse (cont$xvar$Clim < lower, cont$xvar$Clim, 0)
+      
+      if (is.na(lower) == FALSE && is.na(upper) == TRUE){ #If a lower limit has been provided, do the same.
+        if (binary == TRUE){
+          cont$xvar$Clim <- ifelse (cont$xvar$Clim < lower, 1, 0)
+        } else {
+          cont$xvar$Clim <- ifelse (cont$xvar$Clim < lower, cont$xvar$Clim, 0)
+        }
       }
-    }
-    
-    if (is.na(lower) == FALSE && is.na(upper) == FALSE){
-      if (thresh == TRUE){
-        cont$xvar$Clim <- ifelse (cont$xvar$Clim > lower & cont$xvar$Clim < upper, 1, 0)
-      } else {
-        cont$xvar$Clim <- ifelse (cont$xvar$Clim > lower & cont$xvar$Clim < upper, cont$xvar$Clim - lower, 0)
+      
+      if (is.na(lower) == FALSE && is.na(upper) == FALSE){ #If both an upper and lower limit are provided, do the same.
+        if (binary == TRUE){
+          cont$xvar$Clim <- ifelse (cont$xvar$Clim > lower && cont$xvar$Clim < upper, 1, 0)
+        } else {
+          cont$xvar$Clim <- ifelse (cont$xvar$Clim > lower && cont$xvar$Clim < upper, cont$xvar$Clim - lower, 0)
+        } 
+      }
+      
+    } else { #Do the same with non-spatial data (syntax is just a bit different, but method is the same.)
+      
+      if (is.na(upper) == FALSE && is.na(lower) == TRUE){
+        if (binary == TRUE){
+          cont$xvar <- ifelse (cont$xvar > upper, 1, 0)
+        } else {
+          cont$xvar <- ifelse (cont$xvar > upper, cont$xvar, 0)
+        }
+      }
+      
+      if (is.na(lower) == FALSE && is.na(upper) == TRUE){
+        if (binary == TRUE){
+          cont$xvar <- ifelse (cont$xvar < lower, 1, 0)
+        } else {
+          cont$xvar <- ifelse (cont$xvar < lower, cont$xvar, 0)
+        }
+      }
+      
+      if (is.na(lower) == FALSE && is.na(upper) == FALSE){
+        if (binary == TRUE){
+          cont$xvar <- ifelse (cont$xvar > lower & cont$xvar < upper, 1, 0)
+        } else {
+          cont$xvar <- ifelse (cont$xvar > lower & cont$xvar < upper, cont$xvar - lower, 0)
+        } 
       } 
+      
     }
-    
-  } else {
-    
-    if (is.na(upper) == FALSE && is.na(lower) == TRUE){
-      if (thresh == TRUE){
-        cont$xvar <- ifelse (cont$xvar > upper, 1, 0)
-      } else {
-        cont$xvar <- ifelse (cont$xvar > upper, cont$xvar, 0)
-      }
-    }
-    
-    if (is.na(lower) == FALSE && is.na(upper) == TRUE){
-      if (thresh == TRUE){
-        cont$xvar <- ifelse (cont$xvar < lower, 1, 0)
-      } else {
-        cont$xvar <- ifelse (cont$xvar < lower, cont$xvar, 0)
-      }
-    }
-    
-    if (is.na(lower) == FALSE && is.na(upper) == FALSE){
-      if (thresh == TRUE){
-        cont$xvar <- ifelse (cont$xvar > lower & cont$xvar < upper, 1, 0)
-      } else {
-        cont$xvar <- ifelse (cont$xvar > lower & cont$xvar < upper, cont$xvar - lower, 0)
-      } 
-    } 
     
   }
   
