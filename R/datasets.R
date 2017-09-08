@@ -168,16 +168,3 @@ NULL
 #'   }
 #'@name ChaffClim
 NULL
-
-#' Example of data in a monthly format.
-#' 
-#' Randomly generated data stored in a monthly format.
-#' Used as an example of function 'daily_data'.
-#' 
-#' @format A data frame with 576 rows and 2 variables
-#' \describe{
-#'   \item{Date}{Date of measurements (dd/mm/yyyy).}
-#'   \item{Temp}{Temperature data.}
-#'   }
-#'@name Monthly_data
-NULL
