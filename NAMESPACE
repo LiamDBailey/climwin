@@ -2,7 +2,6 @@
 
 export(autowin)
 export(crosswin)
-export(daily_data)
 export(explore)
 export(medwin)
 export(merge_results)
