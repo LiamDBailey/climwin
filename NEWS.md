@@ -1,6 +1,42 @@
+# climwin 1.2.0
+
+Our newest version includes a number of important tweaks and bug fixes, as well as an updated help vignette. To report errors and bugs or ask questions please visit the `climwin` [google group](https://groups.google.com/forum/?utm_medium=email&utm_source=footer#!forum/climwin-r-group).
+
+## Major changes
+
+### Functionality with 'nlme'
+
+Older versions of `climwin` allowed the use of mixed effects models with the package `lme4`; however, there have been a number of requests for `nlme` compatability as an alternative. This has been made possible in v1.2.0, with the option to include constant and exponential variance functions for model weighting (*varIdent* and *varExp* respectively). Note, however, that k-fold cross validation is currently not available with `nlme` models.
+
+**N.B.** Please see minor changes below for other updates relating to mixed effects models.
+
+## Minor changes
+
+### Use of maximum likelihood for mixed effects models
+
+When using mixed effects models in `climwin` it is necessary to use a maximum likelihood [ML] approach rather than restricted maximum likelihood [REML]. In v1.2.0 this has now been made mandatory. Any models fitted with REML will be refitted with ML (along with an accompanying message). 
+
+**N.B.** This means that the best model output will also be fitted with ML. Users can manually refit the best model with REML if desired.
+
+### Changes to the use of weekly data
+
+The method use to group data at a weekly scale has been changed slightly. This may lead to slight changes in results compared to previous versions; however, changes should be minimal and the overall interpretation of results should remain the same.
+
+### Using climate thresholds on weekly/monthly data
+
+Users may run `climwin` with cinterval == "week"/"month" in cases where only weekly/monthly data is available but also to reduce computational time when using daily data. This raises potential concerns when using climatic thresholds (e.g. arguments upper, lower, binary). When daily data is available, users may wish to apply thresholds before data is grouped by week/month (e.g. for each week, what is the mean number of days that temperature > x). Alternatively, users may wish to apply thresholds after week/month grouping has occurred (e.g. for each week, is mean temperature > x). v1.2.0 now includes a prompt allowing users to select between these two possibilities.
+
+## Bug fixes
+
+### Slope statistic
+
+Fixed a bug where the 'slope' statistic was calculated with the wrong sign.
+
+------------------------
+
 # climwin 1.1.0
 
-Our newest version adds a number of useful features to `climwin` as well as a few bug fixes. In addition, we have now created a climwin [google group](https://groups.google.com/forum/?utm_medium=email&utm_source=footer#!forum/climwin-r-group) for users to ask questions about the package. Please report any errors or bugs on this forum.
+Our newest version adds a number of useful features to `climwin` as well as a few bug fixes. In addition, we have now created a `climwin` [google group](https://groups.google.com/forum/?utm_medium=email&utm_source=footer#!forum/climwin-r-group) for users to ask questions about the package. Please report any errors or bugs on this forum.
 
 ## Major changes
 
@@ -21,11 +57,14 @@ In previous verisons, the argument `cmissing` could be designated as either TRUE
 ### Multiple iterations with weightwin
 
 As weightwin uses an optimisation function, there is the possibility that the function may fail to converge or will converge on a local optima. Because of these issues, a single run of weightwin may not provide an accurate measure of the climate landscape. Users should instead run multiple iterations of weightwin with varying starting parameters to help find the global optima. The argument `n` in weightwin allows users to specify the number of iterations to run, with starting parameters randomly assigned in each run. weightwin will then return a summary table of results from all iterations. 
+
 ## Minor changes
 
 ### Non-daily data
 
 The original design of `climwin` required users to provide their climate data at a daily resolution, even if users had only a single recorded value across each month/week. This caused some confusion with users. `climwin` can now deal with climate data at a monthly or weekly resolution (i.e. one record for each month/week). Running climate window analysis at a monthly or weekly scale also provides a method for dealing with [missing climate data](https://github.com/LiamDBailey/climwin/wiki/FAQs).
+
+------------------------
 
 # climwin 1.0.0
 
@@ -84,19 +123,19 @@ Parameter changes:
 
 - 'type' now accepts possible arguments 'absolute' and 'relative' (rather than 'fixed' and 'variable').
 
------------------
+------------------------
 
 # climwin 0.1.2
 
 Fixed bug which caused convergence issues using cross-validation.
 
------------------
+------------------------
 
 # climwin 0.1.1
 
 Fixed serious bug causing an error in 'plotwin' and 'plotall'. Naming mismatch in the 'closest' column in climatewin$Dataset. Column name changes from Closest to closest.
 
------------------
+------------------------
 
 # climwin 0.1.0
 
