@@ -624,6 +624,42 @@ test_that("lmer [lme4] models can run in slidingwin", {
   
 })
 
+# Test mixed effects models (lme4) #
+test_that("lmer [lme4] models can run in slidingwin with cross-validation", {
+  
+  set.seed(666)
+  
+  data(Offspring, envir = environment())
+  data(OffspringClimate, envir = environment())
+  
+  test <- slidingwin(xvar = list(OffspringClimate$Temp), cdate = OffspringClimate$Date, 
+                     bdate = Offspring$Date, 
+                     baseline = lmer(Offspring ~ 1 + (1|BirdID), data = Offspring, REML = F),  
+                     range = c(2, 1), type = "relative", 
+                     stat = "max", func = "lin", cmissing=FALSE, k = 2)
+  
+  # Test that slidingwin produced an output
+  expect_true(is.list(test))
+  
+  # Test that lmer model produced an intercept
+  expect_false(is.na(fixef(test[[1]]$BestModel)[1]))
+  
+  # Test that lmer model produced a climate beta estimate
+  expect_false(is.na(fixef(test[[1]]$BestModel)[2]))
+  
+  # Test that best model data doesn't contain NAs
+  expect_equal(length(which(is.na(test[[1]]$BestModelData))), 0)
+  
+  # Test that best model data has at least 2 parameters
+  expect_true(ncol(test[[1]]$BestModelData) >= 2)
+  
+  #Test the values we get out have stayed the same as our last R version
+  expect_true(round(test[[1]]$Dataset$deltaAICc[1], 1) == -17.3)
+  expect_true(test[[1]]$Dataset$WindowOpen[1] == 2 & test[[1]]$Dataset$WindowClose[1] == 2)
+  expect_true(round(test[[1]]$Dataset$ModelBeta[1], 1) == 0.0)
+  
+})
+
 # Test glmer models (lme4) #
 test_that("glmer [lme4] models can run in slidingwin", {
   
@@ -654,6 +690,43 @@ test_that("glmer [lme4] models can run in slidingwin", {
   
   #Test the values we get out have stayed the same as our last R version
   expect_true(round(test[[1]]$Dataset$deltaAICc[1], 1) == -14.0)
+  expect_true(test[[1]]$Dataset$WindowOpen[1] == 1 & test[[1]]$Dataset$WindowClose[1] == 1)
+  expect_true(round(test[[1]]$Dataset$ModelBeta[1], 1) == 0.0)
+  
+})
+
+# Test glmer models (lme4) #
+test_that("glmer [lme4] models can run in slidingwin with cross-validation", {
+  
+  set.seed(666)
+  
+  data(Offspring, envir = environment())
+  data(OffspringClimate, envir = environment())
+  
+  # Warnings created due to convergence issues with such a small data set
+  suppressWarnings(test <- slidingwin(xvar = list(OffspringClimate$Temp), cdate = OffspringClimate$Date, 
+                                      bdate = Offspring$Date, 
+                                      baseline = glmer(Offspring ~ 1 + (1|Order), data = Offspring, family = "poisson"),  
+                                      range = c(1, 0), type = "relative", 
+                                      stat = "max", func = "lin", cmissing=FALSE, k = 2))
+  
+  # Test that slidingwin has produced an output
+  expect_true(is.list(test))
+  
+  # Test that glmer model produced an intercept
+  expect_false(is.na(fixef(test[[1]]$BestModel)[1]))
+  
+  # Test that glmer model produced a beta estimate for climate
+  expect_false(is.na(fixef(test[[1]]$BestModel)[2]))
+  
+  # Test there are no NA values in best model data
+  expect_equal(length(which(is.na(test[[1]]$BestModelData))), 0)
+  
+  # Test that best model data has atleast two parameters
+  expect_true(ncol(test[[1]]$BestModelData) >= 2)
+  
+  #Test the values we get out have stayed the same as our last R version
+  expect_true(round(test[[1]]$Dataset$deltaAICc[1], 1) == -3.5)
   expect_true(test[[1]]$Dataset$WindowOpen[1] == 1 & test[[1]]$Dataset$WindowClose[1] == 1)
   expect_true(round(test[[1]]$Dataset$ModelBeta[1], 1) == 0.0)
   
