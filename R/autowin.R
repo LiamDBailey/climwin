@@ -395,6 +395,23 @@ Do you want to apply this threshold before calculating weekly/monthly means (i.e
     }
   }
   
+  #If using a mixed model, ensure that maximum likelihood is specified (because we are comparing models with different fixed effects)
+  if(!is.null(attr(class(baseline), "package")) && attr(class(baseline), "package") == "lme4" && class(baseline)[1] == "lmerMod" && baseline@resp$REML == 1){
+    
+    print("Linear mixed effects models are run in climwin using maximum likelihood. Baseline model has been changed to use maximum likelihood.")
+    
+    baseline <- update(baseline, yvar ~., data = modeldat, REML = F)
+    
+  }
+  
+  if(attr(baseline, "class")[1] == "lme" && baseline$method == "REML"){
+    
+    print("Linear mixed effects models are run in climwin using maximum likelihood. Baseline model has been changed to use maximum likelihood.")
+    
+    baseline <- update(baseline, yvar ~., data = modeldat, method = "ML")
+    
+  }
+  
   if (func == "lin"){
     modeloutput <- update(baseline, .~. + climate, data = modeldat)
   } else if (func == "quad") {
