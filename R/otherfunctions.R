@@ -667,10 +667,6 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
               #calculate mean standard errors for null model
               AICc_cv          <- num * log(mse) + (2 * p * (p + 1)) / (num - p - 1)
               AICc_cv_baseline <- num * log(mse_baseline) + (2 * p_baseline * (p_baseline + 1)) / (num - p_baseline - 1)
-              
-              print(paste("num:", num))
-              print(paste("mse:", mse))
-              print(paste("p:", p))
 
               #Calculate AICc values for climate and baseline models
               #rmse_corrected<-sqrt(sum((test$predictions-test[,1])^2)/modeloutputcv$df[1])
