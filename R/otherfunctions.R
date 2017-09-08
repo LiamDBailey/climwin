@@ -32,6 +32,12 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   
   print("Initialising, please wait...")
   
+  if(attr(baseline, "class")[1] == "lme" && k > 0){
+    
+    stop("Sorry, cross-validation is currently not functioning for nlme models. Consider using lme4 if possible.")
+    
+  }
+  
   thresholdQ <- "N"
   
   if((!is.na(upper) || !is.na(lower)) && (cinterval == "week" || cinterval == "month")){
@@ -601,7 +607,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
           }
           
           #If using models from nlme and there is an issue where climate has no variance (e.g. short windows where rainfall is all 0)
-          if(attr(modeloutput, "class")[1] == "lme" & var(modeldat$climate) == 0){
+          if(attr(modeloutput, "class")[1] == "lme" && var(modeldat$climate) == 0){
             
             #skip the fitting of the climate data and just treat it has deltaAICc of 0
             #This is necessary as nlme doesn't have a way to deal with rank deficiency (unlike lme4) and will give an error
@@ -661,6 +667,10 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
               #calculate mean standard errors for null model
               AICc_cv          <- num * log(mse) + (2 * p * (p + 1)) / (num - p - 1)
               AICc_cv_baseline <- num * log(mse_baseline) + (2 * p_baseline * (p_baseline + 1)) / (num - p_baseline - 1)
+              
+              print(paste("num:", num))
+              print(paste("mse:", mse))
+              print(paste("p:", p))
 
               #Calculate AICc values for climate and baseline models
               #rmse_corrected<-sqrt(sum((test$predictions-test[,1])^2)/modeloutputcv$df[1])
@@ -672,6 +682,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
             AICc_cv_avg          <- AICc_cvtotal / k # Determine the average AICc value of the climate model from cross validations
             AICc_cv_baseline_avg <- AICc_cv_basetotal / k # Determine the average AICc value of the null model from cross validations
             deltaAICc_cv         <- AICc_cv_avg - AICc_cv_baseline_avg # Calculate delta AICc
+            
           }
           
           }
@@ -1099,6 +1110,23 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
   }
   
   cmatrix <- as.matrix(cmatrix[, c(ncol(cmatrix):1)])
+  
+  #If using a mixed model, ensure that maximum likelihood is specified (because we are comparing models with different fixed effects)
+  if(!is.null(attr(class(baseline), "package")) && attr(class(baseline), "package") == "lme4" && class(baseline)[1] == "lmerMod" && baseline@resp$REML == 1){
+    
+    print("Linear mixed effects models are run in climwin using maximum likelihood. Baseline model has been changed to use maximum likelihood.")
+    
+    baseline <- update(baseline, yvar ~., data = modeldat, REML = F)
+    
+  }
+  
+  if(attr(baseline, "class")[1] == "lme" && baseline$method == "REML"){
+    
+    print("Linear mixed effects models are run in climwin using maximum likelihood. Baseline model has been changed to use maximum likelihood.")
+    
+    baseline <- update(baseline, yvar ~., data = modeldat, method = "ML")
+    
+  }
   
   if(all(!colnames(modeldat) %in% "climate")){
     
