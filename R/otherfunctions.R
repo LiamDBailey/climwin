@@ -307,8 +307,18 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     for(i in which(is.na(cmatrix))){
       
       #Determine the column and row location...
-      col <- floor(i/nrow(cmatrix)) + 1
-      row <- i - (nrow(cmatrix) * (col - 1))
+      if(i %% nrow(cmatrix) == 0){
+        
+        col <- i/nrow(cmatrix)
+        row <- nrow(cmatrix)
+        
+      } else {
+        
+        col <- i%/%nrow(cmatrix) + 1
+        row <- i %% nrow(cmatrix)
+        
+      }
+      
       
       #If we are using method1
       if(cmissing == "method1"){
@@ -637,7 +647,22 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
             #Update models with this new climate data (syntax is a bit different for nlme v. other models)
             if(attr(modeloutput, "class")[1] == "lme"){
               
-              modeloutput <- update(modeloutput, .~., data = modeldat)
+              modeloutput <- tryCatch({
+                
+                update(modeloutput, .~., data = modeldat); 
+                update(modeloutput, .~., data = modeldat)
+                
+                }, error=function(e){
+                  
+                  update(baseline, yvar~., data = modeldat)
+                  
+                })
+              
+              if(all(!colnames(model.frame(modeloutput)) %in% "climate")){
+                
+                warning("A model from one climate windows failed to converge. This model was replaced with the null model")
+                
+              }
               
             } else {
               
@@ -685,9 +710,12 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
             
           #Add model parameters to list
           if (k > 1){
+            
             modlist$ModelAICc[[modno]]    <- AICc_cv_avg
             modlist$deltaAICc[[modno]]    <- deltaAICc_cv
+            
           } else {
+            
             modlist$deltaAICc[[modno]] <- AICc(modeloutput) - AICc(baseline)
             modlist$ModelAICc[[modno]] <- AICc(modeloutput)
           }
