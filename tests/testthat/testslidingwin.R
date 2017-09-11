@@ -1666,3 +1666,54 @@ test_that("spatial replication works with slidingwin with NAs and cmissing metho
   expect_true(round(test[[1]]$Dataset$ModelBeta[1], 1) == -0.8)
   
 })
+
+##################################################################
+
+#Test that code works with climate in a monthly format
+
+test_that("slidingwin produces the right output with monthly climate data", {
+  
+  data(Mass, envir = environment())
+  data(Monthly_data, envir = environment())
+  
+  furthest = 2
+  closest = 0
+  
+  test <- slidingwin(xvar = list(Monthly_data$Temp), cdate = Monthly_data$Date, bdate = Mass$Date, 
+                     baseline = lm(Mass ~ 1, data = Mass), range = c(2, 0), 
+                     type = "relative", stat = "max", func = "lin", cmissing = FALSE,
+                     cinterval = "month")
+  
+  duration  <- (furthest - closest) + 1
+  maxmodno  <- (duration * (duration + 1))/2
+  
+  # Test that a list has been produced
+  expect_true(is.list(test))
+  
+  # Test that a best model was returned
+  expect_false(is.na((test[[1]]$BestModel)[1]))
+  
+  # Test that there are no NAs in the best model data
+  expect_equal(length(which(is.na(test[[1]]$BestModelData))), 0)
+  
+  # Test that the best model data has at least 2 columns
+  expect_true(ncol(test[[1]]$BestModelData) >= 2)
+  
+  # Test that there are no NAs in the output dataset
+  expect_equal(length(which(is.na(test[[1]]$Dataset[, 4]))), 0)
+  
+  # Test that all columns were created in the dataset
+  expect_true(ncol(test[[1]]$Dataset) == 17)
+  
+  # Test that the correct number of models were recorded in the dataset
+  expect_equal(maxmodno, nrow(test[[1]]$Dataset))
+  
+  # Test that data was not randomised
+  expect_true((test[[1]]$Dataset["Randomised"])[1, ] == "no")
+  
+  #Test the values we get out have stayed the same as our last R version
+  expect_true(round(test[[1]]$Dataset$deltaAICc[1], 1) == -0.7)
+  expect_true(test[[1]]$Dataset$WindowOpen[1] == 2 & test[[1]]$Dataset$WindowClose[1] == 2)
+  expect_true(round(test[[1]]$Dataset$ModelBeta[1], 1) == -0.3)
+  
+})
