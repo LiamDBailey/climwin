@@ -296,91 +296,216 @@ Do you want to apply this threshold before calculating weekly/monthly means (i.e
     }
   }
   
-  if (cmissing != FALSE && length(which(is.na(cmatrix))) > 0){
+  #If we expect NAs and choose a method to deal with them...
+  if (cmissing != FALSE && any(is.na(cmatrix))){
     
-    print("Missing climate data detected. Please wait while appropriate data is calculated to replace NAs.")
+    print("Missing climate data detected. Please wait while NAs are replaced.")
     
-    if(cmissing == "method1"){
+    for(i in which(is.na(cmatrix))){
       
-      for(i in which(is.na(cmatrix))){
+      #Determine the column and row location...
+      if(i %% nrow(cmatrix) == 0){
         
-        cmatrix[i] <- mean(c(cmatrix[i - (1:2)], cmatrix[i + (1:2)]), na.rm = T)
+        col <- i/nrow(cmatrix)
+        row <- nrow(cmatrix)
         
-        if(is.na(cmatrix[i])){
+      } else {
+        
+        col <- i%/%nrow(cmatrix) + 1
+        row <- i %% nrow(cmatrix)
+        
+      }
+      
+      
+      #If we are using method1
+      if(cmissing == "method1"){
+        
+        #If we are using a daily interval
+        if(cinterval == "day"){
+          
+          #For the original cdate data extract date information.
+          cdate_new <- data.frame(Date = as.Date(cdate, format = "%d/%m/%Y"))
+          
+          #Extract the original biological date
+          bioldate <- as.Date(bdate[row], format = "%d/%m/%Y")
+          
+          #Determine from this on which date data is missing
+          missingdate <- bioldate - (col + range[2] - 1)
+          
+          #If we have spatial replication
+          if(is.null(spatial) == FALSE){
+            
+            cdate_new$spatial <- spatial[[2]]
+            
+            siteID <- spatial[[1]][row]
+            
+            cmatrix[row, col] <- mean(xvar[which(cdate_new$Date %in% c(missingdate - (1:2), missingdate + (1:2)) & cdate_new$spatial %in% siteID)], na.rm = T)
+            
+          } else {
+            
+            cmatrix[row, col] <- mean(xvar[which(cdate_new$Date %in% c(missingdate - (1:2), missingdate + (1:2)))], na.rm = T)
+            
+          }
+          
+        } else if(cinterval == "week" || cinterval == "month"){
+          
+          if(is.null(spatial) == FALSE){
+            
+            #Extract the climate week numbers
+            cdate_new <- data.frame(Date = cont$cintno$Date,
+                                    spatial = cont$cintno$spatial)
+            
+            #Extract the biological week number that is missing
+            bioldate <- cont$bintno$Date[row]
+            
+            #Determine from this on which week data is missing
+            missingdate <- bioldate - (col + range[2] - 1)
+            
+            siteID <- spatial[[1]][row]
+            
+            cmatrix[row, col] <- mean(cont$xvar$Clim[which(cdate_new$Date %in% c(missingdate - (1:2), missingdate + (1:2)) & cdate_new$spatial %in% siteID)], na.rm = T)
+            
+          } else {
+            
+            #Extract the climate week numbers
+            cdate_new <- data.frame(Date = cont$cintno)
+            
+            #Extract the biological week number that is missing
+            bioldate <- cont$bintno[row]
+            
+            #Determine from this on which week data is missing
+            missingdate <- bioldate - (col + range[2] - 1)
+            
+            cmatrix[row, col] <- mean(cont$xvar[which(cdate_new$Date %in% c(missingdate - (1:2), missingdate + (1:2)))], na.rm = T)
+            
+          }
+          
+        }
+        
+        #If the record is still an NA, there must be too many NAs. Give an error.
+        if(is.na(cmatrix[row, col])){
           
           stop("Too many consecutive NAs present in the data. Consider using method2 or manually replacing NAs.")
           
         }
         
-      }
-      
-    } else if(cmissing == "method2"){
-      
-      cdate_new <- data.frame(Date = as.Date(cdate, format = "%d/%m/%Y"),
-                              Year  = lubridate::year(as.Date(cdate, format = "%d/%m/%Y")),
-                              Month = lubridate::month(as.Date(cdate, format = "%d/%m/%Y")),
-                              Day   = lubridate::day(as.Date(cdate, format = "%d/%m/%Y")))
-      
-      if(cinterval == "week"){
-        
-        for(j in 1:nrow(cdate_new)){
-          
-          cdate_new$Week[j] <- ceiling((as.numeric(cdate_new$Date[j]) - min(as.numeric(subset(cdate_new, cdate_new$Year == cdate_new$Year[j])$Date)) + 1) / 7)
-          
-        }
-        
-      }
-      
-      for(i in which(is.na(cmatrix))){
-        
-        col <- floor(i/nrow(cmatrix))
-        
-        if(is.null(spatial)){
-          
-          brecord <- cont$bintno[i - col*nrow(cmatrix)] - (range[2] + col) - 1
-          
-        } else {
-          
-          brecord <- cont$bintno$Date[i - col*nrow(cmatrix)] - (range[2] + col) - 1
-          
-        }
-        
-        min_date <- min(as.Date(cdate, format = "%d/%m/%Y"))
+      } else if(cmissing == "method2"){
         
         if(cinterval == "day"){
           
-          missing_rec <- as.Date(brecord, format = "%d/%m/%Y", origin = min_date)
+          #For the original cdate data, determine the year, month, week and day.
+          cdate_new <- data.frame(Date = as.Date(cdate, format = "%d/%m/%Y"),
+                                  Month = lubridate::month(as.Date(cdate, format = "%d/%m/%Y")),
+                                  Day   = lubridate::day(as.Date(cdate, format = "%d/%m/%Y")))
           
-          cmatrix[i] <- mean(xvar[which(cdate_new$Month == lubridate::month(missing_rec) & cdate_new$Day == lubridate::day(missing_rec))], na.rm = T)
+          #Extract the original biological date
+          bioldate <- as.Date(bdate[row], format = "%d/%m/%Y")
           
-        } else if(cinterval == "week"){
+          #Determine from this on which date data is missing
+          missingdate <- bioldate - (col + range[2] - 1)
           
-          missing_week <- ceiling(((as.numeric((as.Date(bdate[i - col*nrow(cmatrix)], format = "%d/%m/%Y"))) - (col*7)) - as.numeric(as.Date(paste("01/01/", lubridate::year(as.Date(bdate[i - col*nrow(cmatrix)], format = "%d/%m/%Y")), sep = ""), format = "%d/%m/%Y")) + 1) / 7)
+          missingdate <- data.frame(Date  = missingdate,
+                                    Month = lubridate::month(missingdate),
+                                    Day   = lubridate::day(missingdate))
           
-          cmatrix[i] <- mean(xvar[which(cdate_new$Week == missing_week)], na.rm = T)
+          if(is.null(spatial) == FALSE){
+            
+            cdate_new$spatial <- spatial[[2]]
+            
+            siteID <- spatial[[1]][row]
+            
+            cmatrix[row, col] <- mean(xvar[which(cdate_new$Month %in% missingdate$Month & cdate_new$Day %in% missingdate$Day & cdate_new$spatial %in% siteID)], na.rm = T)
+            
+          } else {
+            
+            cmatrix[row, col] <- mean(xvar[which(cdate_new$Month %in% missingdate$Month & cdate_new$Day %in% missingdate$Day)], na.rm = T)
+            
+          }
           
-        } else if(cinterval == "month"){
+        } else if(cinterval == "week" || cinterval == "month"){
           
-          missing_month <- (lubridate::month(min(as.Date(cdate, format = "%d/%m/%Y"))) + (which(is.na(cont$xvar)) - 1)) - (floor((lubridate::month(min(as.Date(cdate, format = "%d/%m/%Y"))) + (which(is.na(cont$xvar)) - 1))/12)*12)
+          if(is.null(spatial) == FALSE){
+            
+            #Extract the climate week numbers
+            cdate_new <- data.frame(Date = cont$cintno$Date,
+                                    spatial = cont$cintno$spatial)
+            
+            #Extract the biological week number that is missing
+            bioldate <- cont$bintno$Date[row]
+            
+            #Determine from this on which week data is missing
+            missingdate <- bioldate - (col + range[2] - 1)
+            
+            #Convert all dates back into year specific values
+            if(cinterval == "week"){
+              
+              cdate_new$Date <- cdate_new$Date - (floor(cdate_new$Date/52) * 52)
+              cdate_new$Date <- ifelse(cdate_new$Date == 0, 52, cdate_new$Date)
+              
+              missingdate <- missingdate - (floor(missingdate/52) * 52)
+              missingdate <- ifelse(missingdate == 0, 52, missingdate)
+              
+            } else {
+              
+              cdate_new$Date <- cdate_new$Date - (floor(cdate_new$Date/12) * 12)
+              cdate_new$Date <- ifelse(cdate_new$Date == 0, 12, cdate_new$Date)
+              
+              missingdate <- missingdate - (floor(missingdate/12) * 12)
+              missingdate <- ifelse(missingdate == 0, 12, missingdate)
+              
+            }
+            
+            siteID <- spatial[[1]][row]
+            
+            cmatrix[row, col] <- mean(cont$xvar$Clim[which(cdate_new$Date %in% missingdate & cdate_new$spatial %in% siteID)], na.rm = T)
+            
+          } else {
+            
+            #Extract the climate week numbers
+            cdate_new <- data.frame(Date = cont$cintno)
+            
+            #Extract the biological week number that is missing
+            bioldate <- cont$bintno[row]
+            
+            #Determine from this on which week data is missing
+            missingdate <- bioldate - (col + range[2] - 1)
+            
+            #Convert all dates back into year specific values
+            if(cinterval == "week"){
+              
+              cdate_new$Date <- cdate_new$Date - (floor(cdate_new$Date/52) * 52)
+              cdate_new$Date <- ifelse(cdate_new$Date == 0, 52, cdate_new$Date)
+              
+              missingdate <- missingdate - (floor(missingdate/52) * 52)
+              missingdate <- ifelse(missingdate == 0, 52, missingdate)
+              
+            } else {
+              
+              cdate_new$Date <- cdate_new$Date - (floor(cdate_new$Date/12) * 12)
+              cdate_new$Date <- ifelse(cdate_new$Date == 0, 12, cdate_new$Date)
+              
+              missingdate <- missingdate - (floor(missingdate/12) * 12)
+              missingdate <- ifelse(missingdate == 0, 12, missingdate)
+              
+            }
+            
+            cmatrix[row, col] <- mean(cont$xvar[which(cdate_new$Date %in% missingdate)], na.rm = T)
+            
+          }
+        }
+        
+        if(is.na(cmatrix[row, col])){
           
-          cmatrix[i] <- mean(xvar[which(cdate_new$Month == missing_month)], na.rm = T)
+          stop("There is not enough data to replace missing values using method2. Consider dealing with NA values manually")
           
         }
         
-        if(is.na(cmatrix[i])){
-          
-          stop("There is no data available for certain climate records across all years. Consider using method1 or manually replacing NAs.")
-          
-        }
+      } else {
+        
+        stop("cmissing should be method1, method2 or FALSE")
         
       }
-      
-    } else {
-      
-      stop("cmissing should be FALSE, 'method1' or 'method2'")
-      
     }
-    
   } 
 
   modeldat           <- model.frame(baseline)

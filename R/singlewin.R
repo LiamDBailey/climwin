@@ -571,9 +571,17 @@ singlewin <- function(xvar, cdate, bdate, baseline,
     
     for(i in which(is.na(cmatrix))){
       
-      #Determine the column and row location...
-      col <- floor(i/nrow(cmatrix)) + 1
-      row <- i - (nrow(cmatrix) * (col - 1))
+      if(i %% nrow(cmatrix) == 0){
+        
+        col <- i/nrow(cmatrix)
+        row <- nrow(cmatrix)
+        
+      } else {
+        
+        col <- i%/%nrow(cmatrix) + 1
+        row <- i %% nrow(cmatrix)
+        
+      }
       
       #If we are using method1
       if(cmissing == "method1"){
