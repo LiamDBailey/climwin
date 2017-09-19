@@ -32,6 +32,8 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   
   print("Initialising, please wait...")
   
+  options(warn = 0, nwarnings = 1)
+  
   if(attr(baseline, "class")[1] == "lme" && k > 0){
     
     stop("Sorry, cross-validation is currently not functioning for nlme models. Consider using lme4 if possible.")
@@ -632,15 +634,45 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
             if(centre[[2]] == "both"){
               modeldat$wgdev  <- wgdev(modeldat$climate, centre[[1]])
               modeldat$wgmean <- wgmean(modeldat$climate, centre[[1]])
-              modeloutput     <- update(modeloutput, .~., data = modeldat)
+              
+              if(class(baseline)[1] == "coxph"){
+                
+                modeloutput <- my_update(modeloutput, .~., data = modeldat)
+                
+              } else {
+                
+                modeloutput <- update(modeloutput, .~., data = modeldat)
+                
+              }
+              
             }
             if(centre[[2]] == "mean"){
               modeldat$wgmean <- wgmean(modeldat$climate, centre[[1]])
-              modeloutput     <- update(modeloutput, .~., data = modeldat)
+              
+              if(class(baseline)[1] == "coxph"){
+                
+                modeloutput <- my_update(modeloutput, .~., data = modeldat)
+                
+              } else {
+                
+                modeloutput <- update(modeloutput, .~., data = modeldat)
+                
+              }
+              
             }
             if(centre[[2]] == "dev"){
               modeldat$wgdev  <- wgdev(modeldat$climate, centre[[1]])
-              modeloutput     <- update(modeloutput, .~., data = modeldat)
+              
+              if(class(baseline)[1] == "coxph"){
+                
+                modeloutput <- my_update(modeloutput, .~., data = modeldat)
+                
+              } else {
+                
+                modeloutput <- update(modeloutput, .~., data = modeldat)
+                
+              }
+              
             }
           } else {
             
@@ -652,7 +684,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
                 update(modeloutput, .~., data = modeldat); 
                 update(modeloutput, .~., data = modeldat)
                 
-                }, error=function(e){
+                }, error = function(e){
                   
                   update(baseline, yvar~., data = modeldat)
                   
@@ -666,7 +698,15 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
               
             } else {
               
-              modeloutput <- my_update(modeloutput, .~., data = modeldat) 
+              if(class(baseline)[1] == "coxph"){
+                
+                modeloutput <- my_update(modeloutput, .~., data = modeldat)
+                
+              } else {
+                
+                modeloutput <- update(modeloutput, .~., data = modeldat)
+                
+              }
               
             }
           }
@@ -934,19 +974,59 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     if (centre[[2]] == "both"){
         modeldat$WGdev   <- wgdev(modeldat$climate, centre[[1]])
         modeldat$WGmean  <- wgmean(modeldat$climate, centre[[1]])
-        LocalModel       <- update(modeloutput, .~., data = modeldat)
+        
+        if(class(baseline)[1] == "coxph"){
+          
+          LocalModel <- my_update(modeloutput, .~., data = modeldat)
+          
+        } else {
+          
+          LocalModel <- update(modeloutput, .~., data = modeldat)
+          
+        }
+        
     }
     if (centre[[2]] == "dev"){
       modeldat$WGdev   <- wgdev(modeldat$climate, centre[[1]])
-      LocalModel       <- update(modeloutput, .~., data = modeldat)
+      
+      if(class(baseline)[1] == "coxph"){
+        
+        LocalModel <- my_update(modeloutput, .~., data = modeldat)
+        
+      } else {
+        
+        LocalModel <- update(modeloutput, .~., data = modeldat)
+        
+      }
+      
     }
     if (centre[[2]] == "mean"){
       modeldat$WGmean  <- wgmean(modeldat$climate, centre[[1]])
-      LocalModel       <- update(modeloutput, .~., data = modeldat)
+      
+      if(class(baseline)[1] == "coxph"){
+        
+        LocalModel <- my_update(modeloutput, .~., data = modeldat)
+        
+      } else {
+        
+        LocalModel <- update(modeloutput, .~., data = modeldat)
+        
+      }
+      
     }
     modlist$Function <- "centre"
   } else {
-    LocalModel       <- update(modeloutput, .~., data = modeldat)
+    
+    if(class(baseline)[1] == "coxph"){
+      
+      LocalModel <- my_update(modeloutput, .~., data = modeldat)
+      
+    } else {
+      
+      LocalModel <- update(modeloutput, .~., data = modeldat)
+      
+    }
+    
     modlist$Function <- func
   }
   
@@ -974,6 +1054,8 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
       LocalData         <- model.frame(LocalModel)
       LocalData$climate <- modeldat$climate
     } else {
+      #print(modeldat)
+      #return(LocalModel)
       LocalData <- model.frame(LocalModel)
       
       if(attr(LocalModel, "class")[1] == "lme"){
