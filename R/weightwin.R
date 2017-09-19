@@ -140,14 +140,14 @@ weightwin <- function(n = 1, xvar, cdate, bdate, baseline, range,
   
   if(n == 1){
     
-    single_weight <- basewin_weight(n = n, xvar = xvar, cdate = cdate, bdate = bdate,
+    single_weight <- suppressMessages(basewin_weight(n = n, xvar = xvar, cdate = cdate, bdate = bdate,
                                     baseline = baseline, range = range, func = func,
                                     type = type, refday = refday, nrandom = nrandom,
                                     centre = centre, weightfunc = weightfunc,
                                     cinterval = cinterval, cohort = cohort,
                                     spatial = spatial, par = par, control = control,
                                     method = method, cutoff.day = cutoff.day, cutoff.month = cutoff.month,
-                                    furthest = furthest, closest = closest, grad = grad)
+                                    furthest = furthest, closest = closest, grad = grad))
     
     return(single_weight)
     

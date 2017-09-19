@@ -278,13 +278,13 @@ slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
   
   combined <- list()
   for (combo in 1:nrow(allcombos)){
-    runs <- basewin(exclude = exclude, xvar = xvar[[paste(allcombos[combo, 1])]], cdate = cdate, bdate = bdate, baseline = baseline,
+    runs <- suppressMessages(basewin(exclude = exclude, xvar = xvar[[paste(allcombos[combo, 1])]], cdate = cdate, bdate = bdate, baseline = baseline,
                     range = range, type = paste(allcombos[combo, 2]), refday = refday, stat = paste(allcombos[combo, 3]), func = paste(allcombos[combo, 4]),
                     cmissing = cmissing, cinterval = cinterval, k = k, 
                     upper = ifelse(binarylevel == "two" || binarylevel == "upper", allcombos$upper[combo], NA),
                     lower = ifelse(binarylevel == "two" || binarylevel == "lower", allcombos$lower[combo], NA),
                     binary = paste(allcombos$binary[combo]), centre = centre, cohort = cohort,
-                    spatial = spatial, fast = fast)
+                    spatial = spatial, fast = fast))
     
     #return(runs)
     
