@@ -34,6 +34,19 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   
   options(warn = 0, nwarnings = 1)
   
+  #Check date formats
+  if(all(is.na(as.Date(cdate, format = "%d/%m/%Y")))){
+    
+    stop("cdate is not in the correct format. Please provide date data in dd/mm/yyyy.")
+    
+  }
+  
+  if(all(is.na(as.Date(bdate, format = "%d/%m/%Y")))){
+    
+    stop("bdate is not in the correct format. Please provide date data in dd/mm/yyyy.")
+    
+  }
+  
   if(attr(baseline, "class")[1] == "lme" && k > 0){
     
     stop("Sorry, cross-validation is currently not functioning for nlme models. Consider using lme4 if possible.")
@@ -1097,6 +1110,19 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
                       par = c(3, 0.2, 0), control = list(ndeps = c(0.001, 0.001, 0.001)), 
                       method = "L-BFGS-B", cutoff.day = NULL, cutoff.month = NULL,
                       furthest = NULL, closest = NULL, grad = FALSE){
+  
+  #Check date formats
+  if(all(is.na(as.Date(cdate, format = "%d/%m/%Y")))){
+    
+    stop("cdate is not in the correct format. Please provide date data in dd/mm/yyyy.")
+    
+  }
+  
+  if(all(is.na(as.Date(bdate, format = "%d/%m/%Y")))){
+    
+    stop("bdate is not in the correct format. Please provide date data in dd/mm/yyyy.")
+    
+  }
   
   if(is.null(cohort) == TRUE){
     cohort = lubridate::year(as.Date(bdate, format = "%d/%m/%Y")) 

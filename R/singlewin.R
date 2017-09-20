@@ -113,6 +113,19 @@ singlewin <- function(xvar, cdate, bdate, baseline,
                       centre = list(NULL, "both"), cutoff.day = NULL, cutoff.month = NULL,
                       furthest = NULL, closest = NULL, thresh = NULL){
   
+  #Check date formats
+  if(all(is.na(as.Date(cdate, format = "%d/%m/%Y")))){
+    
+    stop("cdate is not in the correct format. Please provide date data in dd/mm/yyyy.")
+    
+  }
+  
+  if(all(is.na(as.Date(bdate, format = "%d/%m/%Y")))){
+    
+    stop("bdate is not in the correct format. Please provide date data in dd/mm/yyyy.")
+    
+  }
+  
   thresholdQ <- "N"
   
   if((!is.na(upper) || !is.na(lower)) && (cinterval == "week" || cinterval == "month")){

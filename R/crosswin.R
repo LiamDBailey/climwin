@@ -84,6 +84,19 @@ crosswin <- function(xvar, xvar2, cdate, bdate, range,
   
   print("Initialising, please wait...")
   
+  #Check date formats
+  if(all(is.na(as.Date(cdate, format = "%d/%m/%Y")))){
+    
+    stop("cdate is not in the correct format. Please provide date data in dd/mm/yyyy.")
+    
+  }
+  
+  if(all(is.na(as.Date(bdate, format = "%d/%m/%Y")))){
+    
+    stop("bdate is not in the correct format. Please provide date data in dd/mm/yyyy.")
+    
+  }
+  
   if(is.null(cohort) == TRUE){
     cohort = lubridate::year(as.Date(bdate, format = "%d/%m/%Y")) 
   }
