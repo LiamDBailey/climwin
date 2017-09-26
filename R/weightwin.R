@@ -133,7 +133,7 @@
 
 weightwin <- function(n = 1, xvar, cdate, bdate, baseline, range, 
                       func = "lin", type, refday, nrandom = 0, centre = NULL,
-                      weightfunc = "W", cinterval = "day", cohort = NULL, spatial = NULL,
+                      weightfunc = "W", cinterval = "day", cmissing = FALSE, cohort = NULL, spatial = NULL,
                       par = c(3, 0.2, 0), control = list(ndeps = c(0.001, 0.001, 0.001)), 
                       method = "L-BFGS-B", cutoff.day = NULL, cutoff.month = NULL,
                       furthest = NULL, closest = NULL, grad = FALSE){
@@ -144,7 +144,7 @@ weightwin <- function(n = 1, xvar, cdate, bdate, baseline, range,
                                     baseline = baseline, range = range, func = func,
                                     type = type, refday = refday, nrandom = nrandom,
                                     centre = centre, weightfunc = weightfunc,
-                                    cinterval = cinterval, cohort = cohort,
+                                    cinterval = cinterval, cmissing = cmissing, cohort = cohort,
                                     spatial = spatial, par = par, control = control,
                                     method = method, cutoff.day = cutoff.day, cutoff.month = cutoff.month,
                                     furthest = furthest, closest = closest, grad = grad))
@@ -219,7 +219,7 @@ weightwin <- function(n = 1, xvar, cdate, bdate, baseline, range,
                                          baseline = baseline, range = range, func = func,
                                          type = type, refday = refday, nrandom = nrandom,
                                          centre = centre, weightfunc = weightfunc,
-                                         cinterval = cinterval, cohort = cohort,
+                                         cinterval = cinterval, cmissing = cmissing, cohort = cohort,
                                          spatial = spatial, par = par, control = control,
                                          method = method, cutoff.day = cutoff.day, cutoff.month = cutoff.month,
                                          furthest = furthest, closest = closest, grad = grad)
