@@ -32,11 +32,27 @@ pvalue <- function(dataset, datasetrand, metric, sample.size){
   
   if(metric == "AIC"){
     
-    Percentile <- ecdf(datasetrand$deltaAICc)
-    PDAIC <- ifelse(Percentile(dataset$deltaAICc[1]) == 0, "<0.001", Percentile(dataset$deltaAICc[1]))
-    return(PDAIC)
+    if(is.null(dataset$WeightedOutput)){
+      
+      Percentile <- ecdf(datasetrand$deltaAICc)
+      PDAIC <- ifelse(Percentile(dataset$deltaAICc[1]) == 0, "<0.001", Percentile(dataset$deltaAICc[1]))
+      return(PDAIC)
+      
+    } else {
+      
+      Percentile <- ecdf(datasetrand$deltaAICc)
+      PDAIC <- ifelse(Percentile(dataset$WeightedOutput$deltaAICc) == 0, "<0.001", Percentile(dataset$WeightedOutput$deltaAICc))
+      return(PDAIC)
+      
+    }
     
   } else if(metric == "C"){
+    
+    if(!is.null(dataset$WeightedOutput)){
+      
+      stop("p-values can only be calculated for the weightwin function using the AIC metric.")
+      
+    }
     
     if(is.null(sample.size) == TRUE){
       stop("Please provide a value for sample size")

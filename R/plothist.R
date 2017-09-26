@@ -27,7 +27,7 @@ plothist <- function(dataset, datasetrand){
     stop("Please provide randomised data")
   }  
   
-if(max(datasetrand$Repeat) <= 100){
+if(max(datasetrand$Repeat) < 100){
       print("PDeltaAICc may be unreliable with so few randomisations")
     }
           
