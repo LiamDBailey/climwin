@@ -1107,7 +1107,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
 ##################################################################################
 
 basewin_weight <- function(n, xvar, cdate, bdate, baseline, range, 
-                      func = "lin", type, refday, nrandom = 0, centre = NULL,
+                      func = "lin", type, refday, nrandom = 0, centre = NULL, k = 0, 
                       weightfunc = "W", cinterval = "day", cmissing = FALSE, cohort = NULL, spatial = NULL,
                       par = c(3, 0.2, 0), control = list(ndeps = c(0.001, 0.001, 0.001)), 
                       method = "L-BFGS-B", cutoff.day = NULL, cutoff.month = NULL,
@@ -1557,6 +1557,11 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
     
   }
   
+  #If cross validation has been specified...
+  if (k > 1){
+    modeldat$K <- sample(seq(from = 1, to = length(modeldat$climate), by = 1) %% k + 1)
+  }   # create labels k-fold crossvalidation
+  
   # now run one of two optimization functions
   if (weightfunc == "W"){
     if (par[1] <= 0){
@@ -1588,7 +1593,7 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
                       control = control, 
                       method = method, lower = c(0.0001, 0.0001, -Inf), 
                       upper = c(Inf, Inf, 0), duration = duration, 
-                      modeloutput = modeloutput, modeldat = modeldat, 
+                      modeloutput = modeloutput, baseline = baseline, modeldat = modeldat, 
                       funcenv = funcenv,  
                       cmatrix = cmatrix, nullmodel = nullmodel) 
       
@@ -1598,8 +1603,8 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
                       control = control, 
                       method = method, lower = c(0.0001, 0.0001, -Inf), 
                       upper = c(Inf, Inf, 0), duration = duration, 
-                      modeloutput = modeloutput, modeldat = modeldat, 
-                      funcenv = funcenv,  
+                      modeloutput = modeloutput, baseline = baseline, modeldat = modeldat, 
+                      funcenv = funcenv, k = k,
                       cmatrix = cmatrix, nullmodel = nullmodel)
       
     }
@@ -1636,20 +1641,19 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
       
       result <- optim(par = par, fn = modloglik_G, 
                       gr = Uni_grad_G, 
-                      control = control, 
+                      control = control, k = k,
                       method = method, lower = c(-Inf, 0.0001, -Inf), 
                       upper = c(Inf, Inf, Inf), duration = duration, 
-                      modeloutput = modeloutput, funcenv = funcenv,
+                      modeloutput = modeloutput, baseline = baseline, funcenv = funcenv,
                       cmatrix = cmatrix, nullmodel = nullmodel)
       
     } else {
       
       result <- optim(par = par, fn = modloglik_G, 
-                      gr = Uni_grad_G, 
-                      control = control, 
+                      control = control, k = k, 
                       method = method, lower = c(-Inf, 0.0001, -Inf), 
                       upper = c(Inf, Inf, Inf), duration = duration, 
-                      modeloutput = modeloutput, funcenv = funcenv,
+                      modeloutput = modeloutput, baseline = baseline, funcenv = funcenv,
                       cmatrix = cmatrix, nullmodel = nullmodel)
       
     }
@@ -2424,7 +2428,7 @@ modloglik_Uni <- function(par = par, modeloutput = modeloutput,
 
 
 # define a function that returns the AICc or -2LogLikelihood of model using Generalized Extreme Value (GEV) weight function
-modloglik_G <- function(par = par, modeloutput = modeloutput, 
+modloglik_G <- function(par = par, modeloutput = modeloutput, baseline = baseline, k = k, 
                         duration = duration, cmatrix = cmatrix, 
                         nullmodel = nullmodel, funcenv = funcenv){
   
@@ -2438,12 +2442,54 @@ modloglik_G <- function(par = par, modeloutput = modeloutput,
   
   weight                                <- weight / sum(weight) 
   funcenv$modeldat$climate              <- apply(cmatrix, 1, FUN = function(x) {sum(x*weight)})    # calculate weighted mean from weather data
-  modeloutput                           <- update(modeloutput, .~., data = funcenv$modeldat)   # rerun regression model using new weather index
-  deltaAICc                             <- AICc(modeloutput) - nullmodel
-  funcenv$DAICc[[funcenv$modno]]        <- deltaAICc
-  funcenv$par_shape[[funcenv$modno]]    <- par[1]
-  funcenv$par_scale[[funcenv$modno]]    <- par[2]
-  funcenv$par_location[[funcenv$modno]] <- par[3]
+  
+  # If valid, perform k-fold crossvalidation
+  if (k > 1) {      
+    for (k in 1:k) {
+      test                     <- subset(funcenv$modeldat, funcenv$modeldat$K == k) # Create the test dataset
+      train                    <- subset(funcenv$modeldat, funcenv$modeldat$K != k) # Create the train dataset
+      baselinecv               <- update(baseline, yvar~., data = train) # Refit the model without climate using the train dataset
+      modeloutputcv            <- update(modeloutput, yvar~., data = train)  # Refit the model with climate using the train dataset
+      test$predictions         <- predict(modeloutputcv, newdata = test, allow.new.levels = TRUE, type = "response") # Test the output of the climate model fitted using the test data
+      test$predictionsbaseline <- predict(baselinecv, newdata = test, allow.new.levels = TRUE, type = "response") # Test the output of the null models fitted using the test data
+      
+      num        <- length(test$predictions) # Determine the length of the test dataset
+      p          <- num - df.residual(modeloutputcv)  # Determine df for the climate model
+      mse        <- sum((test$predictions - test[, 1]) ^ 2) / num
+      p_baseline <- num - df.residual(baselinecv)  # Determine df for the baseline model
+      
+      #calculate mean standard errors for climate model
+      #calc mse only works non-categorical yvars, e.g. normal, binary, count data 
+      mse_baseline <- sum((test$predictionsbaseline - test[, 1]) ^ 2) / num
+      #calculate mean standard errors for null model
+      AICc_cv          <- num * log(mse) + (2 * p * (p + 1)) / (num - p - 1)
+      AICc_cv_baseline <- num * log(mse_baseline) + (2 * p_baseline * (p_baseline + 1)) / (num - p_baseline - 1)
+      
+      #Calculate AICc values for climate and baseline models
+      #rmse_corrected<-sqrt(sum((test$predictions-test[,1])^2)/modeloutputcv$df[1])
+      ifelse (k == 1, AICc_cvtotal <- AICc_cv, AICc_cvtotal <- AICc_cvtotal + AICc_cv)              
+      ifelse (k == 1, AICc_cv_basetotal <- AICc_cv_baseline, AICc_cv_basetotal <- AICc_cv_basetotal + AICc_cv_baseline)
+      #Add up the AICc values for all iterations of crossvalidation
+    }
+    
+    AICc_cv_avg                    <- AICc_cvtotal / k # Determine the average AICc value of the climate model from cross validations
+    AICc_cv_baseline_avg           <- AICc_cv_basetotal / k # Determine the average AICc value of the null model from cross validations
+    deltaAICc                      <- AICc_cv_avg - AICc_cv_baseline_avg # Calculate delta AICc
+    funcenv$DAICc[[funcenv$modno]] <- deltaAICc 
+    funcenv$par_shape[[funcenv$modno]]    <- par[1]
+    funcenv$par_scale[[funcenv$modno]]    <- par[2]
+    funcenv$par_location[[funcenv$modno]] <- par[3]
+    
+  } else {
+    
+    modeloutput                           <- update(modeloutput, .~., data = funcenv$modeldat)   # rerun regression model using new weather index
+    deltaAICc                             <- AICc(modeloutput) - nullmodel
+    funcenv$DAICc[[funcenv$modno]]        <- deltaAICc
+    funcenv$par_shape[[funcenv$modno]]    <- par[1]
+    funcenv$par_scale[[funcenv$modno]]    <- par[2]
+    funcenv$par_location[[funcenv$modno]] <- par[3]
+    
+  }
   
   # plot the weight function and corresponding weather index being evaluated
   par(mfrow = c(3, 2))
@@ -2453,14 +2499,14 @@ modloglik_G <- function(par = par, modeloutput = modeloutput,
   plot(as.numeric(funcenv$par_scale), type = "l", ylab = "scale parameter", xlab = "convergence step")
   plot(funcenv$modeldat$climate[1:(3 * duration)], type = "s", ylab = "weighted mean of weather", xlab = "timestep (e.g. days)")
   plot(as.numeric(funcenv$par_location), type = "l", ylab = "location parameter", xlab = "convergence step")
-  
+
   funcenv$modno <- funcenv$modno + 1
   return(deltaAICc)  # returns deltaAICc as optim() minimizes! 
 }
 
 
 # define a function that returns the AICc or -2LogLikelihood of model using Weibull weight function
-modloglik_W <- function(par = par,  modeloutput = modeloutput, duration = duration, 
+modloglik_W <- function(par = par,  modeloutput = modeloutput, baseline = baseline, k = k, duration = duration, 
                         cmatrix = cmatrix, modeldat = modeldat, nullmodel =  nullmodel, funcenv = funcenv){
   
   j                     <- seq(1:duration) / duration # rescale j to interval [0,1]
@@ -2473,12 +2519,54 @@ modloglik_W <- function(par = par,  modeloutput = modeloutput, duration = durati
 
   weight                                <- weight / sum(weight)
   funcenv$modeldat$climate              <- apply(cmatrix, 1, FUN = function(x) {sum(x*weight)})    # calculate weighted mean from weather data
-  modeloutput                           <- update(modeloutput, .~., data = funcenv$modeldat)   # rerun regression model using new weather index
-  deltaAICc                             <- AICc(modeloutput) - nullmodel
-  funcenv$DAICc[[funcenv$modno]]        <- deltaAICc
-  funcenv$par_shape[[funcenv$modno]]    <- par[1]
-  funcenv$par_scale[[funcenv$modno]]    <- par[2]
-  funcenv$par_location[[funcenv$modno]] <- par[3]
+  
+  # If valid, perform k-fold crossvalidation
+  if (k > 1) {      
+    for (k in 1:k) {
+      test                     <- subset(funcenv$modeldat, funcenv$modeldat$K == k) # Create the test dataset
+      train                    <- subset(funcenv$modeldat, funcenv$modeldat$K != k) # Create the train dataset
+      baselinecv               <- update(baseline, yvar~., data = train) # Refit the model without climate using the train dataset
+      modeloutputcv            <- update(modeloutput, yvar~., data = train)  # Refit the model with climate using the train dataset
+      test$predictions         <- predict(modeloutputcv, newdata = test, allow.new.levels = TRUE, type = "response") # Test the output of the climate model fitted using the test data
+      test$predictionsbaseline <- predict(baselinecv, newdata = test, allow.new.levels = TRUE, type = "response") # Test the output of the null models fitted using the test data
+      
+      num        <- length(test$predictions) # Determine the length of the test dataset
+      p          <- num - df.residual(modeloutputcv)  # Determine df for the climate model
+      mse        <- sum((test$predictions - test[, 1]) ^ 2) / num
+      p_baseline <- num - df.residual(baselinecv)  # Determine df for the baseline model
+      
+      #calculate mean standard errors for climate model
+      #calc mse only works non-categorical yvars, e.g. normal, binary, count data 
+      mse_baseline <- sum((test$predictionsbaseline - test[, 1]) ^ 2) / num
+      #calculate mean standard errors for null model
+      AICc_cv          <- num * log(mse) + (2 * p * (p + 1)) / (num - p - 1)
+      AICc_cv_baseline <- num * log(mse_baseline) + (2 * p_baseline * (p_baseline + 1)) / (num - p_baseline - 1)
+      
+      #Calculate AICc values for climate and baseline models
+      #rmse_corrected<-sqrt(sum((test$predictions-test[,1])^2)/modeloutputcv$df[1])
+      ifelse (k == 1, AICc_cvtotal <- AICc_cv, AICc_cvtotal <- AICc_cvtotal + AICc_cv)              
+      ifelse (k == 1, AICc_cv_basetotal <- AICc_cv_baseline, AICc_cv_basetotal <- AICc_cv_basetotal + AICc_cv_baseline)
+      #Add up the AICc values for all iterations of crossvalidation
+    }
+    
+    AICc_cv_avg                    <- AICc_cvtotal / k # Determine the average AICc value of the climate model from cross validations
+    AICc_cv_baseline_avg           <- AICc_cv_basetotal / k # Determine the average AICc value of the null model from cross validations
+    deltaAICc                      <- AICc_cv_avg - AICc_cv_baseline_avg # Calculate delta AICc
+    funcenv$DAICc[[funcenv$modno]] <- deltaAICc 
+    funcenv$par_shape[[funcenv$modno]]    <- par[1]
+    funcenv$par_scale[[funcenv$modno]]    <- par[2]
+    funcenv$par_location[[funcenv$modno]] <- par[3]
+    
+  } else {
+    
+    modeloutput                           <- update(modeloutput, .~., data = funcenv$modeldat)   # rerun regression model using new weather index
+    deltaAICc                             <- AICc(modeloutput) - nullmodel
+    funcenv$DAICc[[funcenv$modno]]        <- deltaAICc
+    funcenv$par_shape[[funcenv$modno]]    <- par[1]
+    funcenv$par_scale[[funcenv$modno]]    <- par[2]
+    funcenv$par_location[[funcenv$modno]] <- par[3]
+    
+  }
   
   # plot the weight function and corresponding weather index being evaluated
   par(mfrow = c(3, 2))

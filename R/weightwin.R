@@ -131,7 +131,7 @@
 #'@import numDeriv
 #'@export
 
-weightwin <- function(n = 1, xvar, cdate, bdate, baseline, range, 
+weightwin <- function(n = 1, xvar, cdate, bdate, baseline, range, k = 0,
                       func = "lin", type, refday, nrandom = 0, centre = NULL,
                       weightfunc = "W", cinterval = "day", cmissing = FALSE, cohort = NULL, spatial = NULL,
                       par = c(3, 0.2, 0), control = list(ndeps = c(0.001, 0.001, 0.001)), 
@@ -143,7 +143,7 @@ weightwin <- function(n = 1, xvar, cdate, bdate, baseline, range,
     single_weight <- suppressMessages(basewin_weight(n = n, xvar = xvar, cdate = cdate, bdate = bdate,
                                     baseline = baseline, range = range, func = func,
                                     type = type, refday = refday, nrandom = nrandom,
-                                    centre = centre, weightfunc = weightfunc,
+                                    centre = centre, weightfunc = weightfunc, k = k,
                                     cinterval = cinterval, cmissing = cmissing, cohort = cohort,
                                     spatial = spatial, par = par, control = control,
                                     method = method, cutoff.day = cutoff.day, cutoff.month = cutoff.month,
@@ -215,14 +215,14 @@ weightwin <- function(n = 1, xvar, cdate, bdate, baseline, range,
         
       }
       
-      weight.list[[i]] <- basewin_weight(n = n, xvar = xvar, cdate = cdate, bdate = bdate,
+      weight.list[[i]] <- suppressMessages(basewin_weight(n = n, xvar = xvar, cdate = cdate, bdate = bdate, k = k,
                                          baseline = baseline, range = range, func = func,
                                          type = type, refday = refday, nrandom = nrandom,
                                          centre = centre, weightfunc = weightfunc,
                                          cinterval = cinterval, cmissing = cmissing, cohort = cohort,
                                          spatial = spatial, par = par, control = control,
                                          method = method, cutoff.day = cutoff.day, cutoff.month = cutoff.month,
-                                         furthest = furthest, closest = closest, grad = grad)
+                                         furthest = furthest, closest = closest, grad = grad))
       
       weight.list[[i]]$WeightedOutput <- merge(save_par, weight.list[[i]]$WeightedOutput)
       
