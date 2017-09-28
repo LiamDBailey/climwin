@@ -1245,6 +1245,8 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
   
   cmatrix <- as.matrix(cmatrix[, c(ncol(cmatrix):1)])
   
+  #return(cmatrix)
+  
   if(cmissing == FALSE & any(is.na(cmatrix))){ #If the user doesn't expect missing climate data BUT there are missing data present...
     if(is.null(spatial) == FALSE){ #And spatial data has been provided...
       
@@ -2493,11 +2495,12 @@ modloglik_G <- function(par = par, modeloutput = modeloutput, baseline = baselin
   
   # plot the weight function and corresponding weather index being evaluated
   par(mfrow = c(3, 2))
-  plot( (weight / sum(weight)), type = "l", ylab = "weight", xlab = "timestep (e.g. days)", main = "Output of current weighted window being tested")
+  plot((weight / sum(weight)), type = "l", ylab = "weight", xlab = "timestep (e.g. days)", main = "Output of current weighted window being tested")
   plot(as.numeric(funcenv$par_shape), type = "l", ylab = "shape parameter", xlab = "convergence step", main = "GEV parameter values being tested")
   plot(as.numeric(funcenv$DAICc), type = "l", ylab = expression(paste(Delta, "AICc")), xlab = "convergence step")
   plot(as.numeric(funcenv$par_scale), type = "l", ylab = "scale parameter", xlab = "convergence step")
-  plot(funcenv$modeldat$climate[1:(3 * duration)], type = "s", ylab = "weighted mean of weather", xlab = "timestep (e.g. days)")
+  #plot(funcenv$modeldat$climate[1:duration], type = "s", ylab = "weighted mean of weather", xlab = "timestep (e.g. days)")
+  plot(x = funcenv$modeldat$climate, y = funcenv$modeldat$yvar, type = "p", ylab = "yvar", xlab = "weighted mean of weather")
   plot(as.numeric(funcenv$par_location), type = "l", ylab = "location parameter", xlab = "convergence step")
 
   funcenv$modno <- funcenv$modno + 1
@@ -2574,7 +2577,8 @@ modloglik_W <- function(par = par,  modeloutput = modeloutput, baseline = baseli
   plot(as.numeric(funcenv$par_shape), type = "l", ylab = "shape parameter", xlab = "convergence step", main = "Weibull parameter values being tested")
   plot(as.numeric(funcenv$DAICc), type = "l", ylab = expression(paste(Delta, "AICc")), xlab = "convergence step")
   plot(as.numeric(funcenv$par_scale), type = "l", ylab = "scale parameter", xlab = "convergence step")
-  plot(funcenv$modeldat$climate[1:(duration)], type = "s", ylab = "weighted mean of weather", xlab = "time step (e.g days)")
+  plot(x = funcenv$modeldat$climate, y = funcenv$modeldat$yvar, type = "p", ylab = "yvar", xlab = "weighted mean of weather")
+  #plot(funcenv$modeldat$climate[1:duration], type = "s", ylab = "weighted mean of weather", xlab = "time step (e.g days)")
   plot(as.numeric(funcenv$par_location), type = "l", ylab = "location parameter", xlab = "convergence step")
   
   funcenv$modno <- funcenv$modno + 1

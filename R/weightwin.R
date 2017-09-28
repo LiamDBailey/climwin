@@ -73,10 +73,10 @@
 #'  
 #'  \item Left top panel: The resulting weight function.
 #'  
-#'  \item Right middle panel: The delta AICc compared to the baseline model.
+#'  \item Left middle panel: The delta AICc compared to the baseline model.
 #'  
-#'  \item Right bottom panel: The weighted mean of climate for the current
-#'  weight function. }
+#'  \item Left bottom panel: Plotted relationship between the weighted mean of climate 
+#'  and the biological response variable.}
 #'  
 #'  Also returns a list containing three objects: \itemize{ 
 #'  \item BestModel, a model object. The best weighted window model determined
@@ -141,13 +141,13 @@ weightwin <- function(n = 1, xvar, cdate, bdate, baseline, range, k = 0,
   if(n == 1){
     
     single_weight <- suppressMessages(basewin_weight(n = n, xvar = xvar, cdate = cdate, bdate = bdate,
-                                    baseline = baseline, range = range, func = func,
-                                    type = type, refday = refday, nrandom = nrandom,
-                                    centre = centre, weightfunc = weightfunc, k = k,
-                                    cinterval = cinterval, cmissing = cmissing, cohort = cohort,
-                                    spatial = spatial, par = par, control = control,
-                                    method = method, cutoff.day = cutoff.day, cutoff.month = cutoff.month,
-                                    furthest = furthest, closest = closest, grad = grad))
+                                                     baseline = baseline, range = range, func = func,
+                                                     type = type, refday = refday, nrandom = nrandom,
+                                                     centre = centre, weightfunc = weightfunc, k = k,
+                                                     cinterval = cinterval, cmissing = cmissing, cohort = cohort,
+                                                     spatial = spatial, par = par, control = control,
+                                                     method = method, cutoff.day = cutoff.day, cutoff.month = cutoff.month,
+                                                     furthest = furthest, closest = closest, grad = grad))
     
     return(single_weight)
     
@@ -216,13 +216,13 @@ weightwin <- function(n = 1, xvar, cdate, bdate, baseline, range, k = 0,
       }
       
       weight.list[[i]] <- suppressMessages(basewin_weight(n = n, xvar = xvar, cdate = cdate, bdate = bdate, k = k,
-                                         baseline = baseline, range = range, func = func,
-                                         type = type, refday = refday, nrandom = nrandom,
-                                         centre = centre, weightfunc = weightfunc,
-                                         cinterval = cinterval, cmissing = cmissing, cohort = cohort,
-                                         spatial = spatial, par = par, control = control,
-                                         method = method, cutoff.day = cutoff.day, cutoff.month = cutoff.month,
-                                         furthest = furthest, closest = closest, grad = grad))
+                                                          baseline = baseline, range = range, func = func,
+                                                          type = type, refday = refday, nrandom = nrandom,
+                                                          centre = centre, weightfunc = weightfunc,
+                                                          cinterval = cinterval, cmissing = cmissing, cohort = cohort,
+                                                          spatial = spatial, par = par, control = control,
+                                                          method = method, cutoff.day = cutoff.day, cutoff.month = cutoff.month,
+                                                          furthest = furthest, closest = closest, grad = grad))
       
       weight.list[[i]]$WeightedOutput <- merge(save_par, weight.list[[i]]$WeightedOutput)
       
@@ -243,4 +243,4 @@ weightwin <- function(n = 1, xvar, cdate, bdate, baseline, range, k = 0,
   }
   
 }
-  
+
