@@ -4,12 +4,12 @@
 \alias{weightwin}
 \title{Find a weighted climate window}
 \usage{
-weightwin(n = 1, xvar, cdate, bdate, baseline, range, func = "lin", type,
-  refday, nrandom = 0, centre = NULL, weightfunc = "W",
-  cinterval = "day", cohort = NULL, spatial = NULL, par = c(3, 0.2, 0),
-  control = list(ndeps = c(0.001, 0.001, 0.001)), method = "L-BFGS-B",
-  cutoff.day = NULL, cutoff.month = NULL, furthest = NULL,
-  closest = NULL, grad = FALSE)
+weightwin(n = 1, xvar, cdate, bdate, baseline, range, k = 0, func = "lin",
+  type, refday, nrandom = 0, centre = NULL, weightfunc = "W",
+  cinterval = "day", cmissing = FALSE, cohort = NULL, spatial = NULL,
+  par = c(3, 0.2, 0), control = list(ndeps = c(0.001, 0.001, 0.001)),
+  method = "L-BFGS-B", cutoff.day = NULL, cutoff.month = NULL,
+  furthest = NULL, closest = NULL, grad = FALSE)
 }
 \arguments{
 \item{n}{The number of iterations used to run weightwin. If n > 1, iterations 
@@ -31,6 +31,10 @@ Currently known to support lm, lme, glm and glmer objects.}
 \item{range}{Two values signifying respectively the furthest and closest number 
 of time intervals (set by cinterval) back from the cutoff date or biological record to include 
 in the climate window search.}
+
+\item{k}{The number of folds used for k-fold cross validation. By default
+this value is set to 0, so no cross validation occurs. Value should be a
+minimum of 2 for cross validation to occur.}
 
 \item{func}{The function used to fit the climate variable in the model. Can be
 linear ("lin"), quadratic ("quad"), cubic ("cub"), inverse ("inv") or log ("log").}
@@ -58,6 +62,19 @@ either a Weibull ("W") or Generalised Extreme Value distribution ("G").}
 conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the units 
 of parameter 'range' will differ depending on the choice 
 of cinterval.}
+
+\item{cmissing}{Determines what should be done if there are 
+missing climate data. Three approaches are possible: 
+ - FALSE; the function will not run if missing climate data is encountered.
+ An object 'missing' will be returned containing the dates of missing climate.
+ - "method1"; missing climate data will be replaced with the mean climate
+ of the preceding and following 2 records.
+ - "method2"; missing climate data will be replaced with the mean climate
+ of all records on the same date.
+ 
+ Note: Other methods are possible. Users should consider those methods most
+ appropriate for their data and apply them manually before using climwin if
+ required.}
 
 \item{cohort}{A varaible used to group biological records that occur in the same biological
 season but cover multiple years (e.g. southern hemisphere breeding season). Only required
@@ -99,10 +116,10 @@ Produces a constantly updating grid of plots as the optimisation
  
  \item Left top panel: The resulting weight function.
  
- \item Right middle panel: The delta AICc compared to the baseline model.
+ \item Left middle panel: The delta AICc compared to the baseline model.
  
- \item Right bottom panel: The weighted mean of climate for the current
- weight function. }
+ \item Left bottom panel: Plotted relationship between the weighted mean of climate 
+ and the biological response variable.}
  
  Also returns a list containing three objects: \itemize{ 
  \item BestModel, a model object. The best weighted window model determined

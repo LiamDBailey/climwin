@@ -26,6 +26,18 @@
 #'  (e.g. number of days before a set point in time).
 #'@param refday If type is absolute, the day and month respectively of the 
 #'  year from which the absolute window analysis will start.
+#'@param cmissing Determines what should be done if there are 
+#'  missing climate data. Three approaches are possible: 
+#'   - FALSE; the function will not run if missing climate data is encountered.
+#'   An object 'missing' will be returned containing the dates of missing climate.
+#'   - "method1"; missing climate data will be replaced with the mean climate
+#'   of the preceding and following 2 records.
+#'   - "method2"; missing climate data will be replaced with the mean climate
+#'   of all records on the same date.
+#'   
+#'   Note: Other methods are possible. Users should consider those methods most
+#'   appropriate for their data and apply them manually before using climwin if
+#'   required.
 #'@param cohort A varaible used to group biological records that occur in the same biological
 #'  season but cover multiple years (e.g. southern hemisphere breeding season). Only required
 #'  when type is "absolute". The cohort variable should be in the same dataset as the variable bdate. 
@@ -35,6 +47,9 @@
 #'  conducted. May be days ("day"), weeks ("week"), or months ("month"). Note the units 
 #'  of parameter 'range' will differ depending on the choice 
 #'  of cinterval.
+#'@param k The number of folds used for k-fold cross validation. By default
+#'  this value is set to 0, so no cross validation occurs. Value should be a
+#'  minimum of 2 for cross validation to occur.
 #'@param spatial A list item containing:
 #'  1. A factor that defines which spatial group (i.e. population) each biological
 #'  record is taken from. The length of this factor should correspond to the length 
