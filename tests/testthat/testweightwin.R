@@ -72,6 +72,88 @@ test_that("weightwin works properly", {
 
 #################################################################
 
+# Test weightwin function #
+test_that("weightwin works properly with k", {
+  
+  set.seed(666)
+  
+  data(Mass, envir = environment())
+  data(MassClimate, envir = environment())
+  
+  test <- weightwin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date,
+                    bdate = Mass$Date, baseline = lm(Mass ~ 1, data = Mass),
+                    range = c(2, 1), func = "lin", k = 5,
+                    type = "relative", weightfun = "W", cinterval = "day",
+                    par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)),
+                    method = "L-BFGS-B")
+  
+  # Test that weightwin produces an object
+  expect_true(is.list(test))
+  
+  # Test that intercept and slope are generated
+  expect_false(is.na(test[[1]][1]))
+  
+  # Test that best model data contains no NAs
+  expect_equal(length(which(is.na(test[[2]]))), 0)
+  
+  # Test best model data contains at least 2 parameters
+  expect_true(ncol(test[[2]]) >= 2)
+  
+  # Test that list of optimisation is created
+  expect_true(is.list(test[[3]]))
+  
+  # Test that optimisation data contains no NAs
+  expect_equal(length(which(is.na(test[[3]]$ModelBeta))), 0)
+  
+  #Test that results are the same as GitHub 28-09 (kfold not available in previous version)
+  expect_true(round(test$WeightedOutput$deltaAICc, 1) == -2)
+  expect_true(round(test$WeightedOutput$ModelBeta, 1) == -0.4)
+  
+})
+
+#################################################################
+
+# Test weightwin function #
+test_that("weightwin works properly with k and GEV", {
+  
+  set.seed(666)
+  
+  data(Mass, envir = environment())
+  data(MassClimate, envir = environment())
+  
+  test <- weightwin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date,
+                    bdate = Mass$Date, baseline = lm(Mass ~ 1, data = Mass),
+                    range = c(2, 1), func = "lin", k = 5,
+                    type = "relative", weightfun = "G", cinterval = "day",
+                    par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)),
+                    method = "L-BFGS-B")
+  
+  # Test that weightwin produces an object
+  expect_true(is.list(test))
+  
+  # Test that intercept and slope are generated
+  expect_false(is.na(test[[1]][1]))
+  
+  # Test that best model data contains no NAs
+  expect_equal(length(which(is.na(test[[2]]))), 0)
+  
+  # Test best model data contains at least 2 parameters
+  expect_true(ncol(test[[2]]) >= 2)
+  
+  # Test that list of optimisation is created
+  expect_true(is.list(test[[3]]))
+  
+  # Test that optimisation data contains no NAs
+  expect_equal(length(which(is.na(test[[3]]$ModelBeta))), 0)
+  
+  #Test that results are the same as GitHub 28-09 (kfold not available in previous version)
+  expect_true(round(test$WeightedOutput$deltaAICc, 1) == -2.7)
+  expect_true(round(test$WeightedOutput$ModelBeta, 1) == -0.7)
+  
+})
+
+#################################################################
+
 # Test that spatial replication works with weightwin #
 test_that("Spatial replication works with weightwin", {
   
