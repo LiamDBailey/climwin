@@ -141,7 +141,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     
     #Check that you have enough data to start in the specified range
     if ((max(cont$bintno) - range[2] - 1) > max(cont$cintno)){
-      stop(paste("You need more recent climate data. The most recent climate data is from ", max(as.Date(cdate, format = "%d/%m/%Y")), " while the most recent biological data is from ", max(as.Date(cdate, format = "%d/%m/%Y")), sep = ""))
+      stop(paste("You need more recent climate data. The most recent climate data is from ", max(as.Date(cdate, format = "%d/%m/%Y")), " while the most recent biological data is from ", max(as.Date(bdate, format = "%d/%m/%Y")), sep = ""))
     }
     
   }
