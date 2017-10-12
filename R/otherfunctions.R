@@ -188,8 +188,6 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     func <- "centre"
   }
   
-  #return(modeldat)
-  
   #Determine length of data provided for response variable.
   ifelse(class(baseline)[length(class(baseline))]=="coxph", leng <- length(modeldat$yvar[,1]), leng <- length(modeldat$yvar))
   #If there are NAs present in the biological data, provide an error.
@@ -532,8 +530,8 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   if (is.null(weights(baseline)) == FALSE){
     if (class(baseline)[1] == "glm" && sum(weights(baseline)) == nrow(model.frame(baseline)) || attr(class(baseline), "package") == "lme4" && sum(weights(baseline)) == nrow(model.frame(baseline))){
     } else {
-      modeldat$model_weights <- weights(baseline)
-      with(modeldat, baseline <- update(baseline, yvar~., weights = model_weights))
+      modeldat$model_weights  <- weights(baseline)
+      baseline <- update(baseline, yvar~., weights = model_weights, data = modeldat)
     }
   }
   
@@ -1501,6 +1499,15 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
         stop("cmissing should be method1, method2 or FALSE")
         
       }
+    }
+  }
+  
+  #Check to see if the model contains a weight function. If so, incorporate this into the data used for updating the model.
+  if (is.null(weights(baseline)) == FALSE){
+    if (class(baseline)[1] == "glm" && sum(weights(baseline)) == nrow(model.frame(baseline)) || attr(class(baseline), "package") == "lme4" && sum(weights(baseline)) == nrow(model.frame(baseline))){
+    } else {
+      modeldat$model_weights  <- weights(baseline)
+      baseline <- update(baseline, yvar~., weights = model_weights, data = modeldat)
     }
   }
   
