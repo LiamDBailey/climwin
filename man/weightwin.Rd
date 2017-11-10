@@ -76,7 +76,7 @@ missing climate data. Three approaches are possible:
  appropriate for their data and apply them manually before using climwin if
  required.}
 
-\item{cohort}{A varaible used to group biological records that occur in the same biological
+\item{cohort}{A variable used to group biological records that occur in the same biological
 season but cover multiple years (e.g. southern hemisphere breeding season). Only required
 when type is "absolute". The cohort variable should be in the same dataset as the variable bdate.}
 
