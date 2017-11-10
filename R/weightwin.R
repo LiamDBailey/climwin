@@ -38,7 +38,7 @@
 #'   Note: Other methods are possible. Users should consider those methods most
 #'   appropriate for their data and apply them manually before using climwin if
 #'   required.
-#'@param cohort A varaible used to group biological records that occur in the same biological
+#'@param cohort A variable used to group biological records that occur in the same biological
 #'  season but cover multiple years (e.g. southern hemisphere breeding season). Only required
 #'  when type is "absolute". The cohort variable should be in the same dataset as the variable bdate. 
 #'@param weightfunc The distribution to be used for optimisation. Can be 

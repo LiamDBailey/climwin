@@ -47,7 +47,7 @@
 #'  autowin will use year (extracted from parameter bdate) as the cohort variable. 
 #'  The cohort variable should be in the same dataset as the variable bdate.
 #'@param cutoff.day,cutoff.month Redundant parameters. Now replaced by refday.
-#'@param furthest,closest Redundant parameters. Now repalced by range.
+#'@param furthest,closest Redundant parameters. Now replaced by range.
 #'@return Will return a dataframe containing the correlation between the two
 #'  climate variables.
 #'@author Liam D. Bailey and Martijn van de Pol
