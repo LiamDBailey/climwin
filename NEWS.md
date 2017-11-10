@@ -10,13 +10,19 @@ Older versions of `climwin` allowed the use of mixed effects models with the pac
 
 **N.B.** Please see minor changes below for other updates relating to mixed effects models.
 
-### Multiple iterations with `weightwin`
-
-The optimisation function used in `weightwin` can get 'stuck' during the optimisation process, potentially leading to a misleading result. By running multiple iterations of the optimisation process, users can more easily pick where `weightwin` has become 'stuck' by comparing delta AICc values. This can now be easily done with the argument `n`, which specifies the number of iterations to run.
-
 ### K-fold cross validation included with `weightwin`
 
-Along with the use of `randwin`, k-fold cross validation is an important tool for overcoming potential issues of over-fitting in `climwin`. K-fold cross validation was previously only functional in `slidingwin`, but has now been included with `weightwin`, using the argument `k`.
+Along with the use of `randwin`, k-fold cross validation is an important tool for overcoming [potential issues of over-fitting](http://onlinelibrary.wiley.com/doi/10.1111/2041-210X.12590/full) in `climwin`. K-fold cross validation was previously only functional in `slidingwin`, but has now been included with `weightwin`, using the argument `k`.
+
+### Using climate thresholds on weekly/monthly data
+
+Users may run `climwin` with cinterval == "week"/"month" in cases where only weekly/monthly data is available but also to reduce computational time when using daily data (see news for v1.1.0). This raises potential concerns when using climatic thresholds (e.g. arguments upper, lower, binary). When daily data is available, users may wish to apply thresholds *before* data is grouped by week/month (e.g. for each week, what is the mean number of days that temperature > x). Alternatively, users may wish to apply thresholds after week/month grouping has occurred (e.g. is mean weekly temperature > x). v1.2.0 now includes a prompt allowing users to select between these two possibilities.
+
+### Changes to plots in `weightwin`
+
+While running `weightwin` returns a number of plots to help the user track the optimisation process. We have replaced the bottom left plot to show the plotted relationship between the weighted mean of climate and the response variable specified in the baseline model. This allows users to spot any outliers that may be driving patterns in the data.
+
+**N.B.** This plot does not account for any additional variables included in the baseline model. It should be used as a tool for identifying outliers rather than an accurate reflection of the statistical relationship between the variables.
 
 ## Minor changes
 
@@ -28,19 +34,11 @@ When using mixed effects models in `climwin` it is necessary to use a maximum li
 
 ### Changes to the use of weekly data
 
-The method use to group data at a weekly scale has been changed slightly. This may lead to slight changes in results compared to previous versions; however, changes should be minimal and the overall interpretation of results should remain the same.
-
-### Using climate thresholds on weekly/monthly data
-
-Users may run `climwin` with cinterval == "week"/"month" in cases where only weekly/monthly data is available but also to reduce computational time when using daily data. This raises potential concerns when using climatic thresholds (e.g. arguments upper, lower, binary). When daily data is available, users may wish to apply thresholds before data is grouped by week/month (e.g. for each week, what is the mean number of days that temperature > x). Alternatively, users may wish to apply thresholds after week/month grouping has occurred (e.g. for each week, is mean temperature > x). v1.2.0 now includes a prompt allowing users to select between these two possibilities.
-
-### Changes to plots in `weightwin`
-
-While running `weightwin` returns a number of plots to help the user track the optimisation process. We have replaced the bottom left plot to show the plotted relationship between the weighted mean and the response variable specified in the baseline model. This allows users to spot any outliers that may be driving patterns in the data. **N.B.** This plot does not account for any additional variables included in the baseline model. It should be used as a tool for identifying outliers rather than an accurate reflection of the statistical relationship between the variables.
+The method use to group data at a weekly scale has been changed slightly. This may lead to slight changes in results when using the argument `cinterval = "week"` compared to previous versions; however, changes should be minimal and the overall interpretation of results should remain the same.
 
 ### Changes to warnings and messages
 
-Previously, `climwin` printed any messages and warnings immediately during model fitting; however, this disrupted the progress bar making it difficult for users to follow the progress of their analysis. All warning messages are now displayed at the end of the process. Messages associated with model fitting (such as rank-deficiency when using `lmer`) are now suppressed. These messages are expected when fitting very small climate windows.
+Previously, `climwin` printed any messages and warnings immediately during model fitting; however, this disrupted the progress bar making it difficult for users to follow the progress of their analysis. All warning messages are now displayed at the end of the process. Messages associated with model fitting (such as rank-deficiency when using `lmer`) are now suppressed. These messages are expected when fitting very small climate windows and so should not be a concern for users.
 
 ## Bug fixes
 
