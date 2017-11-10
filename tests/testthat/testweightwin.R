@@ -634,3 +634,46 @@ test_that("Error returned when cmissing method2 with NAs, cinterval = month", {
   expect_true(round(test$WeightedOutput$ModelBeta, 1) == -1.2)
   
 })
+
+##############################################################
+
+#Test that code works with weighted linear model
+
+test_that("weightwin produces the right output when using weights in baseline model", {
+  
+  data("Offspring", envir = environment())
+  data("OffspringClimate", envir = environment())
+  
+  furthest = 2
+  closest = 0
+  
+  test <- weightwin(xvar = list(Temp = OffspringClimate$Temp), cdate = OffspringClimate$Date,
+                    bdate = Offspring$Date, baseline = lm(Offspring ~ 1, data = Offspring, weight = Order),
+                    range = c(2, 1), func = "lin",
+                    type = "relative", weightfun = "W", cinterval = "day",
+                    par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)),
+                    method = "L-BFGS-B")
+  
+  # Test that weightwin produces an object
+  expect_true(is.list(test))
+  
+  # Test that intercept and slope are generated
+  expect_false(is.na(test[[1]][1]))
+  
+  # Test that best model data contains no NAs
+  expect_equal(length(which(is.na(test[[2]]))), 0)
+  
+  # Test best model data contains at least 2 parameters
+  expect_true(ncol(test[[2]]) >= 2)
+  
+  # Test that list of optimisation is created
+  expect_true(is.list(test[[3]]))
+  
+  # Test that optimisation data contains no NAs
+  expect_equal(length(which(is.na(test[[3]]$ModelBeta))), 0)
+  
+  #Test that results are the same as previous R version
+  expect_true(round(test$WeightedOutput$deltaAICc, 1) == -36.7)
+  expect_true(round(test$WeightedOutput$ModelBeta, 1) == 0)
+  
+})
