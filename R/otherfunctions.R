@@ -530,8 +530,16 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   if (is.null(weights(baseline)) == FALSE){
     if (class(baseline)[1] == "glm" && sum(weights(baseline)) == nrow(model.frame(baseline)) || attr(class(baseline), "package") == "lme4" && sum(weights(baseline)) == nrow(model.frame(baseline))){
     } else {
+      
       modeldat$model_weights  <- weights(baseline)
-      baseline <- update(baseline, yvar~., weights = model_weights, data = modeldat)
+      #baseline <- update(baseline, yvar~., weights = model_weights, data = modeldat)
+      
+      call <- as.character(getCall(baseline))
+      
+      weight_name <- call[length(call)]
+      
+      names(modeldat)[length(names(modeldat))] <- weight_name
+      
     }
   }
   
@@ -1506,8 +1514,16 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
   if (is.null(weights(baseline)) == FALSE){
     if (class(baseline)[1] == "glm" && sum(weights(baseline)) == nrow(model.frame(baseline)) || attr(class(baseline), "package") == "lme4" && sum(weights(baseline)) == nrow(model.frame(baseline))){
     } else {
+      
       modeldat$model_weights  <- weights(baseline)
-      baseline <- update(baseline, yvar~., weights = model_weights, data = modeldat)
+      #baseline <- update(baseline, yvar~., weights = model_weights, data = modeldat)
+      
+      call <- as.character(getCall(baseline))
+      
+      weight_name <- call[length(call)]
+      
+      names(modeldat)[length(names(modeldat))] <- weight_name
+      
     }
   }
   
@@ -1965,7 +1981,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
         stop(paste("Climate data does not cover all years of biological data at site ", i ,". Earliest climate data is ", min(cdate), " Earliest biological data is ", min(bdate), ". Please increase range of climate data", sep = ""))
       }
       if (max(SUB) <= max(SUB_biol)){ # Check that the latest climate data is after or the same time as the latest biological data...
-        stop(paste("Climate data does not cover all years of biological data at site ", i ,". Latest climate data is ", max(cdate), " Latest biological data is ", min(bdate), ". Please increase range of climate data", sep = ""))
+        stop(paste("Climate data does not cover all years of biological data at site ", i ,". Latest climate data is ", max(cdate), " Latest biological data is ", max(bdate), ". Please increase range of climate data", sep = ""))
       }
     }
   } else if(is.null(spatial) == TRUE){
@@ -1975,7 +1991,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
     }
     
     if (max(cdate) <= max(bdate)){
-      stop(paste("Climate data does not cover all years of biological data at site ", i ,". Latest climate data is ", max(cdate), " Latest biological data is ", min(bdate), ". Please increase range of climate data", sep = ""))
+      stop(paste("Climate data does not cover all years of biological data. Earliest climate data is ", max(cdate), ". Earliest biological data is ", max(bdate), sep = ""))
     }
     
   }
