@@ -28,7 +28,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
                     type, stat = "mean", func = "lin", refday,
                     cmissing = FALSE, cinterval = "day", nrandom = 0, k = 0,
                     spatial, upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"),
-                    cohort = NULL, fast){
+                    cohort = NULL){
   
   print("Initialising, please wait...")
   
@@ -141,7 +141,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     
     #Check that you have enough data to start in the specified range
     if ((max(cont$bintno) - range[2] - 1) > max(cont$cintno)){
-      stop(paste("You need more recent climate data. The most recent climate data is from ", max(as.Date(cdate, format = "%d/%m/%Y")), " while the most recent biological data is from ", max(as.Date(bdate, format = "%d/%m/%Y")), sep = ""))
+      stop(paste("You need more recent climate data to test over this range. The most recent climate data is from ", max(as.Date(cdate, format = "%d/%m/%Y")), " while the most recent biological data is from ", max(as.Date(bdate, format = "%d/%m/%Y")), sep = ""))
     }
     
   }
@@ -605,7 +605,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   }
   
   #If cross validation has been specified...
-  if (k > 1){
+  if (k >= 1){
     modeldat$K <- sample(seq(from = 1, to = length(modeldat$climate), by = 1) %% k + 1)
   }   # create labels k-fold crossvalidation
   
@@ -733,7 +733,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
           }
           
           # If valid, perform k-fold crossvalidation
-          if (k > 1) {      
+          if (k >= 1) {      
             for (k in 1:k) {
               test                     <- subset(modeldat, modeldat$K == k) # Create the test dataset
               train                    <- subset(modeldat, modeldat$K != k) # Create the train dataset
@@ -1969,6 +1969,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       stop ("There are duplicate dayrecords in climate data") # Check for duplicate date information. 
     }
   }
+  
   cdate  <- as.Date(cdate, format = "%d/%m/%Y") # Also have an object saving the original date information (this way we can work out where climate data is missing!)
 
   if(is.null(spatial) == FALSE){ # If spatial data is provided...
@@ -1980,7 +1981,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       if (min(SUB) > min(SUB_biol)){ # Check that the earliest climate data is before the earliest biological data...
         stop(paste("Climate data does not cover all years of biological data at site ", i ,". Earliest climate data is ", min(cdate), " Earliest biological data is ", min(bdate), ". Please increase range of climate data", sep = ""))
       }
-      if (max(SUB) <= max(SUB_biol)){ # Check that the latest climate data is after or the same time as the latest biological data...
+      if (max(SUB) < max(SUB_biol)){ # Check that the latest climate data is after or the same time as the latest biological data...
         stop(paste("Climate data does not cover all years of biological data at site ", i ,". Latest climate data is ", max(cdate), " Latest biological data is ", max(bdate), ". Please increase range of climate data", sep = ""))
       }
     }
@@ -1990,7 +1991,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       stop(paste("Climate data does not cover all years of biological data. Earliest climate data is ", min(cdate), ". Earliest biological data is ", min(bdate), sep = ""))
     }
     
-    if (max(cdate) <= max(bdate)){
+    if (max(cdate) < max(bdate)){
       stop(paste("Climate data does not cover all years of biological data. Earliest climate data is ", max(cdate), ". Earliest biological data is ", max(bdate), sep = ""))
     }
     
