@@ -2644,53 +2644,6 @@ my_update <- function(mod, formula = NULL, data = NULL) {
 
 ##################################################################################
 
-#Function to determine within group mean and deviance for centring
-
-wgdev <- function(covar, groupvar) {
-  a            <- unique(factor(groupvar))
-  groups       <- length(a)
-  temp         <- rep(NA, groups)
-  observations <- length(covar)
-  groupmean    <- rep(NA, observations)
-  groupdev     <- rep(NA, observations)
-  
-  for (i in 1:groups){
-    b       <- which(groupvar == a[i])
-    temp[i] <- mean(covar[b], na.rm=TRUE)
-  }
-  
-  for (j in 1:observations){
-    c            <- which(a == groupvar[j])
-    groupmean[j] <- temp[c]
-    groupdev[j]  <- covar[j] - groupmean[j]
-  }
-  return(groupdev)
-}
-
-wgmean <- function(covar, groupvar){
-  a            <- unique(factor(groupvar))
-  groups       <- length(a)
-  observations <- length(covar)
-  temp         <- rep(NA, groups)
-  groupmean    <- rep(NA, observations)
-  groupdev     <- rep(NA, observations)
-  
-  for (i in 1:groups){
-    b       <- which(groupvar == a[i])
-    temp[i] <- mean(covar[b], na.rm=TRUE)
-  }
-  
-  for (j in 1:observations){
-    c            <- which(a == groupvar[j])
-    groupmean[j] <- temp[c]
-    groupdev[j]  <- covar[j] - groupmean[j]
-  }
-  groupmean[which(is.nan(groupmean)==TRUE)]<-NA
-  return(groupmean)
-}
-
-##################################################################################
-
 skim <- function(winoutput, duration, cutoff) {
   winoutput$Duration <- winoutput$WindowOpen - winoutput$WindowClose
   winoutput$Filter   <- winoutput$WindowOpen * 0
