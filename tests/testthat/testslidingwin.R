@@ -1768,3 +1768,54 @@ test_that("slidingwin produces the right output when using weights in model", {
   expect_true(round(test[[1]]$Dataset$ModelBeta[1], 1) == 0.1)
   
 })
+
+##############################################################
+
+#Test that code works when climate data reaches exactly to the refday (i.e. max(cdate) == max(bdate))
+
+test_that("slidingwin works when cmax(cdate) == max(bdate)", {
+  
+  data("Offspring", envir = environment())
+  data("OffspringClimate", envir = environment())
+  
+  furthest = 2
+  closest = 0
+  
+  test <- slidingwin(xvar = list(OffspringClimate$Temp), cdate = OffspringClimate$Date, bdate = Offspring$Date, 
+                     baseline = lm(Offspring ~ 1, data = Offspring, weight = Order), range = c(2, 0), 
+                     type = "absolute", refday = c(31, 01), stat = "max", func = "lin", cmissing = FALSE,
+                     cinterval = "day")
+  
+  duration  <- (furthest - closest) + 1
+  maxmodno  <- (duration * (duration + 1))/2
+  
+  # Test that a list has been produced
+  expect_true(is.list(test))
+  
+  # Test that a best model was returned
+  expect_false(is.na((test[[1]]$BestModel)[1]))
+  
+  # Test that there are no NAs in the best model data
+  expect_equal(length(which(is.na(test[[1]]$BestModelData))), 0)
+  
+  # Test that the best model data has at least 2 columns
+  expect_true(ncol(test[[1]]$BestModelData) >= 2)
+  
+  # Test that there are no NAs in the output dataset
+  expect_equal(length(which(is.na(test[[1]]$Dataset[, 4]))), 0)
+  
+  # Test that all columns were created in the dataset
+  expect_true(ncol(test[[1]]$Dataset) == 19)
+  
+  # Test that the correct number of models were recorded in the dataset
+  expect_equal(maxmodno, nrow(test[[1]]$Dataset))
+  
+  # Test that data was not randomised
+  expect_true((test[[1]]$Dataset["Randomised"])[1, ] == "no")
+  
+  #Test the values we get out have stayed the same as our last R version
+  expect_true(round(test[[1]]$Dataset$deltaAICc[1], 1) == -12.7)
+  expect_true(test[[1]]$Dataset$WindowOpen[1] == 2 & test[[1]]$Dataset$WindowClose[1] == 2)
+  expect_true(round(test[[1]]$Dataset$ModelBeta[1], 1) == 0)
+  
+})
