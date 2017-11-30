@@ -564,7 +564,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   if(all(!colnames(modeldat) %in% "climate")){
     
     #Create a new dummy variable called climate, that is made up all of 1s.
-    modeldat$climate <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
+    modeldat$climate <- 1
     
     #Update the baseline model to include this new variable in the required format (e.g. linear, quadratic etc.)
     if (func == "lin"){
