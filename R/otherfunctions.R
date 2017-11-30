@@ -563,8 +563,16 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   #If there are no variables in the baseline model called climate (i.e. the user has not specified more complex role for climate in the model, such as an interaction or random effects.)
   if(all(!colnames(modeldat) %in% "climate")){
     
-    #Create a new dummy variable called climate, that is made up all of 1s.
-    modeldat$climate <- 1
+    #Create a new dummy variable called climate, that is made up all of 1s (unless it's using lme, because this will cause errors).
+    if(attr(baseline, "class")[1] == "lme"){
+      
+      modeldat$climate <- seq(1, nrow(modeldat), 1)
+      
+    } else {
+      
+      modeldat$climate <- 1
+      
+    }
     
     #Update the baseline model to include this new variable in the required format (e.g. linear, quadratic etc.)
     if (func == "lin"){
