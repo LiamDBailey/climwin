@@ -9,7 +9,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-In the previous vignette we described the basic features available in the `climwin` package. Below, we will look in more detail at more advanced features available to users. We will cover:
+In our introductory vignette we described the basic features available in the `climwin` package. Below, we will look in more detail at more advanced features available to users. We will cover:
 
 * Fitting more complex baseline models (e.g. mixed effects models)
 
@@ -31,9 +31,9 @@ In our previous vignette we fitted a simple linear model to be used as our basel
 
 Until now, we have assumed that the effects of climate do not interact with any other variables. This may not always be the case. As of v1.1.0, users can build a custom model structure with the ability to include interactions between climate and other variables. In our example using the Mass dataset, we might expect the effect of temperature on chick mass to vary with the average age of the mothers. 
 
-Firstly, it is necessary to create a variable called 'climate' in the biological dataset. The variable 'climate' doesn't need to contain any data, it is simply a placeholder to specify where climate data will be included in the model.
+Firstly, it is necessary to create a variable called 'climate' in the biological dataset. The variable 'climate' doesn't need to contain any information, it is simply a placeholder to specify where climate data will be included in the model.
 
-*NOTE: It is necessary to call the new object 'climate' so that `climwin` can distinguish this variable from others.*
+*NOTE: It is necessary to call the new object 'climate' so that `climwin` can distinguish this variable from others. Other variable names will not work.*
 
 ```{r, eval = F}
 
@@ -101,7 +101,7 @@ It will often be important to fit models with random effects terms (e.g. Individ
 
 *NOTE: Mixed effects models should be fitted using a maximum likelihood approach (i.e. REML = FALSE). If this is not specified in the baseline model, *climwin* will make this adjustment internally.*
 
-In a more specific scenario, we may want to include our climatic variable as a random effect in our model. As above, this can be done by creating a 'climate' variable in our dataset.
+In a more specific scenario, we may want to include our climatic variable as a random effect in our model. As above, this can be done by creating a 'climate' variable in our dataset and including it in the baseline model.
 
 `baseline = lmer(Mass ~ 1 + (1|climate), data = Mass, REML = F)`
 
@@ -111,7 +111,7 @@ In a more specific scenario, we may want to include our climatic variable as a r
 
 Many studies, may be interested in testing climate windows using climatic thresholds. When testing climatic thresholds, we assume that a biological response is driven by days that surpass a particular climatic value. For example, seed germination may be influenced by the number of days over 30 degrees. Alternatively, temperature may only influence organism survival when it falls below freezing. A common example of such a climate threshold is growing degree days often used in the study of plant systems.
 
-These can be achieved in `slidingwin` using the three parameters 'upper', 'lower' and, 'binary'. When a value is provided for the parameter 'upper', `slidingwin` will create a new climate dataset where all values equal to or below this threshold are set at 0. Similarly, when a value is set for 'lower', all values equal to or above this threshold will be set at 0. When values are provided for both 'upper' and 'lower', all values that fall *between* these two threshold will be set at 0.
+These can be achieved in `slidingwin` using the three parameters 'upper', 'lower' and, 'binary'. When a value is provided for the parameter 'upper', `slidingwin` will create a new climate dataset where all values equal to or below this threshold are set at 0. Similarly, when a value is set for 'lower', all values equal to or above this threshold will be set at 0. When values are provided for both 'upper' and 'lower', all values that fall *outside* these two threshold will be set at 0.
 
 `upper = 30`
 
@@ -213,7 +213,7 @@ head(MassWin[[1]]$BestModelData)
 
 Many long-term datasets that will be suitable for `climwin` are likely to be measured during Northern hemisphere spring/summer (e.g. breeding data). These biological records are measured during the middle of the year, meaning that biological records can be easily grouped by year. Yet in other circumstances biological measurements will fall across two years, particularly in Southern hemisphere species where spring/summer falls across the new year period [e.g., [1](http://www.journals.uchicago.edu/doi/abs/10.1086/659101)].
 
-This can cause issues when fitting 'absolute' climate windows. As described in the introductory vignette, 'absolute' windows will use a set reference day for all biological records. Where biological measurements cross two years however, measurements from the same season can be split up. In the table below, where a reference day of November 1st is used, all those measurements taken at the start of the breeding season are given a date of November 1st 2014 while all values following the new year are set at November 1st 2015. This is obviously unrealistic, as biological measurements in January 2015 cannot be impacted by climatic conditions that occured 11 months later.
+This can cause issues when fitting 'absolute' climate windows. As described in the introductory vignette, 'absolute' windows will use a set reference day for all biological records. Where biological measurements cross two years however, measurements from the same breeding season can be split up. In the table below, where a reference day of November 1st is used, all those measurements taken at the start of the breeding season are given a date of November 1st 2014 while all values following the new year are set at November 1st 2015. This is obviously unrealistic, as biological measurements in January 2015 cannot be impacted by climatic conditions that will occur 11 months in the future!
 
 |Date      |Reference Date|
 |:--------:|:------------:|
@@ -318,7 +318,7 @@ The 'spatial' parameter is a list item that includes the SiteID variable for the
 
 ## `weightwin` function
 
-When we run regular `slidingwin` analyses we assume that all days within the climate window are evenly weighted (see below). While this is often a convenient assumption, this may be biologically unrealistic.
+When we run regular `slidingwin` analyses we assume that all days within the climate window are evenly weighted (see figure below). While this is often a convenient assumption, it can be considered biologically unrealistic.
 
 ```{r, echo = FALSE, fig.width = 5, fig.height = 5}
 
@@ -336,7 +336,7 @@ axis(1, cex.axis = 1.5, cex.lab = 1.25, xaxp = c(0, 100, 2),
 
 ```
 
-In certain cases, we may consider this assumption to be unrealistic. For example, we may be interested in looking for climate windows where the importance of climate decays slowly over time. The function `weightwin` allows users to fit either Weibull (below left) and generalised extreme value (GEV; below right) weight distributions to climate data as an alternative to a uniform weight distribution.
+This assumption can be a problem when we are considering more complex hypotheses. For example, we may be interested in looking for climate windows where the importance of climate decays slowly over time. The function `weightwin` allows users to fit either Weibull (below left) and generalised extreme value (GEV; below right) weight distributions to climate data as an alternative to a uniform weight distribution, thus removing the assumption of uniformity.
 
 ```{r, echo = FALSE, fig.width = 8, fig.height = 4}
 
@@ -398,7 +398,7 @@ weight$iterations
 | 8.1         |    3.8      |-4.5            |-68.21592  |
 | 1.8         |    6.3      |-1.2            |-35.34690  |
 
-start_shape, start_scale and start_location show the starting parameters used for each iteration of `weightwin`. In the deltaAICc column we can see the outcomes of the different iterations. While 4 of the iterations reached the same peak, the 5th got stuck during the optimisation routine. This is a useful demonstration of why iteration is important.
+start_shape, start_scale and start_location show the starting parameters used for each iteration of `weightwin`. In the deltaAICc column we can see the outcomes of the different iterations. While 4 of the iterations reached the same peak, the 5th got stuck during the optimisation routine. This is a useful demonstration of why multiple iterations are important.
 
 It seems that there is a clear peak that our optimisation routine has been able to identify, next we can visualise that peak using the `explore` function.
 
@@ -432,14 +432,16 @@ If we compare this value to the delta AICc obtained from the `slidingwin` functi
 
 `weightwin` can provide greater detail on the relationship between climate and the biological response, such as the occurrence of exponential functions. Additionally, by using more diverse weight distributions, `weightwin` will often generate models with better $\Delta AICc$ values, which may be especially important when users are most interested in achieving high explanatory power. Furthermore, by using an optimisation routine `weightwin` often tests far fewer models than `slidingwin`, allowing for more rapid analysis.
 
-Despite these benefits, `weightwin` will not always be the most appropriate function for all scenarios. Firstly, the nature of the fitted weight distributions means that `weightwin` can only detect single climate signals, which forces users to detect and compare potential climate signals with separate analyses.
+Despite these benefits, `weightwin` will not always be the most appropriate function for all scenarios. Firstly, the nature of the fitted weight distributions means that `weightwin` can only detect single climate signals, which forces users to detect and compare potential climate signals with separate analyses. This is not an issue using `slidingwin`.
 
-Secondly, `weightwin` can be a more technical process. While the above example works easily, in other scenarios the optimisation procedures may often get stuck on false optima or fail to converge. In these cases, users may be required to test different starting parameters and adjust optimisation characteristics such as step size. Often this procedure can be inhibative for users with less technical knowledge.
+Secondly, `weightwin` can be a more technically complex process. While the above example works easily, in other scenarios the optimisation procedures may often get stuck on false optima or fail to converge. In these cases, users may be required to test different starting parameters and adjust optimisation characteristics such as step size. Often this procedure can be inhibative for users with less technical knowledge.
 
-Finally, `weightwin` can only be used for testing mean climate, with no capacity to consider other aggregate statistics. Therefore, whether one chooses to use `weightwin` or `slidingwin` will largely depend on the summary statistic used, the level of detail desired, and the ones technical knowledge.
+Finally, `weightwin` can only be used for testing mean climate, with no capacity to consider other aggregate statistics. Therefore, whether one chooses to use `weightwin` or `slidingwin` will largely depend on the summary statistic used, the level of detail desired, and the user's technical knowledge.
 
 ******************************
 
 To ask additional questions or report bugs please e-mail:
 
 liam.bailey@anu.edu.au
+
+or visit our [google group](https://groups.google.com/forum/?utm_medium=email&utm_source=footer#!forum/climwin-r-group)

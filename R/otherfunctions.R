@@ -28,7 +28,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
                     type, stat = "mean", func = "lin", refday,
                     cmissing = FALSE, cinterval = "day", nrandom = 0, k = 0,
                     spatial, upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"),
-                    cohort = NULL, fast){
+                    cohort = NULL){
   
   print("Initialising, please wait...")
   
@@ -141,7 +141,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     
     #Check that you have enough data to start in the specified range
     if ((max(cont$bintno) - range[2] - 1) > max(cont$cintno)){
-      stop(paste("You need more recent climate data. The most recent climate data is from ", max(as.Date(cdate, format = "%d/%m/%Y")), " while the most recent biological data is from ", max(as.Date(bdate, format = "%d/%m/%Y")), sep = ""))
+      stop(paste("You need more recent climate data to test over this range. The most recent climate data is from ", max(as.Date(cdate, format = "%d/%m/%Y")), " while the most recent biological data is from ", max(as.Date(bdate, format = "%d/%m/%Y")), sep = ""))
     }
     
   }
@@ -187,8 +187,6 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   if (is.null(centre[[1]]) == FALSE){
     func <- "centre"
   }
-  
-  #return(modeldat)
   
   #Determine length of data provided for response variable.
   ifelse(class(baseline)[length(class(baseline))]=="coxph", leng <- length(modeldat$yvar[,1]), leng <- length(modeldat$yvar))
@@ -532,8 +530,16 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   if (is.null(weights(baseline)) == FALSE){
     if (class(baseline)[1] == "glm" && sum(weights(baseline)) == nrow(model.frame(baseline)) || attr(class(baseline), "package") == "lme4" && sum(weights(baseline)) == nrow(model.frame(baseline))){
     } else {
-      modeldat$model_weights <- weights(baseline)
-      with(modeldat, baseline <- update(baseline, yvar~., weights = model_weights))
+      
+      modeldat$model_weights  <- weights(baseline)
+      #baseline <- update(baseline, yvar~., weights = model_weights, data = modeldat)
+      
+      call <- as.character(getCall(baseline))
+      
+      weight_name <- call[length(call)]
+      
+      names(modeldat)[length(names(modeldat))] <- weight_name
+      
     }
   }
   
@@ -557,8 +563,16 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   #If there are no variables in the baseline model called climate (i.e. the user has not specified more complex role for climate in the model, such as an interaction or random effects.)
   if(all(!colnames(modeldat) %in% "climate")){
     
-    #Create a new dummy variable called climate, that is made up all of 1s.
-    modeldat$climate <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
+    #Create a new dummy variable called climate, that is made up all of 1s (unless it's using lme, because this will cause errors).
+    if(attr(baseline, "class")[1] == "lme"){
+      
+      modeldat$climate <- seq(1, nrow(modeldat), 1)
+      
+    } else {
+      
+      modeldat$climate <- 1
+      
+    }
     
     #Update the baseline model to include this new variable in the required format (e.g. linear, quadratic etc.)
     if (func == "lin"){
@@ -599,7 +613,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   }
   
   #If cross validation has been specified...
-  if (k > 1){
+  if (k >= 1){
     modeldat$K <- sample(seq(from = 1, to = length(modeldat$climate), by = 1) %% k + 1)
   }   # create labels k-fold crossvalidation
   
@@ -727,7 +741,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
           }
           
           # If valid, perform k-fold crossvalidation
-          if (k > 1) {      
+          if (k >= 1) {      
             for (k in 1:k) {
               test                     <- subset(modeldat, modeldat$K == k) # Create the test dataset
               train                    <- subset(modeldat, modeldat$K != k) # Create the train dataset
@@ -1504,6 +1518,23 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
     }
   }
   
+  #Check to see if the model contains a weight function. If so, incorporate this into the data used for updating the model.
+  if (is.null(weights(baseline)) == FALSE){
+    if (class(baseline)[1] == "glm" && sum(weights(baseline)) == nrow(model.frame(baseline)) || attr(class(baseline), "package") == "lme4" && sum(weights(baseline)) == nrow(model.frame(baseline))){
+    } else {
+      
+      modeldat$model_weights  <- weights(baseline)
+      #baseline <- update(baseline, yvar~., weights = model_weights, data = modeldat)
+      
+      call <- as.character(getCall(baseline))
+      
+      weight_name <- call[length(call)]
+      
+      names(modeldat)[length(names(modeldat))] <- weight_name
+      
+    }
+  }
+  
   #If using a mixed model, ensure that maximum likelihood is specified (because we are comparing models with different fixed effects)
   if(!is.null(attr(class(baseline), "package")) && attr(class(baseline), "package") == "lme4" && class(baseline)[1] == "lmerMod" && baseline@resp$REML == 1){
     
@@ -1946,6 +1977,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       stop ("There are duplicate dayrecords in climate data") # Check for duplicate date information. 
     }
   }
+  
   cdate  <- as.Date(cdate, format = "%d/%m/%Y") # Also have an object saving the original date information (this way we can work out where climate data is missing!)
 
   if(is.null(spatial) == FALSE){ # If spatial data is provided...
@@ -1957,8 +1989,8 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       if (min(SUB) > min(SUB_biol)){ # Check that the earliest climate data is before the earliest biological data...
         stop(paste("Climate data does not cover all years of biological data at site ", i ,". Earliest climate data is ", min(cdate), " Earliest biological data is ", min(bdate), ". Please increase range of climate data", sep = ""))
       }
-      if (max(SUB) <= max(SUB_biol)){ # Check that the latest climate data is after or the same time as the latest biological data...
-        stop(paste("Climate data does not cover all years of biological data at site ", i ,". Latest climate data is ", max(cdate), " Latest biological data is ", min(bdate), ". Please increase range of climate data", sep = ""))
+      if (max(SUB) < max(SUB_biol)){ # Check that the latest climate data is after or the same time as the latest biological data...
+        stop(paste("Climate data does not cover all years of biological data at site ", i ,". Latest climate data is ", max(cdate), " Latest biological data is ", max(bdate), ". Please increase range of climate data", sep = ""))
       }
     }
   } else if(is.null(spatial) == TRUE){
@@ -1967,8 +1999,8 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       stop(paste("Climate data does not cover all years of biological data. Earliest climate data is ", min(cdate), ". Earliest biological data is ", min(bdate), sep = ""))
     }
     
-    if (max(cdate) <= max(bdate)){
-      stop(paste("Climate data does not cover all years of biological data at site ", i ,". Latest climate data is ", max(cdate), " Latest biological data is ", min(bdate), ". Please increase range of climate data", sep = ""))
+    if (max(cdate) < max(bdate)){
+      stop(paste("Climate data does not cover all years of biological data. Earliest climate data is ", max(cdate), ". Earliest biological data is ", max(bdate), sep = ""))
     }
     
   }
@@ -2616,53 +2648,6 @@ my_update <- function(mod, formula = NULL, data = NULL) {
   env <- attr(term, ".Environment")
   
   eval(call, env, parent.frame())
-}
-
-##################################################################################
-
-#Function to determine within group mean and deviance for centring
-
-wgdev <- function(covar, groupvar) {
-  a            <- unique(factor(groupvar))
-  groups       <- length(a)
-  temp         <- rep(NA, groups)
-  observations <- length(covar)
-  groupmean    <- rep(NA, observations)
-  groupdev     <- rep(NA, observations)
-  
-  for (i in 1:groups){
-    b       <- which(groupvar == a[i])
-    temp[i] <- mean(covar[b], na.rm=TRUE)
-  }
-  
-  for (j in 1:observations){
-    c            <- which(a == groupvar[j])
-    groupmean[j] <- temp[c]
-    groupdev[j]  <- covar[j] - groupmean[j]
-  }
-  return(groupdev)
-}
-
-wgmean <- function(covar, groupvar){
-  a            <- unique(factor(groupvar))
-  groups       <- length(a)
-  observations <- length(covar)
-  temp         <- rep(NA, groups)
-  groupmean    <- rep(NA, observations)
-  groupdev     <- rep(NA, observations)
-  
-  for (i in 1:groups){
-    b       <- which(groupvar == a[i])
-    temp[i] <- mean(covar[b], na.rm=TRUE)
-  }
-  
-  for (j in 1:observations){
-    c            <- which(a == groupvar[j])
-    groupmean[j] <- temp[c]
-    groupdev[j]  <- covar[j] - groupmean[j]
-  }
-  groupmean[which(is.nan(groupmean)==TRUE)]<-NA
-  return(groupmean)
 }
 
 ##################################################################################

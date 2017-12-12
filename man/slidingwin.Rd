@@ -127,7 +127,7 @@ Will return a list with an output for each tested set of climate
 \description{
 Finds the time period when a biological variable is most strongly affected 
 by climate. Note that climate data and biological data should be loaded as 
-two seperate objects. Both objects should contain a date column to designate
+two separate objects. Both objects should contain a date column to designate
 when the data were recorded (dd/mm/yyyy).
 }
 \details{

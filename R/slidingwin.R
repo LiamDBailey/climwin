@@ -2,7 +2,7 @@
 #'
 #'Finds the time period when a biological variable is most strongly affected 
 #'by climate. Note that climate data and biological data should be loaded as 
-#'two seperate objects. Both objects should contain a date column to designate
+#'two separate objects. Both objects should contain a date column to designate
 #'when the data were recorded (dd/mm/yyyy).
 #'
 #'Note that slidingwin allows you to test multiple possible parameters with the
@@ -190,12 +190,10 @@ slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
                        type, refday, stat = "mean", func = "lin", range, 
                        cmissing = FALSE, cinterval = "day", k = 0,
                        upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"),
-                       spatial = NULL, cohort = NULL, 
+                       spatial = NULL, cohort = NULL,
                        cutoff.day = NULL, cutoff.month = NULL, 
                        furthest = NULL, closest = NULL,
                        thresh = NULL, cvk = NULL){
-  
-  fast = FALSE
   
   if(cmissing != FALSE && cmissing != "method1" && cmissing != "method2"){
     
@@ -284,7 +282,7 @@ slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
                     upper = ifelse(binarylevel == "two" || binarylevel == "upper", allcombos$upper[combo], NA),
                     lower = ifelse(binarylevel == "two" || binarylevel == "lower", allcombos$lower[combo], NA),
                     binary = paste(allcombos$binary[combo]), centre = centre, cohort = cohort,
-                    spatial = spatial, fast = fast))
+                    spatial = spatial))
     
     #return(runs)
     

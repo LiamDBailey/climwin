@@ -72,7 +72,7 @@ The cohort variable should be in the same dataset as the variable bdate.}
 
 \item{cutoff.day, cutoff.month}{Redundant parameters. Now replaced by refday.}
 
-\item{furthest, closest}{Redundant parameters. Now repalced by range.}
+\item{furthest, closest}{Redundant parameters. Now replaced by range.}
 }
 \value{
 Will return a dataframe containing the correlation between the two

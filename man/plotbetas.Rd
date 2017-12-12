@@ -21,7 +21,7 @@ Should not be changed manually.}
 \value{
 Returns colour plots of model beta estimates. Where applicable, 2nd 
 order coefficients (quadratic) and 3rd order coefficients (cubic) will be 
-plotted seperately.
+plotted separately.
 }
 \description{
 Create colour plots of model beta estimates. Will include quadratic and cubic
