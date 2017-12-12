@@ -618,7 +618,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
           windowclose <- windowopen - n + 1 #Determine the windowclose time (i.e. the more recent point where the window FINISHES)
           
           if (stat == "slope"){ #If we are using the slope function
-            time             <- seq(1, n, 1) #Determine the number of days over which we will calculate slope.
+            time             <- n:1 #Determine the number of days over which we will calculate slope.
             #Determine the slope (i.e. change in climate over time)
             modeldat$climate <- apply(cmatrix[, windowopen:windowclose], 1, FUN = function(x) coef(lm(x ~ time))[2])
           } else {
@@ -977,7 +977,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   windowopen  <- m[1] - range[2] + 1
   windowclose <- windowopen - n[1] + 1
   if (stat == "slope"){
-    time      <- seq(1, n[1], 1)
+    time      <- n[1]:1
     modeldat$climate <- apply(cmatrix[, windowclose:windowopen], 1, FUN = function(x) coef(lm(x ~ time))[2])
   } else {
     ifelse (windowopen - windowclose == 0, 
