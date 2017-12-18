@@ -126,6 +126,10 @@ singlewin <- function(xvar, cdate, bdate, baseline,
     
   }
   
+  if(is.null(cohort) == TRUE){
+    cohort = lubridate::year(as.Date(bdate, format = "%d/%m/%Y"))
+  }
+  
   thresholdQ <- "N"
   
   if((!is.na(upper) || !is.na(lower)) && (cinterval == "week" || cinterval == "month")){
