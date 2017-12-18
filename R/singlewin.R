@@ -786,14 +786,21 @@ singlewin <- function(xvar, cdate, bdate, baseline,
       }
     }
   }
-  
-  modeldat$climate <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
 
+  #Check to see if the model contains a weight function. If so, incorporate this into the data used for updating the model.
   if (is.null(weights(baseline)) == FALSE){
-    if (class(baseline)[1] == "glm" & sum(weights(baseline)) == nrow(model.frame(baseline)) || attr(class(baseline), "package") == "lme4" & sum(weights(baseline)) == nrow(model.frame(baseline))){
+    if (class(baseline)[1] == "glm" && sum(weights(baseline)) == nrow(model.frame(baseline)) || attr(class(baseline), "package") == "lme4" && sum(weights(baseline)) == nrow(model.frame(baseline))){
     } else {
-      modeldat$modweights <- weights(baseline)
-      baseline <- update(baseline, .~., weights = modeldat$modweights, data = modeldat)
+      
+      modeldat$model_weights  <- weights(baseline)
+      #baseline <- update(baseline, yvar~., weights = model_weights, data = modeldat)
+      
+      call <- as.character(getCall(baseline))
+      
+      weight_name <- call[length(call)]
+      
+      names(modeldat)[length(names(modeldat))] <- weight_name
+      
     }
   }
   
@@ -828,6 +835,17 @@ singlewin <- function(xvar, cdate, bdate, baseline,
     print("Linear mixed effects models are run in climwin using maximum likelihood. Baseline model has been changed to use maximum likelihood.")
     
     baseline <- update(baseline, yvar ~., data = modeldat, method = "ML")
+    
+  }
+  
+  #Create a new dummy variable called climate, that is made up all of 1s (unless it's using lme, because this will cause errors).
+  if(attr(baseline, "class")[1] == "lme"){
+    
+    modeldat$climate <- seq(1, nrow(modeldat), 1)
+    
+  } else {
+    
+    modeldat$climate <- 1
     
   }
 
