@@ -235,6 +235,23 @@ As a solution, `climwin` includes a 'cohort' parameter that allows users to spec
 |01/01/2015|2014  |01/11/2014    |
 |07/01/2015|2014  |01/11/2014    |
 
+Some example code showing how the 'cohort' argument can be used is provided below. In this example we use data from a southern hemisphere breeding bird.
+
+```{r, eval = FALSE}
+
+SizeWin <- slidingwin(xvar = list(Temp = SizeClimate$Temperature),
+                      cdate = SizeClimate$Date,
+                      bdate = Size$Date,
+                      baseline = lm(Size ~ 1, data = Size),
+                      cohort = Size$Cohort,
+                      cinterval = "day",
+                      range = c(150, 0),
+                      type = "absolute", refday = c(01, 10),
+                      stat = "mean",
+                      func = "lin")
+                       
+```
+
 ******************************
 
 ## Spatial replication

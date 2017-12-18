@@ -909,7 +909,7 @@ test_that("slope stat work", {
   #N.B. Don't use original R version because we have reversed the sign of slopes
   expect_true(round(test[[1]]$Dataset$deltaAICc[1], 1) == -4.0)
   expect_true(test[[1]]$Dataset$WindowOpen[1] == 2 & test[[1]]$Dataset$WindowClose[1] == 0)
-  expect_true(round(test[[1]]$Dataset$ModelBeta[1], 1) == 1.4)
+  expect_true(round(test[[1]]$Dataset$ModelBeta[1], 1) == -1.4)
   
 })
 

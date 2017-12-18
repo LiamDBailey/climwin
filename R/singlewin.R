@@ -887,7 +887,7 @@ singlewin <- function(xvar, cdate, bdate, baseline,
 
   #Save the best model output
   if (stat == "slope"){
-    time             <- seq(1, n, 1)
+    time             <- n:1
     modeldat$climate <- apply(cmatrix, 1, FUN = function(x) coef(lm(x ~ time))[2])
   } else {
     ifelse(n == 1, modeldat$climate <- cmatrix, modeldat$climate <- apply(cmatrix, 1, FUN = stat))
