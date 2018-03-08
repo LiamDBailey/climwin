@@ -1,5 +1,5 @@
 # Test singlewin function #
-test_that("singlewin creates an output when cinterval = day", {
+test_that("singlewin creates an output when cinterval == day", {
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
