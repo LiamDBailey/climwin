@@ -43,13 +43,8 @@ if(max(datasetrand$Repeat) < 100){
       }
       
       with(datasetrand, {ggplot(datasetrand, aes(x = deltaAICc, fill = Randomised))+
-                        geom_histogram(aes(y = 2 * ..density..), colour = "black", binwidth = 2, alpha = 0.5)+
-                        theme_classic()+
-                        theme(panel.grid.major = element_blank(),
-                              panel.grid.minor = element_blank(),
-                              axis.line = element_line(size = 0.25, colour = "black"),
-                              legend.position = "none",
-                              plot.title = element_text(size = 16, hjust = 0.5)) +
+                        geom_histogram(aes(y = 2 * ..density..), colour = "black", binwidth = 2, alpha = 0.5, size = 1)+
+                        theme_climwin()+
                         geom_vline(aes(xintercept = dataset$deltaAICc[1]), linetype = "dashed", size = 1.5)+
                         ggtitle(bquote(atop(Histogram~of~Delta*AICc,P[Delta*AICc]~.(P2)~~P[C]~.(P))))+
                         ylab("Proportion")+
@@ -64,14 +59,8 @@ if(max(datasetrand$Repeat) < 100){
         
         with(datasetrand, {
           ggplot(datasetrand, aes(x = deltaAICc)) +
-            geom_histogram(aes(y = 2 * ..density..), colour = "black", fill = "red", binwidth = 2, alpha = 0.5) +
-            theme_classic() +
-            theme(panel.grid.major = element_blank(),
-                  panel.grid.minor = element_blank(),
-                  axis.line = element_line(size = 0.25, colour = "black"),
-                  legend.position = "none",
-                  plot.title = element_text(size = 16, hjust = 0.5),
-                  panel.border = element_rect(colour = "black", fill = NA))+
+            geom_histogram(aes(y = 2 * ..density..), colour = "black", fill = "red", binwidth = 2, alpha = 0.5, size = 1) +
+            theme_climwin() +
             geom_vline(aes(xintercept = dataset$deltaAICc[1]), linetype = "dashed", size = 1.5)+
             ggtitle(bquote(atop(Histogram~of~Delta*AICc,P[Delta*AICc]~.(P2)))) +
             ylab("Proportion") +

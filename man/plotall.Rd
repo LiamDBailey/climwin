@@ -80,8 +80,8 @@ single <- singlewin(xvar = list(Temp = MassClimate$Temp),
                    type = "absolute", refday = c(20, 5), 
                    cmissing = FALSE, cinterval = "day")
            
-plotall(dataset = MassOutput, bestmodel = single$bestmodel, 
-       bestmodeldata = single$bestmodeldata,
+plotall(dataset = MassOutput, bestmodel = single$BestModel, 
+       bestmodeldata = single$BestModelData,
        cw1 = 0.95, cw2 = 0.5, cw3 = 0.25, title = "Mass")
         
          

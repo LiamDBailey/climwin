@@ -31,13 +31,8 @@ plotbetas <- function(dataset, arrow = FALSE, plotallenv, plotall = FALSE){
       beta <-ggplot(dataset, aes(x = WindowClose, y = WindowOpen, z = ModelBeta)) +
         geom_tile(aes(fill = ModelBeta)) +
         scale_fill_gradientn(colours = c("red", "yellow", "blue"), name = "") +
-        theme_classic() +
-        theme(panel.grid.major = element_blank(),
-              panel.grid.minor = element_blank(),
-              axis.line = element_line(size = 0.25, colour = "black"),
-              plot.title = element_text(size = 16, hjust = 0.5),
-              legend.position = c(0.75,0.3),
-              panel.border = element_rect(colour = "black", fill = NA)) +
+        theme_climwin() +
+        theme(legend.position = c(0.75,0.3)) +
         ggtitle("Beta linear") +
         ylab("Window open") +
         xlab("Window close")
@@ -65,13 +60,8 @@ plotbetas <- function(dataset, arrow = FALSE, plotallenv, plotall = FALSE){
       beta <-ggplot(dataset, aes(x = WindowClose, y = WindowOpen, z = ModelBeta)) +
         geom_tile(aes(fill = ModelBeta)) +
         scale_fill_gradientn(colours = c("red", "yellow", "blue"), name = "") +
-        theme_classic() +
-        theme(panel.grid.major = element_blank(),
-              panel.grid.minor = element_blank(),
-              axis.line = element_line(size = 0.25, colour = "black"),
-              plot.title = element_text(size = 16, hjust = 0.5),
-              legend.position = c(0.75,0.3),
-              panel.border = element_rect(colour = "black", fill = NA)) +
+        theme_climwin() +
+        theme(legend.position = c(0.75,0.3)) +
         ggtitle("Beta linear") +
         ylab("Window open") +
         xlab("Window close")
@@ -79,13 +69,8 @@ plotbetas <- function(dataset, arrow = FALSE, plotallenv, plotall = FALSE){
       beta2 <- ggplot(dataset, aes(x = WindowClose, y = WindowOpen, z = ModelBetaQ)) +
         geom_tile(aes(fill = ModelBetaQ)) +
         scale_fill_gradientn(colours = c("red", "yellow", "blue"), name = "") +
-        theme_classic() +
-        theme(panel.grid.major = element_blank(),
-              panel.grid.minor = element_blank(),
-              axis.line = element_line(size = 0.25, colour = "black"),
-              plot.title = element_text(size = 16, hjust = 0.5),
-              legend.position = c(0.75, 0.3),
-              panel.border = element_rect(colour = "black", fill = NA)) +
+        theme_climwin() +
+        theme(legend.position = c(0.75, 0.3)) +
         ggtitle("Beta quadratic") +
         ylab("Window open") +
         xlab("Window close")
@@ -121,13 +106,8 @@ plotbetas <- function(dataset, arrow = FALSE, plotallenv, plotall = FALSE){
       beta <-ggplot(dataset, aes(x = WindowClose, y = WindowOpen, z = ModelBeta)) +
         geom_tile(aes(fill = ModelBeta)) +
         scale_fill_gradientn(colours = c("red", "yellow", "blue"), name = "") +
-        theme_classic() +
-        theme(panel.grid.major = element_blank(),
-              panel.grid.minor = element_blank(),
-              axis.line = element_line(size = 0.25, colour = "black"),
-              plot.title = element_text(size = 16, hjust = 0.5),
-              legend.position = c(0.75,0.3),
-              panel.border = element_rect(colour = "black", fill = NA)) +
+        theme_climwin() +
+        theme(legend.position = c(0.75,0.3)) +
         ggtitle("Beta linear") +
         ylab("Window open") +
         xlab("Window close")
@@ -135,13 +115,8 @@ plotbetas <- function(dataset, arrow = FALSE, plotallenv, plotall = FALSE){
         beta2 <- ggplot(dataset, aes(x = WindowClose, y = WindowOpen, z = ModelBetaQ)) +
           geom_tile(aes(fill = ModelBetaQ)) +
           scale_fill_gradientn(colours = c("red", "yellow", "blue"), name = "") +
-          theme_classic() +
-          theme(panel.grid.major = element_blank(),
-                panel.grid.minor = element_blank(),
-                axis.line = element_line(size = 0.25, colour = "black"),
-                plot.title = element_text(size = 16, hjust = 0.5),
-                legend.position = c(0.75, 0.3),
-                panel.border = element_rect(colour = "black", fill = NA)) +
+          theme_climwin() +
+          theme(legend.position = c(0.75, 0.3)) +
           ggtitle("Beta quadratic") +
           ylab("Window open") +
           xlab("Window close")
@@ -149,13 +124,8 @@ plotbetas <- function(dataset, arrow = FALSE, plotallenv, plotall = FALSE){
         beta3 <- ggplot(dataset, aes(x = WindowClose, y = WindowOpen, z = ModelBetaC)) +
           geom_tile(aes(fill = ModelBetaC)) +
           scale_fill_gradientn(colours = c("red", "yellow", "blue"), name = "")+
-          theme_classic() +
-          theme(panel.grid.major = element_blank(),
-                panel.grid.minor = element_blank(),
-                axis.line = element_line(size = 0.25, colour = "black"),
-                plot.title = element_text(size = 16, hjust = 0.5),
-                legend.position = c(0.75, 0.3),
-                panel.border = element_rect(colour = "black", fill = NA)) +
+          theme_climwin() +
+          theme(legend.position = c(0.75, 0.3)) +
           ggtitle("Beta cubic") +
           ylab("Window open") +
           xlab("Window close")
@@ -199,13 +169,8 @@ plotbetas <- function(dataset, arrow = FALSE, plotallenv, plotall = FALSE){
       wgmean <- ggplot(dataset, aes(x = WindowClose, y = WindowOpen, z = WithinGrpMean)) +
         geom_tile(aes(fill = WithinGrpMean)) +
         scale_fill_gradientn(colours = c("red", "yellow", "blue"), name = "") +
-        theme_classic() +
-        theme(panel.grid.major = element_blank(),
-              panel.grid.minor = element_blank(),
-              axis.line = element_line(size = 0.25, colour = "black"),
-              plot.title = element_text(size = 16, hjust = 0.5),
-              legend.position = c(0.75,0.3),
-              panel.border = element_rect(colour = "black", fill = NA)) +
+        theme_climwin() +
+        theme(legend.position = c(0.75,0.3)) +
         ggtitle("Within group mean coefficient") +
         ylab("Window open") +
         xlab("Window close")
@@ -213,13 +178,8 @@ plotbetas <- function(dataset, arrow = FALSE, plotallenv, plotall = FALSE){
       wgdev <- ggplot(dataset, aes(x = WindowClose, y = WindowOpen, z = WithinGrpDev)) +
         geom_tile(aes(fill = WithinGrpDev)) +
         scale_fill_gradientn(colours = c("red", "yellow", "blue"), name = "") +
-        theme_classic() +
-        theme(panel.grid.major = element_blank(),
-              panel.grid.minor = element_blank(),
-              axis.line = element_line(size = 0.25, colour = "black"),
-              plot.title = element_text(size = 16, hjust = 0.5),
-              legend.position = c(0.75,0.3),
-              panel.border = element_rect(colour = "black", fill = NA)) +
+        theme_climwin() +
+        theme(legend.position = c(0.75,0.3)) +
         ggtitle("Within group deviation coefficient") +
         ylab("Window open") +
         xlab("Window close")

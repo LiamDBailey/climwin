@@ -138,13 +138,8 @@ with(dataset, {
     ARR <- ggplot(dataset, aes(x = WindowClose, y = WindowOpen, z = cw.full))+
       geom_tile(aes(fill = cw.full))+
       scale_fill_gradientn(colours = c("black", "white"), breaks=c(b[1], b[2], b[3]), limits = c(0, 1), name = "")+
-      theme_classic()+
-      theme(panel.grid.major = element_blank(),
-            panel.grid.minor = element_blank(),
-            axis.line = element_line(size = 0.25, colour = "black"),
-            plot.title = element_text(size = 16, hjust = 0.5),
-            legend.position = c(0.75, 0.3),
-            panel.border = element_rect(colour = "black", fill = NA))+
+      theme_climwin()+
+      theme(legend.position = c(0.75, 0.3))+
       ggtitle(paste(WeightDist, "% of models fall within the \n", 100*cw, "% confidence set", sep = ""))+
       ylab("Window open")+
       xlab("Window close")
@@ -164,13 +159,8 @@ with(dataset, {
     ARR <- ggplot(dataset, aes(x = WindowClose, y = WindowOpen, z = cw.full))+
       geom_tile(aes(fill = cw.full))+
       scale_fill_gradientn(colours = c("black", "white"), breaks=c(b[1], b[2], b[3]), limits = c(0, 1), name = "")+
-      theme_classic()+
-      theme(panel.grid.major = element_blank(),
-            panel.grid.minor = element_blank(),
-            axis.line = element_line(size = 0.25, colour = "black"),
-            plot.title = element_text(size = 16, hjust = 0.5),
-            legend.position = c(0.75, 0.3),
-            panel.border = element_rect(colour = "black", fill = NA))+
+      theme_climwin()+
+      theme(legend.position = c(0.75, 0.3))+
       ggtitle(paste(WeightDist, "% of models fall within the \n", 100*cw, "% confidence set", sep = ""))+
       ylab("Window open")+
       xlab("Window close")+

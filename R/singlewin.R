@@ -911,5 +911,5 @@ singlewin <- function(xvar, cdate, bdate, baseline,
     LocalBestModel <- update(modeloutput, .~., data = modeldat)
   }
   LocalData <- model.frame(LocalBestModel)
-  return(list(BestModel = LocalBestModel, BestModelData = LocalData, Dataset = data.frame(ModelAICc = AICc(LocalBestModel), deltaAICc = AICc(LocalBestModel) - nullmodel, WindowOpen = range[1], WindowClose = range[2])))
+  return(list(BestModel = LocalBestModel, BestModelData = LocalData, Dataset = data.frame(ModelAICc = AICc(LocalBestModel), deltaAICc = AICc(LocalBestModel) - nullmodel, WindowOpen = range[1], WindowClose = range[2], Function = func)))
 }
