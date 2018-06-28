@@ -196,6 +196,21 @@ randwin <- function(exclude = NA, repeats = 5, window = "sliding", xvar, cdate, 
   
   if(window == "sliding"){
     
+    if((!is.na(upper) || !is.na(lower)) && (cinterval == "week" || cinterval == "month")){
+      
+      thresholdQ <- readline("You specified a climate threshold using upper and/or lower and are working at a weekly or monthly scale. 
+                             Do you want to apply this threshold before calculating weekly/monthly means (i.e. calculate thresholds for each day)? Y/N")
+      
+      thresholdQ <- toupper(thresholdQ)
+      
+      if(thresholdQ != "Y" & thresholdQ != "N"){
+        
+        thresholdQ <- readline("Please specify yes (Y) or no (N)")
+        
+      }
+      
+    }
+    
     if (is.na(upper) == FALSE && is.na(lower) == FALSE){
       combos       <- expand.grid(list(upper = upper, lower = lower))
       combos       <- combos[which(combos$upper >= combos$lower), ]
@@ -269,7 +284,7 @@ randwin <- function(exclude = NA, repeats = 5, window = "sliding", xvar, cdate, 
                              upper = ifelse(binarylevel == "two" || binarylevel == "upper", allcombos$upper[combo], NA),
                              lower = ifelse(binarylevel == "two" || binarylevel == "lower", allcombos$lower[combo], NA),
                              binary = paste(allcombos$binary[combo]), centre = centre, k = k, spatial = spatialNew,
-                             cohort = cohort)
+                             cohort = cohort, randwin = TRUE, randwin_thresholdQ = thresholdQ)
         
         outputrep$Repeat <- r
         WeightDist <- sum(as.numeric(cumsum(outputrep$ModWeight) <= 0.95))/nrow(outputrep)

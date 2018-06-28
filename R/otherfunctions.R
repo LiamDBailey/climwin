@@ -28,49 +28,83 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
                     type, stat = "mean", func = "lin", refday,
                     cmissing = FALSE, cinterval = "day", nrandom = 0, k = 0,
                     spatial, upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"),
-                    cohort = NULL){
+                    cohort = NULL, randwin = FALSE, randwin_thresholdQ){
   
   print("Initialising, please wait...")
   
   options(warn = 0, nwarnings = 1)
   
-  #Check date formats
+  #### INITIAL CHECKS ####
+  
+  #Check that climate date data is in the correct date format
   if(all(is.na(as.Date(cdate, format = "%d/%m/%Y")))){
     
     stop("cdate is not in the correct format. Please provide date data in dd/mm/yyyy.")
     
   }
   
+  #Check that biological date data is in the correct date format
   if(all(is.na(as.Date(bdate, format = "%d/%m/%Y")))){
     
     stop("bdate is not in the correct format. Please provide date data in dd/mm/yyyy.")
     
   }
   
+  #If the baseline model is fitted with nlme and cross validation is requested, return an error.
   if(attr(baseline, "class")[1] == "lme" && k > 0){
     
     stop("Sorry, cross-validation is currently not functioning for nlme models. Consider using lme4 if possible.")
     
   }
   
+  
+  
+  
+  #### DEALING WITH THRESHOLDS ####
+  
+  #By default, don't ask a question about how you want to apply the thresholds.
   thresholdQ <- "N"
   
-  if((!is.na(upper) || !is.na(lower)) && (cinterval == "week" || cinterval == "month")){
+  #If you are not using randwin, then ask the question about how thresholds should be applied.
+  if(randwin == FALSE){
     
-    thresholdQ <- readline("You specified a climate threshold using upper and/or lower and are working at a weekly or monthly scale. 
-                           Do you want to apply this threshold before calculating weekly/monthly means (i.e. calculate thresholds for each day)? Y/N")
-    
-    thresholdQ <- toupper(thresholdQ)
-    
-    if(thresholdQ != "Y" & thresholdQ != "N"){
+    #If you have specified an upper or lower value for which a threshold should be applied and you are not working at a daily scale...
+    if((!is.na(upper) || !is.na(lower)) && (cinterval == "week" || cinterval == "month")){
       
-      thresholdQ <- readline("Please specify yes (Y) or no (N)")
+      #Determine whether the user wants to: 1. apply the threshold at the daily level BEFORE estimating monthly/weekly mean (i.e. daily data is binary but monthly/weekly is not)
+      #                                     2. apply the threshold AFTER applying monthly/weekly mean (i.e. daily data is non-binary, monthly/weekly is)
+      thresholdQ <- readline("You specified a climate threshold using upper and/or lower and are working at a weekly or monthly scale. 
+                           Do you want to apply this threshold before calculating weekly/monthly means (i.e. calculate thresholds for each day)? Y/N")
+      
+      #Convert to upper case for logical conditions
+      thresholdQ <- toupper(thresholdQ)
+      
+      #If they didn't specify a Y/N answer, ask again.
+      if(thresholdQ != "Y" & thresholdQ != "N"){
+        
+        thresholdQ <- readline("Please specify yes (Y) or no (N)")
+        
+      }
+      
+    }
+  
+  #If they are using randwin, make a decision based on earlier specified argument.    
+  } else {
+    
+    if((!is.na(upper) || !is.na(lower)) && (cinterval == "week" || cinterval == "month")){
+      
+      thresholdQ <- randwin_thresholdQ
       
     }
     
   }
   
-  if(is.null(spatial) == FALSE){
+  
+  
+  #### SPATIAL REPLICATION ####
+  
+  
+  if(!is.null(spatial)){
       
     sample.size <- 0
     data <- data.frame(bdate = bdate, spatial = spatial[[1]], cohort = as.factor(cohort))
