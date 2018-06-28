@@ -103,41 +103,70 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   
   #### SPATIAL REPLICATION ####
   
-  
+  #If spatial info has been provided...
   if(!is.null(spatial)){
-      
+    
+    #Create a data frame with the biological data and its spatial information.  
     sample.size <- 0
     data <- data.frame(bdate = bdate, spatial = spatial[[1]], cohort = as.factor(cohort))
-      
+    
+    #For each cohort (usually year, but may also be breeding period)...  
     for(i in levels(as.factor(data$cohort))){
         
+      #Take a subset of the data for that cohort...
       sub <- subset(data, cohort = i)
+      #Relevel spatial...
       sub$spatial <- factor(sub$spatial)
+      #Add 1 to sample size for every site in each cohort.
       sample.size <- sample.size + length(levels(sub$spatial))
         
     }
+  
+  #If spatial is not provided...
+  } else if(is.null(spatial)) {
     
-  } else if(is.null(spatial) == TRUE) {
-    
+    #Sample size is just the length of cohorts (i.e. number of years)
     sample.size <- length(levels(as.factor(cohort)))
   
   }
   
-  if(is.null(centre[[1]]) == FALSE){
+  #If the user has centred the data
+  if(!is.null(centre[[1]])){
+    
+    #But they haven't specified whether they want within and/or between group...
     if(centre[[2]] != "both" && centre[[2]] != "dev" && centre[[2]] != "mean"){
+      
+      #Return an error...
       stop("Please set centre to one of 'both', 'dev', or 'mean'. See help file for details.")
     }
   }
   
+  #If the user wants to use slope with log or inverse...
   if (stat == "slope" && func == "log" || stat == "slope" && func == "inv"){
+    
+    #Return an error...
     stop("stat = slope cannot be used with func = log or inv as negative values may be present")
   }
   
+  #Duration of searching period is the difference between the two levels or range + 1 (e.g. also including day 0)
   duration  <- (range[1] - range[2]) + 1
+  #Determine maximum number of potential windows to fit.
   maxmodno  <- (duration * (duration + 1))/2
-  if (length(exclude) == 2){ maxmodno  <- maxmodno - exclude[1] * (duration - exclude[2] - 1) + (exclude[1] - 1) * exclude[1] / 2 }
+  
+  #If the user has provided exclude data (i.e. there are certain windows that will not be considered)...
+  if (length(exclude) == 2){
+    
+    #Remove these excluded windows from the estimate of maximum number of windows.
+    maxmodno  <- maxmodno - exclude[1] * (duration - exclude[2] - 1) + (exclude[1] - 1) * exclude[1] / 2
+    
+  }
+  
+  #If slope stat is used...
   if (stat == "slope") { 
+    
+    #Adjust number of models...
     ifelse(is.na(exclude[2]) == TRUE,  maxmodno  <- maxmodno - duration, maxmodno  <- maxmodno - exclude[2] - 1)
+  
   }
   
   #Convert date information in to numbers and apply absolute window info (if appropriate)
@@ -146,9 +175,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
                            refday = refday, cohort = cohort, spatial = spatial, stat = stat, 
                            binary = binary, upper = upper, lower = lower, thresholdQ = thresholdQ)   # create new climate dataframe with continuous daynumbers, leap days are not a problem
   
-  #return(cont)
-  
-  if(is.null(spatial) == FALSE){ #If spatial data is provided...
+  if(!is.null(spatial)){ #If spatial data is provided...
     
     for(i in levels(as.factor(spatial[[1]]))){ #For each site...
       
@@ -157,12 +184,16 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
       
       #Check that you have enough data to go back the specified range at EACH SITE
       if ((min(SUB_biol$Date) - range[1]) < min(SUB_clim$Date)){
+        
         stop(paste("At site ", i, " you do not have enough climate data to search ", range[1], " ", cinterval, "s back. Please adjust the value of range or add additional climate data.", sep = ""))
+      
       }
       
       #Check that you have enough data to start in the specified range at EACH SITE
       if (max(SUB_biol$Date) - range[2] > max(SUB_clim$Date)){
+        
         stop(paste("At site ", i, " you need more recent climate data. The most recent climate data is from ", max(SUB_clim$Date), " while the most recent biological data is from ", max(SUB_biol$Date), sep = ""))
+      
       }
     }
     
@@ -2733,3 +2764,110 @@ withOptions <- function(optlist, expr){
 }
 
 #################################################################################
+
+#Theme for ggplots
+theme_climwin <- function(base_size = 12, base_family = "",
+                         base_line_size = base_size / 20,
+                         base_rect_size = base_size / 20,
+                         legend = "none") {
+  half_line <- base_size / 2
+  
+  theme(
+    # Elements in this first block aren't used directly, but are inherited
+    # by others. These set the defaults for line, rectangle and text elements.
+    line =               element_line(
+      colour = "black", size = base_line_size,
+      linetype = 1, lineend = "round"
+    ),
+    rect =               element_rect(
+      fill = "white", colour = "black",
+      size = base_rect_size, linetype = 1
+    ),
+    text =               element_text(
+      family = base_family, face = "plain",
+      colour = "black", size = base_size,
+      lineheight = 0.9, hjust = 0.5, vjust = 0.5, angle = 0,
+      margin = margin(), debug = FALSE
+    ),
+    
+    axis.line =          element_blank(),
+    axis.line.x =        NULL,
+    axis.line.y =        NULL,
+    axis.text =          element_text(size = rel(0.8), colour = "black", face = "bold"),
+    axis.text.x =        element_text(margin = margin(t = 0.8 * half_line / 2), vjust = 1),
+    axis.text.x.top =    element_text(margin = margin(b = 0.8 * half_line / 2), vjust = 0),
+    axis.text.y =        element_text(margin = margin(r = 0.8 * half_line / 2), hjust = 1),
+    axis.text.y.right =  element_text(margin = margin(l = 0.8 * half_line / 2), hjust = 0),
+    axis.ticks =         element_line(colour = "black", lineend = "round", size = 1),
+    axis.ticks.length =  unit(half_line / 2, "pt"),
+    axis.title.x =       element_text(
+      margin = margin(t = half_line * 1.5),
+      vjust = 1,
+      face = "bold"
+    ),
+    axis.title.x.top =   element_text(
+      margin = margin(b = half_line),
+      vjust = 0,
+      face = "bold"
+    ),
+    axis.title.y =       element_text(
+      angle = 90,
+      margin = margin(r = half_line * 1.5),
+      vjust = 0,
+      face = "bold"
+    ),
+    axis.title.y.right = element_text(
+      angle = -90,
+      margin = margin(l = half_line),
+      vjust = 0,
+      face = "bold"
+    ),
+    
+    legend.position = legend,
+    legend.key = element_blank(),
+    legend.text = element_text(family = base_family, size = rel(1)),
+    
+    panel.background =   element_rect(fill = "white", colour = NA),
+    panel.border =       element_rect(colour = "black", fill = NA, size = 1.5),
+    panel.grid.major =   element_blank(),
+    panel.grid.minor =   element_blank(),
+    panel.spacing =      unit(half_line, "pt"),
+    panel.spacing.x =    NULL,
+    panel.spacing.y =    NULL,
+    panel.ontop    =     FALSE,
+    
+    strip.background =   element_rect(fill = NA, colour = "black"),
+    strip.text =         element_text(
+      colour = "black",
+      size = rel(0.8),
+      margin = margin(half_line, half_line, half_line, half_line)
+    ),
+    strip.text.x =       NULL,
+    strip.text.y =       element_text(angle = -90),
+    strip.placement =    "inside",
+    strip.placement.x =  NULL,
+    strip.placement.y =  NULL,
+    strip.switch.pad.grid = unit(0.1, "cm"),
+    strip.switch.pad.wrap = unit(0.1, "cm"),
+    
+    plot.background =    element_rect(colour = "white"),
+    plot.title =         element_text(
+      size = rel(1.2),
+      hjust = 0.5, vjust = 1,
+      margin = margin(b = half_line * 1.2)
+    ),
+    plot.subtitle =      element_text(
+      size = rel(0.9),
+      hjust = 0.5, vjust = 1,
+      margin = margin(b = half_line * 0.9)
+    ),
+    plot.caption =       element_text(
+      size = rel(0.9),
+      hjust = 0.5, vjust = 1,
+      margin = margin(t = half_line * 0.9)
+    ),
+    plot.margin =        margin(half_line, half_line, half_line, half_line),
+    
+    complete = TRUE
+  )
+}
