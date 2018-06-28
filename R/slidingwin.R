@@ -195,6 +195,8 @@ slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
                        furthest = NULL, closest = NULL,
                        thresh = NULL, cvk = NULL){
   
+  #### INITIAL CHECKS ####
+  
   if(cmissing != FALSE && cmissing != "method1" && cmissing != "method2"){
     
     stop("cmissing must be FALSE, 'method1' or 'method2'.")
@@ -234,6 +236,17 @@ slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
   if(is.null(furthest) == FALSE && is.null(closest) == FALSE){
     stop("furthest and closest are now redundant. Please use parameter 'range' instead.")
   }
+  
+  #If spatial information is not specified, check that there are no duplicate calendar dates.
+  if(is.null(spatial) & length(unique(cdate)) < length(cdate)){
+    
+    stop("Your cdate variable has repeated date measures. Do you have data from multiple sites? If so, you should specify the parameter `spatial`.")
+    
+  }
+  
+  
+  
+  
   
   #Create a centre function that over-rides quadratics etc. when centre != NULL
   if(is.null(centre[[1]]) == FALSE){

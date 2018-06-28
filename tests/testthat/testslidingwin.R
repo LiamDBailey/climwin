@@ -1819,3 +1819,23 @@ test_that("slidingwin works when cmax(cdate) == max(bdate)", {
   expect_true(round(test[[1]]$Dataset$ModelBeta[1], 1) == 0)
   
 })
+
+##############################################################
+
+#Test that an error is returned if there are duplicate climate records but no spatial argument.
+
+test_that("Duplicate climate data returns an error (without spatial)", {
+  
+  data("Mass", envir = environment())
+  data("MassClimate", envir = environment())
+  
+  MassClimate <- rbind(MassClimate, MassClimate)
+  
+  expect_error(slidingwin(xvar = list(MassClimate$Temp), cdate = MassClimate$Date, bdate = Mass$Date, 
+                          baseline = lm(Mass ~ 1, data = Mass), range = c(2, 0), 
+                          type = "absolute", refday = c(31, 01), stat = "max", func = "lin", cmissing = FALSE,
+                          cinterval = "day"))
+  
+  
+})
+
