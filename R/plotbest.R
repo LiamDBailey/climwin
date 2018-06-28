@@ -34,188 +34,67 @@
 #'@export
 
 plotbest <- function(dataset, bestmodel, bestmodeldata){
+  
+  #Change the name of the first column in the best model data as "Yvar".
   names(bestmodeldata)[1] <- "Yvar"
   
-  if(attr(bestmodel, "class")[1] == "lme"){
+  #If you are using a nlme model, it won't produce a plot.
+  if(class(bestmodel)[length(class(bestmodel))] == "coxph" | attr(bestmodel, "class")[1] == "lme"){
     
-    stop("plotbest is currently not available with nlme models. Consider plotting best model manually.")
+    stop("plotbest is currently not available with nlme of coxph models. Consider plotting best model manually.")
     
   }
   
-  if(is.null(bestmodeldata$WGdev) == FALSE){
-    with(bestmodeldata, {
+  bestmodeldata$model_pred <- predict(bestmodel, re.form = NA, type = "response")
+  
+  xlab_name = "Climate variable"
+  
+  if(dataset$Function[1] == "log"){
+    
+    names(bestmodeldata)[(ncol(bestmodeldata) - 1)] <- "climate"
+    
+    xlab_name = "Log of climate variable"
+    
+  }
+  
+  if(dataset$Function[1] == "inv"){
+    
+    names(bestmodeldata)[ncol(bestmodeldata) - 1]   <- "climate"
+    class(bestmodeldata[, ncol(bestmodeldata) - 1]) <- class(bestmodeldata[, ncol(bestmodeldata) - 1])[-match("AsIs", class(bestmodeldata[, ncol(bestmodeldata) - 1]))]
+    
+    xlab_name = "Inverse of climate variable"
+    
+  }
+  
+  #If data has been within group centred...
+  if(!is.null(bestmodeldata$WGdev)){
+    
+    #With bestmodel data (to removed the global undefined variable error)
+    return(with(bestmodeldata, {
+      
+      #Produce a plot
       ggplot(bestmodeldata, aes(y = Yvar, x = climate))+
-        geom_point(size = 1, alpha = 0.5)+
+        geom_point(size = 3, alpha = 0.5, shape = 21, fill = "dark grey")+
         geom_abline(intercept = coef(bestmodel)[1], slope = coef(bestmodel)[2], colour = "red")+
         geom_abline(intercept = coef(bestmodel)[1], slope = coef(bestmodel)[3], colour = "blue")+
-        theme_classic() +
-        theme(panel.grid.major = element_blank(),
-              panel.grid.minor = element_blank(),
-              axis.line = element_line(size = 0.25, colour = "black"),
-              plot.title = element_text(size = 16, hjust = 0.5),
-              panel.border = element_rect(colour = "black", fill = NA)) +
+        theme_climwin() +
         ggtitle("Output of best model") +
         ylab("Biological variable")
-    })
+      
+    }))
+  
+  #Otherwise (if they don't calculate within group deviance...)    
   } else {
-    if (dataset$Function[1] == "log"){
-      names(bestmodeldata)[(ncol(bestmodeldata)-1)] <- "climate"
-    }
-    if (dataset$Function[1] == "inv"){
-      names(bestmodeldata)[ncol(bestmodeldata) - 1]   <- "climate"
-      class(bestmodeldata[, ncol(bestmodeldata) - 1]) <- class(bestmodeldata[, ncol(bestmodeldata) - 1])[-match("AsIs", class(bestmodeldata[, ncol(bestmodeldata) - 1]))]
-      #WHEN WE USE INVERSE FUNCTION 'climate' becomes class AsIs which the graphs can't deal with
-      #With this class change, we turn the 'climate' value in to a basic numeric.
-    }
     
-    #TEST IF THERE ARE MODEL WEIGHTS
-    if(is.null(weights(bestmodel)) == TRUE || sum(weights(bestmodel)) == nrow(bestmodeldata)){
-      #TEST IF THERE ARE ADDITIONAL COVARIATES IN THE MODEL
-      if(ncol(bestmodeldata) == 2 || dataset$Function[1] == "quad" & ncol(bestmodeldata) == 3 || dataset$Function[1] == "cub" & ncol(bestmodeldata) == 4){
-        with(bestmodeldata, {
-          ggplot(bestmodeldata, aes(x = climate, y = Yvar), environment = environment()) +
-            geom_point(size = 1, alpha = 1) +
-            geom_line(data = cbind(bestmodeldata, pred = predict(bestmodel, type = "response", allow.new.levels = TRUE)), aes(y = pred)) +
-            theme_classic() +
-            theme(panel.grid.major = element_blank(),
-                  panel.grid.minor = element_blank(),
-                  axis.line = element_line(size = 0.25, colour = "black"),
-                  plot.title = element_text(size = 16, hjust = 0.5),
-                  panel.border = element_rect(colour = "black", fill = NA)) +
-            ggtitle("Output of best model") +
-            ylab("Biological variable") +    
-            if (dataset$Function[1] == "log"){
-              xlab("Log of climate variable")
-            } else if (dataset$Function[1] == "inv"){
-              xlab("Inverse of climate variable")
-            } else {
-              xlab("Climate variable")
-            }
-        }
-        )       
-      } else {
-        col <- 1
-        if(dataset$Function[1] == "quad"){
-          col <- 2
-        } 
-        if(dataset$Function[1] == "cub"){
-          col <- 3
-        }
-        xval <- seq(from = min(bestmodeldata$climate), to = max(bestmodeldata$climate),
-                    by = (max(bestmodeldata$climate) - min(bestmodeldata$climate)) / (nrow(bestmodeldata)))
-        #When we have additional covariates, we need to integrate them in to the dataset for the predictions
-        #However, we need to determine the mean (or reference category) for each of these variables
-        newdat <- matrix(ncol = ncol(bestmodeldata) - col, nrow = nrow(bestmodeldata) + 1)
-        #Create a matrix which has columns for all variables (bar Yvar because this will be calculated with predict)
-        #nrow is 1 larger than predicted due to the length of xval
-        newdat <- as.data.frame(newdat)
-        newdat[, 1] <- xval
-        #The first column of the matrix will always be the same as the xval
-        for(cols in 2:(ncol(bestmodeldata) - col)){ #This will go through every column except for Yvar
-          if(is.factor(bestmodeldata[, cols]) == FALSE){ #If the variable is not categorical then take the mean
-            newdat[, cols] <- mean(bestmodeldata[, cols])
-          } else { #If it is categorical, simply take the first category
-            newdat[, cols] = bestmodeldata[1, cols]          
-          }
-        }
-        names(newdat) <- c("climate", names(bestmodeldata)[2:(ncol(bestmodeldata) - col)])  #Then change the names so they match what would be in the model
-        pred          <- predict(bestmodel, newdata = newdat, type = "response", allow.new.levels = TRUE)
-        with(bestmodeldata, {
-          ggplot(bestmodeldata, aes(x = climate, y = Yvar), environment = environment()) +
-            geom_point(size = 1, alpha = 1) +
-            geom_line(data = newdat, aes(y = pred)) +
-            theme_classic() +
-            theme(panel.grid.major = element_blank(),
-                  panel.grid.minor = element_blank(),
-                  axis.line = element_line(size = 0.25, colour = "black"),
-                  plot.title = element_text(size = 16, hjust = 0.5),
-                  panel.border = element_rect(colour = "black", fill = NA)) +
-            ggtitle("Output of best model") +
-            ylab("Biological variable") +    
-            if (dataset$Function[1] == "log"){
-              xlab("Log of climate variable")
-            } else if (dataset$Function[1] == "inv"){
-              xlab("Inverse of climate variable")
-            } else {
-              xlab("Climate variable")
-            }
-        }
-        )  
-      }
-    } else {
-      if(ncol(bestmodeldata) == 3 || dataset$Function[1] == "quad" & ncol(bestmodeldata) == 4 || dataset$Function[1] == "cub" & ncol(bestmodeldata) == 5){ 
-        if (dataset$Function[1] == "log" || dataset$Function[1] == "inv"){
-          names(bestmodeldata)[ncol(bestmodeldata) - 1] <- "climate"  
-        }
-        with(bestmodeldata, {
-          ggplot(bestmodeldata, aes(x = climate, y = Yvar), environment = environment()) +
-            geom_point(size = 1, alpha = 1) +
-            geom_line(data = cbind(bestmodeldata, pred = predict(bestmodel, type = "response", allow.new.levels = TRUE)), aes(y = pred)) +
-            theme_classic() +
-            theme(panel.grid.major = element_blank(),
-                  panel.grid.minor = element_blank(),
-                  axis.line = element_line(size = 0.25, colour = "black"),
-                  plot.title = element_text(size = 16, hjust = 0.5),
-                  panel.border = element_rect(colour = "black", fill = NA)) +
-            ggtitle("Output of best model") +
-            ylab("Biological variable") +    
-            if (dataset$Function[1] == "log"){
-              xlab("Log of climate variable")
-            } else if (dataset$Function[1] == "inv"){
-              xlab("Inverse of climate variable")
-            } else {
-              xlab("Climate variable")
-            }
-        }
-        )
-      } else {
-        col <- 1
-        if(dataset$Function[1] == "quad"){
-          col <- 2
-        } 
-        if(dataset$Function[1] == "cub"){
-          col <- 3
-        }
-        xval <- seq(from = min(bestmodeldata$climate), to = max(bestmodeldata$climate),
-                    by = (max(bestmodeldata$climate) - min(bestmodeldata$climate)) / (nrow(bestmodeldata)))
-        #When we have additional covariates, we need to integrate them in to the dataset for the predictions
-        #However, we need to determine the mean (or reference category) for each of these variables
-        newdat <- matrix(ncol = ncol(bestmodeldata) - col, nrow = nrow(bestmodeldata) + 1)
-        #Create a matrix which has columns for all variables (bar Yvar because this will be calculated with predict)
-        #nrow is 1 larger than predicted due to the length of xval
-        newdat      <- as.data.frame(newdat)
-        newdat[, 1] <- xval
-        #The first column of the matrix will always be the same as the xval
-        for(cols in 2:(ncol(bestmodeldata) - col)){ #This will go through every column except for Yvar
-          if(is.factor(bestmodeldata[, cols]) == FALSE){ #If the variable is not categorical then take the mean
-            newdat[, cols] <- mean(bestmodeldata[, cols])
-          } else { #If it is categorical, simply take the first category
-            newdat[, cols] = bestmodeldata[1, cols]          
-          }
-        }
-        names(newdat) <- c("climate", names(bestmodeldata)[2:(ncol(bestmodeldata) - col)])  #Then change the names so they match what would be in the model
-        pred <- predict(bestmodel, newdata = newdat,  type = "response", allow.new.levels = TRUE)
-        with(bestmodeldata, {
-          ggplot(bestmodeldata, aes(x = climate, y = Yvar), environment = environment()) +
-            geom_point(size = 1, alpha = 1) +
-            geom_line(data = newdat, aes(y = pred)) +
-            theme_classic() +
-            theme(panel.grid.major = element_blank(),
-                  panel.grid.minor = element_blank(),
-                  axis.line = element_line(size = 0.25, colour = "black"),
-                  plot.title = element_text(size = 16, hjust = 0.5),
-                  panel.border = element_rect(colour = "black", fill = NA)) +
-            ggtitle("Output of best model") +
-            ylab("Biological variable") +    
-            if (dataset$Function[1] == "log"){
-              xlab("Log of climate variable")
-            } else if (dataset$Function[1] == "inv"){
-              xlab("Inverse of climate variable")
-            } else {
-              xlab("Climate variable")
-            }
-        })
-      }
-    } 
+    with(bestmodeldata, {
+      
+      return(ggplot(bestmodeldata)+
+        geom_point(aes(x = climate, y = Yvar), size = 3, alpha = 0.5, shape = 21, fill = "dark grey")+
+        geom_line(aes(x = climate, y = model_pred), size = 1)+
+        theme_climwin()+
+        labs(title = "Output of best model", x = xlab_name, y = "Biological response"))
+        
+    })
+
   }
 }
