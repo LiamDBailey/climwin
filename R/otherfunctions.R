@@ -27,7 +27,7 @@ climatewin <- function(exclude = NA, xvar, cdate, bdate, baseline,
 basewin <- function(exclude, xvar, cdate, bdate, baseline, range, 
                     type, stat = "mean", func = "lin", refday,
                     cmissing = FALSE, cinterval = "day", nrandom = 0, k = 0,
-                    spatial, upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"),
+                    spatial, upper = NA, lower = NA, binary = FALSE, scale = FALSE, centre = list(NULL, "both"),
                     cohort = NULL, randwin = FALSE, randwin_thresholdQ){
   
   print("Initialising, please wait...")
@@ -218,6 +218,14 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   baseline  <- update(baseline, .~.)
   nullmodel <- MuMIn::AICc(baseline)
   modeldat  <- model.frame(baseline)
+  
+  #If there are any variables that have been scaled (i.e. using scale(x)) we need to change the model data to remove the scale argument.
+  #If not, the model.frame output has a column scale(x) but the model during update is looking for x.
+  if(any(grepl("scale\\(|\\)", colnames(modeldat)))){
+    
+    colnames(modeldat) <- gsub("scale\\(|\\)", "", colnames(modeldat))
+    
+  }
   
   if(attr(baseline, "class")[1] == "lme"){ #If model is fitted using nlme package
     
@@ -626,7 +634,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   }
 
   #If there are no variables in the baseline model called climate (i.e. the user has not specified more complex role for climate in the model, such as an interaction or random effects.)
-  if(all(!colnames(modeldat) %in% "climate")){
+  if(all(!grepl("climate", colnames(modeldat)))){
     
     #Create a new dummy variable called climate, that is made up all of 1s (unless it's using lme, because this will cause errors).
     if(attr(baseline, "class")[1] == "lme"){
@@ -858,13 +866,13 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
           modlist$WindowClose[[modno]] <- m - n + 1
           
           #Extract model coefficients (syntax is slightly different depending on the model type e.g. lme4 v. nlme v. lm)
-          if(any(colnames(model.frame(baseline)) %in% "climate")){
+          if(any(grepl("climate", colnames(model.frame(baseline))))){
   
               coefs <- coef(summary(modeloutput))[, 1:2]
               
               temp.df <- data.frame("Y", t(coefs[-1, 1]), t(coefs[-1, 2]))
               
-              colnames(temp.df) <- c("Custom.mod", rownames(coefs)[-1], paste(rownames(coefs)[-1], "SE", sep = ""))
+              colnames(temp.df) <- c("Custom.mod", gsub("scale\\(|\\)", "", rownames(coefs)[-1]), paste(gsub("scale\\(|\\)", "", rownames(coefs)[-1]), "SE", sep = ""))
               
               coef_data[[modno]] <- temp.df
             
@@ -1064,7 +1072,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
             modeldat$climate <- apply(cmatrix[, windowclose:windowopen], 1, FUN = stat))
   }
   
-  if (is.null(centre[[1]]) == FALSE){
+  if (!is.null(centre[[1]])){
     if (centre[[2]] == "both"){
         modeldat$WGdev   <- wgdev(modeldat$climate, centre[[1]])
         modeldat$WGmean  <- wgmean(modeldat$climate, centre[[1]])
@@ -1163,6 +1171,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
       }
       
     }
+    
     modlist$Randomised    <- "no"
     modlist               <- as.data.frame(modlist)
     LocalOutput           <- modlist[order(modlist$ModelAICc), ]

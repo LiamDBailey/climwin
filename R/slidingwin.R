@@ -297,14 +297,12 @@ slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
                     binary = paste(allcombos$binary[combo]), centre = centre, cohort = cohort,
                     spatial = spatial))
     
-    #return(runs)
-    
     combined[[combo]]            <- runs
     allcombos$DeltaAICc[combo]   <- round(runs$Dataset$deltaAICc[1], digits = 2)
     allcombos$WindowOpen[combo]  <- runs$Dataset$WindowOpen[1]
     allcombos$WindowClose[combo] <- runs$Dataset$WindowClose[1]
     
-    if(all(!colnames(model.frame(baseline)) %in% "climate")){
+    if(any(grepl("climate", model.frame(baseline)))){
       
       if(length(which("lin" == levels(allcombos$func))) >0){
         allcombos$betaL[combo] <- round(runs$Dataset$ModelBeta[1], digits = 2)
