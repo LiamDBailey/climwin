@@ -2832,8 +2832,16 @@ theme_climwin <- function(base_size = 12, base_family = "",
       face = "bold"
     ),
     
+    legend.background = element_rect(colour = NA),
+    legend.spacing = unit(2 * half_line, "pt"),
+    legend.spacing.x = NULL, 
+    legend.spacing.y = NULL,
+    legend.margin = margin(half_line, half_line, half_line, half_line),
+    legend.key = element_rect(fill = "grey95", colour = "white"),
+    legend.key.size = unit(1.2, "lines"), 
+    legend.key.height = NULL,
+    legend.key.width = NULL,
     legend.position = legend,
-    legend.key = element_blank(),
     legend.text = element_text(family = base_family, size = rel(1)),
     
     panel.background =   element_rect(fill = "white", colour = NA),
