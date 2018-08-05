@@ -38,6 +38,10 @@ plotbest <- function(dataset, bestmodel, bestmodeldata){
   #Change the name of the first column in the best model data as "Yvar".
   names(bestmodeldata)[1] <- "Yvar"
   
+  #If climate data has been scaled, change the name back to just 'climate'
+  names(bestmodeldata)[2] <- ifelse(names(bestmodeldata)[2] == "scale(climate)",
+                                    "climate", names(bestmodeldata)[2])
+  
   #If you are using a nlme model, it won't produce a plot.
   if(class(bestmodel)[length(class(bestmodel))] == "coxph" | attr(bestmodel, "class")[1] == "lme"){
     
