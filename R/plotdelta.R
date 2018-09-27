@@ -50,7 +50,7 @@ plotdelta <- function(dataset, arrow = FALSE, plotall = FALSE, plotallenv, Three
     #rgl.surface(x, y, matrix(1, nrow(z), ncol(z)), color = "grey", alpha = 0.5, back = "fill")
     
   } else {
-  
+    
 with(dataset, {
   if(arrow == FALSE){
     ARR <-   ggplot(dataset, aes(x = WindowClose, y = WindowOpen, z = deltaAICc))+

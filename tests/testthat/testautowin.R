@@ -89,3 +89,4 @@ test_that("Spatial replication works with autowin", {
   expect_true(test$BestWindowOpen[1] == 1 & test$BestWindowOpen[1] == 1)
   
 })
+
