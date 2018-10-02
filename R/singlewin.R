@@ -426,7 +426,15 @@ singlewin <- function(xvar, cdate, bdate, baseline,
     }
   }
   
-  baseline  <- update(baseline, .~.)
+  if(class(baseline)[1] == "lme"){
+    
+    baseline  <- update(baseline, .~.)
+    
+  } else {
+    
+    baseline  <- my_update(baseline, .~.) 
+    
+  }
   nullmodel <- AICc(baseline)  
   modlist   <- list()   # dataframes to store ouput
   cmatrix   <- matrix(ncol = (duration), nrow = length(bdate))

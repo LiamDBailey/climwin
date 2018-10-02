@@ -215,7 +215,15 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   cmatrix   <- matrix(ncol = (duration), nrow = length(bdate))  # matrix that stores the weather data for variable or fixed windows
   
   modlist   <- list()   # dataframes to store ouput
-  baseline  <- my_update(baseline, .~.)
+  if(class(baseline)[1] == "lme"){
+    
+    baseline  <- update(baseline, .~.)
+    
+  } else {
+    
+    baseline  <- my_update(baseline, .~.) 
+    
+  }
   nullmodel <- MuMIn::AICc(baseline)
   modeldat  <- model.frame(baseline)
   
