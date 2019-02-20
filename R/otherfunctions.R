@@ -1,25 +1,25 @@
 #############################################################################################################
 
-#climatewin is now redundant, will transfer straight to slidingwin with message
-climatewin <- function(exclude = NA, xvar, cdate, bdate, baseline, 
-                       type, refday, stat = "mean", func = "lin", range, 
-                       cmissing = FALSE, cinterval = "day", k = 0,
-                       upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"),
-                       spatial = NULL, cutoff.day = NULL, cutoff.month = NULL, 
-                       furthest = NULL, closest = NULL,
-                       thresh = NULL, cvk = NULL, cohort = NULL){
-  
-  print("PLEASE NOTE: Function 'climatewin' is being made redundant. Please use 'slidingwin' as an alternative")
-  
-  slidingwin(exclude = exclude, xvar = xvar, cdate = cdate, bdate = bdate, baseline = baseline, 
-             type = type, refday = refday, stat = stat, func = func, range = range, 
-             cmissing = cmissing, cinterval = cinterval, k = k,
-             upper = upper, lower = lower, binary = binary, centre = centre,
-             spatial = spatial, cutoff.day = cutoff.day, cutoff.month = cutoff.month, 
-             furthest = furthest, closest = closest,
-             thresh = thresh, cvk = cvk, cohort = cohort)
-  
-}
+# #climatewin is now redundant, will transfer straight to slidingwin with message
+# climatewin <- function(exclude = NA, xvar, cdate, bdate, baseline, 
+#                        type, refday, stat = "mean", func = "lin", range, 
+#                        cmissing = FALSE, cinterval = "day", k = 0,
+#                        upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"),
+#                        spatial = NULL, cutoff.day = NULL, cutoff.month = NULL, 
+#                        furthest = NULL, closest = NULL,
+#                        thresh = NULL, cvk = NULL, cohort = NULL){
+#   
+#   print("PLEASE NOTE: Function 'climatewin' is being made redundant. Please use 'slidingwin' as an alternative")
+#   
+#   slidingwin(exclude = exclude, xvar = xvar, cdate = cdate, bdate = bdate, baseline = baseline, 
+#              type = type, refday = refday, stat = stat, func = func, range = range, 
+#              cmissing = cmissing, cinterval = cinterval, k = k,
+#              upper = upper, lower = lower, binary = binary, centre = centre,
+#              spatial = spatial, cutoff.day = cutoff.day, cutoff.month = cutoff.month, 
+#              furthest = furthest, closest = closest,
+#              thresh = thresh, cvk = cvk, cohort = cohort)
+#   
+# }
 
 ###########################################################################################################
 
@@ -33,6 +33,8 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   print("Initialising, please wait...")
   
   options(warn = 0, nwarnings = 1)
+  
+  ##########################################################################
   
   #### INITIAL CHECKS ####
   
@@ -50,15 +52,25 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     
   }
   
-  #If the baseline model is fitted with nlme and cross validation is requested, return an error.
-  if(attr(baseline, "class")[1] == "lme" && k > 0){
+  #If the user wants to use slope with log or inverse...
+  if (stat == "slope" && func == "log" || stat == "slope" && func == "inv"){
     
-    stop("Sorry, cross-validation is currently not functioning for nlme models. Consider using lme4 if possible.")
-    
+    #Return an error...
+    stop("stat = slope cannot be used with func = log or inv as negative values may be present")
   }
   
+  #If the user has centred the data
+  if(!is.null(centre[[1]])){
+    
+    #But they haven't specified whether they want within and/or between group...
+    if(centre[[2]] != "both" && centre[[2]] != "dev" && centre[[2]] != "mean"){
+      
+      #Return an error...
+      stop("Please set centre to one of 'both', 'dev', or 'mean'. See help file for details.")
+    }
+  }
   
-  
+  ##########################################################################
   
   #### DEALING WITH THRESHOLDS ####
   
@@ -99,7 +111,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     
   }
   
-  
+  ##########################################################################
   
   #### SPATIAL REPLICATION ####
   
@@ -111,7 +123,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     data <- data.frame(bdate = bdate, spatial = spatial[[1]], cohort = as.factor(cohort))
     
     #For each cohort (usually year, but may also be breeding period)...  
-    for(i in levels(as.factor(data$cohort))){
+    for(i in unique(data$cohort)){
         
       #Take a subset of the data for that cohort...
       sub <- subset(data, cohort = i)
@@ -126,27 +138,13 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   } else if(is.null(spatial)) {
     
     #Sample size is just the length of cohorts (i.e. number of years)
-    sample.size <- length(levels(as.factor(cohort)))
+    sample.size <- length(unique(cohort))
   
   }
   
-  #If the user has centred the data
-  if(!is.null(centre[[1]])){
-    
-    #But they haven't specified whether they want within and/or between group...
-    if(centre[[2]] != "both" && centre[[2]] != "dev" && centre[[2]] != "mean"){
-      
-      #Return an error...
-      stop("Please set centre to one of 'both', 'dev', or 'mean'. See help file for details.")
-    }
-  }
+  ##########################################################################
   
-  #If the user wants to use slope with log or inverse...
-  if (stat == "slope" && func == "log" || stat == "slope" && func == "inv"){
-    
-    #Return an error...
-    stop("stat = slope cannot be used with func = log or inv as negative values may be present")
-  }
+  #PROCESS DATA INTO CLIMWIN FORMAT
   
   #Duration of searching period is the difference between the two levels or range + 1 (e.g. also including day 0)
   duration  <- (range[1] - range[2]) + 1
@@ -170,14 +168,15 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   }
   
   #Convert date information in to numbers and apply absolute window info (if appropriate)
+  #This code creates a new climate dataframe with continuous daynumbers, leap days are not a problem
   cont      <- convertdate(bdate = bdate, cdate = cdate, xvar = xvar, 
                            cinterval = cinterval, type = type, 
                            refday = refday, cohort = cohort, spatial = spatial, stat = stat, 
-                           binary = binary, upper = upper, lower = lower, thresholdQ = thresholdQ)   # create new climate dataframe with continuous daynumbers, leap days are not a problem
+                           binary = binary, upper = upper, lower = lower, thresholdQ = thresholdQ)   
   
   if(!is.null(spatial)){ #If spatial data is provided...
     
-    for(i in levels(as.factor(spatial[[1]]))){ #For each site...
+    for(i in unique(spatial[[1]])){ #For each site...
       
       SUB_clim <- subset(cont$cintno, spatial == i) # ...subset the date numbers from climate data...
       SUB_biol <- subset(cont$bintno, spatial == i) # ...subset the date numbers from biological data...
@@ -1252,7 +1251,7 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
       sample.size <- 0
       data <- data.frame(bdate = bdate, spatial = as.factor(spatial[[1]]), cohort = as.factor(cohort))
       
-      for(i in levels(as.factor(data$cohort))){
+      for(i in unique(data$cohort)){
         
         sub <- subset(data, cohort = i)
         sub$spatial <- factor(sub$spatial)
@@ -1266,7 +1265,7 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
       data <- data.frame(bdate = bdate, spatial = as.factor(spatial[[1]]))
       data$Year <- lubridate::year(as.Date(data$bdate, format = "%d/%m/%Y"))
       
-      for(i in levels(as.factor(data$Year))){
+      for(i in unique(data$Year)){
         
         sub <- subset(data, data$Year == i)
         sub$spatial <- factor(sub$spatial)
@@ -1279,9 +1278,9 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
   } else if(is.null(spatial) == TRUE) {
     
     if(is.null(cohort) == FALSE){
-      sample.size <- length(levels(as.factor(cohort)))
+      sample.size <- length(unique(cohort))
     } else {
-      sample.size <- length(levels(as.factor(lubridate::year(as.Date(bdate, format = "%d/%m/%Y")))))
+      sample.size <- length(unique(lubridate::year(as.Date(bdate, format = "%d/%m/%Y"))))
     }  
   }
   
@@ -2029,24 +2028,40 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
                         refday, cross = FALSE, cohort, spatial, stat, 
                         upper, lower, binary, thresholdQ = NA){
   
+  ######################################################################
+  
+  #INITIAL CHECKS
   
   if (cinterval != "day" && cinterval != "week" && cinterval != "month"){
     stop("cinterval should be either day, week or month")
   }
   
-  bdate  <- as.Date(bdate, format = "%d/%m/%Y") # Convert the bdate variables into the R date format
-  if(is.null(spatial) == FALSE) { # If there is spatial replication (i.e. multiple sites are used)...
+  ######################################################################
+  
+  # Convert the bdate variables into the R date format
+  bdate  <- as.Date(bdate, format = "%d/%m/%Y")
+  
+  # If there is spatial replication (i.e. multiple sites are used)...
+  if(!is.null(spatial)) {
+    
     SUB.DATE <- list()
     NUM <- 1
-    for(i in levels(as.factor(spatial[[2]]))){ # For every listed site...
+    
+    for(i in unique(spatial[[2]])){ # For every listed site...
+      
       SUB <- cdate[which(spatial[[2]] == i)] # Extract the date data from this site...
+      
       SUB.DATE[[NUM]] <- data.frame(Date = seq(min(as.Date(SUB, format = "%d/%m/%Y")), max(as.Date(SUB, format = "%d/%m/%Y")), "days"),
                                     spatial = i) # Save this data in its own dataframe, with all possible dates within the range for that site only.
+      
       if (length(SUB.DATE[[NUM]]$Date) != length(unique(SUB.DATE[[NUM]]$Date))){
         stop ("There are duplicate dayrecords in climate data") # Check there are no duplicates within each site...
       }
+      
       NUM <- NUM + 1
+    
     }
+    
     spatialcdate <- plyr::rbind.fill(SUB.DATE) # Combine all date data from each site together...
     cdate2       <- spatialcdate$Date # Save this new date data as cdate2..
     cintno       <- as.numeric(cdate2) - min(as.numeric(cdate2)) + 1   # atrribute daynumbers for both climate and biological data with first date in the climate data set to cintno 1
@@ -2064,7 +2079,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
 
   if(is.null(spatial) == FALSE){ # If spatial data is provided...
     
-    for(i in levels(as.factor(spatial[[2]]))){ # For each possible spatial site...
+    for(i in unique(spatial[[2]])){ # For each possible spatial site...
       
       SUB <- cdate[which(spatial[[2]] == i)] # Extract the cdate information for each site
       SUB_biol <- bdate[which(spatial[[1]] == i)] # Extract the bdate information for each site
@@ -2140,7 +2155,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
         newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort)) #Combine biological data with cohort info (N.B. when cohort isn't provided, it will be made the year of capture by default. See code at start of slidingwin).
         datenum  <- 1
         bintno   <- seq(1, length(bdate), 1)
-        for(i in levels(as.factor(cohort))){ # For each cohort (i.e. year, unless specified otherwise)...
+        for(i in unique(cohort)){ # For each cohort (i.e. year, unless specified otherwise)...
           sub                               <- subset(newdat, cohort == i) # ...subset bdate data from that cohort...
           # As we are using an absolute value, determine the biological date number as refday/minimum year in the cohort (i.e. assume they are in the previous year) - earliest cdate
           bintno[as.numeric(rownames(sub))] <- as.numeric(as.Date(paste(refday[1], refday[2], min(lubridate::year(sub$bdate)), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1
@@ -2226,7 +2241,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
         newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort)) #Combine date numbers from biological data with the cohort (year by default)
         datenum  <- 1
         bintno   <- seq(1, length(bdate), 1)
-        for(i in levels(as.factor(cohort))){ # For each cohort...
+        for(i in unique(cohort)){ # For each cohort...
           sub                               <- subset(newdat, cohort == i) #...subset out biological date data
           #Turn this date info into the same values based on refday
           bintno[as.numeric(rownames(sub))] <- lubridate::month(as.Date(paste(refday[1], refday[2], min(lubridate::year(sub$bdate)), sep = "-"), format = "%d-%m-%Y")) + 53 * (min(lubridate::year(sub$bdate)) - min(year(cdate2)))
@@ -2300,7 +2315,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
           newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort)) #Bind biological date and cohort info (year by default)
           datenum  <- 1
           bintno   <- seq(1, length(bdate), 1)
-          for(i in levels(as.factor(cohort))){ #For each year...
+          for(i in unique(cohort)){ #For each year...
             sub                               <- subset(newdat, cohort == i) #Extract biological date info
             #Set the biological date the same for each cohort.
             bintno[as.numeric(rownames(sub))] <- refday[2] + 12 * (min(lubridate::year(sub$bdate)) - min(lubridate::year(cdate2)))
@@ -2315,7 +2330,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
         newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort)) #Combine biological date and cohort info (year by default)
         datenum  <- 1
         bintno   <- seq(1, length(bdate), 1)
-        for(i in levels(as.factor(cohort))){ #For each cohort group...
+        for(i in unique(cohort)){ #For each cohort group...
           sub                               <- subset(newdat, cohort == i) #...subset out data.
           #Set all records within a cohort to the same value
           bintno[as.numeric(rownames(sub))] <- as.numeric(as.Date(paste(refday[1], refday[2], min(lubridate::year(sub$bdate)), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1
@@ -2352,7 +2367,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
         newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort)) #Combine biological data and cohort (year by default)
         datenum  <- 1
         bintno   <- seq(1, length(bdate), 1)
-        for(i in levels(as.factor(cohort))){ #For each cohort...
+        for(i in unique(cohort)){ #For each cohort...
           sub                               <- subset(newdat, cohort == i) #...subset data.
           #Create the same week value for every record in the same cohort.
           bintno[as.numeric(rownames(sub))] <- lubridate::month(as.Date(paste(refday[1], refday[2], min(lubridate::year(sub$bdate)), sep = "-"), format = "%d-%m-%Y")) + 53 * (min(lubridate::year(sub$bdate)) - min(year(cdate2)))
@@ -2386,7 +2401,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
         newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort)) #Extract date data and cohort (year by default)
         datenum  <- 1
         bintno   <- seq(1, length(bdate), 1)
-        for(i in levels(as.factor(cohort))){ #For each cohort
+        for(i in unique(cohort)){ #For each cohort
           sub                               <- subset(newdat, cohort == i) #Subset data
           #Set each record within a cohort to have the same month
           bintno[as.numeric(rownames(sub))] <- refday[2] + 12 * (min(lubridate::year(sub$bdate)) - min(lubridate::year(cdate2)))

@@ -6,10 +6,9 @@
 \usage{
 slidingwin(exclude = NA, xvar, cdate, bdate, baseline, type, refday,
   stat = "mean", func = "lin", range, cmissing = FALSE,
-  cinterval = "day", k = 0, upper = NA, lower = NA, binary = FALSE,
-  centre = list(NULL, "both"), spatial = NULL, cohort = NULL,
-  cutoff.day = NULL, cutoff.month = NULL, furthest = NULL,
-  closest = NULL, thresh = NULL, cvk = NULL)
+  cinterval = "day", k = 0, upper = NA, lower = NA,
+  binary = FALSE, centre = list(NULL, "both"), spatial = NULL,
+  cohort = NULL)
 }
 \arguments{
 \item{exclude}{Two values (duration and distance) which allow users
@@ -101,14 +100,6 @@ the climate dataset.}
 \item{cohort}{A variable used to group biological records that occur in the same biological
 season but cover multiple years (e.g. southern hemisphere breeding season). Only required
 when type is "absolute". The cohort variable should be in the same dataset as the variable bdate.}
-
-\item{cutoff.day, cutoff.month}{Redundant parameters. Now replaced by refday.}
-
-\item{furthest, closest}{Redundant parameters. Now replaced by range.}
-
-\item{thresh}{Redundant parameter. Now replaced by binary.}
-
-\item{cvk}{Redundant parameter. Now replaced by k.}
 }
 \value{
 Will return a list with an output for each tested set of climate

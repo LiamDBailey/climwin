@@ -1,9 +1,9 @@
 Package: climwin
 Type: Package
 Title: Climate Window Analysis
-Version: 1.2.0
+Version: 1.2.1
 Author: Liam D. Bailey and Martijn van de Pol
-Maintainer: Liam D. Bailey <liam.bailey@anu.edu.au>
+Maintainer: Liam D. Bailey <liam.bailey@liamdbailey.com>
 URL: https://github.com/LiamDBailey/climwin
 BugReports: https://github.com/LiamDBailey/climwin/issues
 Description: Contains functions to detect and visualise periods of climate
@@ -31,4 +31,4 @@ License: GPL-2
 Repository: CRAN
 LazyData: True
 VignetteBuilder: knitr
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.1
