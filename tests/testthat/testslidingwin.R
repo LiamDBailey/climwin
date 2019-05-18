@@ -654,7 +654,7 @@ test_that("lmer [lme4] models can run in slidingwin with cross-validation", {
   expect_true(ncol(test[[1]]$BestModelData) >= 2)
   
   #Test the values we get out have stayed the same as our last R version
-  expect_true(round(test[[1]]$Dataset$deltaAICc[1], 1) == -17.3)
+  expect_true(round(test[[1]]$Dataset$deltaAICc[1], 1) == -26.3)
   expect_true(test[[1]]$Dataset$WindowOpen[1] == 2 & test[[1]]$Dataset$WindowClose[1] == 2)
   expect_true(round(test[[1]]$Dataset$ModelBeta[1], 1) == 0.0)
   
@@ -726,7 +726,7 @@ test_that("glmer [lme4] models can run in slidingwin with cross-validation", {
   expect_true(ncol(test[[1]]$BestModelData) >= 2)
   
   #Test the values we get out have stayed the same as our last R version
-  expect_true(round(test[[1]]$Dataset$deltaAICc[1], 1) == -3.5)
+  expect_true(round(test[[1]]$Dataset$deltaAICc[1], 1) == -6.5)
   expect_true(test[[1]]$Dataset$WindowOpen[1] == 1 & test[[1]]$Dataset$WindowClose[1] == 1)
   expect_true(round(test[[1]]$Dataset$ModelBeta[1], 1) == 0.0)
   

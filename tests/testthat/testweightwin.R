@@ -106,7 +106,7 @@ test_that("weightwin works properly with k", {
   expect_equal(length(which(is.na(test[[3]]$ModelBeta))), 0)
   
   #Test that results are the same as GitHub 28-09 (kfold not available in previous version)
-  expect_true(round(test$WeightedOutput$deltaAICc, 1) == -2)
+  expect_true(round(test$WeightedOutput$deltaAICc, 1) == -1.9)
   expect_true(round(test$WeightedOutput$ModelBeta, 1) == -0.4)
   
 })
