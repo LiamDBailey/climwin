@@ -36,9 +36,9 @@ test_that("Check randwin output with slidingwin and max", {
   expect_true((rand[[1]]["Randomised"])[1,] == "yes")
   
   #Test that values match previous R version
-  expect_true(round(rand[[1]]$deltaAICc[1], 1) == 1.2)
+  expect_true(round(rand[[1]]$deltaAICc[1], 1) == 1.7)
   expect_true(rand[[1]]$WindowOpen[1] == 1 & rand[[1]]$WindowClose[1] == 1)
-  expect_true(round(rand[[1]]$ModelBeta[1], 1) == -0.4)
+  expect_true(round(rand[[1]]$ModelBeta[1], 1) == -0.3)
   
 })
 
@@ -82,9 +82,9 @@ test_that("Check randwin output with slidingwin and mean", {
   expect_true((rand[[1]]["Randomised"])[1,] == "yes")
   
   #Test that values match previous R version
-  expect_true(round(rand[[1]]$deltaAICc[1], 1) == 1.2)
+  expect_true(round(rand[[1]]$deltaAICc[1], 1) == 1.7)
   expect_true(rand[[1]]$WindowOpen[1] == 1 & rand[[1]]$WindowClose[1] == 1)
-  expect_true(round(rand[[1]]$ModelBeta[1], 1) == -0.4)
+  expect_true(round(rand[[1]]$ModelBeta[1], 1) == -0.3)
   
 })
 
@@ -132,9 +132,9 @@ test_that("Check randwin output works with spatial replication", {
   expect_true((rand[[1]]["Randomised"])[1,] == "yes")
   
   #Test that values match previous R version
-  expect_true(round(rand[[1]]$deltaAICc[1], 1) == 1.2)
+  expect_true(round(rand[[1]]$deltaAICc[1], 1) == 1.7)
   expect_true(rand[[1]]$WindowOpen[1] == 1 & rand[[1]]$WindowClose[1] == 1)
-  expect_true(round(rand[[1]]$ModelBeta[1], 1) == -0.4)
+  expect_true(round(rand[[1]]$ModelBeta[1], 1) == -0.3)
   
 })
 
@@ -178,8 +178,8 @@ test_that("Check randwin output with weightwin", {
   expect_true((rand[[1]]["Randomised"])[1,] == "yes")
   
   #Test that values match previous R version
-  expect_true(round(rand[[1]]$deltaAICc[1], 1) == 1.2)
-  expect_true(round(rand[[1]]$ModelBeta[1], 1) == -0.4)
-  expect_true(round(rand[[1]]$ModelInt[1], 1) == 132.6)
+  expect_true(round(rand[[1]]$deltaAICc[1], 1) == 1.7)
+  expect_true(round(rand[[1]]$ModelBeta[1], 1) == -0.3)
+  expect_true(round(rand[[1]]$ModelInt[1], 0) == 132)
   
 })

@@ -6,10 +6,10 @@
 \usage{
 slidingwin(exclude = NA, xvar, cdate, bdate, baseline, type, refday,
   stat = "mean", func = "lin", range, cmissing = FALSE,
-  cinterval = "day", k = 0, upper = NA, lower = NA, binary = FALSE,
-  centre = list(NULL, "both"), spatial = NULL, cohort = NULL,
-  cutoff.day = NULL, cutoff.month = NULL, furthest = NULL,
-  closest = NULL, thresh = NULL, cvk = NULL)
+  cinterval = "day", k = 0, upper = NA, lower = NA,
+  binary = FALSE, centre = list(NULL, "both"), spatial = NULL,
+  cohort = NULL, cutoff.day = NULL, cutoff.month = NULL,
+  furthest = NULL, closest = NULL, thresh = NULL, cvk = NULL)
 }
 \arguments{
 \item{exclude}{Two values (duration and distance) which allow users

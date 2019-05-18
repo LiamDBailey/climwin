@@ -5,9 +5,9 @@
 \title{Test the correlation between two climate variables.}
 \usage{
 crosswin(xvar, xvar2, cdate, bdate, range, stat, stat2, type, refday,
-  cinterval = "day", cmissing = FALSE, spatial = NULL, cohort = NULL,
-  cutoff.day = NULL, cutoff.month = NULL, furthest = NULL,
-  closest = NULL)
+  cinterval = "day", cmissing = FALSE, spatial = NULL,
+  cohort = NULL, cutoff.day = NULL, cutoff.month = NULL,
+  furthest = NULL, closest = NULL)
 }
 \arguments{
 \item{xvar}{The first climate variable of interest. Please specify the parent 

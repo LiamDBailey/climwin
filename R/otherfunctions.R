@@ -57,9 +57,6 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     
   }
   
-  
-  
-  
   #### DEALING WITH THRESHOLDS ####
   
   #By default, don't ask a question about how you want to apply the thresholds.
@@ -2140,7 +2137,9 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
         newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort)) #Combine biological data with cohort info (N.B. when cohort isn't provided, it will be made the year of capture by default. See code at start of slidingwin).
         datenum  <- 1
         bintno   <- seq(1, length(bdate), 1)
-        for(i in levels(as.factor(cohort))){ # For each cohort (i.e. year, unless specified otherwise)...
+        for(i in levels(as.factor(cohort))){
+          
+          # For each cohort (i.e. year, unless specified otherwise)...
           sub                               <- subset(newdat, cohort == i) # ...subset bdate data from that cohort...
           # As we are using an absolute value, determine the biological date number as refday/minimum year in the cohort (i.e. assume they are in the previous year) - earliest cdate
           bintno[as.numeric(rownames(sub))] <- as.numeric(as.Date(paste(refday[1], refday[2], min(lubridate::year(sub$bdate)), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1
