@@ -8,8 +8,8 @@ output: html_document
 This is a new submission for this package.
 
 ## Test environments
-* ubuntu 14.04.5 (on travis-ci), R 3.4.2
-* local Windows 10 64bit, R 3.4.2
+* ubuntu 14.04.5 (on travis-ci), R 3.6.0
+* local Windows 10 64bit, R 3.6.0
 * win-builder (devel and release)
 
 ## R CMD check results

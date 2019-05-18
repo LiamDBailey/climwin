@@ -1,3 +1,23 @@
+# climwin 1.2.1
+
+climwin v1.2.1 is now fully compatible with R v3.6.0. To report errors and bugs or ask questions please visit the `climwin` [google group](https://groups.google.com/forum/?utm_medium=email&utm_source=footer#!forum/climwin-r-group).
+
+R v3.6.0 contains a new default method for the function `sample()`, which is used inside the `slidingwin` function in climwin. These changes will affect the reproducibility of previous results run on older R version. Old results can be reproduced by running `RNGversion(vstr = "3.5.3")`, which will revert back to the old method for conducting `sample()`.
+
+## Major changes
+
+No major changes
+
+## Minor changes
+
+### K-fold cross validation with a single fold
+
+k-fold cross validation can now be conducted with k = 1.
+
+### Plot changes to work with ggplot2 >3.0
+
+With v3.0 of ggplot2 some slight compatability changes were introduced when creating plots. These have now been fixed.
+
 # climwin 1.2.0
 
 Our newest version includes a number of important tweaks and bug fixes, as well as an updated help vignette. To report errors and bugs or ask questions please visit the `climwin` [google group](https://groups.google.com/forum/?utm_medium=email&utm_source=footer#!forum/climwin-r-group).
