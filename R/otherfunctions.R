@@ -30,7 +30,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
                     spatial, upper = NA, lower = NA, binary = FALSE, scale = FALSE, centre = list(NULL, "both"),
                     cohort = NULL, randwin = FALSE, randwin_thresholdQ){
   
-  print("Initialising, please wait...")
+  message("Initialising, please wait...")
   
   options(warn = 0, nwarnings = 1)
   
@@ -397,7 +397,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   #If we expect NAs and choose a method to deal with them...
   if (cmissing != FALSE && any(is.na(cmatrix))){
     
-    print("Missing climate data detected. Please wait while NAs are replaced.")
+    message("Missing climate data detected. Please wait while NAs are replaced.")
     
     for(i in which(is.na(cmatrix))){
       
@@ -626,7 +626,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   #If using a mixed model, ensure that maximum likelihood is specified (because we are comparing models with different fixed effects)
   if(!is.null(attr(class(baseline), "package")) && attr(class(baseline), "package") == "lme4" && class(baseline)[1] == "lmerMod" && baseline@resp$REML == 1){
       
-    print("Linear mixed effects models are run in climwin using maximum likelihood. Baseline model has been changed to use maximum likelihood.")
+    message("Linear mixed effects models are run in climwin using maximum likelihood. Baseline model has been changed to use maximum likelihood.")
     
     baseline <- update(baseline, yvar ~., data = modeldat, REML = F)
       
@@ -634,7 +634,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   
   if(attr(baseline, "class")[1] == "lme" && baseline$method == "REML"){
     
-    print("Linear mixed effects models are run in climwin using maximum likelihood. Baseline model has been changed to use maximum likelihood.")
+    message("Linear mixed effects models are run in climwin using maximum likelihood. Baseline model has been changed to use maximum likelihood.")
     
     baseline <- update(baseline, yvar ~., data = modeldat, method = "ML")
     
@@ -680,7 +680,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
         modeloutput <- update (baseline, yvar ~. + wgdev, data = modeldat)
       }
     } else {
-      print("Define func")
+      stop("Define func")
     }
     
   } else {
@@ -1163,8 +1163,6 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
       LocalData         <- model.frame(LocalModel)
       LocalData$climate <- modeldat$climate
     } else {
-      #print(modeldat)
-      #return(LocalModel)
       LocalData <- model.frame(LocalModel)
       
       if(attr(LocalModel, "class")[1] == "lme"){
@@ -1390,7 +1388,7 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
   #If we expect NAs and choose a method to deal with them...
   if (cmissing != FALSE && any(is.na(cmatrix))){
     
-    print("Missing climate data detected. Please wait while NAs are replaced.")
+    message("Missing climate data detected. Please wait while NAs are replaced.")
     
     for(i in which(is.na(cmatrix))){
       
@@ -1619,7 +1617,7 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
   #If using a mixed model, ensure that maximum likelihood is specified (because we are comparing models with different fixed effects)
   if(!is.null(attr(class(baseline), "package")) && attr(class(baseline), "package") == "lme4" && class(baseline)[1] == "lmerMod" && baseline@resp$REML == 1){
     
-    print("Linear mixed effects models are run in climwin using maximum likelihood. Baseline model has been changed to use maximum likelihood.")
+    message("Linear mixed effects models are run in climwin using maximum likelihood. Baseline model has been changed to use maximum likelihood.")
     
     baseline <- update(baseline, yvar ~., data = modeldat, REML = F)
     
@@ -1627,7 +1625,7 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
   
   if(attr(baseline, "class")[1] == "lme" && baseline$method == "REML"){
     
-    print("Linear mixed effects models are run in climwin using maximum likelihood. Baseline model has been changed to use maximum likelihood.")
+    message("Linear mixed effects models are run in climwin using maximum likelihood. Baseline model has been changed to use maximum likelihood.")
     
     baseline <- update(baseline, yvar ~., data = modeldat, method = "ML")
     
@@ -1662,7 +1660,7 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
         modeloutput <- update(baseline, yvar ~. + wgdev, data = modeldat)
       }
     } else {
-      print("Define func")
+      stop("Define func")
     } 
     
   } else {
@@ -1741,7 +1739,7 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
     
     if(n == 1){
       
-      print(result)
+      message(result)
       
     }
     
@@ -1774,14 +1772,14 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
     
     if(n == 1){
       
-      print(result)
+      message(result)
       
     }
     
   } else if (weightfunc == "U"){
     
     if(length(par) > 2){
-      print("Uniform distribution only uses two parameters (start and end). All other parameter values are ignored.")
+      warning("Uniform distribution only uses two parameters (start and end). All other parameter values are ignored.")
     }
     
     if(par[1] > range[1]){
@@ -1819,7 +1817,7 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
     
     if(n == 1){
       
-      print(result)
+      message(result)
       
     }
     

@@ -28,7 +28,7 @@ plothist <- function(dataset, datasetrand){
   }  
   
 if(max(datasetrand$Repeat) < 100){
-      print("PDeltaAICc may be unreliable with so few randomisations")
+      warning("PDeltaAICc may be unreliable with so few randomisations")
     }
           
     if(is.null(dataset$shape) == TRUE){

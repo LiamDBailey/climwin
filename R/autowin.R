@@ -169,7 +169,7 @@ Do you want to apply this threshold before calculating weekly/monthly means (i.e
   
   xvar = xvar[[1]]
 
-  print("Initialising, please wait...")
+  message("Initialising, please wait...")
   
   if (stat == "slope" & func == "log" || stat == "slope" & func == "inv"){
     stop("stat = slope cannot be used with func = log or inv as negative values may be present.")
@@ -312,7 +312,7 @@ Do you want to apply this threshold before calculating weekly/monthly means (i.e
   #If we expect NAs and choose a method to deal with them...
   if (cmissing != FALSE && any(is.na(cmatrix))){
     
-    print("Missing climate data detected. Please wait while NAs are replaced.")
+    message("Missing climate data detected. Please wait while NAs are replaced.")
     
     for(i in which(is.na(cmatrix))){
       
@@ -536,7 +536,7 @@ Do you want to apply this threshold before calculating weekly/monthly means (i.e
   #If using a mixed model, ensure that maximum likelihood is specified (because we are comparing models with different fixed effects)
   if(!is.null(attr(class(baseline), "package")) && attr(class(baseline), "package") == "lme4" && class(baseline)[1] == "lmerMod" && baseline@resp$REML == 1){
     
-    print("Linear mixed effects models are run in climwin using maximum likelihood. Baseline model has been changed to use maximum likelihood.")
+    message("Linear mixed effects models are run in climwin using maximum likelihood. Baseline model has been changed to use maximum likelihood.")
     
     baseline <- update(baseline, yvar ~., data = modeldat, REML = F)
     
@@ -544,7 +544,7 @@ Do you want to apply this threshold before calculating weekly/monthly means (i.e
   
   if(attr(baseline, "class")[1] == "lme" && baseline$method == "REML"){
     
-    print("Linear mixed effects models are run in climwin using maximum likelihood. Baseline model has been changed to use maximum likelihood.")
+    message("Linear mixed effects models are run in climwin using maximum likelihood. Baseline model has been changed to use maximum likelihood.")
     
     baseline <- update(baseline, yvar ~., data = modeldat, method = "ML")
     
@@ -561,7 +561,7 @@ Do you want to apply this threshold before calculating weekly/monthly means (i.e
   } else if (func == "inv") {
     modeloutput <- update (baseline, .~. + I(climate ^ -1), data = modeldat)
   } else {
-    print("Define func")
+    stop("Define func")
   }
   
   pb <- txtProgressBar(min = 0, max = maxmodno, style = 3, char = "|")

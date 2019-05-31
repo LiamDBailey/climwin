@@ -252,13 +252,13 @@ randwin <- function(exclude = NA, repeats = 5, window = "sliding", xvar, cdate, 
   }
   
   rownames(allcombos) <- seq(1, nrow(allcombos), 1)
-  print("All combinations to be tested...")
-  print(allcombos)
+  message("All combinations to be tested...")
+  message(allcombos)
   
   combined <- list()
   for (combo in 1:nrow(allcombos)){
     for (r in 1:repeats){
-      print (c("randomization number ", r))
+      message(c("randomization number ", r))
       
       rand.rows <- sample(length(bdate))
       

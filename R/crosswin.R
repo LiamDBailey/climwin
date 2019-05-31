@@ -82,7 +82,7 @@ crosswin <- function(xvar, xvar2, cdate, bdate, range,
                      cutoff.day = NULL, cutoff.month = NULL,
                      furthest = NULL, closest = NULL){
   
-  print("Initialising, please wait...")
+  message("Initialising, please wait...")
   
   #Check date formats
   if(all(is.na(as.Date(cdate, format = "%d/%m/%Y")))){
@@ -211,7 +211,7 @@ crosswin <- function(xvar, xvar2, cdate, bdate, range,
   
   if (cmissing != FALSE && length(which(is.na(cmatrix1))) > 0 | cmissing != FALSE && length(which(is.na(cmatrix2))) > 0){
     
-    print("Missing climate data detected. Please wait while appropriate data is calculated to replace NAs.")
+    message("Missing climate data detected. Please wait while appropriate data is calculated to replace NAs.")
     
     if(cmissing == "method1"){
       

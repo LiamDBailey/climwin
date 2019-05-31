@@ -108,6 +108,14 @@ Tests the correlation between the climate in a specified climate window and
 other fitted climate windows.
 }
 \examples{
+
+#Quick example to check everything is functioning
+
+data(Mass)
+data(MassClimate)
+
+clim_data <- Mass 
+
 \dontrun{
 
 # Test for auto-correlation using 'Mass' and 'MassClimate' data frames
