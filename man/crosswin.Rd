@@ -82,7 +82,23 @@ Will return a dataframe containing the correlation between the two
 Test the correlation between two climate variables.
 }
 \examples{
+
+#Simple test example
+#Create data from a subset of our test dataset
+#Just use two years
+biol_data <- Mass[1:2, ]
+clim_data <- MassClimate[grep(pattern = "1979|1986", x = MassClimate$Date), ]
+                   
+cross <- crosswin(xvar  = list(Temp = clim_data$Temp),
+                 xvar2 = list(Rain = clim_data$Rain),
+                 cdate = clim_data$Date, bdate = biol_data$Date,
+                 range = c(1, 0), 
+                 stat = "mean", stat2 = "mean",
+                 type = "relative",
+                 cmissing = FALSE, cinterval = "day")
+
 \dontrun{
+# Full working example
 # Test correlation between temperature and rainfall in the MassClimate dataset.
 
 data(Mass)

@@ -7,8 +7,26 @@
 #'containing all records from both outputs.
 #'@author Liam D. Bailey and Martijn van de Pol
 #'@importFrom plyr rbind.fill
-#' @examples
-#' \dontrun{
+#'@examples
+#'
+#'#Simple test example
+#'#Create data from a subset of our test dataset
+#'#Just use two years
+#'biol_data <- Mass[1:2, ]
+#'clim_data <- MassClimate[grep(pattern = "1979|1986", x = MassClimate$Date), ]
+#'
+#'output <- slidingwin(xvar = list(Temp = clim_data$Temp),
+#'                     cdate = clim_data$Date, 
+#'                     bdate = biol_data$Date, 
+#'                     baseline = lm(Mass ~ 1, data = biol_data),
+#'                     range = c(1, 0), 
+#'                     type = "relative", stat = "mean", 
+#'                     func = c("lin"), cmissing = FALSE, cinterval = "day")
+#'
+#'#Merge MassOutput
+#'merge_results(output, output)
+#'
+#'\dontrun{
 #'  
 #'data(Offspring) 
 #'data(OffspringClimate)

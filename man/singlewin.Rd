@@ -109,7 +109,23 @@ Will return a list containing two objects:
 Fit a single climate window with a known start and end time.
 }
 \examples{
+
+#Simple test example
+#Create data from a subset of our test dataset
+#Just use two years
+biol_data <- Mass[1:2, ]
+clim_data <- MassClimate[grep(pattern = "1979|1986", x = MassClimate$Date), ]
+
+single <- singlewin(xvar = list(Temp = clim_data$Temp),
+                   cdate = clim_data$Date, 
+                   bdate = biol_data$Date, 
+                   baseline = lm(Mass ~ 1, data = biol_data),
+                   range = c(1, 0), 
+                   type = "relative", stat = "mean", 
+                   func = c("lin"), cmissing = FALSE, cinterval = "day")
+
 \dontrun{
+# Full working example
 # Fit a known climate window to the datasets Mass and MassClimate
 
 data(Mass)

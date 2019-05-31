@@ -96,7 +96,24 @@
 #'  window from each randomisation. See \code{\link{MassRand}} as an example.
 #'@author Liam D. Bailey and Martijn van de Pol
 #' @examples
-#' \dontrun{
+#'
+#'#Simple test example
+#'#Create data from a subset of our test dataset
+#'#Just use two years
+#'biol_data <- Mass[1:2, ]
+#'clim_data <- MassClimate[grep(pattern = "1979|1986", x = MassClimate$Date), ]
+#'
+#'rand <- randwin(repeats = 1, xvar = list(Temp = clim_data$Temp),
+#'                cdate = clim_data$Date, 
+#'                bdate = biol_data$Date, 
+#'                baseline = lm(Mass ~ 1, data = biol_data),
+#'                range = c(1, 0), 
+#'                type = "relative", stat = "mean", 
+#'                func = c("lin"), cmissing = FALSE, cinterval = "day")
+#' 
+#'\dontrun{
+#'
+#'# Full working examples
 #'
 #'## EXAMPLE 1 ##
 #'

@@ -107,7 +107,26 @@
 #'  }
 #'@author Martijn van de Pol and Liam D. Bailey
 #'@examples
-#'  \dontrun{
+#'
+#'#Simple test example
+#'#Create data from a subset of our test dataset
+#'biol_data <- Mass[1:5, ]
+#'data(MassClimate)
+#'
+#'
+#'weight <- weightwin(xvar = list(Temp = MassClimate$Temp), 
+#'                    cdate = MassClimate$Date, 
+#'                    bdate = biol_data$Date, 
+#'                    baseline = glm(Mass ~ 1, data = biol_data), 
+#'                    range = c(100, 0), func = "lin", 
+#'                    type = "relative", weightfunc = "W", cinterval = "day", 
+#'                    par = c(2.26, 8.45, 0), control = list(ndeps = c(0.01, 0.01, 0.01)), 
+#'                    method = "L-BFGS-B")
+#'                    
+#'
+#'\dontrun{
+#'
+#'# Full working example
 #'  
 #'# Test for a weighted average over a fixed climate window 
 #'# using datasets 'Offspring' and 'OffspringClimate'
