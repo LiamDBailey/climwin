@@ -278,8 +278,8 @@ slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
   }
   
   rownames(allcombos) <- seq(1, nrow(allcombos), 1)
-  message("All combinations to be tested...")
-  message(allcombos)
+  # message("All combinations to be tested...")
+  # message(allcombos)
   
   combined <- list()
   for (combo in 1:nrow(allcombos)){

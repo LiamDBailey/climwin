@@ -8,8 +8,8 @@ URL: https://github.com/LiamDBailey/climwin
 BugReports: https://github.com/LiamDBailey/climwin/issues
 Description: Contains functions to detect and visualise periods of climate
     sensitivity (climate windows) for a given biological response. 
-    Please see van de Pol et al. (2016) <https://doi.org/10.1111/2041-210X.12590> 
-    and Bailey and van de Pol (2016) <https://doi.org/10.1371/journal.pone.0167980> for details.
+    Please see van de Pol et al. (2016) <doi:10.1111/2041-210X.12590> 
+    and Bailey and van de Pol (2016) <doi:10.1371/journal.pone.0167980> for details.
 Depends:
     R (>= 2.10),
     ggplot2,

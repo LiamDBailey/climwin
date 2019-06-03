@@ -18,6 +18,10 @@ k-fold cross validation can now be conducted with k = 1.
 
 With v3.0 of ggplot2 some slight compatability changes were introduced when creating plots. These have now been fixed.
 
+### climwin no longer prints to console
+
+Previous versions of `climwin` used the `print()` function to write text in the console. This is now done using `message()` and `warning()`, which allows users to suppress information if desired (e.g. with `suppressMessages()`).
+
 # climwin 1.2.0
 
 Our newest version includes a number of important tweaks and bug fixes, as well as an updated help vignette. To report errors and bugs or ask questions please visit the `climwin` [google group](https://groups.google.com/forum/?utm_medium=email&utm_source=footer#!forum/climwin-r-group).

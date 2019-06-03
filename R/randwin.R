@@ -269,8 +269,8 @@ randwin <- function(exclude = NA, repeats = 5, window = "sliding", xvar, cdate, 
   }
   
   rownames(allcombos) <- seq(1, nrow(allcombos), 1)
-  message("All combinations to be tested...")
-  message(allcombos)
+  # message("All combinations to be tested...")
+  # message(allcombos)
   
   combined <- list()
   for (combo in 1:nrow(allcombos)){
