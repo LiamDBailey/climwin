@@ -206,6 +206,16 @@ slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
                        upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"),
                        spatial = NULL, cohort = NULL){
   
+  ### Implementing scientific notation can cause problems because years
+  ### are converted to characters in scientific notation (e.g. 2000 = "2e+3")
+  ### Check options and convert scipen TEMPORARILY if needed.
+  if(getOption("scipen") < 0){
+    
+    current_option <- getOption("scipen")
+    options(scipen = 0)
+    
+  }
+  
   #### INITIAL CHECKS ####
   
   if(cmissing != FALSE && cmissing != "method1" && cmissing != "method2"){
@@ -332,5 +342,13 @@ slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
   }
   allcombos <- cbind(response = colnames(model.frame(baseline))[1], allcombos)
   combined <- c(combined, combos = list(allcombos))
+  
+  #If we changed scipen at the start, switch it back to default
+  if(exists("current_option")){
+    
+    options(scipen = current_option)
+    
+  }
+  
   return(combined)
 }

@@ -4,6 +4,9 @@
 
 # Test convertdate where cinterval = "day"
 test_that("convertdate works for days and relative", {
+  
+current_option <- getOption("scipen")
+options(scipen = 0)
 
 data(Mass, envir = environment())
 data(MassClimate, envir = environment())
@@ -40,9 +43,14 @@ expect_true(min(test$bintno) == 493)
 expect_true(max(test$bintno) == 17290)
 expect_true(max(test$cintno) == 17532)
 
+options(scipen = current_option)
+
 })
 
 test_that("convertdate works for days and absolute", {
+  
+  current_option <- getOption("scipen")
+  options(scipen = 0)
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -80,12 +88,17 @@ test_that("convertdate works for days and absolute", {
   expect_true(max(test$bintno) == 17319)
   expect_true(max(test$cintno) == 17532)
   
+  options(scipen = current_option)
+  
 })
 
 #######################################################################################
 
 # Test convertdate with cinterval = week
 test_that("convertdate works for week and relative", {
+  
+  current_option <- getOption("scipen")
+  options(scipen = 0)
   
 data(Mass, envir = environment())
 data(MassClimate, envir = environment())
@@ -111,10 +124,15 @@ expect_true(min(test$bintno) == 71)
 expect_true(max(test$bintno) == 2462)
 expect_true(max(test$cintno) == 2496)
 
+options(scipen = current_option)
+
 })
 
 # Test convertdate with cinterval = week
 test_that("convertdate works for week and absolute", {
+  
+  current_option <- getOption("scipen")
+  options(scipen = 0)
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -141,12 +159,17 @@ test_that("convertdate works for week and absolute", {
   expect_true(max(test$bintno) == 2466)
   expect_true(max(test$cintno) == 2496)
   
+  options(scipen = current_option)
+  
 })
 
 ##############################################################################
 
 # Test convertdate for cinterval = "month"
 test_that("convertdate works for month and relative", {
+  
+  current_option <- getOption("scipen")
+  options(scipen = 0)
   
 data(Mass, envir = environment())
 data(MassClimate, envir = environment())
@@ -172,10 +195,15 @@ expect_true(min(test$bintno) == 17)
 expect_true(max(test$bintno) == 569)
 expect_true(max(test$cintno) == 576)
 
+options(scipen = current_option)
+
 })
 
 # Test convertdate for cinterval = "month"
 test_that("convertdate works for month and absolute", {
+  
+  current_option <- getOption("scipen")
+  options(scipen = 0)
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -202,12 +230,17 @@ test_that("convertdate works for month and absolute", {
   expect_true(max(test$bintno) == 570)
   expect_true(max(test$cintno) == 576)
   
+  options(scipen = current_option)
+  
 })
 
 ######################################################################
 
 # Test that convertdate works with two climate variables, cinterval = "day"
 test_that("convertdate works (days, xvar2, relative).", {
+  
+  current_option <- getOption("scipen")
+  options(scipen = 0)
   
 data(Mass, envir = environment())
 data(MassClimate, envir = environment())
@@ -238,9 +271,14 @@ expect_true(min(test$bintno) == 493)
 expect_true(max(test$bintno) == 17290)
 expect_true(max(test$cintno) == 17532)
 
+options(scipen = current_option)
+
 })
 
 test_that("convertdate works (days, xvar2, absolute)", {
+  
+  current_option <- getOption("scipen")
+  options(scipen = 0)
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -272,12 +310,17 @@ test_that("convertdate works (days, xvar2, absolute)", {
   expect_true(max(test$bintno) == 17319)
   expect_true(max(test$cintno) == 17532)
   
+  options(scipen = current_option)
+  
 })
 
 #############################################################
 
 # Test that convertdate works with two climate variables, cinterval = "week"
 test_that("convertdate works (week, xvar2, relative)", {
+  
+  current_option <- getOption("scipen")
+  options(scipen = 0)
   
 data(Mass, envir = environment())
 data(MassClimate, envir = environment())
@@ -308,9 +351,14 @@ expect_true(min(test$bintno) == 58)
 expect_true(max(test$bintno) == 2496)
 expect_true(max(test$cintno) == 2544)
 
+options(scipen = current_option)
+
 })
 
 test_that("convertdate works (week, xvar2, relative)", {
+  
+  current_option <- getOption("scipen")
+  options(scipen = 0)
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -342,12 +390,17 @@ test_that("convertdate works (week, xvar2, relative)", {
   expect_true(max(test$bintno) == 2497)
   expect_true(max(test$cintno) == 2544)
   
+  options(scipen = current_option)
+  
 })
 
 ########################################################################
 
 # Test that convertdate works with two climate variables, cinterval = "month"
 test_that("convertdate works (month, xvar2, relative)", {
+  
+  current_option <- getOption("scipen")
+  options(scipen = 0)
   
 data(Mass, envir = environment())
 data(MassClimate, envir = environment())
@@ -378,9 +431,14 @@ expect_true(min(test$bintno) == 17)
 expect_true(max(test$bintno) == 569)
 expect_true(max(test$cintno) == 576)
 
+options(scipen = current_option)
+
 })
 
 test_that("convertdate works (month, xvar2, absolute)", {
+  
+  current_option <- getOption("scipen")
+  options(scipen = 0)
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -411,5 +469,7 @@ test_that("convertdate works (month, xvar2, absolute)", {
   expect_true(min(test$bintno) == 18)
   expect_true(max(test$bintno) == 570)
   expect_true(max(test$cintno) == 576)
+  
+  options(scipen = current_option)
   
 })

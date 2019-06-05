@@ -175,6 +175,16 @@ randwin <- function(exclude = NA, repeats = 5, window = "sliding", xvar, cdate, 
                     method = "L-BFGS-B", cutoff.day = NULL, cutoff.month = NULL,
                     furthest = NULL, closest = NULL, thresh = NULL, cvk = NULL){
   
+  ### Implementing scientific notation can cause problems because years
+  ### are converted to characters in scientific notation (e.g. 2000 = "2e+3")
+  ### Check options and convert scipen TEMPORARILY if needed.
+  if(getOption("scipen") < 0){
+    
+    current_option <- getOption("scipen")
+    options(scipen = 0)
+    
+  }
+  
   #Create a centre function that over-rides quadratics etc. when centre != NULL
   if(is.null(centre[[1]]) == FALSE){
     func = "centre"
@@ -343,5 +353,14 @@ randwin <- function(exclude = NA, repeats = 5, window = "sliding", xvar, cdate, 
     }
   allcombos <- cbind(response = colnames(model.frame(baseline))[1], allcombos)
   combined <- c(combined, combos = list(allcombos))
+  
+  #If we changed scipen at the start, switch it back to default
+  if(exists("current_option")){
+    
+    options(scipen = current_option)
+    
+  }
+  
   return(combined)
+  
   }

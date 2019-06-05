@@ -129,6 +129,16 @@ singlewin <- function(xvar, cdate, bdate, baseline,
                       centre = list(NULL, "both"), cutoff.day = NULL, cutoff.month = NULL,
                       furthest = NULL, closest = NULL, thresh = NULL){
   
+  ### Implementing scientific notation can cause problems because years
+  ### are converted to characters in scientific notation (e.g. 2000 = "2e+3")
+  ### Check options and convert scipen TEMPORARILY if needed.
+  if(getOption("scipen") < 0){
+    
+    current_option <- getOption("scipen")
+    options(scipen = 0)
+    
+  }
+  
   #Check date formats
   if(all(is.na(as.Date(cdate, format = "%d/%m/%Y")))){
     
@@ -935,5 +945,13 @@ singlewin <- function(xvar, cdate, bdate, baseline,
     LocalBestModel <- update(modeloutput, .~., data = modeldat)
   }
   LocalData <- model.frame(LocalBestModel)
+  
+  #If we changed scipen at the start, switch it back to default
+  if(exists("current_option")){
+    
+    options(scipen = current_option)
+    
+  }
+  
   return(list(BestModel = LocalBestModel, BestModelData = LocalData, Dataset = data.frame(ModelAICc = AICc(LocalBestModel), deltaAICc = AICc(LocalBestModel) - nullmodel, WindowOpen = range[1], WindowClose = range[2], Function = func)))
 }
