@@ -23,8 +23,20 @@ plotwin <- function(dataset, cw = 0.95){
   
   #Order models by weight#
   dataset    <- dataset[order(-dataset$ModWeight), ]
-  dataset$cw <- as.numeric(cumsum(dataset$ModWeight) <= cw)
-  datasetcw  <- subset(dataset, cw == 1)
+  
+  #Firstly, check if the top model has a weight > cw. If so, just use the top model.
+  if(dataset$ModWeight[1] > cw){
+    
+    datasetcw <- dataset[1, ]
+    
+    warning(paste0("Top window has a weight greater than ", cw, ". Plotting single best window only."))
+    
+  } else {
+    
+    dataset$cw <- as.numeric(cumsum(dataset$ModWeight) <= cw)
+    datasetcw  <- subset(dataset, cw == 1) 
+    
+  }
   
   keep=c("Closest", "WindowClose", "WindowOpen")
   
