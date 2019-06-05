@@ -2235,8 +2235,6 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
         xvar        <- newclim3$xvar #Extract climate
       }
       
-      browser()
-      
       if (type == "absolute"){ #If we are dealing with absolute windows
         newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort)) #Combine date numbers from biological data with the cohort (year by default)
         datenum  <- 1
