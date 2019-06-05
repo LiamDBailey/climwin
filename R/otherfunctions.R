@@ -2244,7 +2244,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
         for(i in unique(cohort)){ # For each cohort...
           sub                               <- subset(newdat, cohort == i) #...subset out biological date data
           #Turn this date info into the same values based on refday
-          bintno[as.numeric(rownames(sub))] <- lubridate::month(as.Date(paste(refday[1], refday[2], min(lubridate::year(sub$bdate)), sep = "-"), format = "%d-%m-%Y")) + 53 * (min(lubridate::year(sub$bdate)) - min(year(cdate2)))
+          bintno[as.numeric(rownames(sub))] <- lubridate::week(as.Date(paste(refday[1], refday[2], min(lubridate::year(sub$bdate)), sep = "-"), format = "%d-%m-%Y")) + 52 * (min(lubridate::year(sub$bdate)) - min(year(cdate2)))
             #lubridate::week(as.Date(paste(refday[1], refday[2], min(lubridate::year(sub$bdate)), sep = "-"), format = "%d-%m-%Y")) - min(cweek + 53 * cyear) + 1
         }
       } else { #...Otherwise just leave the biological date info as is.
