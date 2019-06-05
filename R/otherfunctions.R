@@ -606,8 +606,6 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     }
   }
   
-  browser()
-  
   #Check to see if the model contains a weight function. If so, incorporate this into the data used for updating the model.
   if (is.null(weights(baseline)) == FALSE){
     if (class(baseline)[1] == "glm" && sum(weights(baseline)) == nrow(model.frame(baseline)) || attr(class(baseline), "package") == "lme4" && sum(weights(baseline)) == nrow(model.frame(baseline))){
