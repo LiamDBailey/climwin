@@ -483,7 +483,7 @@ test_that("No errors returned when cmissing method1 with NAs, cinterval = week",
 })
 
 # Test when cmissing is method2 and NA is present (cinterval = "week") #
-test_that("Error returned when cmissing method2 with NAs, cinterval = week", {
+test_that("No error returned when cmissing method2 with NAs, cinterval = week", {
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -508,7 +508,7 @@ test_that("Error returned when cmissing method2 with NAs, cinterval = week", {
 })
 
 # Test when cmissing is method1 and NA is present (cinterval = "month") #
-test_that("Error returned when cmissing method1 with NAs, cinterval = month", {
+test_that("No error returned when cmissing method1 with NAs, cinterval = month", {
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -533,7 +533,7 @@ test_that("Error returned when cmissing method1 with NAs, cinterval = month", {
 })
 
 # Test when cmissing is method2 and NA is present (cinterval = "month") #
-test_that("Error returned when cmissing method2 with NAs, cinterval = month", {
+test_that("No error returned when cmissing method2 with NAs, cinterval = month", {
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -1490,9 +1490,9 @@ test_that("spatial replication works in slidingwin with week", {
   
   #Test the values we get out have stayed the same as github (7-9-17)
   #Don't use old R because we changed how we estimate week slightly
-  expect_true(round(test[[1]]$Dataset$deltaAICc[1], 1) == 0.4)
-  expect_true(test[[1]]$Dataset$WindowOpen[1] == 0 & test[[1]]$Dataset$WindowClose[1] == 0)
-  expect_true(round(test[[1]]$Dataset$ModelBeta[1], 1) == 0.2)
+  expect_true(round(test[[1]]$Dataset$deltaAICc[1], 1) == -8)
+  expect_true(test[[1]]$Dataset$WindowOpen[1] == 2 & test[[1]]$Dataset$WindowClose[1] == 2)
+  expect_true(round(test[[1]]$Dataset$ModelBeta[1], 1) == -0.9)
   
 })
 
@@ -1838,4 +1838,3 @@ test_that("Duplicate climate data returns an error (without spatial)", {
   
   
 })
-

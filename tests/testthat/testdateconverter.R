@@ -12,7 +12,7 @@ MassClimatedup         <- MassClimate
 MassClimatedup[17533,] <- MassClimatedup[17532,]
 
 test <- convertdate(bdate = Mass$Date, cdate = MassClimate$Date, xvar = MassClimate$Temp,
-                    cinterval = "day", type = "relative", spatial = NULL, upper = NA, lower = NA, stat = "mean")
+                    cinterval = "day", type = "relative", spatial = NULL, upper = NA, lower = NA)
 
 # Test that no NA dates were produced
 expect_equal(length(which(is.na(test))), 0)
@@ -52,7 +52,7 @@ test_that("convertdate works for days and absolute", {
   
   test <- convertdate(bdate = Mass$Date, cdate = MassClimate$Date, xvar = MassClimate$Temp,
                       cohort = lubridate::year(as.Date(Mass$Date, format = "%d/%m/%Y")), refday = c(1, 6),
-                      cinterval = "day", type = "absolute", spatial = NULL, upper = NA, lower = NA, stat = "mean")
+                      cinterval = "day", type = "absolute", spatial = NULL, upper = NA, lower = NA)
   
   # Test that no NA dates were produced
   expect_equal(length(which(is.na(test))), 0)
@@ -91,7 +91,7 @@ data(Mass, envir = environment())
 data(MassClimate, envir = environment())
 
 test <- convertdate(bdate = Mass$Date, cdate = MassClimate$Date, xvar = MassClimate$Temp,
-                    cinterval = "week", type = "relative", spatial = NULL, upper = NA, lower = NA, stat = "mean")
+                    cinterval = "week", type = "relative", spatial = NULL, upper = NA, lower = NA)
 
 # Test that no NA dates were produced
 expect_equal(length(which(is.na(test))), 0)
@@ -121,7 +121,7 @@ test_that("convertdate works for week and absolute", {
   
   test <- convertdate(bdate = Mass$Date, cdate = MassClimate$Date, xvar = MassClimate$Temp,
                       cohort = lubridate::year(as.Date(Mass$Date, format = "%d/%m/%Y")), refday = c(1, 6),
-                      cinterval = "week", type = "absolute", spatial = NULL, upper = NA, lower = NA, stat = "mean")
+                      cinterval = "week", type = "absolute", spatial = NULL, upper = NA, lower = NA)
   
   # Test that no NA dates were produced
   expect_equal(length(which(is.na(test))), 0)
@@ -152,7 +152,7 @@ data(Mass, envir = environment())
 data(MassClimate, envir = environment())
 
 test <- convertdate(bdate = Mass$Date, cdate = MassClimate$Date, xvar = MassClimate$Temp,
-                    cinterval = "month", type = "relative", spatial = NULL, upper = NA, lower = NA, stat = "mean")
+                    cinterval = "month", type = "relative", spatial = NULL, upper = NA, lower = NA)
 
 # Test that no NA dates were produced
 expect_equal(length(which(is.na(test))), 0)
@@ -182,7 +182,7 @@ test_that("convertdate works for month and absolute", {
   
   test <- convertdate(bdate = Mass$Date, cdate = MassClimate$Date, xvar = MassClimate$Temp,
                       cohort = lubridate::year(as.Date(Mass$Date, format = "%d/%m/%Y")), refday = c(1, 6),
-                      cinterval = "month", type = "absolute", spatial = NULL, upper = NA, lower = NA, stat = "mean")
+                      cinterval = "month", type = "absolute", spatial = NULL, upper = NA, lower = NA)
   
   # Test that no NA dates were produced
   expect_equal(length(which(is.na(test))), 0)
@@ -214,7 +214,7 @@ data(MassClimate, envir = environment())
 
 test <- convertdate(bdate = Mass$Date, cdate = MassClimate$Date, xvar = MassClimate$Temp,
                     xvar2 = MassClimate$Rain, cinterval = "day", type = "relative", cross = TRUE,
-                    spatial = NULL, upper = NA, lower = NA, stat = "mean")
+                    spatial = NULL, upper = NA, lower = NA)
 
 # Test that no NA dates were produced
 expect_equal(length(which(is.na(test))), 0)
@@ -248,7 +248,7 @@ test_that("convertdate works (days, xvar2, absolute)", {
   test <- convertdate(bdate = Mass$Date, cdate = MassClimate$Date, xvar = MassClimate$Temp,
                       cohort = lubridate::year(as.Date(Mass$Date, format = "%d/%m/%Y")), refday = c(1, 6),
                       xvar2 = MassClimate$Rain, cinterval = "day", type = "absolute", cross = TRUE,
-                      spatial = NULL, upper = NA, lower = NA, stat = "mean")
+                      spatial = NULL, upper = NA, lower = NA)
   
   # Test that no NA dates were produced
   expect_equal(length(which(is.na(test))), 0)
@@ -284,7 +284,7 @@ data(MassClimate, envir = environment())
 
 test <- convertdate(bdate = Mass$Date, cdate = MassClimate$Date, xvar = MassClimate$Temp,
                     xvar2 = MassClimate$Rain, cinterval = "week", type = "relative", cross = TRUE,
-                    spatial = NULL, upper = NA, lower = NA, stat = "mean")
+                    spatial = NULL, upper = NA, lower = NA)
 
 # Test that no NA dates were produced
 expect_equal(length(which(is.na(test))), 0)
@@ -318,7 +318,7 @@ test_that("convertdate works (week, xvar2, relative)", {
   test <- convertdate(bdate = Mass$Date, cdate = MassClimate$Date, xvar = MassClimate$Temp,
                       cohort = lubridate::year(as.Date(Mass$Date, format = "%d/%m/%Y")), refday = c(1, 6),
                       xvar2 = MassClimate$Rain, cinterval = "week", type = "absolute", cross = TRUE,
-                      spatial = NULL, upper = NA, lower = NA, stat = "mean")
+                      spatial = NULL, upper = NA, lower = NA)
   
   # Test that no NA dates were produced
   expect_equal(length(which(is.na(test))), 0)
@@ -354,7 +354,7 @@ data(MassClimate, envir = environment())
 
 test <- convertdate(bdate = Mass$Date, cdate = MassClimate$Date, xvar = MassClimate$Temp,
                     xvar2 = MassClimate$Rain, cinterval = "month", type = "relative", cross = TRUE,
-                    spatial = NULL, upper = NA, lower = NA, stat = "mean")
+                    spatial = NULL, upper = NA, lower = NA)
 
 # Test that no NA dates were produced
 expect_equal(length(which(is.na(test))), 0)
@@ -388,7 +388,7 @@ test_that("convertdate works (month, xvar2, absolute)", {
   test <- convertdate(bdate = Mass$Date, cdate = MassClimate$Date, xvar = MassClimate$Temp,
                       cohort = lubridate::year(as.Date(Mass$Date, format = "%d/%m/%Y")), refday = c(1, 6),
                       xvar2 = MassClimate$Rain, cinterval = "month", type = "absolute", cross = TRUE,
-                      spatial = NULL, upper = NA, lower = NA, stat = "mean")
+                      spatial = NULL, upper = NA, lower = NA)
   
   # Test that no NA dates were produced
   expect_equal(length(which(is.na(test))), 0)
