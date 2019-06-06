@@ -91,6 +91,70 @@ test_that("singlewin creates an output when cinterval = month", {
 
 ###############################################################################################
 
+#Test weights work
+
+test_that("singlewin works with weights", {
+  
+  data(Mass, envir = environment())
+  data(MassClimate, envir = environment())
+  Mass$weight <- runif(nrow(Mass), 0, 1)
+  
+  test <- singlewin(xvar = list(Temp = MassClimate$Temp), 
+                    cdate = MassClimate$Date, bdate = Mass$Date,
+                    baseline = lm(Mass ~ 1, weights = weight, data = Mass), range = c(72, 15),
+                    stat = "mean", func = "lin",
+                    type = "relative", cmissing = FALSE, cinterval = "day")
+  
+  # Test that singlewin produces an output
+  expect_true(is.list(test))  
+  
+  # Test that singlewin best model is created
+  expect_false(is.na(test[[1]][1]))
+  
+  # Test that best model data contains no NAs
+  expect_equal(length(which(is.na(test[[2]]))), 0)
+  
+  # Test that best model data has at least 2 parameters
+  expect_true(ncol(test[[2]]) >= 2)
+  
+  #Test that values match those from previous R version
+  expect_true(round(test$Dataset$deltaAICc, 1) == -25.2)
+  expect_true(round(test$Dataset$ModelAICc, 1) == 282)
+  
+})
+
+test_that("singlewin works with equal weights", {
+  
+  data(Mass, envir = environment())
+  data(MassClimate, envir = environment())
+  Mass$weight <- 1
+  
+  test <- singlewin(xvar = list(Temp = MassClimate$Temp), 
+                    cdate = MassClimate$Date, bdate = Mass$Date,
+                    baseline = lm(Mass ~ 1, weights = weight, data = Mass), range = c(72, 15),
+                    stat = "mean", func = "lin",
+                    type = "relative", cmissing = FALSE, cinterval = "day")
+  
+  # Test that singlewin produces an output
+  expect_true(is.list(test))  
+  
+  # Test that singlewin best model is created
+  expect_false(is.na(test[[1]][1]))
+  
+  # Test that best model data contains no NAs
+  expect_equal(length(which(is.na(test[[2]]))), 0)
+  
+  # Test that best model data has at least 2 parameters
+  expect_true(ncol(test[[2]]) >= 2)
+  
+  #Test that values match those from previous R version
+  expect_true(round(test$Dataset$deltaAICc, 1) == -14.2)
+  expect_true(round(test$Dataset$ModelAICc, 1) == 274)
+  
+})
+
+###############################################################################################
+
 # Test different settings of cmissing #
 
 # Test when cmissing is method1 and no NA is present#

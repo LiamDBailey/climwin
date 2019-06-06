@@ -516,20 +516,21 @@ test_that("No errors returned when cmissing method1 with NAs, cinterval = week",
 })
 
 # Test when cmissing is method2 and NA is present (cinterval = "week") #
-test_that("Error returned when cmissing method2 with NAs, cinterval = week", {
+test_that("No error returned when cmissing method2 with NAs, cinterval = week", {
   
   set.seed(666)
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
-  
+
   MassClimate2 <- MassClimate[-c(491:505), ]
   
   # Test that an error is returned
-  test <- weightwin(xvar = list(MassClimate2$Temp), cdate = MassClimate2$Date, bdate = Mass$Date, 
-                     baseline = lm(Mass ~ 1, data = Mass), range = c(3, 0), 
-                     type = "relative", func = "lin", cinterval = "week",
-                     cmissing = "method2")
+  test <- weightwin(xvar = list(MassClimate2$Temp), cdate = MassClimate2$Date,
+                    bdate = Mass$Date,
+                    baseline = lm(Mass ~ 1, data = Mass), range = c(50, 0),
+                    type = "relative", func = "lin", cinterval = "week",
+                    cmissing = "method2")
   
   # Test that weightwin produces an object
   expect_true(is.list(test))
@@ -550,8 +551,8 @@ test_that("Error returned when cmissing method2 with NAs, cinterval = week", {
   expect_equal(length(which(is.na(test[[3]]$ModelBeta))), 0)
   
   #Test that results are the same as GitHub 26-09 (cmissing is a new feature, so not available in R version)
-  expect_true(round(test$WeightedOutput$deltaAICc, 1) == -0.4)
-  expect_true(round(test$WeightedOutput$ModelBeta, 1) == -1.1)
+  expect_true(round(test$WeightedOutput$deltaAICc, 1) == -31.1)
+  expect_true(round(test$WeightedOutput$ModelBeta, 1) == -5.7)
   
 })
 
@@ -648,7 +649,7 @@ test_that("weightwin produces the right output when using weights in baseline mo
   closest = 0
   
   test <- weightwin(xvar = list(Temp = OffspringClimate$Temp), cdate = OffspringClimate$Date,
-                    bdate = Offspring$Date, baseline = lm(Offspring ~ 1, data = Offspring, weight = Order),
+                    bdate = Offspring$Date, baseline = lm(Offspring ~ 1, data = Offspring, weights = Order),
                     range = c(2, 1), func = "lin",
                     type = "relative", weightfun = "W", cinterval = "day",
                     par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)),
@@ -675,6 +676,46 @@ test_that("weightwin produces the right output when using weights in baseline mo
   #Test that results are the same as previous R version
   expect_true(round(test$WeightedOutput$deltaAICc, 1) == -36.7)
   expect_true(round(test$WeightedOutput$ModelBeta, 1) == 0)
+  
+})
+
+test_that("weightwin produces the right output when using equal weights in baseline model", {
+  
+  data("Mass", envir = environment())
+  data("MassClimate", envir = environment())
+  Mass$weight <- 1
+  
+  furthest = 2
+  closest = 0
+  
+  test <- weightwin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date,
+                    bdate = Mass$Date, baseline = lm(Mass ~ 1, data = Mass, weights = weight),
+                    range = c(2, 1), func = "lin",
+                    type = "relative", weightfun = "W", cinterval = "day",
+                    par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)),
+                    method = "L-BFGS-B")
+  
+  # Test that weightwin produces an object
+  expect_true(is.list(test))
+  
+  # Test that intercept and slope are generated
+  expect_false(is.na(test[[1]][1]))
+  
+  # Test that best model data contains no NAs
+  expect_equal(length(which(is.na(test[[2]]))), 0)
+  
+  # Test best model data contains at least 2 parameters
+  expect_true(ncol(test[[2]]) >= 2)
+  
+  # Test that list of optimisation is created
+  expect_true(is.list(test[[3]]))
+  
+  # Test that optimisation data contains no NAs
+  expect_equal(length(which(is.na(test[[3]]$ModelBeta))), 0)
+  
+  #Test that results are the same as previous R version
+  expect_true(round(test$WeightedOutput$deltaAICc, 1) == 1.3)
+  expect_true(round(test$WeightedOutput$ModelBeta, 1) == -0.4)
   
 })
 
