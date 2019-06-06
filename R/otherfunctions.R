@@ -607,21 +607,43 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   }
   
   #Check to see if the model contains a weight function. If so, incorporate this into the data used for updating the model.
-  if (is.null(weights(baseline)) == FALSE){
-    if (class(baseline)[1] == "glm" && sum(weights(baseline)) == nrow(model.frame(baseline)) || attr(class(baseline), "package") == "lme4" && sum(weights(baseline)) == nrow(model.frame(baseline))){
-    } else {
-      
-      modeldat$model_weights  <- weights(baseline)
-      #baseline <- update(baseline, yvar~., weights = model_weights, data = modeldat)
-      
-      call <- as.character(getCall(baseline))
-      
-      weight_name <- call[length(call)]
-      
-      names(modeldat)[length(names(modeldat))] <- weight_name
-      
-    }
+  if("(weights)" %in% colnames(model.frame(baseline))){
+    
+    modeldat$model_weights  <- weights(baseline)
+    #baseline <- update(baseline, yvar~., weights = model_weights, data = modeldat)
+    
+    call <- as.character(getCall(baseline))
+    
+    weight_name <- call[length(call)]
+    
+    names(modeldat)[length(names(modeldat))] <- weight_name
+    
   }
+  # if (is.null(weights(baseline)) == FALSE){
+  #   if(class(baseline) == "lm"){
+  #     
+  #     if(!is.null(weights(baseline))){
+  #       
+  #       
+  #       
+  #     }
+  #     
+  #   }
+  #   if (class(baseline)[1] == "glm" && sum(weights(baseline)) == nrow(model.frame(baseline)) || attr(class(baseline), "package") == "lme4" && sum(weights(baseline)) == nrow(model.frame(baseline))){
+  #     
+  #   } else {
+  #     
+  #     modeldat$model_weights  <- weights(baseline)
+  #     #baseline <- update(baseline, yvar~., weights = model_weights, data = modeldat)
+  #     
+  #     call <- as.character(getCall(baseline))
+  #     
+  #     weight_name <- call[length(call)]
+  #     
+  #     names(modeldat)[length(names(modeldat))] <- weight_name
+  #     
+  #   }
+  # }
   
   #If using a mixed model, ensure that maximum likelihood is specified (because we are comparing models with different fixed effects)
   if(!is.null(attr(class(baseline), "package")) && attr(class(baseline), "package") == "lme4" && class(baseline)[1] == "lmerMod" && baseline@resp$REML == 1){
@@ -1598,21 +1620,33 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
   }
   
   #Check to see if the model contains a weight function. If so, incorporate this into the data used for updating the model.
-  if (is.null(weights(baseline)) == FALSE){
-    if (class(baseline)[1] == "glm" && sum(weights(baseline)) == nrow(model.frame(baseline)) || attr(class(baseline), "package") == "lme4" && sum(weights(baseline)) == nrow(model.frame(baseline))){
-    } else {
-      
-      modeldat$model_weights  <- weights(baseline)
-      #baseline <- update(baseline, yvar~., weights = model_weights, data = modeldat)
-      
-      call <- as.character(getCall(baseline))
-      
-      weight_name <- call[length(call)]
-      
-      names(modeldat)[length(names(modeldat))] <- weight_name
-      
-    }
+  if("(weights)" %in% colnames(model.frame(baseline))){
+    
+    modeldat$model_weights  <- weights(baseline)
+    #baseline <- update(baseline, yvar~., weights = model_weights, data = modeldat)
+    
+    call <- as.character(getCall(baseline))
+    
+    weight_name <- call[length(call)]
+    
+    names(modeldat)[length(names(modeldat))] <- weight_name
+    
   }
+  # if (is.null(weights(baseline)) == FALSE){
+  #   if (class(baseline)[1] == "glm" && sum(weights(baseline)) == nrow(model.frame(baseline)) || attr(class(baseline), "package") == "lme4" && sum(weights(baseline)) == nrow(model.frame(baseline))){
+  #   } else {
+  #     
+  #     modeldat$model_weights  <- weights(baseline)
+  #     #baseline <- update(baseline, yvar~., weights = model_weights, data = modeldat)
+  #     
+  #     call <- as.character(getCall(baseline))
+  #     
+  #     weight_name <- call[length(call)]
+  #     
+  #     names(modeldat)[length(names(modeldat))] <- weight_name
+  #     
+  #   }
+  # }
   
   #If using a mixed model, ensure that maximum likelihood is specified (because we are comparing models with different fixed effects)
   if(!is.null(attr(class(baseline), "package")) && attr(class(baseline), "package") == "lme4" && class(baseline)[1] == "lmerMod" && baseline@resp$REML == 1){
