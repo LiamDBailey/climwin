@@ -95,6 +95,8 @@ test_that("singlewin creates an output when cinterval = month", {
 
 test_that("singlewin works with weights", {
   
+  set.seed(666)
+  
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
   Mass$weight <- runif(nrow(Mass), 0, 1)
@@ -118,12 +120,14 @@ test_that("singlewin works with weights", {
   expect_true(ncol(test[[2]]) >= 2)
   
   #Test that values match those from previous R version
-  expect_true(round(test$Dataset$deltaAICc, 1) == -25.2)
-  expect_true(round(test$Dataset$ModelAICc, 1) == 282)
+  expect_true(round(test$Dataset$deltaAICc, 1) == -25.4)
+  expect_true(round(test$Dataset$ModelAICc, 1) == 284)
   
 })
 
 test_that("singlewin works with equal weights", {
+  
+  set.seed(666)
   
   data(Mass, envir = environment())
   data(MassClimate, envir = environment())
@@ -149,7 +153,7 @@ test_that("singlewin works with equal weights", {
   
   #Test that values match those from previous R version
   expect_true(round(test$Dataset$deltaAICc, 1) == -14.2)
-  expect_true(round(test$Dataset$ModelAICc, 1) == 274)
+  expect_true(as.integer(round(test$Dataset$ModelAICc, 1)) == 274)
   
 })
 
