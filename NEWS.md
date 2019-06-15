@@ -1,3 +1,25 @@
+# climwin 1.2.2
+
+climwin v1.2.2 includes a number of important bug fixes that may
+affect ongoing analyses.
+
+## Major changes
+
+### Nonsensical results with absolute/week
+
+A major bug has been detected when running `slidingwin()` with `cinterval = "week"` and `type = "absolute"`. In this particular case, results were nonsensical and would not match similar results generated using `cinterval = "day"/"month"`. This issue was caused by the way we calculated the number of weeks in a year. This bug has now been fixed. Any previous analyses using this approach should be reconsidered.
+
+## Minor changes
+
+### plotwin now works with a single best window
+
+When using `cinterval = "month"`, it is possible to identify one best window with a large model weight (>0.95). This led to errors in `plotwin()`, which expects multiple models with small model weights. This issue has now been fixed, and `plotwin()` can work with results where there is a single best window.
+
+### Fixed bug where an error is returned when weights are fixed at 1
+
+`slidingwin()` allows users to provide weights in the baseline model. However, when these weights are uniform at 1, this led to an error in the way `slidingwin()` updates the baseline model during the window fitting process. The method for dealing with weights has been changed and this bug has been removed.
+
+
 # climwin 1.2.1
 
 climwin v1.2.1 is now fully compatible with R v3.6.0. To report errors and bugs or ask questions please visit the `climwin` [google group](https://groups.google.com/forum/?utm_medium=email&utm_source=footer#!forum/climwin-r-group).

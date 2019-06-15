@@ -4,12 +4,11 @@ author: "Liam D. Bailey"
 output: html_document
 ---
 
-##Resubmission
-This is a resubmission for this package.
+##New submission
+This is a new submission for this package.
 
-- Citations are now provided in the DESCRIPTION file.
-- All text is now written to the console using message()/warning().
-- All Rd files now have small, executable examples.
+This new submission is necessary to deal with a
+major bug fix.
 
 ## Test environments
 * ubuntu 14.04.5 (on travis-ci), R 3.6.0
