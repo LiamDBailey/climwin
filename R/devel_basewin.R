@@ -1113,6 +1113,19 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
         modlist$ModelBetaQ[[row]] <- NA
         modlist$ModelBetaC[[row]] <- NA
         
+        if(func == "quad"){
+          
+          modlist$Std.ErrorQ[[row]] <- NA
+          
+        }
+        
+        if(func == "cub"){
+          
+          modlist$Std.ErrorQ[[row]] <- NA
+          modlist$Std.ErrorC[[row]] <- NA
+          
+        }
+        
       } else {
         
         if(func == "quad"){
