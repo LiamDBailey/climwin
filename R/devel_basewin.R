@@ -946,7 +946,7 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     
   }
   
-  modlist <- tibble::as_tibble(modlist)
+  modlist <- as.data.frame(modlist)
   modlist <- modlist[order(modlist$deltaAICc), ]
   
   #Save the best model
