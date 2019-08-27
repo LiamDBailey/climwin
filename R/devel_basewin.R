@@ -1097,11 +1097,12 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     
     modlist$WindowOpen[[row]]  <- all_windows$WindowOpen[row]
     modlist$WindowClose[[row]] <- all_windows$WindowClose[row]
-    modlist$ModelInt[[row]]   <- coef(modeloutput)[1]
     
     if(class(modeloutput)[1] %in% c("lm", "lmerMod")){
       
       mod_summary <- coef(summary(modeloutput))
+      
+      modlist$ModelInt[[row]] <- mod_summary[1, "Estimate"]
       
       #If a model did not fit a climate term (i.e. climate was all 0)
       #Just return NA
