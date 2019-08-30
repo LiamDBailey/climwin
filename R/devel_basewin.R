@@ -96,6 +96,7 @@
 #'@import utils
 #'@import graphics
 #'@import lme4
+#'@import purrr
 #'@importFrom plyr rbind.fill
 #'@importFrom lubridate weeks
 #'@importFrom MuMIn AICc
@@ -1064,7 +1065,7 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   pb <- txtProgressBar(min = 1, max = nrow(all_windows), style = 3, char = "|")
   
   #Now, loop through every row and run models
-  for(row in 1:nrow(all_windows)){
+  modlist <- purrr::map_dfr(.x = 1:nrow(all_windows), .f = function(row){
     
     #Start index is the column in the cmatrix that should be extracted
     #This is the actual number of days in the past - range[2]
@@ -1097,37 +1098,36 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
       
     })
     
-    modlist$deltaAICc[[row]] <- AICc(modeloutput) - AICc(baseline)
-    modlist$ModelAICc[[row]] <- AICc(modeloutput)
-    
-    modlist$WindowOpen[[row]]  <- all_windows$WindowOpen[row]
-    modlist$WindowClose[[row]] <- all_windows$WindowClose[row]
+    modlist <- data.frame(deltaAICc = AICc(modeloutput) - AICc(baseline),
+                          ModelAICc = AICc(modeloutput),
+                          WindowOpen = all_windows$WindowOpen[row],
+                          WindowClose = all_windows$WindowClose[row])
     
     if(class(modeloutput)[1] %in% c("lm", "lmerMod")){
       
       mod_summary <- coef(summary(modeloutput))
       
-      modlist$ModelInt[[row]] <- mod_summary[1, "Estimate"]
+      modlist$ModelInt <- mod_summary[1, "Estimate"]
       
       #If a model did not fit a climate term (i.e. climate was all 0)
       #Just return NA
       if(!"climate" %in% rownames(mod_summary)){
         
-        modlist$ModelBeta[[row]]  <- NA
-        modlist$Std.Error[[row]]  <- NA
-        modlist$ModelBetaQ[[row]] <- NA
-        modlist$ModelBetaC[[row]] <- NA
+        modlist$ModelBeta  <- NA
+        modlist$Std.Error  <- NA
+        modlist$ModelBetaQ <- NA
+        modlist$ModelBetaC <- NA
         
         if(func == "quad"){
           
-          modlist$Std.ErrorQ[[row]] <- NA
+          modlist$Std.ErrorQ <- NA
           
         }
         
         if(func == "cub"){
           
-          modlist$Std.ErrorQ[[row]] <- NA
-          modlist$Std.ErrorC[[row]] <- NA
+          modlist$Std.ErrorQ <- NA
+          modlist$Std.ErrorC <- NA
           
         }
         
@@ -1135,27 +1135,27 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
         
         if(func == "quad"){
           
-          modlist$ModelBeta[[row]]  <- mod_summary[nrow(mod_summary) - 1, "Estimate"]
-          modlist$Std.Error[[row]]  <- mod_summary[nrow(mod_summary) - 1, "Std. Error"]
-          modlist$ModelBetaQ[[row]] <- mod_summary[nrow(mod_summary), "Estimate"]
-          modlist$Std.ErrorQ[[row]] <- mod_summary[nrow(mod_summary), "Std. Error"]
-          modlist$ModelBetaC[[row]] <- NA
+          modlist$ModelBeta  <- mod_summary[nrow(mod_summary) - 1, "Estimate"]
+          modlist$Std.Error  <- mod_summary[nrow(mod_summary) - 1, "Std. Error"]
+          modlist$ModelBetaQ <- mod_summary[nrow(mod_summary), "Estimate"]
+          modlist$Std.ErrorQ <- mod_summary[nrow(mod_summary), "Std. Error"]
+          modlist$ModelBetaC <- NA
           
         } else if(func == "cub"){
           
-          modlist$ModelBeta[[row]]  <- mod_summary[nrow(mod_summary) - 2, "Estimate"]
-          modlist$Std.Error[[row]]  <- mod_summary[nrow(mod_summary) - 2, "Std. Error"]
-          modlist$ModelBetaQ[[row]] <- mod_summary[nrow(mod_summary) - 1, "Estimate"]
-          modlist$Std.ErrorQ[[row]] <- mod_summary[nrow(mod_summary) - 1, "Std. Error"]
-          modlist$ModelBetaC[[row]] <- mod_summary[nrow(mod_summary), "Estimate"]
-          modlist$Std.ErrorC[[row]] <- mod_summary[nrow(mod_summary), "Std. Error"]
+          modlist$ModelBeta  <- mod_summary[nrow(mod_summary) - 2, "Estimate"]
+          modlist$Std.Error  <- mod_summary[nrow(mod_summary) - 2, "Std. Error"]
+          modlist$ModelBetaQ <- mod_summary[nrow(mod_summary) - 1, "Estimate"]
+          modlist$Std.ErrorQ <- mod_summary[nrow(mod_summary) - 1, "Std. Error"]
+          modlist$ModelBetaC <- mod_summary[nrow(mod_summary), "Estimate"]
+          modlist$Std.ErrorC <- mod_summary[nrow(mod_summary), "Std. Error"]
           
         } else {
           
-          modlist$ModelBeta[[row]]  <- mod_summary[nrow(mod_summary), "Estimate"]
-          modlist$Std.Error[[row]]  <- mod_summary[nrow(mod_summary), "Std. Error"]
-          modlist$ModelBetaQ[[row]] <- NA
-          modlist$ModelBetaC[[row]] <- NA
+          modlist$ModelBeta  <- mod_summary[nrow(mod_summary), "Estimate"]
+          modlist$Std.Error  <- mod_summary[nrow(mod_summary), "Std. Error"]
+          modlist$ModelBetaQ <- NA
+          modlist$ModelBetaC <- NA
           
         }
         
@@ -1165,9 +1165,10 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     
     setTxtProgressBar(pb, row)
     
-  }
+    return(modlist)
+    
+  })
   
-  modlist <- as.data.frame(modlist)
   modlist <- modlist[order(modlist$deltaAICc), ]
   
   #Save the best model
