@@ -2,6 +2,7 @@
 
 export(autowin)
 export(crosswin)
+export(devel_randwin)
 export(devel_slidingwin)
 export(explore)
 export(medwin)
