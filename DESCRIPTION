@@ -24,7 +24,9 @@ Imports:
     plyr,
     numDeriv,
     RcppRoll,
-    nlme
+    nlme,
+    purrr,
+    dplyr
 Suggests:
     testthat,
     knitr,

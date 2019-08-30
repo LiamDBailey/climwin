@@ -9,7 +9,7 @@ randwin(exclude = NA, repeats = 5, window = "sliding", xvar, cdate,
   cinterval = "day", spatial = NULL, cohort = NULL, upper = NA,
   lower = NA, binary = FALSE, centre = list(NULL, "both"), k = 0,
   weightfunc = "W", par = c(3, 0.2, 0), control = list(ndeps =
-  c(1e-02, 1e-02, 1e-02)), method = "L-BFGS-B", cutoff.day = NULL,
+  c(0.01, 0.01, 0.01)), method = "L-BFGS-B", cutoff.day = NULL,
   cutoff.month = NULL, furthest = NULL, closest = NULL,
   thresh = NULL, cvk = NULL)
 }
