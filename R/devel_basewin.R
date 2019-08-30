@@ -1084,11 +1084,16 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     
     modeloutput <- tryCatch({
       
-      update(modeloutput, .~., data = modeldat)
+      #update(modeloutput, .~., data = modeldat)
+      eval(getCall(modeloutput))
       
     }, error = function(e){
       
-      update(baseline, yvar~., data = modeldat)
+      #update(baseline, yvar~., data = modeldat)
+      modcall <- getCall(baseline)
+      modcall$formula <- update.formula(old = modcall$formula, new = yvar ~ .)
+      modcall$data <- modeldat
+      eval(modcall)
       
     })
     
