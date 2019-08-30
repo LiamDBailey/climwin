@@ -996,6 +996,10 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     
   }
   
+  #Save AICc value of baseline model
+  #This is used to determine deltaAICc, we only want to estimate it once.
+  baselineAIC <- AICc(baseline)
+  
   #If there are no variables in the baseline model called climate (i.e. the user has not specified more complex role for climate in the model, such as an interaction or random effects.)
   if(all(!grepl("climate", colnames(modeldat)))){
     
@@ -1098,8 +1102,10 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
       
     })
     
-    modlist <- data.frame(deltaAICc = AICc(modeloutput) - AICc(baseline),
-                          ModelAICc = AICc(modeloutput),
+    ModelAICc <- AICc(modeloutput)
+    
+    modlist <- data.frame(deltaAICc = ModelAICc - baselineAIC,
+                          ModelAICc= ModelAICc,
                           WindowOpen = all_windows$WindowOpen[row],
                           WindowClose = all_windows$WindowClose[row])
     
