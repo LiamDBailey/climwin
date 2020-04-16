@@ -1,3 +1,23 @@
+# climwin 1.2.3
+
+climwin v1.2.3 includes mostly minor internal changes to make `climwin` compatible
+with upcoming R v4.0.0
+
+## Major changes
+
+### Allow for model convergence failure during iteration
+
+TO DO!!
+
+## Minor changes
+
+None
+
+## Technical changes
+
+- Remove dependency on `plyr`, which was an artefact of old code.
+- Ensure that code is compatible with changes to stringAsFactor default in v4.0.0
+
 # climwin 1.2.2
 
 climwin v1.2.2 includes a number of important bug fixes that may
