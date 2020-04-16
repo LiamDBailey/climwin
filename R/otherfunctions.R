@@ -2086,7 +2086,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       SUB.DATE[[NUM]] <- data.frame(Date = seq(min(as.Date(SUB, format = "%d/%m/%Y")), max(as.Date(SUB, format = "%d/%m/%Y")), "days"),
                                     spatial = i) # Save this data in its own dataframe, with all possible dates within the range for that site only.
       
-      if (length(SUB.DATE[[NUM]]$Date) != length(unique(SUB.DATE[[NUM]]$Date))){
+      if (nrow(SUB.DATE[[NUM]]) != length(unique(SUB.DATE[[NUM]]$Date))){
         stop ("There are duplicate dayrecords in climate data") # Check there are no duplicates within each site...
       }
       
@@ -2140,7 +2140,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       cdatetemp  <- data.frame(Date = cdate, spatial = spatial[[2]]) # ...do the same for date information
       split.list <- list()
       NUM <- 1
-      for(i in levels(xvar2$spatial)){ # For each spatial site...
+      for(i in unique(xvar2$spatial)){ # For each spatial site...
         SUB <- subset(xvar2, spatial == i) # ...subset out relevant climate data from that site...
         SUBcdate  <- subset(cdatetemp, spatial == i) # ...extract relevant date information...
         SUBcdate2 <- subset(spatialcdate, spatial == i)
@@ -2163,7 +2163,8 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
     cdate      <- data.frame(Date = cdate, spatial = spatial[[2]]) # Do the same for date information
     split.list <- list()
     NUM <- 1
-    for(i in levels(xvar$spatial)){ #For each site ID...
+    
+    for(i in unique(xvar$spatial)){ #For each site ID...
       SUB <- subset(xvar, spatial == i) #Subset out climate data for that site...
       SUBcdate  <- subset(cdate, spatial == i) #extract recorded date info for each site
       SUBcdate2 <- subset(spatialcdate, spatial == i) #extract potential dates for each site (i.e. range from earliest to latest)
