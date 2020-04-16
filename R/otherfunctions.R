@@ -882,17 +882,17 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
           #Add model parameters to list
           if (k > 1){
             
-            modlist$ModelAICc[[modno]]    <- AICc_cv_avg
-            modlist$deltaAICc[[modno]]    <- deltaAICc_cv
+            modlist$ModelAICc[modno]    <- AICc_cv_avg
+            modlist$deltaAICc[modno]    <- deltaAICc_cv
             
           } else {
             
-            modlist$deltaAICc[[modno]] <- AICc(modeloutput) - AICc(baseline)
-            modlist$ModelAICc[[modno]] <- AICc(modeloutput)
+            modlist$deltaAICc[modno] <- AICc(modeloutput) - AICc(baseline)
+            modlist$ModelAICc[modno] <- AICc(modeloutput)
           }
        
-          modlist$WindowOpen[[modno]]  <- m
-          modlist$WindowClose[[modno]] <- m - n + 1
+          modlist$WindowOpen[modno]  <- m
+          modlist$WindowClose[modno] <- m - n + 1
           
           #Extract model coefficients (syntax is slightly different depending on the model type e.g. lme4 v. nlme v. lm)
           if(any(grepl("climate", colnames(model.frame(baseline))))){
@@ -909,173 +909,173 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
             
             if (class(baseline)[length(class(baseline))] == "coxph") {
               if (func == "quad"){
-                modlist$ModelBeta[[modno]]  <- coef(modeloutput)[length(coef(modeloutput))-1]
-                modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "se(coef)"][length(coef(modeloutput))-1]
-                modlist$ModelBetaQ[[modno]] <- coef(modeloutput)[length(coef(modeloutput))]
-                modlist$Std.ErrorQ[[modno]]  <- coef(summary(modeloutput))[, "se(coef)"][length(coef(modeloutput))]
-                modlist$ModelBetaC[[modno]] <- NA
-                modlist$ModelInt[[modno]]   <- 0
+                modlist$ModelBeta[modno]  <- coef(modeloutput)[length(coef(modeloutput))-1]
+                modlist$Std.Error[modno]  <- coef(summary(modeloutput))[, "se(coef)"][length(coef(modeloutput))-1]
+                modlist$ModelBetaQ[modno] <- coef(modeloutput)[length(coef(modeloutput))]
+                modlist$Std.ErrorQ[modno]  <- coef(summary(modeloutput))[, "se(coef)"][length(coef(modeloutput))]
+                modlist$ModelBetaC[modno] <- NA
+                modlist$ModelInt[modno]   <- 0
               } else if (func == "cub"){
-                modlist$ModelBeta[[modno]]  <- coef(modeloutput)[length(coef(modeloutput))-2]
-                modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "se(coef)"][length(coef(modeloutput))-2]
-                modlist$ModelBetaQ[[modno]] <- coef(modeloutput)[length(coef(modeloutput))-1]
-                modlist$Std.ErrorQ[[modno]]  <- coef(summary(modeloutput))[, "se(coef)"][length(coef(modeloutput))-1]
-                modlist$ModelBetaC[[modno]] <- coef(modeloutput)[length(coef(modeloutput))]
-                modlist$Std.ErrorC[[modno]]  <- coef(summary(modeloutput))[, "se(coef)"][length(coef(modeloutput))]
-                modlist$ModelInt[[modno]]   <- 0
+                modlist$ModelBeta[modno]  <- coef(modeloutput)[length(coef(modeloutput))-2]
+                modlist$Std.Error[modno]  <- coef(summary(modeloutput))[, "se(coef)"][length(coef(modeloutput))-2]
+                modlist$ModelBetaQ[modno] <- coef(modeloutput)[length(coef(modeloutput))-1]
+                modlist$Std.ErrorQ[modno]  <- coef(summary(modeloutput))[, "se(coef)"][length(coef(modeloutput))-1]
+                modlist$ModelBetaC[modno] <- coef(modeloutput)[length(coef(modeloutput))]
+                modlist$Std.ErrorC[modno]  <- coef(summary(modeloutput))[, "se(coef)"][length(coef(modeloutput))]
+                modlist$ModelInt[modno]   <- 0
               } else if (func == "centre"){
                 if(centre[[2]] == "both"){
-                  modlist$WithinGrpMean[[modno]] <- coef(modeloutput)[length(coef(modeloutput))]
-                  modlist$Std.ErrorMean[[modno]] <- coef(summary(modeloutput))[, "se(coef)"][length(coef(modeloutput))]
-                  modlist$WithinGrpDev[[modno]]  <- coef(modeloutput)[length(coef(modeloutput))-1]
-                  modlist$Std.ErrorDev[[modno]]  <- coef(summary(modeloutput))[, "se(coef)"][length(coef(modeloutput))-1]
-                  modlist$ModelInt[[modno]]      <- 0
+                  modlist$WithinGrpMean[modno] <- coef(modeloutput)[length(coef(modeloutput))]
+                  modlist$Std.ErrorMean[modno] <- coef(summary(modeloutput))[, "se(coef)"][length(coef(modeloutput))]
+                  modlist$WithinGrpDev[modno]  <- coef(modeloutput)[length(coef(modeloutput))-1]
+                  modlist$Std.ErrorDev[modno]  <- coef(summary(modeloutput))[, "se(coef)"][length(coef(modeloutput))-1]
+                  modlist$ModelInt[modno]      <- 0
                 }
                 if(centre[[2]] == "mean"){
-                  modlist$WithinGrpMean[[modno]] <- coef(modeloutput)[length(coef(modeloutput))]
-                  modlist$Std.Error[[modno]]     <- coef(summary(modeloutput))[, "se(coef)"][length(coef(modeloutput))]
-                  modlist$ModelInt[[modno]]      <- 0
+                  modlist$WithinGrpMean[modno] <- coef(modeloutput)[length(coef(modeloutput))]
+                  modlist$Std.Error[modno]     <- coef(summary(modeloutput))[, "se(coef)"][length(coef(modeloutput))]
+                  modlist$ModelInt[modno]      <- 0
                 }
                 if(centre[[2]] == "dev"){
-                  modlist$WithinGrpDev[[modno]]  <- coef(modeloutput)[length(coef(modeloutput))]
-                  modlist$Std.Error[[modno]]     <- coef(summary(modeloutput))[, "se(coef)"][length(coef(modeloutput))]
-                  modlist$ModelInt[[modno]]      <- 0
+                  modlist$WithinGrpDev[modno]  <- coef(modeloutput)[length(coef(modeloutput))]
+                  modlist$Std.Error[modno]     <- coef(summary(modeloutput))[, "se(coef)"][length(coef(modeloutput))]
+                  modlist$ModelInt[modno]      <- 0
                 }
               } else {
-                modlist$ModelBeta[[modno]]  <- coef(modeloutput)[length(coef(modeloutput))]
-                modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "se(coef)"][length(coef(modeloutput))]
-                modlist$ModelBetaQ[[modno]] <- NA
-                modlist$ModelBetaC[[modno]] <- NA
-                modlist$ModelInt[[modno]]   <- 0
+                modlist$ModelBeta[modno]  <- coef(modeloutput)[length(coef(modeloutput))]
+                modlist$Std.Error[modno]  <- coef(summary(modeloutput))[, "se(coef)"][length(coef(modeloutput))]
+                modlist$ModelBetaQ[modno] <- NA
+                modlist$ModelBetaC[modno] <- NA
+                modlist$ModelInt[modno]   <- 0
               }
             } else if (length(attr(class(modeloutput),"package")) > 0 && attr(class(modeloutput), "package") == "lme4"){            
               if (func == "quad"){
-                modlist$ModelBeta[[modno]]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
-                modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][2]
-                modlist$ModelBetaQ[[modno]] <- fixef(modeloutput)[length(fixef(modeloutput))]
-                modlist$Std.ErrorQ[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][3]
-                modlist$ModelBetaC[[modno]] <- NA
-                modlist$ModelInt[[modno]]   <- fixef(modeloutput)[1]
+                modlist$ModelBeta[modno]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
+                modlist$Std.Error[modno]  <- coef(summary(modeloutput))[, "Std. Error"][2]
+                modlist$ModelBetaQ[modno] <- fixef(modeloutput)[length(fixef(modeloutput))]
+                modlist$Std.ErrorQ[modno]  <- coef(summary(modeloutput))[, "Std. Error"][3]
+                modlist$ModelBetaC[modno] <- NA
+                modlist$ModelInt[modno]   <- fixef(modeloutput)[1]
               } else if (func == "cub"){
-                modlist$ModelBeta[[modno]]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 2]
-                modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][2]
-                modlist$ModelBetaQ[[modno]] <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
-                modlist$Std.ErrorQ[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][3]
-                modlist$ModelBetaC[[modno]] <- fixef(modeloutput)[length(fixef(modeloutput))]
-                modlist$Std.ErrorC[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][3]
-                modlist$ModelInt[[modno]]   <- fixef(modeloutput)[1]
+                modlist$ModelBeta[modno]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 2]
+                modlist$Std.Error[modno]  <- coef(summary(modeloutput))[, "Std. Error"][2]
+                modlist$ModelBetaQ[modno] <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
+                modlist$Std.ErrorQ[modno]  <- coef(summary(modeloutput))[, "Std. Error"][3]
+                modlist$ModelBetaC[modno] <- fixef(modeloutput)[length(fixef(modeloutput))]
+                modlist$Std.ErrorC[modno]  <- coef(summary(modeloutput))[, "Std. Error"][3]
+                modlist$ModelInt[modno]   <- fixef(modeloutput)[1]
               } else if (func == "centre"){
                 if(centre[[2]] == "both"){
-                  modlist$WithinGrpMean[[modno]] <- fixef(modeloutput)[length(fixef(modeloutput))]
-                  modlist$Std.ErrorMean[[modno]] <- coef(summary(modeloutput))[, "Std. Error"][2]
-                  modlist$WithinGrpDev[[modno]]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
-                  modlist$Std.ErrorDev[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][3]
-                  modlist$ModelInt[[modno]]      <- fixef(modeloutput)[1]
+                  modlist$WithinGrpMean[modno] <- fixef(modeloutput)[length(fixef(modeloutput))]
+                  modlist$Std.ErrorMean[modno] <- coef(summary(modeloutput))[, "Std. Error"][2]
+                  modlist$WithinGrpDev[modno]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
+                  modlist$Std.ErrorDev[modno]  <- coef(summary(modeloutput))[, "Std. Error"][3]
+                  modlist$ModelInt[modno]      <- fixef(modeloutput)[1]
                 }
                 if(centre[[2]] == "mean"){
-                  modlist$WithinGrpMean[[modno]] <- fixef(modeloutput)[length(fixef(modeloutput))]
-                  modlist$Std.Error[[modno]]     <- coef(summary(modeloutput))[, "Std. Error"][2]
-                  modlist$ModelInt[[modno]]      <- fixef(modeloutput)[1]
+                  modlist$WithinGrpMean[modno] <- fixef(modeloutput)[length(fixef(modeloutput))]
+                  modlist$Std.Error[modno]     <- coef(summary(modeloutput))[, "Std. Error"][2]
+                  modlist$ModelInt[modno]      <- fixef(modeloutput)[1]
                 }
                 if(centre[[2]] == "dev"){
-                  modlist$WithinGrpDev[[modno]]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
-                  modlist$Std.Error[[modno]]     <- coef(summary(modeloutput))[, "Std. Error"][2]
-                  modlist$ModelInt[[modno]]      <- fixef(modeloutput)[1]
+                  modlist$WithinGrpDev[modno]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
+                  modlist$Std.Error[modno]     <- coef(summary(modeloutput))[, "Std. Error"][2]
+                  modlist$ModelInt[modno]      <- fixef(modeloutput)[1]
                 }
               } else {
                 
-                modlist$ModelBeta[[modno]]  <- fixef(modeloutput)[length(fixef(modeloutput))]
+                modlist$ModelBeta[modno]  <- fixef(modeloutput)[length(fixef(modeloutput))]
                 
-                modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][2]
-                modlist$ModelBetaQ[[modno]] <- NA
-                modlist$ModelBetaC[[modno]] <- NA
-                modlist$ModelInt[[modno]]   <- fixef(modeloutput)[1]
+                modlist$Std.Error[modno]  <- coef(summary(modeloutput))[, "Std. Error"][2]
+                modlist$ModelBetaQ[modno] <- NA
+                modlist$ModelBetaC[modno] <- NA
+                modlist$ModelInt[modno]   <- fixef(modeloutput)[1]
               }
               
             } else if(attr(baseline, "class")[1] == "lme"){
               
               if (func == "quad"){
-                modlist$ModelBeta[[modno]]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
-                modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "Std.Error"][2]
-                modlist$ModelBetaQ[[modno]] <- fixef(modeloutput)[length(fixef(modeloutput))]
-                modlist$Std.ErrorQ[[modno]]  <- coef(summary(modeloutput))[, "Std.Error"][3]
-                modlist$ModelBetaC[[modno]] <- NA
-                modlist$ModelInt[[modno]]   <- fixef(modeloutput)[1]
+                modlist$ModelBeta[modno]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
+                modlist$Std.Error[modno]  <- coef(summary(modeloutput))[, "Std.Error"][2]
+                modlist$ModelBetaQ[modno] <- fixef(modeloutput)[length(fixef(modeloutput))]
+                modlist$Std.ErrorQ[modno]  <- coef(summary(modeloutput))[, "Std.Error"][3]
+                modlist$ModelBetaC[modno] <- NA
+                modlist$ModelInt[modno]   <- fixef(modeloutput)[1]
               } else if (func == "cub"){
-                modlist$ModelBeta[[modno]]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 2]
-                modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "Std.Error"][2]
-                modlist$ModelBetaQ[[modno]] <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
-                modlist$Std.ErrorQ[[modno]]  <- coef(summary(modeloutput))[, "Std.Error"][3]
-                modlist$ModelBetaC[[modno]] <- fixef(modeloutput)[length(fixef(modeloutput))]
-                modlist$Std.ErrorC[[modno]]  <- coef(summary(modeloutput))[, "Std.Error"][3]
-                modlist$ModelInt[[modno]]   <- fixef(modeloutput)[1]
+                modlist$ModelBeta[modno]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 2]
+                modlist$Std.Error[modno]  <- coef(summary(modeloutput))[, "Std.Error"][2]
+                modlist$ModelBetaQ[modno] <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
+                modlist$Std.ErrorQ[modno]  <- coef(summary(modeloutput))[, "Std.Error"][3]
+                modlist$ModelBetaC[modno] <- fixef(modeloutput)[length(fixef(modeloutput))]
+                modlist$Std.ErrorC[modno]  <- coef(summary(modeloutput))[, "Std.Error"][3]
+                modlist$ModelInt[modno]   <- fixef(modeloutput)[1]
               } else if (func == "centre"){
                 if(centre[[2]] == "both"){
-                  modlist$WithinGrpMean[[modno]] <- fixef(modeloutput)[length(fixef(modeloutput))]
-                  modlist$Std.ErrorMean[[modno]] <- coef(summary(modeloutput))[, "Std.Error"][2]
-                  modlist$WithinGrpDev[[modno]]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
-                  modlist$Std.ErrorDev[[modno]]  <- coef(summary(modeloutput))[, "Std.Error"][3]
-                  modlist$ModelInt[[modno]]      <- fixef(modeloutput)[1]
+                  modlist$WithinGrpMean[modno] <- fixef(modeloutput)[length(fixef(modeloutput))]
+                  modlist$Std.ErrorMean[modno] <- coef(summary(modeloutput))[, "Std.Error"][2]
+                  modlist$WithinGrpDev[modno]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
+                  modlist$Std.ErrorDev[modno]  <- coef(summary(modeloutput))[, "Std.Error"][3]
+                  modlist$ModelInt[modno]      <- fixef(modeloutput)[1]
                 }
                 if(centre[[2]] == "mean"){
-                  modlist$WithinGrpMean[[modno]] <- fixef(modeloutput)[length(fixef(modeloutput))]
-                  modlist$Std.Error[[modno]]     <- coef(summary(modeloutput))[, "Std.Error"][2]
-                  modlist$ModelInt[[modno]]      <- fixef(modeloutput)[1]
+                  modlist$WithinGrpMean[modno] <- fixef(modeloutput)[length(fixef(modeloutput))]
+                  modlist$Std.Error[modno]     <- coef(summary(modeloutput))[, "Std.Error"][2]
+                  modlist$ModelInt[modno]      <- fixef(modeloutput)[1]
                 }
                 if(centre[[2]] == "dev"){
-                  modlist$WithinGrpDev[[modno]]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
-                  modlist$Std.Error[[modno]]     <- coef(summary(modeloutput))[, "Std.Error"][2]
-                  modlist$ModelInt[[modno]]      <- fixef(modeloutput)[1]
+                  modlist$WithinGrpDev[modno]  <- fixef(modeloutput)[length(fixef(modeloutput)) - 1]
+                  modlist$Std.Error[modno]     <- coef(summary(modeloutput))[, "Std.Error"][2]
+                  modlist$ModelInt[modno]      <- fixef(modeloutput)[1]
                 }
               } else {
                 
-                modlist$ModelBeta[[modno]]  <- fixef(modeloutput)[length(fixef(modeloutput))]
-                modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "Std.Error"][2]
-                modlist$ModelBetaQ[[modno]] <- NA
-                modlist$ModelBetaC[[modno]] <- NA
-                modlist$ModelInt[[modno]]   <- fixef(modeloutput)[1]
+                modlist$ModelBeta[modno]  <- fixef(modeloutput)[length(fixef(modeloutput))]
+                modlist$Std.Error[modno]  <- coef(summary(modeloutput))[, "Std.Error"][2]
+                modlist$ModelBetaQ[modno] <- NA
+                modlist$ModelBetaC[modno] <- NA
+                modlist$ModelInt[modno]   <- fixef(modeloutput)[1]
               }
               
             } else {
               if (func == "quad"){
-                modlist$ModelBeta[[modno]]  <- coef(modeloutput)[length(coef(modeloutput)) - 1]
-                modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][2]
-                modlist$ModelBetaQ[[modno]] <- coef(modeloutput)[length(coef(modeloutput))]
-                modlist$Std.ErrorQ[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][3]
-                modlist$ModelBetaC[[modno]] <- NA
-                modlist$ModelInt[[modno]]   <- coef(modeloutput)[1]
+                modlist$ModelBeta[modno]  <- coef(modeloutput)[length(coef(modeloutput)) - 1]
+                modlist$Std.Error[modno]  <- coef(summary(modeloutput))[, "Std. Error"][2]
+                modlist$ModelBetaQ[modno] <- coef(modeloutput)[length(coef(modeloutput))]
+                modlist$Std.ErrorQ[modno]  <- coef(summary(modeloutput))[, "Std. Error"][3]
+                modlist$ModelBetaC[modno] <- NA
+                modlist$ModelInt[modno]   <- coef(modeloutput)[1]
               } else if (func == "cub"){
-                modlist$ModelBeta[[modno]]  <- coef(modeloutput)[length(coef(modeloutput)) - 2]
-                modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][2]
-                modlist$ModelBetaQ[[modno]] <- coef(modeloutput)[length(coef(modeloutput)) - 1]
-                modlist$Std.ErrorQ[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][3]
-                modlist$ModelBetaC[[modno]] <- coef(modeloutput)[length(coef(modeloutput))]
-                modlist$Std.ErrorC[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][4]
-                modlist$ModelInt[[modno]]   <- coef(modeloutput)[1]
+                modlist$ModelBeta[modno]  <- coef(modeloutput)[length(coef(modeloutput)) - 2]
+                modlist$Std.Error[modno]  <- coef(summary(modeloutput))[, "Std. Error"][2]
+                modlist$ModelBetaQ[modno] <- coef(modeloutput)[length(coef(modeloutput)) - 1]
+                modlist$Std.ErrorQ[modno]  <- coef(summary(modeloutput))[, "Std. Error"][3]
+                modlist$ModelBetaC[modno] <- coef(modeloutput)[length(coef(modeloutput))]
+                modlist$Std.ErrorC[modno]  <- coef(summary(modeloutput))[, "Std. Error"][4]
+                modlist$ModelInt[modno]   <- coef(modeloutput)[1]
               } else if (func == "centre"){
                 if(centre[[2]] == "both"){
-                  modlist$WithinGrpMean[[modno]] <- coef(modeloutput)[length(coef(modeloutput))]
-                  modlist$Std.ErrorMean[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][2]
-                  modlist$WithinGrpDev[[modno]]  <- coef(modeloutput)[length(coef(modeloutput)) - 1]
-                  modlist$Std.ErrorDev[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][3]
-                  modlist$ModelInt[[modno]]      <- coef(modeloutput)[1]
+                  modlist$WithinGrpMean[modno] <- coef(modeloutput)[length(coef(modeloutput))]
+                  modlist$Std.ErrorMean[modno]  <- coef(summary(modeloutput))[, "Std. Error"][2]
+                  modlist$WithinGrpDev[modno]  <- coef(modeloutput)[length(coef(modeloutput)) - 1]
+                  modlist$Std.ErrorDev[modno]  <- coef(summary(modeloutput))[, "Std. Error"][3]
+                  modlist$ModelInt[modno]      <- coef(modeloutput)[1]
                 }
                 if(centre[[2]] == "mean"){
-                  modlist$WithinGrpMean[[modno]] <- coef(modeloutput)[length(coef(modeloutput))]
-                  modlist$Std.ErrorMean[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][2]
-                  modlist$ModelInt[[modno]]      <- coef(modeloutput)[1]
+                  modlist$WithinGrpMean[modno] <- coef(modeloutput)[length(coef(modeloutput))]
+                  modlist$Std.ErrorMean[modno]  <- coef(summary(modeloutput))[, "Std. Error"][2]
+                  modlist$ModelInt[modno]      <- coef(modeloutput)[1]
                 }
                 if(centre[[2]] == "dev"){
-                  modlist$WithinGrpDev[[modno]]  <- coef(modeloutput)[length(coef(modeloutput)) - 1]
-                  modlist$Std.ErrorDev[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][2]
-                  modlist$ModelInt[[modno]]      <- coef(modeloutput)[1]
+                  modlist$WithinGrpDev[modno]  <- coef(modeloutput)[length(coef(modeloutput)) - 1]
+                  modlist$Std.ErrorDev[modno]  <- coef(summary(modeloutput))[, "Std. Error"][2]
+                  modlist$ModelInt[modno]      <- coef(modeloutput)[1]
                 }
               } else {
-                modlist$ModelBeta[[modno]]  <- coef(modeloutput)[length(coef(modeloutput))]
-                modlist$Std.Error[[modno]]  <- coef(summary(modeloutput))[, "Std. Error"][2]
-                modlist$ModelBetaQ[[modno]] <- NA
-                modlist$ModelBetaC[[modno]] <- NA
-                modlist$ModelInt[[modno]]   <- coef(modeloutput)[1]
+                modlist$ModelBeta[modno]  <- coef(modeloutput)[length(coef(modeloutput))]
+                modlist$Std.Error[modno]  <- coef(summary(modeloutput))[, "Std. Error"][2]
+                modlist$ModelBetaQ[modno] <- NA
+                modlist$ModelBetaC[modno] <- NA
+                modlist$ModelInt[modno]   <- coef(modeloutput)[1]
               }
             }
           }
