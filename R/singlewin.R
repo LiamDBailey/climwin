@@ -244,7 +244,7 @@ singlewin <- function(xvar, cdate, bdate, baseline,
     cdate      <- data.frame(Date = cdate, spatial = spatial[[2]])
     split.list <- list()
     NUM <- 1
-    for(i in levels(xvar$spatial)){
+    for(i in unique(xvar$spatial)){
       SUB <- subset(xvar, spatial == i)
       SUBcdate  <- subset(cdate, spatial == i)
       SUBcdate2 <- subset(spatialcdate, spatial == i)
