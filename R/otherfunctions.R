@@ -1176,7 +1176,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   
   if(exists("coef_data")){
     
-    modlist <- cbind(modlist, plyr::rbind.fill(coef_data))
+    modlist <- cbind(modlist, do.call(rbind, coef_data))
     
   }
   
@@ -2094,7 +2094,7 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
     
     }
     
-    spatialcdate <- plyr::rbind.fill(SUB.DATE) # Combine all date data from each site together...
+    spatialcdate <- do.call(rbind, SUB.DATE) # Combine all date data from each site together...
     cdate2       <- spatialcdate$Date # Save this new date data as cdate2..
     cintno       <- as.numeric(cdate2) - min(as.numeric(cdate2)) + 1   # atrribute daynumbers for both climate and biological data with first date in the climate data set to cintno 1
     realbintno   <- as.numeric(bdate) - min(as.numeric(cdate2)) + 1
@@ -2151,8 +2151,8 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
         split.list[[NUM]] <- data.frame(NewClim, Newspatial) # Create a new dataframe with second climate variable and site ID
         NUM <- NUM + 1
       }
-      xvar2    <- (plyr::rbind.fill(split.list))$NewClim # Extract second climate data (with NAs where there is missing date info)
-      climspatial <- (plyr::rbind.fill(split.list))$Newspatial #Extract the new spatial data as well
+      xvar2    <- (do.call(rbind, split.list))$NewClim # Extract second climate data (with NAs where there is missing date info)
+      climspatial <- (do.call(rbind, split.list))$Newspatial #Extract the new spatial data as well
     } else {
       xvar2    <- xvar2[match(cdate2, cdate)] # if there is no spatial replication, simply check for matches (i.e. include NAs where appropriate)
     }
@@ -2175,8 +2175,8 @@ convertdate <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       split.list[[NUM]] <- data.frame(NewClim, Newspatial) # Create a new dataframe with this climate data and site ID info
       NUM <- NUM + 1
     }
-    xvar    <- (plyr::rbind.fill(split.list))$NewClim #save climate data (with NAs)
-    climspatial <- (plyr::rbind.fill(split.list))$Newspatial #Save site ID info (same length as that with NAs)
+    xvar    <- (do.call(rbind, split.list))$NewClim #save climate data (with NAs)
+    climspatial <- (do.call(rbind, split.list))$Newspatial #Save site ID info (same length as that with NAs)
   } else {
     xvar    <- xvar[match(cdate2, cdate)] #When there is no spatial replication, simply check for missing date info.
   }

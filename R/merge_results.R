@@ -6,7 +6,6 @@
 #'@return A list object, identical to that produced by \code{\link{slidingwin}},
 #'containing all records from both outputs.
 #'@author Liam D. Bailey and Martijn van de Pol
-#'@importFrom plyr rbind.fill
 #'@examples
 #'
 #'#Simple test example

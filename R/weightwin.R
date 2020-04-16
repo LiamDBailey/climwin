@@ -268,9 +268,9 @@ weightwin <- function(n = 1, xvar, cdate, bdate, baseline, range, k = 0,
     
     setTxtProgressBar(pb, n)
     
-    print(plyr::rbind.fill(par.list))
+    print(do.call(rbind, par.list))
     
-    weight.list$iterations <- plyr::rbind.fill(par.list)
+    weight.list$iterations <- do.call(rbind, par.list)
     
     return(weight.list)
     

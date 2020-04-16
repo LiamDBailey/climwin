@@ -21,7 +21,6 @@ Imports:
     lme4,
     MuMIn,
     reshape,
-    plyr,
     numDeriv,
     RcppRoll,
     nlme

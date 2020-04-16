@@ -213,7 +213,7 @@ singlewin <- function(xvar, cdate, bdate, baseline,
      }
      NUM <- NUM + 1
     }
-    spatialcdate <- plyr::rbind.fill(SUB.DATE)
+    spatialcdate <- do.call(rbind, SUB.DATE)
     cdate2       <- spatialcdate$Date
     cintno       <- as.numeric(cdate2) - min(as.numeric(cdate2)) + 1   # atrribute daynumbers for both datafiles with first date in CLimateData set to cintno 1
     realbintno   <- as.numeric(bdate) - min(as.numeric(cdate2)) + 1
@@ -255,8 +255,8 @@ singlewin <- function(xvar, cdate, bdate, baseline,
       split.list[[NUM]] <- data.frame(NewClim, Newspatial)
       NUM <- NUM + 1
     }
-    xvar    <- (plyr::rbind.fill(split.list))$NewClim
-    climspatial <- (plyr::rbind.fill(split.list))$Newspatial
+    xvar    <- (do.call(rbind, split.list))$NewClim
+    climspatial <- (do.call(rbind, split.list))$Newspatial
   } else {
     xvar    <- xvar[match(cdate2, cdate)]
   }  
