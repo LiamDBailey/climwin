@@ -95,7 +95,7 @@ For this example, we will use the `Mass` and `MassClimate` datasets included wit
 
 To begin, we need to determine the predictor variable which we want to study. The parameter 'xvar' is a list object containing our variables of interest (e.g. Temperature, Rainfall). While we will focus here on climate, it is possible to apply our `slidingwin` methodology with non-climatic predictors (e.g. NDVI).
 
-`xvar = list(Temp = MassClimate$Temperature)`
+`xvar = list(Temp = MassClimate$Temp)`
 
 **cdate/bdate**
 
