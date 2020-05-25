@@ -4,11 +4,27 @@
 \alias{slidingwin}
 \title{Test for a climate windows in data.}
 \usage{
-slidingwin(exclude = NA, xvar, cdate, bdate, baseline, type, refday,
-  stat = "mean", func = "lin", range, cmissing = FALSE,
-  cinterval = "day", k = 0, upper = NA, lower = NA,
-  binary = FALSE, centre = list(NULL, "both"), spatial = NULL,
-  cohort = NULL)
+slidingwin(
+  exclude = NA,
+  xvar,
+  cdate,
+  bdate,
+  baseline,
+  type,
+  refday,
+  stat = "mean",
+  func = "lin",
+  range,
+  cmissing = FALSE,
+  cinterval = "day",
+  k = 0,
+  upper = NA,
+  lower = NA,
+  binary = FALSE,
+  centre = list(NULL, "both"),
+  spatial = NULL,
+  cohort = NULL
+)
 }
 \arguments{
 \item{exclude}{Two values (duration and distance) which allow users

@@ -4,14 +4,39 @@
 \alias{randwin}
 \title{Climate window analysis for randomised data}
 \usage{
-randwin(exclude = NA, repeats = 5, window = "sliding", xvar, cdate,
-  bdate, baseline, stat, range, func, type, refday, cmissing = FALSE,
-  cinterval = "day", spatial = NULL, cohort = NULL, upper = NA,
-  lower = NA, binary = FALSE, centre = list(NULL, "both"), k = 0,
-  weightfunc = "W", par = c(3, 0.2, 0), control = list(ndeps =
-  c(1e-02, 1e-02, 1e-02)), method = "L-BFGS-B", cutoff.day = NULL,
-  cutoff.month = NULL, furthest = NULL, closest = NULL,
-  thresh = NULL, cvk = NULL)
+randwin(
+  exclude = NA,
+  repeats = 5,
+  window = "sliding",
+  xvar,
+  cdate,
+  bdate,
+  baseline,
+  stat,
+  range,
+  func,
+  type,
+  refday,
+  cmissing = FALSE,
+  cinterval = "day",
+  spatial = NULL,
+  cohort = NULL,
+  upper = NA,
+  lower = NA,
+  binary = FALSE,
+  centre = list(NULL, "both"),
+  k = 0,
+  weightfunc = "W",
+  par = c(3, 0.2, 0),
+  control = list(ndeps = c(0.01, 0.01, 0.01)),
+  method = "L-BFGS-B",
+  cutoff.day = NULL,
+  cutoff.month = NULL,
+  furthest = NULL,
+  closest = NULL,
+  thresh = NULL,
+  cvk = NULL
+)
 }
 \arguments{
 \item{exclude}{Two values (distance and duration) which allow users

@@ -5,9 +5,7 @@ with upcoming R v4.0.0
 
 ## Major changes
 
-### Allow for model convergence failure during iteration
-
-TO DO!!
+None
 
 ## Minor changes
 

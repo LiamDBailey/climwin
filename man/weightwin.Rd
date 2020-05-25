@@ -4,13 +4,33 @@
 \alias{weightwin}
 \title{Find a weighted climate window}
 \usage{
-weightwin(n = 1, xvar, cdate, bdate, baseline, range, k = 0,
-  func = "lin", type, refday, nrandom = 0, centre = NULL,
-  weightfunc = "W", cinterval = "day", cmissing = FALSE,
-  cohort = NULL, spatial = NULL, par = c(3, 0.2, 0),
-  control = list(ndeps = c(1e-03, 1e-03, 1e-03)), method = "L-BFGS-B",
-  cutoff.day = NULL, cutoff.month = NULL, furthest = NULL,
-  closest = NULL, grad = FALSE)
+weightwin(
+  n = 1,
+  xvar,
+  cdate,
+  bdate,
+  baseline,
+  range,
+  k = 0,
+  func = "lin",
+  type,
+  refday,
+  nrandom = 0,
+  centre = NULL,
+  weightfunc = "W",
+  cinterval = "day",
+  cmissing = FALSE,
+  cohort = NULL,
+  spatial = NULL,
+  par = c(3, 0.2, 0),
+  control = list(ndeps = c(0.001, 0.001, 0.001)),
+  method = "L-BFGS-B",
+  cutoff.day = NULL,
+  cutoff.month = NULL,
+  furthest = NULL,
+  closest = NULL,
+  grad = FALSE
+)
 }
 \arguments{
 \item{n}{The number of iterations used to run weightwin. If n > 1, iterations 

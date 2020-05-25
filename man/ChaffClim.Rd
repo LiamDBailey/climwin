@@ -3,12 +3,14 @@
 \name{ChaffClim}
 \alias{ChaffClim}
 \title{Daily climate data from 1965 to 2012.}
-\format{A data frame with 17,520 rows and 3 variables.
+\format{
+A data frame with 17,520 rows and 3 variables.
 \describe{
   \item{Date}{Date when climate was recorded (dd/mm/yyyy).}
   \item{Rain}{Average daily rainfall data in mm.}
   \item{Temp}{Maximum daily temperature in degrees centigrade.}
-  }}
+  }
+}
 \description{
 Maximum daily temperature and average rainfall data 
 from 1965 to 2012. Coincides with biological data 

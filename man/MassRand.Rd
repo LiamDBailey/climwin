@@ -3,7 +3,8 @@
 \name{MassRand}
 \alias{MassRand}
 \title{Example output dataframe from function randwin.}
-\format{A data frame with 5 rows and 21 variables.
+\format{
+A data frame with 5 rows and 21 variables.
 \describe{
   \item{deltaAICc}{Difference between model AICc of fitted climate window and a null model containing no climate.}
   \item{WindowOpen}{The start day of each tested climate window. Furthest from the biological record.}
@@ -25,7 +26,8 @@
   \item{Randomised}{Whether the data was generated using \code{\link{slidingwin}} or \code{\link{randwin}}.}
   \item{Repeat}{The number of randomisations carried out.}
   \item{WeightDist}{Model spread of 95 percent confidence set of models.}
-  }}
+  }
+}
 \description{
 Output file from function \code{\link{randwin}} using temperature and mass data. 
 Generated with \code{\link{Mass}} and \code{\link{MassClimate}} dataframes.
