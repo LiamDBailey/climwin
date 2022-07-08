@@ -4,8 +4,7 @@
 \alias{plotdelta}
 \title{Plot deltaAICc of models}
 \usage{
-plotdelta(dataset, arrow = FALSE, plotall = FALSE, plotallenv,
-  ThreeD = FALSE)
+plotdelta(dataset, arrow = FALSE, plotall = FALSE, plotallenv, ThreeD = FALSE)
 }
 \arguments{
 \item{dataset}{A dataframe containing information on all fitted climate 

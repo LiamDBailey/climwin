@@ -1,7 +1,7 @@
 Package: climwin
 Type: Package
 Title: Climate Window Analysis
-Version: 1.2.2
+Version: 1.2.3
 Author: Liam D. Bailey and Martijn van de Pol
 Maintainer: Liam D. Bailey <liam.bailey@liamdbailey.com>
 URL: https://github.com/LiamDBailey/climwin
@@ -21,7 +21,6 @@ Imports:
     lme4,
     MuMIn,
     reshape,
-    plyr,
     numDeriv,
     RcppRoll,
     nlme,
@@ -35,4 +34,4 @@ License: GPL-2
 Repository: CRAN
 LazyData: True
 VignetteBuilder: knitr
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.0

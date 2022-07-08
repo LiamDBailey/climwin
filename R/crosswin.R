@@ -405,9 +405,9 @@ crosswin <- function(xvar, xvar2, cdate, bdate, range,
           # Run the model
           modeloutput <- cor(climate1, climate2)
           # Add model parameters to list#
-          modlist$cor[[modno]]         <- modeloutput
-          modlist$WindowOpen[[modno]]  <- m
-          modlist$WindowClose[[modno]] <- m - n + 1
+          modlist$cor[modno]         <- modeloutput
+          modlist$WindowOpen[modno]  <- m
+          modlist$WindowClose[modno] <- m - n + 1
           modno                        <- modno + 1 # Increase modno#
         }
       }

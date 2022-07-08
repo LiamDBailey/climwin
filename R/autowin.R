@@ -609,9 +609,9 @@ Do you want to apply this threshold before calculating weekly/monthly means (i.e
           
           modeloutput <- cor(climate1, reference)
           
-          modlist$cor[[modno]]         <- modeloutput
-          modlist$WindowOpen[[modno]]  <- m
-          modlist$WindowClose[[modno]] <- m - n + 1
+          modlist$cor[modno]         <- modeloutput
+          modlist$WindowOpen[modno]  <- m
+          modlist$WindowClose[modno] <- m - n + 1
           modno                        <- modno + 1
         }
       }

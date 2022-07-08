@@ -3,14 +3,16 @@
 \name{Size}
 \alias{Size}
 \title{Average size of red winged fairy wren (Malurus elegans) chicks.}
-\format{A data frame with 1,003 rows and 5 variables.
+\format{
+A data frame with 1,003 rows and 5 variables.
 \describe{
   \item{NestID}{Unique nest identifier.}
   \item{Cohort}{Year of breeding season.}
   \item{Helpers}{Total number of non-breeding helpers at the nest.}
   \item{Size}{Average offspring size.}
   \item{Date}{Date when offspring size was recorded (dd/mm/yyyy).}
-  }}
+  }
+}
 \description{
 Average size (using standardised measures of tarsus length,
 head-bill length and wing length) in red winged fairy wren

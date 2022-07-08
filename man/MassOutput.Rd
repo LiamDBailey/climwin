@@ -3,7 +3,8 @@
 \name{MassOutput}
 \alias{MassOutput}
 \title{Example output dataframe from function slidingwin.}
-\format{A data frame with 5,151 rows and 19 variables.
+\format{
+A data frame with 5,151 rows and 19 variables.
 \describe{
   \item{deltaAICc}{Difference between model AICc of fitted climate window and a null model containing no climate.}
   \item{WindowOpen}{The start day of each tested climate window. Furthest from the biological record.}
@@ -23,7 +24,8 @@
   \item{sample.size}{Sample size (i.e. number of years or sites) used for climate window analysis.}
   \item{Reference.day,Reference.month}{If type is "absolute", the date from which the climate window was tested.}
   \item{Randomised}{Whether the data was generated using \code{\link{slidingwin}} or \code{\link{randwin}}.}
-  }}
+  }
+}
 \description{
 Output file from \code{\link{slidingwin}} using temperature and body mass data. 
 Generated with \code{\link{Mass}} and \code{\link{MassClimate}} dataframes.

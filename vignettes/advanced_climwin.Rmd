@@ -357,7 +357,7 @@ Instead of varying the start and end date of climate windows like `slidingwin`, 
 ### A worked example
 `weightwin` can often be useful to use with climate data where we have already identified a climate window using `slidingwin`. Here, we will use `weightwin` to further investigate the `Mass` and `MassClimate` data included with the `climwin` package.
 
-The basic parameters in `weightwin` are the same as `slidingwin` (though note the abscence of the 'stat' parameter). In addition however, we must designate which weight distribution we want to use. In this case we consider a Weibull function.
+The basic parameters in `weightwin` are the same as `slidingwin` (though note the absence of the 'stat' parameter). In addition however, we must designate which weight distribution we want to use. In this case we consider a Weibull function.
 
 `weightfunc = "W"`
 
@@ -434,7 +434,7 @@ If we compare this value to the delta AICc obtained from the `slidingwin` functi
 
 Despite these benefits, `weightwin` will not always be the most appropriate function for all scenarios. Firstly, the nature of the fitted weight distributions means that `weightwin` can only detect single climate signals, which forces users to detect and compare potential climate signals with separate analyses. This is not an issue using `slidingwin`.
 
-Secondly, `weightwin` can be a more technically complex process. While the above example works easily, in other scenarios the optimisation procedures may often get stuck on false optima or fail to converge. In these cases, users may be required to test different starting parameters and adjust optimisation characteristics such as step size. Often this procedure can be inhibative for users with less technical knowledge.
+Secondly, `weightwin` can be a more technically complex process. While the above example works easily, in other scenarios the optimisation procedures may often get stuck on false optima or fail to converge. In these cases, users may be required to test different starting parameters and adjust optimisation characteristics such as step size. Often this procedure can be inhibitive for users with less technical knowledge.
 
 Finally, `weightwin` can only be used for testing mean climate, with no capacity to consider other aggregate statistics. Therefore, whether one chooses to use `weightwin` or `slidingwin` will largely depend on the summary statistic used, the level of detail desired, and the user's technical knowledge.
 

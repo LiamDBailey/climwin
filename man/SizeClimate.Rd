@@ -3,14 +3,16 @@
 \name{SizeClimate}
 \alias{SizeClimate}
 \title{Daily climate data from 2006 to 2015.}
-\format{A data frame with 3,411 rows and 5 variables.
+\format{
+A data frame with 3,411 rows and 5 variables.
 \describe{
   \item{Date}{Date when climate was recorded (dd/mm/yyyy).}
   \item{Rain}{Average daily rainfall data in mm.}
   \item{Temperature}{Average daily temperature data in degrees centigrade.}
   \item{MaxTemp}{Maximum daily temperature in degrees centigrade.}
   \item{MinTemp}{Minimum daily temperature in degrees centigrade.}
-  }}
+  }
+}
 \description{
 Average, maximum and minimum daily temperature data, average rainfall data 
 from 2006 to 2015. 

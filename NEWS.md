@@ -1,3 +1,20 @@
+# climwin 1.2.3
+
+climwin v1.2.3 includes mostly minor internal changes to make `climwin` compatible with upcoming R v4.0.0
+
+## Major changes
+
+None
+
+## Minor changes
+
+None
+
+## Technical changes
+
+- Remove dependency on `plyr`, which was an artefact of old code.
+- Ensure that code is compatible with changes to stringsAsFactors default in v4.0.0
+
 # climwin 1.2.2
 
 climwin v1.2.2 includes a number of important bug fixes that may
@@ -38,7 +55,7 @@ k-fold cross validation can now be conducted with k = 1.
 
 ### Plot changes to work with ggplot2 >3.0
 
-With v3.0 of ggplot2 some slight compatability changes were introduced when creating plots. These have now been fixed.
+With v3.0 of ggplot2 some slight compatibility changes were introduced when creating plots. These have now been fixed.
 
 ### climwin no longer prints to console
 
@@ -112,7 +129,7 @@ Using this more versatile model construction makes the argument `func` redundant
 
 ### Dealing with missing data
 
-In previous verisons, the argument `cmissing` could be designated as either TRUE or FALSE. When FALSE, the presence of missing values in any tested climate window would return an error. When TRUE, all climate windows containing missing values would be removed from our analysis. On further consideration, we felt it was unwise to remove data from our analysis. As an alternative, we now provide two methods to estimate the value of NA records. "method1" will replace the value of a missing cell with the mean of the two preceding and following records. "method2" will replace the value of a missing cell with the mean of all other records on the same date. For more detial on dealing with missing data please read our [FAQ](https://github.com/LiamDBailey/climwin/wiki/FAQs).
+In previous versions, the argument `cmissing` could be designated as either TRUE or FALSE. When FALSE, the presence of missing values in any tested climate window would return an error. When TRUE, all climate windows containing missing values would be removed from our analysis. On further consideration, we felt it was unwise to remove data from our analysis. As an alternative, we now provide two methods to estimate the value of NA records. "method1" will replace the value of a missing cell with the mean of the two preceding and following records. "method2" will replace the value of a missing cell with the mean of all other records on the same date. For more detail on dealing with missing data please read our [FAQ](https://github.com/LiamDBailey/climwin/wiki/FAQs).
 
 ### Multiple iterations with weightwin
 
@@ -211,7 +228,7 @@ We have made some changes to the names and levels or parameters that should be c
 
 * Function `climatewin` (and corresponding functions) now contains parameters upper, lower and thresh. These allow users to adapt their climate data to consider climatic thresholds. This will be useful for those interested in investigating topics like growing degree or chill days.
 
-* Function `climatewin` (and corresponding functions) now contains parameter centre. This allows users to carry out within-group centreing with their climate data. Note that within-group centreing will only test linear relationships.
+* Function `climatewin` (and corresponding functions) now contains parameter centre. This allows users to carry out within-group centring with their climate data. Note that within-group centreing will only test linear relationships.
 
 * Function `climatewin` now includes functionality to test multiple parameter combinations (e.g. func = c("lin", "quad")) in succession. Please see the vignette `vignette("climwin")` for more detail.
 

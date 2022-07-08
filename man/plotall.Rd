@@ -4,9 +4,17 @@
 \alias{plotall}
 \title{Visualise climate window data}
 \usage{
-plotall(dataset, datasetrand = NULL, bestmodel = NULL,
-  bestmodeldata = NULL, cw1 = 0.95, cw2 = 0.5, cw3 = 0.25,
-  title = NULL, arrow = FALSE)
+plotall(
+  dataset,
+  datasetrand = NULL,
+  bestmodel = NULL,
+  bestmodeldata = NULL,
+  cw1 = 0.95,
+  cw2 = 0.5,
+  cw3 = 0.25,
+  title = NULL,
+  arrow = FALSE
+)
 }
 \arguments{
 \item{dataset}{A dataframe containing information on all fitted climate 

@@ -6,7 +6,6 @@
 #'@return A list object, identical to that produced by \code{\link{slidingwin}},
 #'containing all records from both outputs.
 #'@author Liam D. Bailey and Martijn van de Pol
-#'@importFrom plyr rbind.fill
 #'@examples
 #'
 #'#Simple test example
@@ -69,7 +68,7 @@
 
 merge_results <- function(dataset1, dataset2){
   
-  new_combos <- rbind.fill(dataset1$combos, dataset2$combos)
+  new_combos <- rbind(dataset1$combos, dataset2$combos)
   rownames(new_combos) <- seq(length = nrow(new_combos))
   
   dataset1[[length(dataset1)]] <- NULL

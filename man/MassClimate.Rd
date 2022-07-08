@@ -3,12 +3,14 @@
 \name{MassClimate}
 \alias{MassClimate}
 \title{Daily climate data since 1979.}
-\format{A data frame with 17,532 rows and 3 variables.
+\format{
+A data frame with 17,532 rows and 3 variables.
 \describe{
   \item{Date}{Date when climate data was recorded (dd/mm/yyyy).}
   \item{Rain}{Daily rainfall data in mm.}
   \item{Temp}{Daily temperature data in degrees centigrade.}
-  }}
+  }
+}
 \description{
 Daily temperature and rainfall data since 1979.
 }
