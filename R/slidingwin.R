@@ -349,5 +349,7 @@ slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
     
   }
   
+  class(combined) <- c("climwin", "list")
+  
   return(combined)
 }
