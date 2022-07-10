@@ -207,6 +207,9 @@ devel_slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
                        upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"),
                        spatial = NULL, cohort = NULL){
   
+  #Check bdate argument
+  bdate <- check_bdate(bdate)
+  
   ### Implementing scientific notation can cause problems because years
   ### are converted to characters in scientific notation (e.g. 2000 = "2e+3")
   ### Check options and convert scipen TEMPORARILY if needed.
@@ -231,8 +234,8 @@ devel_slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
     
   }
   
-  if(is.null(cohort) == TRUE){
-    cohort = lubridate::year(as.Date(bdate, format = "%d/%m/%Y"))
+  if (is.null(cohort) == TRUE){
+    cohort = lubridate::year(bdate) #bdate is now definitely a date due to check function
   }
   
   if(k > 0 && class(baseline)[length(class(baseline))]=="coxph"){
