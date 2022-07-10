@@ -32,3 +32,18 @@ check_date <- function(date, arg_name, date_func = lubridate::dmy) {
   return(date)
   
 }
+
+check_spatial <- function(spatial, length_b, length_c){
+  
+  ## TODO: THIS IS CURRENTLY DUMMY UNTIL WE FIX #22 (climate/biol data is a dataframe)
+  ## ONCE THIS HAS BEEN DONE WE'LL TAKE 2 DATAFRAMES AND COMPARE
+  if (is.null(spatial)) {
+    
+    spatial <- list(rep("A", times = length_b),
+                    rep("A", times = length_c))
+    
+  }
+  
+  return(spatial)
+  
+}
