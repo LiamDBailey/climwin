@@ -15,25 +15,44 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
   # If there is spatial replication (i.e. multiple sites are used)...
   if (!is.null(spatial)) {
     
-    SUB.DATE <- list()
-    NUM <- 1
+    ## FIXME: This will be fixed with #22 when bdate and cdate are df already with spatial, cohort etc!
+    #Create dataframes for bdate and cdate with spatial info
+    cdate_df <- data.frame(cdate = cdate, spatial = spatial[[2]])
     
-    for (i in unique(spatial[[2]])) { # For every listed site...
-      
-      SUB <- cdate[which(spatial[[2]] == i)] # Extract the date data from this site...
-      
-      SUB.DATE[[NUM]] <- data.frame(Date = seq(min(as.Date(SUB, format = "%d/%m/%Y")), max(as.Date(SUB, format = "%d/%m/%Y")), "days"),
-                                    spatial = i) # Save this data in its own dataframe, with all possible dates within the range for that site only.
-      
-      if (nrow(SUB.DATE[[NUM]]) != length(unique(SUB.DATE[[NUM]]$Date))) {
-        stop("There are duplicate dayrecords in climate data") # Check there are no duplicates within each site...
-      }
-      
-      NUM <- NUM + 1
-      
+    #Check there are no duplicate dates at any site
+    #Do this BEFORE our task below, because we make a sequence of ALL dates which can be intensive for large data
+    duplicates <- cdate_df %>% 
+      dplyr::group_by(.data$spatial) %>% 
+      dplyr::filter(dplyr::n() > length(unique(.data$cdate)))
+    
+    if (nrow(duplicates) > 0) {
+      stop("There are duplicate climate records in the data!")      
     }
     
-    spatialcdate <- do.call(rbind, SUB.DATE) # Combine all date data from each site together...
+    #Now that we know there are no duplicates, we can expand out our climate data
+    spatialcdate <- cdate_df %>% 
+      dplyr::group_by(.data$spatial) %>% 
+      dplyr::summarise(Date = seq(min(cdate), max(cdate), by = "days"), .groups = "drop")
+    
+    # SUB.DATE <- list()
+    # NUM <- 1
+    # 
+    # for (i in unique(spatial[[2]])) { # For every listed site...
+    #   
+    #   SUB <- cdate[which(spatial[[2]] == i)] # Extract the date data from this site...
+    #   
+    #   SUB.DATE[[NUM]] <- data.frame(Date = seq(min(as.Date(SUB, format = "%d/%m/%Y")), max(as.Date(SUB, format = "%d/%m/%Y")), "days"),
+    #                                 spatial = i) # Save this data in its own dataframe, with all possible dates within the range for that site only.
+    #   
+    #   if (nrow(SUB.DATE[[NUM]]) != length(unique(SUB.DATE[[NUM]]$Date))) {
+    #     stop("There are duplicate dayrecords in climate data") # Check there are no duplicates within each site...
+    #   }
+    #   
+    #   NUM <- NUM + 1
+    #   
+    # }
+    
+    # spatialcdate <- do.call(rbind, SUB.DATE) # Combine all date data from each site together...
     cdate2       <- spatialcdate$Date # Save this new date data as cdate2..
     cintno       <- as.numeric(cdate2) - min(as.numeric(cdate2)) + 1   # atrribute daynumbers for both climate and biological data with first date in the climate data set to cintno 1
     realbintno   <- as.numeric(bdate) - min(as.numeric(cdate2)) + 1
