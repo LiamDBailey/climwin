@@ -600,12 +600,12 @@ devel_slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
     cohort = lubridate::year(bdate) #bdate is now definitely a date due to check function
   }
   
-  if (k > 0 && class(baseline)[length(class(baseline))] == "coxph") {
+  if (k > 0 && inherits(baseline, "coxph")) {
     stop("Sorry, cross-validation is not available yet for coxph models")
   }
   
   #If the baseline model is fitted with nlme and cross validation is requested, return an error.
-  if (attr(baseline, "class")[1] == "lme" && k > 0) {
+  if (k > 0 && inherits(baseline, "lme")) {
     
     stop("Sorry, cross-validation is currently not functioning for nlme models. Consider using lme4 if possible.")
     
