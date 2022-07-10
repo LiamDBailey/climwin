@@ -2,8 +2,6 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
                         refday, cross = FALSE, cohort, spatial, 
                         upper, lower, binary, thresholdQ = NA) {
   
-  browser()
-  
   ######################################################################
   
   #INITIAL CHECKS
@@ -194,17 +192,25 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       #cintno      <- ceiling((as.numeric(cdate2) - min(as.numeric(cdate2)) + 1) / 7)   
       #realbintno  <- ceiling((as.numeric(bdate) - min(as.numeric(cdate2)) + 1) / 7)
       if (!is.null(spatial)) { # If there is spatial replication...
-        newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "spatial" = climspatial) # ...create a dataframe with week number, climate data and site ID...
-        newclim2    <- melt(newclim, id = c("cintno", "spatial")) # ...melt this so that we save the mean climate from each week at each site ID is seperated... #
-        newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean, na.rm = TRUE) 
-        newclim3    <- newclim3[order(newclim3$spatial, newclim3$cintno), ] # Order data by site ID and week
-        cintno      <- newclim3$cintno #Extract week numbers
-        xvar        <- newclim3$xvar #Extract climate
-        climspatial <- newclim3$spatial #Extract site ID
+        # ...create a dataframe with week number, climate data and site ID...
+        newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "spatial" = climspatial) %>%
+          dplyr::group_by(.data$cintno, .data$spatial) %>% 
+          dplyr::summarise(dplyr::across(.cols = dplyr::starts_with("xvar"),
+                                         .fns = ~mean(., nr.rm = TRUE)), .groups = "drop") %>% 
+          dplyr::arrange(.data$spatial, .data$cintno)
+        # newclim2    <- melt(newclim, id = c("cintno", "spatial")) # ...melt this so that we save the mean climate from each week at each site ID is seperated... #
+        # newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean, na.rm = TRUE) 
+        # newclim3    <- newclim3[order(newclim3$spatial, newclim3$cintno), ] # Order data by site ID and week
+        cintno      <- newclim$cintno #Extract week numbers
+        xvar        <- newclim$xvar #Extract climate
+        climspatial <- newclim$spatial #Extract site ID
       } else { #If there is no spatial replication...
-        newclim     <- data.frame("cintno" = cintno, "xvar" = xvar) # ...create data with week number and climate data 
-        newclim2    <- melt(newclim, id = "cintno") #melt so that there is mean climate data for each week 
-        newclim3    <- cast(newclim2, cintno ~ variable, mean, na.rm = TRUE)
+        newclim     <- data.frame("cintno" = cintno, "xvar" = xvar) %>%
+          dplyr::group_by(.data$cintno) %>% 
+          dplyr::summarise(dplyr::across(.cols = dplyr::starts_with("xvar"),
+                                         .fns = ~mean(., nr.rm = TRUE)), .groups = "drop")
+        # newclim2    <- melt(newclim, id = "cintno") #melt so that there is mean climate data for each week 
+        # newclim3    <- cast(newclim2, cintno ~ variable, mean, na.rm = TRUE)
         cintno      <- newclim3$cintno #Extract week numbers
         xvar        <- newclim3$xvar #Extract climate
       }
