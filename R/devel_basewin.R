@@ -1240,42 +1240,34 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
                                        refday = refday, cohort = cohort, spatial = spatial, 
                                        binary = binary, upper = upper, lower = lower, thresholdQ = thresholdQ)
   
-  browser()
+  clim <- converted_dates$cintno %>% 
+    dplyr::group_by(.data$spatial) %>% 
+    dplyr::summarise(min_cintno = min(.data$Date),
+                     max_cintno = max(.data$Date))
+  biol <- converted_dates$bintno %>% 
+    dplyr::group_by(.data$spatial) %>% 
+    dplyr::summarise(min_bintno = min(.data$Date) - range[1],
+                     max_bintno = max(.data$Date) - range[2])
   
-  if (!is.null(spatial)) { #If spatial data is provided...
-    
-    for (i in unique(spatial[[1]])) { #For each site...
-      
-      SUB_clim <- subset(converted_dates$cintno, spatial == i) # ...subset the date numbers from climate data...
-      SUB_biol <- subset(converted_dates$bintno, spatial == i) # ...subset the date numbers from biological data...
-      
-      #Check that you have enough data to go back the specified range at EACH SITE
-      if ((min(SUB_biol$Date) - range[1]) < min(SUB_clim$Date)) {
-        
-        stop(paste("At site ", i, " you do not have enough climate data to search ", range[1], " ", cinterval, "s back. Please adjust the value of range or add additional climate data.", sep = ""))
-        
-      }
-      
-      #Check that you have enough data to start in the specified range at EACH SITE
-      if (max(SUB_biol$Date) - range[2] > max(SUB_clim$Date)) {
-        
-        stop(paste("At site ", i, " you need more recent climate data. The most recent climate data is from ", max(SUB_clim$Date), " while the most recent biological data is from ", max(SUB_biol$Date), sep = ""))
-        
-      }
-    }
-    
-  } else { #If spatial data is not provided.
-    
-    #Check that you have enough data to go back the specified range
-    if ((min(converted_dates$bintno) - range[1]) < min(converted_dates$cintno)) {
-      stop(paste("You do not have enough climate data to search ", range[1], " ", cinterval, "s before ", min(as.Date(bdate, format = "%d/%m/%Y")), ". Please adjust the value of range or add additional climate data.", sep = ""))
-    }
-    
-    #Check that you have enough data to start in the specified range
-    if ((max(converted_dates$bintno) - range[2] - 1) > max(converted_dates$cintno)) {
-      stop(paste("You need more recent climate data to test over this range. The most recent climate data is from ", max(as.Date(cdate, format = "%d/%m/%Y")), " while the most recent biological data is from ", max(as.Date(bdate, format = "%d/%m/%Y")), sep = ""))
-    }
-    
+  join_intno <- clim %>% 
+    dplyr::left_join(biol, by = c("spatial"))
+  
+  #Check if any are too late once accounting for range
+  #i.e. the climate data starts AFTER the first date required for our given range
+  toolate <- join_intno %>% 
+    dplyr::filter(min_bintno < min_cintno)
+  
+  #Check if any end too early once accounting for range
+  #i.e. the climate data finished before the latest date required for our given range
+  tooearly <- join_intno %>% 
+    dplyr::filter(max_bintno > max_cintno)
+  
+  if (nrow(toolate) > 0) {
+    stop(paste0("At site ", toolate$spatial, " you do not have enough climate data to search ", range[1], " ", cinterval, "s back. Please adjust the value of range or add additional climate data."))
+  }
+  
+  if (nrow(tooearly) > 0) {
+    stop(paste0("At site ", tooearly$spatial, " you need more recent climate data. The most recent climate data is from ", tooearly$max_cintno, " while the most recent biological data is from ", tooearly$max_bintno))
   }
   
   modno     <- 1  #Create a model number variable that will count up during the loop#
