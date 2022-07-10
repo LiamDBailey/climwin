@@ -13,10 +13,11 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
   ######################################################################
   
   # If there is spatial replication (i.e. multiple sites are used)...
-  if (!is.null(spatial)) {
+  # if (!is.null(spatial)) {
     
     ## FIXME: This will be fixed with #22 when bdate and cdate are df already with spatial, cohort etc!
     #Create dataframes for bdate and cdate with spatial info
+    bdate_df <- data.frame(bdate = bdate, spatial = spatial[[1]])
     cdate_df <- data.frame(cdate = cdate, spatial = spatial[[2]])
     
     #Check there are no duplicate dates at any site
@@ -56,39 +57,72 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
     cdate2       <- spatialcdate$Date # Save this new date data as cdate2..
     cintno       <- as.numeric(cdate2) - min(as.numeric(cdate2)) + 1   # atrribute daynumbers for both climate and biological data with first date in the climate data set to cintno 1
     realbintno   <- as.numeric(bdate) - min(as.numeric(cdate2)) + 1
-  } else { # If there is no spatial information...
-    cdate2     <- seq(min(cdate), max(cdate), "days") # Create a new dataframe with all possible dates within the date range given... 
-    cintno     <- as.numeric(cdate2) - min(as.numeric(cdate2)) + 1   # atrribute daynumbers for both datafiles with first date in CLimateData set to cintno 1
-    realbintno <- as.numeric(bdate) - min(as.numeric(cdate2)) + 1
-    if (length(cintno) != length(unique(cintno))) {
-      stop("There are duplicate dayrecords in climate data") # Check for duplicate date information. 
-    }
-  }
+  # } else { # If there is no spatial information...
+    # cdate2     <- seq(min(cdate), max(cdate), "days") # Create a new dataframe with all possible dates within the date range given... 
+    # cintno     <- as.numeric(cdate2) - min(as.numeric(cdate2)) + 1   # atrribute daynumbers for both datafiles with first date in CLimateData set to cintno 1
+    # realbintno <- as.numeric(bdate) - min(as.numeric(cdate2)) + 1
+    # if (length(cintno) != length(unique(cintno))) {
+      # stop("There are duplicate dayrecords in climate data") # Check for duplicate date information. 
+    # }
+  # }
   
-  if (!is.null(spatial)) { # If spatial data is provided...
+  # if (!is.null(spatial)) { # If spatial data is provided...
     
-    for (i in unique(spatial[[2]])) { # For each possible spatial site...
-      
-      SUB <- cdate[which(spatial[[2]] == i)] # Extract the cdate information for each site
-      SUB_biol <- bdate[which(spatial[[1]] == i)] # Extract the bdate information for each site
-      if (min(SUB) > min(SUB_biol)) { # Check that the earliest climate data is before the earliest biological data...
-        stop(paste("Climate data does not cover all years of biological data at site ", i ,". Earliest climate data is ", min(cdate), " Earliest biological data is ", min(bdate), ". Please increase range of climate data", sep = ""))
-      }
-      if (max(SUB) < max(SUB_biol)) { # Check that the latest climate data is after or the same time as the latest biological data...
-        stop(paste("Climate data does not cover all years of biological data at site ", i ,". Latest climate data is ", max(cdate), " Latest biological data is ", max(bdate), ". Please increase range of climate data", sep = ""))
-      }
+    #For bdate and cdate determine earliest and latest date available for each site
+    bdate_minmax <- bdate_df %>% 
+      dplyr::group_by(.data$spatial) %>% 
+      dplyr::summarise(min_bdate = min(.data$bdate),
+                       max_bdate = max(.data$bdate), .groups = "drop")
+    cdate_minmax <- cdate_df %>% 
+      dplyr::group_by(.data$spatial) %>% 
+      dplyr::summarise(min_cdate = min(.data$cdate),
+                       max_cdate = max(.data$cdate), .groups = "drop")
+    
+    #Left join together
+    spatial_join <- bdate_minmax %>% 
+      dplyr::left_join(cdate_minmax, by = "spatial")
+    
+    browser()
+    
+    #Identify cdate issues
+    #Too late (cdate starts later than bdate)
+    toolate <- spatial_join %>% 
+      dplyr::filter(.data$min_cdate > .data$min_bdate)
+    
+    #Too early (cdate ends before bdate)
+    tooearly <- spatial_join %>% 
+      dplyr::filter(.data$max_cdate < .data$max_bdate)
+    
+    if (nrow(toolate) > 0) {
+      stop(paste0("\nClimate data does not cover all years of biological data at site ", toolate$spatial,". Earliest climate data is ", toolate$min_cdate, " Earliest biological data is ", toolate$min_bdate, ". Please increase range of climate data"))
     }
-  } else if (is.null(spatial)) {
     
-    if (min(cdate) > min(bdate)) { # If spatial data is not provided, also check the overlap between climate and biological data as above.
-      stop(paste("Climate data does not cover all years of biological data. Earliest climate data is ", min(cdate), ". Earliest biological data is ", min(bdate), sep = ""))
+    if (nrow(tooearly) > 0) {
+      stop(paste0("\nClimate data does not cover all years of biological data at site ", tooearly$spatial ,". Latest climate data is ", tooearly$max_cdate, " Latest biological data is ", tooearly$max_bdate, ". Please increase range of climate data"))
     }
     
-    if (max(cdate) < max(bdate)) {
-      stop(paste("Climate data does not cover all years of biological data. Earliest climate data is ", max(cdate), ". Earliest biological data is ", max(bdate), sep = ""))
-    }
-    
-  }
+  #   for (i in unique(spatial[[2]])) { # For each possible spatial site...
+  #     
+  #     SUB <- cdate[which(spatial[[2]] == i)] # Extract the cdate information for each site
+  #     SUB_biol <- bdate[which(spatial[[1]] == i)] # Extract the bdate information for each site
+  #     if (min(SUB) > min(SUB_biol)) { # Check that the earliest climate data is before the earliest biological data...
+  #       stop(paste("Climate data does not cover all years of biological data at site ", i ,". Earliest climate data is ", min(cdate), " Earliest biological data is ", min(bdate), ". Please increase range of climate data", sep = ""))
+  #     }
+  #     if (max(SUB) < max(SUB_biol)) { # Check that the latest climate data is after or the same time as the latest biological data...
+  #       stop(paste("Climate data does not cover all years of biological data at site ", i ,". Latest climate data is ", max(cdate), " Latest biological data is ", max(bdate), ". Please increase range of climate data", sep = ""))
+  #     }
+  #   }
+  # } else if (is.null(spatial)) {
+  #   
+  #   if (min(cdate) > min(bdate)) { # If spatial data is not provided, also check the overlap between climate and biological data as above.
+  #     stop(paste("Climate data does not cover all years of biological data. Earliest climate data is ", min(cdate), ". Earliest biological data is ", min(bdate), sep = ""))
+  #   }
+  #   
+  #   if (max(cdate) < max(bdate)) {
+  #     stop(paste("Climate data does not cover all years of biological data. Earliest climate data is ", max(cdate), ". Earliest biological data is ", max(bdate), sep = ""))
+  #   }
+  #   
+  # }
   
   if (!is.null(xvar2)) { # if there are multiple climate variables included (i.e. for crosswin/autowin)...
     if (!is.null(spatial)) { # ...and there is spatial data provided...
