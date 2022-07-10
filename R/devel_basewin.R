@@ -1,3 +1,427 @@
+convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type, 
+                        refday, cross = FALSE, cohort, spatial, 
+                        upper, lower, binary, thresholdQ = NA){
+  
+  browser()
+  
+  ######################################################################
+  
+  #INITIAL CHECKS
+  
+  if (cinterval != "day" && cinterval != "week" && cinterval != "month"){
+    stop("cinterval should be either day, week or month")
+  }
+  
+  ######################################################################
+  
+  # Convert the bdate variables into the R date format
+  bdate  <- as.Date(bdate, format = "%d/%m/%Y")
+  
+  # If there is spatial replication (i.e. multiple sites are used)...
+  if(!is.null(spatial)) {
+    
+    SUB.DATE <- list()
+    NUM <- 1
+    
+    for(i in unique(spatial[[2]])){ # For every listed site...
+      
+      SUB <- cdate[which(spatial[[2]] == i)] # Extract the date data from this site...
+      
+      SUB.DATE[[NUM]] <- data.frame(Date = seq(min(as.Date(SUB, format = "%d/%m/%Y")), max(as.Date(SUB, format = "%d/%m/%Y")), "days"),
+                                    spatial = i) # Save this data in its own dataframe, with all possible dates within the range for that site only.
+      
+      if (nrow(SUB.DATE[[NUM]]) != length(unique(SUB.DATE[[NUM]]$Date))){
+        stop ("There are duplicate dayrecords in climate data") # Check there are no duplicates within each site...
+      }
+      
+      NUM <- NUM + 1
+      
+    }
+    
+    spatialcdate <- do.call(rbind, SUB.DATE) # Combine all date data from each site together...
+    cdate2       <- spatialcdate$Date # Save this new date data as cdate2..
+    cintno       <- as.numeric(cdate2) - min(as.numeric(cdate2)) + 1   # atrribute daynumbers for both climate and biological data with first date in the climate data set to cintno 1
+    realbintno   <- as.numeric(bdate) - min(as.numeric(cdate2)) + 1
+  } else { # If there is no spatial information...
+    cdate2     <- seq(min(as.Date(cdate, format = "%d/%m/%Y")), max(as.Date(cdate, format = "%d/%m/%Y")), "days") # Create a new dataframe with all possible dates within the date range given... 
+    cintno     <- as.numeric(cdate2) - min(as.numeric(cdate2)) + 1   # atrribute daynumbers for both datafiles with first date in CLimateData set to cintno 1
+    realbintno <- as.numeric(bdate) - min(as.numeric(cdate2)) + 1
+    if (length(cintno) != length(unique(cintno))){
+      stop ("There are duplicate dayrecords in climate data") # Check for duplicate date information. 
+    }
+  }
+  
+  cdate  <- as.Date(cdate, format = "%d/%m/%Y") # Also have an object saving the original date information (this way we can work out where climate data is missing!)
+  
+  if(is.null(spatial) == FALSE){ # If spatial data is provided...
+    
+    for(i in unique(spatial[[2]])){ # For each possible spatial site...
+      
+      SUB <- cdate[which(spatial[[2]] == i)] # Extract the cdate information for each site
+      SUB_biol <- bdate[which(spatial[[1]] == i)] # Extract the bdate information for each site
+      if (min(SUB) > min(SUB_biol)){ # Check that the earliest climate data is before the earliest biological data...
+        stop(paste("Climate data does not cover all years of biological data at site ", i ,". Earliest climate data is ", min(cdate), " Earliest biological data is ", min(bdate), ". Please increase range of climate data", sep = ""))
+      }
+      if (max(SUB) < max(SUB_biol)){ # Check that the latest climate data is after or the same time as the latest biological data...
+        stop(paste("Climate data does not cover all years of biological data at site ", i ,". Latest climate data is ", max(cdate), " Latest biological data is ", max(bdate), ". Please increase range of climate data", sep = ""))
+      }
+    }
+  } else if(is.null(spatial) == TRUE){
+    
+    if (min(cdate) > min(bdate)){ # If spatial data is not provided, also check the overlap between climate and biological data as above.
+      stop(paste("Climate data does not cover all years of biological data. Earliest climate data is ", min(cdate), ". Earliest biological data is ", min(bdate), sep = ""))
+    }
+    
+    if (max(cdate) < max(bdate)){
+      stop(paste("Climate data does not cover all years of biological data. Earliest climate data is ", max(cdate), ". Earliest biological data is ", max(bdate), sep = ""))
+    }
+    
+  }
+  
+  if (is.null(xvar2) == FALSE){ # if there are multiple climate variables included (i.e. for crosswin/autowin)...
+    if (is.null(spatial) == FALSE){ # ...and there is spatial data provided...
+      xvar2      <- data.frame(Clim = xvar2, spatial = spatial[[2]]) # ...create a new dataframe with the second climate variable and spatial info
+      cdatetemp  <- data.frame(Date = cdate, spatial = spatial[[2]]) # ...do the same for date information
+      split.list <- list()
+      NUM <- 1
+      for(i in unique(xvar2$spatial)){ # For each spatial site...
+        SUB <- subset(xvar2, spatial == i) # ...subset out relevant climate data from that site...
+        SUBcdate  <- subset(cdatetemp, spatial == i) # ...extract relevant date information...
+        SUBcdate2 <- subset(spatialcdate, spatial == i)
+        rownames(SUB) <- seq(1, nrow(SUB), 1)
+        rownames(SUBcdate) <- seq(1, nrow(SUBcdate), 1)
+        NewClim    <- SUB$Clim[match(SUBcdate2$Date, SUBcdate$Date)] #Work out where date information matches (i.e. there will be NAs where there is no match)
+        Newspatial <- rep(i, times = length(NewClim))
+        split.list[[NUM]] <- data.frame(NewClim, Newspatial) # Create a new dataframe with second climate variable and site ID
+        NUM <- NUM + 1
+      }
+      xvar2    <- (do.call(rbind, split.list))$NewClim # Extract second climate data (with NAs where there is missing date info)
+      climspatial <- (do.call(rbind, split.list))$Newspatial #Extract the new spatial data as well
+    } else {
+      xvar2    <- xvar2[match(cdate2, cdate)] # if there is no spatial replication, simply check for matches (i.e. include NAs where appropriate)
+    }
+  }
+  
+  if(is.null(spatial) == FALSE){ # If spatial replication is present...
+    xvar       <- data.frame(Clim = xvar, spatial = spatial[[2]]) # extract original climate info and spatial data
+    cdate      <- data.frame(Date = cdate, spatial = spatial[[2]]) # Do the same for date information
+    split.list <- list()
+    NUM <- 1
+    
+    for(i in unique(xvar$spatial)){ #For each site ID...
+      SUB <- subset(xvar, spatial == i) #Subset out climate data for that site...
+      SUBcdate  <- subset(cdate, spatial == i) #extract recorded date info for each site
+      SUBcdate2 <- subset(spatialcdate, spatial == i) #extract potential dates for each site (i.e. range from earliest to latest)
+      rownames(SUB) <- seq(1, nrow(SUB), 1)
+      rownames(SUBcdate) <- seq(1, nrow(SUBcdate), 1)
+      NewClim    <- SUB$Clim[match(SUBcdate2$Date, SUBcdate$Date)] #Determine where there are overlaps (i.e. NAs where there is no match)
+      Newspatial <- rep(i, times = length(NewClim))
+      split.list[[NUM]] <- data.frame(NewClim, Newspatial) # Create a new dataframe with this climate data and site ID info
+      NUM <- NUM + 1
+    }
+    xvar    <- (do.call(rbind, split.list))$NewClim #save climate data (with NAs)
+    climspatial <- (do.call(rbind, split.list))$Newspatial #Save site ID info (same length as that with NAs)
+  } else {
+    xvar    <- xvar[match(cdate2, cdate)] #When there is no spatial replication, simply check for missing date info.
+  }
+  
+  if (cross == FALSE){ #When we are not running crosswin...
+    if (cinterval == "day"){ #...and we are using daily data...
+      if (type == "absolute"){ #..and using an absolute window...
+        
+        newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort)) #Combine biological data with cohort info (N.B. when cohort isn't provided, it will be made the year of capture by default. See code at start of slidingwin).
+        datenum  <- 1
+        bintno   <- seq(1, length(bdate), 1)
+        for(i in unique(cohort)){ # For each cohort (i.e. year, unless specified otherwise)...
+          sub                               <- subset(newdat, cohort == i) # ...subset bdate data from that cohort...
+          # As we are using an absolute value, determine the biological date number as refday/minimum year in the cohort (i.e. assume they are in the previous year) - earliest cdate
+          bintno[as.numeric(rownames(sub))] <- as.numeric(as.Date(paste(refday[1], refday[2], min(lubridate::year(sub$bdate)), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1
+        }
+        
+      } else {
+        bintno <- realbintno #If we are using relative windows, biological date number is just the same as bdate - earliest cdate
+      }
+    } else if (cinterval == "week"){ #...if we are using weekly data...
+      
+      #For daily data, we can determine upper and lower binary limits AFTER calculating cdate info.
+      #However, for weekly and monthly data, we need to group our daily data into weeks or months.
+      
+      #If the user has specified a threshold, they may want to apply this to the daily data 
+      #(i.e. if they have daily data but are using weekly/monthly to speed up analysis)
+      #We have checked to see if this is the case using 'thresholdQ'.
+      #If 'thresholdQ' is Y, the user wants thresholds estimated BEFORE calculated weekly/monthly data.
+      
+      if(!is.na(thresholdQ) && thresholdQ == "Y"){
+        
+        if(binary == T){
+          
+          if(is.na(upper) == FALSE && is.na(lower) == TRUE){
+            
+            xvar <- ifelse(xvar > upper, 1, 0)
+            
+          } else if(is.na(upper) == TRUE && is.na(lower) == FALSE){
+            
+            xvar <- ifelse(xvar < lower, 1, 0)
+            
+          } else if(is.na(upper) == FALSE && is.na(lower) == FALSE){
+            
+            xvar <- ifelse(xvar > lower & xvar < upper, 1, 0)
+            
+          }
+          
+        } else {
+          
+          if(is.na(upper) == FALSE && is.na(lower) == TRUE){
+            
+            xvar <- ifelse(xvar > upper, xvar, 0)
+            
+          } else if(is.na(upper) == TRUE && is.na(lower) == FALSE){
+            
+            xvar <- ifelse(xvar < lower, xvar, 0)
+            
+          } else if(is.na(upper) == FALSE && is.na(lower) == FALSE){
+            
+            xvar <- ifelse(xvar > lower & xvar < upper, xvar, 0)
+            
+          }
+          
+        }
+      }
+      
+      cweek      <- lubridate::week(cdate2) # atrribute week numbers for both datafiles with first week in climate data set to cintno 1
+      #A year doesn't divide evenly into weeks (what a silly method of splitting up a year!)
+      #Therefore, there is a week 53 which has 1-2 days (depending on leapyears)
+      #For our purposes, we will group the 1-2 days in week 53 into week 52.
+      cweek[which(cweek == 53)] <- 52
+      cyear      <- lubridate::year(cdate2) - min(lubridate::year(cdate2))
+      cintno     <- cweek + 52 * cyear
+      realbintno <- lubridate::week(bdate) + 52 * (lubridate::year(bdate) - min(lubridate::year(cdate2)))
+      #cintno      <- ceiling((as.numeric(cdate2) - min(as.numeric(cdate2)) + 1) / 7)   
+      #realbintno  <- ceiling((as.numeric(bdate) - min(as.numeric(cdate2)) + 1) / 7)
+      if(is.null(spatial) == FALSE){ # If there is spatial replication...
+        newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "spatial" = climspatial) # ...create a dataframe with week number, climate data and site ID...
+        newclim2    <- melt(newclim, id = c("cintno", "spatial")) # ...melt this so that we save the mean climate from each week at each site ID is seperated... #
+        newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean, na.rm = T) 
+        newclim3    <- newclim3[order(newclim3$spatial, newclim3$cintno), ] # Order data by site ID and week
+        cintno      <- newclim3$cintno #Extract week numbers
+        xvar        <- newclim3$xvar #Extract climate
+        climspatial <- newclim3$spatial #Extract site ID
+      } else { #If there is no spatial replication...
+        newclim     <- data.frame("cintno" = cintno, "xvar" = xvar) # ...create data with week number and climate data 
+        newclim2    <- melt(newclim, id = "cintno") #melt so that there is mean climate data for each week 
+        newclim3    <- cast(newclim2, cintno ~ variable, mean, na.rm = T)
+        cintno      <- newclim3$cintno #Extract week numbers
+        xvar        <- newclim3$xvar #Extract climate
+      }
+      
+      if (type == "absolute"){ #If we are dealing with absolute windows
+        newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort)) #Combine date numbers from biological data with the cohort (year by default)
+        datenum  <- 1
+        bintno   <- seq(1, length(bdate), 1)
+        for(i in unique(cohort)){ # For each cohort...
+          sub                               <- subset(newdat, cohort == i) #...subset out biological date data
+          #Turn this date info into the same values based on refday
+          bintno[as.numeric(rownames(sub))] <- lubridate::week(as.Date(paste(refday[1], refday[2], min(lubridate::year(sub$bdate)), sep = "-"), format = "%d-%m-%Y")) + 52 * (min(lubridate::year(sub$bdate)) - min(year(cdate2)))
+          #lubridate::week(as.Date(paste(refday[1], refday[2], min(lubridate::year(sub$bdate)), sep = "-"), format = "%d-%m-%Y")) - min(cweek + 53 * cyear) + 1
+        }
+      } else { #...Otherwise just leave the biological date info as is.
+        bintno <- realbintno
+      }
+    } else if (cinterval == "month"){ # If cinterval is month instead...
+      
+      #Once again, check if the user wants to calculate thresholds before determining weekly/monthly means.
+      
+      if(!is.na(thresholdQ) && thresholdQ == "Y"){
+        
+        if(binary == T){
+          
+          if(is.na(upper) == FALSE && is.na(lower) == TRUE){
+            
+            xvar <- ifelse(xvar > upper, 1, 0)
+            
+          } else if(is.na(upper) == TRUE && is.na(lower) == FALSE){
+            
+            xvar <- ifelse(xvar < lower, 1, 0)
+            
+          } else if(is.na(upper) == FALSE && is.na(lower) == FALSE){
+            
+            xvar <- ifelse(xvar > lower & xvar < upper, 1, 0)
+            
+          }
+          
+        } else {
+          
+          if(is.na(upper) == FALSE && is.na(lower) == TRUE){
+            
+            xvar <- ifelse(xvar > upper, xvar, 0)
+            
+          } else if(is.na(upper) == TRUE && is.na(lower) == FALSE){
+            
+            xvar <- ifelse(xvar < lower, xvar, 0)
+            
+          } else if(is.na(upper) == FALSE && is.na(lower) == FALSE){
+            
+            xvar <- ifelse(xvar > lower & xvar < upper, xvar, 0)
+            
+          }
+          
+        }
+      }
+      
+      cmonth     <- lubridate::month(cdate2) # Determine month numbers for all data...
+      cyear      <- lubridate::year(cdate2) - min(lubridate::year(cdate2))
+      cintno     <- cmonth + 12 * cyear
+      realbintno <- lubridate::month(bdate) + 12 * (lubridate::year(bdate) - min(lubridate::year(cdate2)))
+      
+      if(is.null(spatial) == FALSE){ # If spatial replication is used...
+        newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "spatial" = climspatial) #Create a new dataframe with month number, climate data and site ID
+        newclim2    <- melt(newclim, id = c("cintno", "spatial")) #Melt to just have mean climate for each month number and site ID
+        newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean, na.rm = T)
+        newclim3    <- newclim3[order(newclim3$spatial, newclim3$cintno), ] #Order by site ID and month
+        cintno      <- newclim3$cintno #Save month, climate data and site ID
+        xvar        <- newclim3$xvar
+        climspatial <- newclim3$spatial
+      } else { #If there is no spatial data...
+        newclim    <- data.frame("cintno" = cintno, "xvar" = xvar) #Determine mean climate data for each month.
+        newclim2   <- reshape::melt(newclim, id = "cintno")
+        newclim3   <- reshape::cast(newclim2, cintno ~ variable, mean, na.rm = T)
+        cintno     <- newclim3$cintno
+        xvar       <- newclim3$xvar 
+      }
+      if (type == "absolute"){ #When using absolute windows...
+        newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort)) #Bind biological date and cohort info (year by default)
+        datenum  <- 1
+        bintno   <- seq(1, length(bdate), 1)
+        for(i in unique(cohort)){ #For each year...
+          sub                               <- subset(newdat, cohort == i) #Extract biological date info
+          #Set the biological date the same for each cohort.
+          bintno[as.numeric(rownames(sub))] <- refday[2] + 12 * (min(lubridate::year(sub$bdate)) - min(lubridate::year(cdate2)))
+        }
+      } else { #Otherwise, just leave the biological date unchanged.
+        bintno <- realbintno
+      }
+    }
+  } else { # When we are running cross win...
+    if (cinterval == "day"){  #And using a daily interval...
+      if (type == "absolute"){ #And an absolute window...
+        newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort)) #Combine biological date and cohort info (year by default)
+        datenum  <- 1
+        bintno   <- seq(1, length(bdate), 1)
+        for(i in unique(cohort)){ #For each cohort group...
+          sub                               <- subset(newdat, cohort == i) #...subset out data.
+          #Set all records within a cohort to the same value
+          bintno[as.numeric(rownames(sub))] <- as.numeric(as.Date(paste(refday[1], refday[2], min(lubridate::year(sub$bdate)), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1
+        }
+      } else { #If using relative windows, biological date data stays the same.
+        bintno <- realbintno
+      }    
+    } else if (cinterval == "week"){ #If using weekly data...
+      
+      cweek      <- lubridate::week(cdate2) # atrribute week numbers for both datafiles with first week in climate data set to cintno 1
+      cyear      <- lubridate::year(cdate2) - min(lubridate::year(cdate2))
+      cintno     <- cweek + 53 * cyear
+      cintno     <- cintno - min(cintno) + 1
+      realbintno <- lubridate::month(bdate) + 53 * (year(bdate) - min(year(cdate2)))
+      #cintno     <- ceiling((as.numeric(cdate2) - min(as.numeric(cdate2)) + 1) / 7)   # atrribute weeknumbers for both datafiles with first week in CLimateData set to cintno 1
+      #realbintno <- ceiling((as.numeric(bdate) - min(as.numeric(cdate2)) + 1) / 7)
+      if(is.null(spatial) == FALSE){ #When spatial data is available
+        newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "xvar2" = xvar2, "spatial" = climspatial) #Create a dataset with both climate variables and siteID
+        newclim2    <- melt(newclim, id = c("cintno", "spatial")) #Determine mean values for both climate variables each week at each site
+        newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean, na.rm = T)
+        cintno      <- newclim3$cintno #Save info.
+        xvar        <- newclim3$xvar
+        xvar2       <- newclim3$xvar2
+        climspatial <- newclim3$spatial
+      } else { #If there is no spatial data, do the same but without site ID.
+        newclim    <- data.frame("cintno" = cintno, "xvar" = xvar, "xvar2" = xvar2)
+        newclim2   <- melt(newclim, id = "cintno")
+        newclim3   <- cast(newclim2, cintno ~ variable, mean, na.rm = T)
+        cintno     <- newclim3$cintno
+        xvar       <- newclim3$xvar
+        xvar2      <- newclim3$xvar2 
+      }
+      if (type == "absolute"){ #If using an absolute window.
+        newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort)) #Combine biological data and cohort (year by default)
+        datenum  <- 1
+        bintno   <- seq(1, length(bdate), 1)
+        for(i in unique(cohort)){ #For each cohort...
+          sub                               <- subset(newdat, cohort == i) #...subset data.
+          #Create the same week value for every record in the same cohort.
+          bintno[as.numeric(rownames(sub))] <- lubridate::month(as.Date(paste(refday[1], refday[2], min(lubridate::year(sub$bdate)), sep = "-"), format = "%d-%m-%Y")) + 53 * (min(lubridate::year(sub$bdate)) - min(year(cdate2)))
+        }
+      } else { #If using relative windows just keep biological date data the same.
+        bintno <- realbintno
+      }
+    } else if (cinterval == "month"){ #If using monthly data...
+      
+      cmonth     <- lubridate::month(cdate2) #Determine month number
+      cyear      <- year(cdate2) - min(year(cdate2))
+      cintno     <- cmonth + 12 * cyear
+      realbintno <- lubridate::month(bdate) + 12 * (year(bdate) - min(year(cdate2)))
+      if(is.null(spatial) == FALSE){ #If spatial data is used...
+        newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "xvar2" = xvar2, "spatial" = climspatial) #Extract both climate variables and site ID
+        newclim2    <- melt(newclim, id = c("cintno", "spatial")) #Determine mean climate for each climate variable at each site for each month.
+        newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean, na.rm = T)
+        cintno      <- newclim3$cintno #Save extracted data.
+        xvar        <- newclim3$xvar
+        xvar2       <- newclim3$xvar2
+        climspatial <- newclim3$spatial
+      } else { #If no spatial data is provided, just determine mean for both climate variables in each month.
+        newclim    <- data.frame("cintno" = cintno, "xvar" = xvar, "xvar2" = xvar2)
+        newclim2   <- melt(newclim, id = "cintno")
+        newclim3   <- cast(newclim2, cintno ~ variable, mean, na.rm = T)
+        cintno     <- newclim3$cintno
+        xvar       <- newclim3$xvar
+        xvar2      <- newclim3$xvar2 
+      }
+      if (type == "absolute"){ #If using absolute windows.
+        newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort)) #Extract date data and cohort (year by default)
+        datenum  <- 1
+        bintno   <- seq(1, length(bdate), 1)
+        for(i in unique(cohort)){ #For each cohort
+          sub                               <- subset(newdat, cohort == i) #Subset data
+          #Set each record within a cohort to have the same month
+          bintno[as.numeric(rownames(sub))] <- refday[2] + 12 * (min(lubridate::year(sub$bdate)) - min(lubridate::year(cdate2)))
+        }
+      } else { #If not using absolute windows then just keep data as is.
+        bintno <- realbintno
+      }
+    }
+  }
+  
+  #Sometimes data may have infinity variables. Always make these NAs
+  xvar <- ifelse(is.infinite(xvar), NA, xvar)
+  
+  if(is.null(xvar2) == FALSE){ #Do the same for the second climate variable if it is present.
+    
+    xvar2 <- ifelse(is.infinite(xvar2), NA, xvar2)
+    
+  }
+  
+  if(is.null(spatial) == FALSE){ #If spatial data is provided...
+    if(is.null(xvar2) == FALSE){ #And a second climate variable is provided...
+      #Return climate date, biological date and both climate variables (with spatial data included)
+      return(list(cintno = data.frame(Date = cintno, spatial = climspatial),
+                  bintno = data.frame(Date = bintno, spatial = spatial[[1]]),
+                  xvar = data.frame(Clim = xvar, spatial = climspatial), 
+                  xvar2 = data.frame(Clim = xvar2, spatial = climspatial)))
+    } else { #If there is only one climate variable
+      #Return climate date, biological date and single climate variables (with spatial data included)
+      return(list(cintno = data.frame(Date = cintno, spatial = climspatial),
+                  bintno = data.frame(Date = bintno, spatial = spatial[[1]]),
+                  xvar = data.frame(Clim = xvar, spatial = climspatial)))
+    }
+  } else { #If spatial data is not included.
+    if(is.null(xvar2) == FALSE){ #But a second climate variable is still used
+      #Return climate date, biological date and both climate variables.
+      return(list(cintno = cintno, bintno = bintno, xvar = xvar, xvar2 = xvar2))
+    } else {
+      #Return climate date, biological date and single climate variable.
+      return(list(cintno = cintno, bintno = bintno, xvar = xvar)) 
+    }
+  }
+}
+
 #'Test for a climate windows in data.
 #'
 #'Finds the time period when a biological variable is most strongly affected 
@@ -873,7 +1297,7 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   
   #Convert date information in to numbers and apply absolute window info (if appropriate)
   #This code creates a new climate dataframe with continuous daynumbers, leap days are not a problem
-  cont      <- convertdate(bdate = bdate, cdate = cdate, xvar = xvar, 
+  cont      <- convertdate_devel(bdate = bdate, cdate = cdate, xvar = xvar, 
                            cinterval = cinterval, type = type, 
                            refday = refday, cohort = cohort, spatial = spatial, 
                            binary = binary, upper = upper, lower = lower, thresholdQ = thresholdQ)   
