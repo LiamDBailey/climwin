@@ -14,9 +14,6 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
   
   ######################################################################
   
-  # Convert the bdate variables into the R date format
-  bdate  <- as.Date(bdate, format = "%d/%m/%Y")
-  
   # If there is spatial replication (i.e. multiple sites are used)...
   if(!is.null(spatial)) {
     
@@ -632,7 +629,8 @@ devel_slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
                        spatial = NULL, cohort = NULL){
   
   #Check bdate argument
-  bdate <- check_bdate(bdate)
+  bdate <- check_date(bdate, arg_name = "bdate")
+  cdate <- check_date(cdate, arg_name = "cdate")
   
   ### Implementing scientific notation can cause problems because years
   ### are converted to characters in scientific notation (e.g. 2000 = "2e+3")
