@@ -196,7 +196,7 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       if (!is.null(spatial)) { # If there is spatial replication...
         newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "spatial" = climspatial) # ...create a dataframe with week number, climate data and site ID...
         newclim2    <- melt(newclim, id = c("cintno", "spatial")) # ...melt this so that we save the mean climate from each week at each site ID is seperated... #
-        newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean, na.rm = T) 
+        newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean, na.rm = TRUE) 
         newclim3    <- newclim3[order(newclim3$spatial, newclim3$cintno), ] # Order data by site ID and week
         cintno      <- newclim3$cintno #Extract week numbers
         xvar        <- newclim3$xvar #Extract climate
@@ -204,7 +204,7 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       } else { #If there is no spatial replication...
         newclim     <- data.frame("cintno" = cintno, "xvar" = xvar) # ...create data with week number and climate data 
         newclim2    <- melt(newclim, id = "cintno") #melt so that there is mean climate data for each week 
-        newclim3    <- cast(newclim2, cintno ~ variable, mean, na.rm = T)
+        newclim3    <- cast(newclim2, cintno ~ variable, mean, na.rm = TRUE)
         cintno      <- newclim3$cintno #Extract week numbers
         xvar        <- newclim3$xvar #Extract climate
       }
@@ -268,27 +268,36 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       cintno     <- cmonth + 12 * cyear
       realbintno <- lubridate::month(bdate) + 12 * (lubridate::year(bdate) - min(lubridate::year(cdate2)))
       
+      ## FIXME: If there is no spatial info we could just make spatial all one level
+      ## THEN WE DON'T NEED TO CHECK FOR SPATIAL EVERY TIME!!
       if (!is.null(spatial)) { # If spatial replication is used...
-        newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "spatial" = climspatial) #Create a new dataframe with month number, climate data and site ID
-        newclim2    <- melt(newclim, id = c("cintno", "spatial")) #Melt to just have mean climate for each month number and site ID
-        newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean, na.rm = T)
-        newclim3    <- newclim3[order(newclim3$spatial, newclim3$cintno), ] #Order by site ID and month
-        cintno      <- newclim3$cintno #Save month, climate data and site ID
-        xvar        <- newclim3$xvar
-        climspatial <- newclim3$spatial
+        #Create a new dataframe with month number, climate data and site ID
+        newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "spatial" = climspatial) %>% 
+          dplyr::group_by(.data$cintno, .data$spatial) %>% 
+          dplyr::summarise(xvar = mean(.data$xvar, na.rm = TRUE), .groups = "drop") %>% 
+          dplyr::arrange(.data$spatial, .data$cintono)
+        # newclim2    <- melt(newclim, id = c("cintno", "spatial")) #Melt to just have mean climate for each month number and site ID
+        # newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean, na.rm = TRUE)
+        # newclim3    <- newclim3[order(newclim3$spatial, newclim3$cintno), ] #Order by site ID and month
+        cintno      <- newclim$cintno #Save month, climate data and site ID
+        xvar        <- newclim$xvar
+        climspatial <- newclim$spatial
       } else { #If there is no spatial data...
-        newclim    <- data.frame("cintno" = cintno, "xvar" = xvar) #Determine mean climate data for each month.
-        newclim2   <- reshape::melt(newclim, id = "cintno")
-        newclim3   <- reshape::cast(newclim2, cintno ~ variable, mean, na.rm = T)
-        cintno     <- newclim3$cintno
-        xvar       <- newclim3$xvar 
+        #Determine mean climate data for each month.
+        newclim    <- data.frame("cintno" = cintno, "xvar" = xvar) %>% 
+          dplyr::group_by(.data$cintno) %>% 
+          dplyr::summarise(xvar = mean(.data$xvar, na.rm = TRUE), .groups = "drop")
+        # newclim2   <- reshape::melt(newclim, id = "cintno")
+        # newclim3   <- reshape::cast(newclim2, cintno ~ variable, mean, na.rm = TRUE)
+        cintno     <- newclim$cintno
+        xvar       <- newclim$xvar 
       }
       if (type == "absolute") { #When using absolute windows...
         newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort)) #Bind biological date and cohort info (year by default)
         datenum  <- 1
         bintno   <- seq(1, length(bdate), 1)
         for (i in unique(cohort)) { #For each year...
-          sub                               <- subset(newdat, cohort == i) #Extract biological date info
+          sub <- subset(newdat, cohort == i) #Extract biological date info
           #Set the biological date the same for each cohort.
           bintno[as.numeric(rownames(sub))] <- refday[2] + 12 * (min(lubridate::year(sub$bdate)) - min(lubridate::year(cdate2)))
         }
@@ -303,7 +312,7 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
         datenum  <- 1
         bintno   <- seq(1, length(bdate), 1)
         for (i in unique(cohort)) { #For each cohort group...
-          sub                               <- subset(newdat, cohort == i) #...subset out data.
+          sub <- subset(newdat, cohort == i) #...subset out data.
           #Set all records within a cohort to the same value
           bintno[as.numeric(rownames(sub))] <- as.numeric(as.Date(paste(refday[1], refday[2], min(lubridate::year(sub$bdate)), sep = "-"), format = "%d-%m-%Y")) - min(as.numeric(cdate2)) + 1
         }
@@ -320,20 +329,28 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       #cintno     <- ceiling((as.numeric(cdate2) - min(as.numeric(cdate2)) + 1) / 7)   # atrribute weeknumbers for both datafiles with first week in CLimateData set to cintno 1
       #realbintno <- ceiling((as.numeric(bdate) - min(as.numeric(cdate2)) + 1) / 7)
       if (!is.null(spatial)) { #When spatial data is available
-        newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "xvar2" = xvar2, "spatial" = climspatial) #Create a dataset with both climate variables and siteID
-        newclim2    <- melt(newclim, id = c("cintno", "spatial")) #Determine mean values for both climate variables each week at each site
-        newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean, na.rm = T)
-        cintno      <- newclim3$cintno #Save info.
-        xvar        <- newclim3$xvar
-        xvar2       <- newclim3$xvar2
-        climspatial <- newclim3$spatial
+        #Create a dataset with both climate variables and siteID
+        #Determine mean values for both climate variables each week at each site
+        newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "xvar2" = xvar2, "spatial" = climspatial) %>% 
+          dplyr::group_by(.data$cintno, .data$spatial) %>% 
+          dplyr::summarise(dplyr::across(.cols = dplyr::starts_with("xvar"),
+                                         .fns = ~mean(., nr.rm = TRUE)), .groups = "drop")
+        # newclim2    <- melt(newclim, id = c("cintno", "spatial"))
+        # newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean, na.rm = TRUE)
+        cintno      <- newclim$cintno #Save info.
+        xvar        <- newclim$xvar
+        xvar2       <- newclim$xvar2
+        climspatial <- newclim$spatial
       } else { #If there is no spatial data, do the same but without site ID.
-        newclim    <- data.frame("cintno" = cintno, "xvar" = xvar, "xvar2" = xvar2)
-        newclim2   <- melt(newclim, id = "cintno")
-        newclim3   <- cast(newclim2, cintno ~ variable, mean, na.rm = T)
-        cintno     <- newclim3$cintno
-        xvar       <- newclim3$xvar
-        xvar2      <- newclim3$xvar2 
+        newclim    <- data.frame("cintno" = cintno, "xvar" = xvar, "xvar2" = xvar2) %>% 
+          dplyr::group_by(.data$cintno) %>% 
+          dplyr::summarise(dplyr::across(.cols = dplyr::starts_with("xvar"),
+                                         .fns = ~mean(., nr.rm = TRUE)), .groups = "drop")
+        # newclim2   <- melt(newclim, id = "cintno")
+        # newclim3   <- cast(newclim2, cintno ~ variable, mean, na.rm = TRUE)
+        cintno     <- newclim$cintno
+        xvar       <- newclim$xvar
+        xvar2      <- newclim$xvar2 
       }
       if (type == "absolute") { #If using an absolute window.
         newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort)) #Combine biological data and cohort (year by default)
@@ -354,20 +371,28 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       cintno     <- cmonth + 12 * cyear
       realbintno <- lubridate::month(bdate) + 12 * (year(bdate) - min(year(cdate2)))
       if (!is.null(spatial)) { #If spatial data is used...
-        newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "xvar2" = xvar2, "spatial" = climspatial) #Extract both climate variables and site ID
-        newclim2    <- melt(newclim, id = c("cintno", "spatial")) #Determine mean climate for each climate variable at each site for each month.
-        newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean, na.rm = T)
-        cintno      <- newclim3$cintno #Save extracted data.
-        xvar        <- newclim3$xvar
-        xvar2       <- newclim3$xvar2
-        climspatial <- newclim3$spatial
+        #Extract both climate variables and site ID
+        #Determine mean climate for each climate variable at each site for each month.
+        newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "xvar2" = xvar2, "spatial" = climspatial) %>% 
+          dplyr::group_by(.data$cintno, .data$spatial) %>% 
+          dplyr::summarise(dplyr::across(.cols = dplyr::starts_with("xvar"),
+                                         .fns = ~mean(., nr.rm = TRUE)), .groups = "drop")
+        # newclim2    <- melt(newclim, id = c("cintno", "spatial"))
+        # newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean, na.rm = TRUE)
+        cintno      <- newclim$cintno #Save extracted data.
+        xvar        <- newclim$xvar
+        xvar2       <- newclim$xvar2
+        climspatial <- newclim$spatial
       } else { #If no spatial data is provided, just determine mean for both climate variables in each month.
-        newclim    <- data.frame("cintno" = cintno, "xvar" = xvar, "xvar2" = xvar2)
-        newclim2   <- melt(newclim, id = "cintno")
-        newclim3   <- cast(newclim2, cintno ~ variable, mean, na.rm = T)
-        cintno     <- newclim3$cintno
-        xvar       <- newclim3$xvar
-        xvar2      <- newclim3$xvar2 
+        newclim    <- data.frame("cintno" = cintno, "xvar" = xvar, "xvar2" = xvar2) %>% 
+          dplyr::group_by(.data$cintno) %>% 
+          dplyr::summarise(dplyr::across(.cols = dplyr::starts_with("xvar"),
+                                         .fns = ~mean(., nr.rm = TRUE)), .groups = "drop")
+        # newclim2   <- melt(newclim, id = "cintno")
+        # newclim3   <- cast(newclim2, cintno ~ variable, mean, na.rm = TRUE)
+        cintno     <- newclim$cintno
+        xvar       <- newclim$xvar
+        xvar2      <- newclim$xvar2 
       }
       if (type == "absolute") { #If using absolute windows.
         newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort)) #Extract date data and cohort (year by default)
@@ -1561,11 +1586,11 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
             
             siteID <- spatial[[1]][row]
             
-            cmatrix[row, col] <- mean(xvar[which(cdate_new$Date %in% c(missingdate - (1:2), missingdate + (1:2)) & cdate_new$spatial %in% siteID)], na.rm = T)
+            cmatrix[row, col] <- mean(xvar[which(cdate_new$Date %in% c(missingdate - (1:2), missingdate + (1:2)) & cdate_new$spatial %in% siteID)], na.rm = TRUE)
             
           } else {
             
-            cmatrix[row, col] <- mean(xvar[which(cdate_new$Date %in% c(missingdate - (1:2), missingdate + (1:2)))], na.rm = T)
+            cmatrix[row, col] <- mean(xvar[which(cdate_new$Date %in% c(missingdate - (1:2), missingdate + (1:2)))], na.rm = TRUE)
             
           }
           
@@ -1585,7 +1610,7 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
             
             siteID <- spatial[[1]][row]
             
-            cmatrix[row, col] <- mean(cont$xvar$Clim[which(cdate_new$Date %in% c(missingdate - (1:2), missingdate + (1:2)) & cdate_new$spatial %in% siteID)], na.rm = T)
+            cmatrix[row, col] <- mean(cont$xvar$Clim[which(cdate_new$Date %in% c(missingdate - (1:2), missingdate + (1:2)) & cdate_new$spatial %in% siteID)], na.rm = TRUE)
             
           } else {
             
@@ -1598,7 +1623,7 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
             #Determine from this on which week data is missing
             missingdate <- bioldate - (col + range[2] - 1)
             
-            cmatrix[row, col] <- mean(cont$xvar[which(cdate_new$Date %in% c(missingdate - (1:2), missingdate + (1:2)))], na.rm = T)
+            cmatrix[row, col] <- mean(cont$xvar[which(cdate_new$Date %in% c(missingdate - (1:2), missingdate + (1:2)))], na.rm = TRUE)
             
           }
           
@@ -1636,11 +1661,11 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
             
             siteID <- spatial[[1]][row]
             
-            cmatrix[row, col] <- mean(xvar[which(cdate_new$Month %in% missingdate$Month & cdate_new$Day %in% missingdate$Day & cdate_new$spatial %in% siteID)], na.rm = T)
+            cmatrix[row, col] <- mean(xvar[which(cdate_new$Month %in% missingdate$Month & cdate_new$Day %in% missingdate$Day & cdate_new$spatial %in% siteID)], na.rm = TRUE)
             
           } else {
             
-            cmatrix[row, col] <- mean(xvar[which(cdate_new$Month %in% missingdate$Month & cdate_new$Day %in% missingdate$Day)], na.rm = T)
+            cmatrix[row, col] <- mean(xvar[which(cdate_new$Month %in% missingdate$Month & cdate_new$Day %in% missingdate$Day)], na.rm = TRUE)
             
           }
           
@@ -1679,7 +1704,7 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
             
             siteID <- spatial[[1]][row]
             
-            cmatrix[row, col] <- mean(cont$xvar$Clim[which(cdate_new$Date %in% missingdate & cdate_new$spatial %in% siteID)], na.rm = T)
+            cmatrix[row, col] <- mean(cont$xvar$Clim[which(cdate_new$Date %in% missingdate & cdate_new$spatial %in% siteID)], na.rm = TRUE)
             
           } else {
             
@@ -1711,7 +1736,7 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
               
             }
             
-            cmatrix[row, col] <- mean(cont$xvar[which(cdate_new$Date %in% missingdate)], na.rm = T)
+            cmatrix[row, col] <- mean(cont$xvar[which(cdate_new$Date %in% missingdate)], na.rm = TRUE)
             
           }
         }
