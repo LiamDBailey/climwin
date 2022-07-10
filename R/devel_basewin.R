@@ -603,16 +603,12 @@ devel_slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
   
   #If the baseline model is fitted with nlme and cross validation is requested, return an error.
   if (k > 0 && inherits(baseline, "lme")) {
-    
     stop("Sorry, cross-validation is currently not functioning for nlme models. Consider using lme4 if possible.")
-    
   }
   
   #If spatial information is not specified, check that there are no duplicate calendar dates.
   if (is.null(spatial) & length(unique(cdate)) < length(cdate)) {
-    
     stop("Your cdate variable has repeated date measures. Do you have climate data from multiple sites? If so, you should specify the parameter `spatial`.")
-    
   }
   
   #Do the spatial check at this point for now
@@ -626,7 +622,7 @@ devel_slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
     func = "centre"
   }
   
-  #Make xvar a list where the name of list object is the climate variable (e.g. Rain, Temp)
+  #Check xvar is a list where the name of list object is the climate variable (e.g. Rain, Temp)
   if (!is.list(xvar)) {
     stop("xvar should be an object of type list")
   }
@@ -657,8 +653,6 @@ devel_slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
   }
   
   rownames(allcombos) <- seq(1, nrow(allcombos), 1)
-  # message("All combinations to be tested...")
-  # message(allcombos)
   
   combined <- list()
   for (combo in 1:nrow(allcombos)) {
@@ -1107,6 +1101,7 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   
   #### INITIAL CHECKS ####
   
+  ## FIXME: THIS WON'T BE NEEDED ONCE WE ADD CHECKS IN ALL PARENT FUNCS
   #Check that climate date data is in the correct date format
   if (all(is.na(as.Date(cdate, format = "%d/%m/%Y")))) {
     
@@ -1184,30 +1179,20 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   
   #### SPATIAL REPLICATION ####
   
-  #If spatial info has been provided...
-  if (!is.null(spatial)) {
+  ##FIXME: This is total crap, but should change once we have df input
+  #Create a data frame with the biological data and its spatial information.  
+  sample.size <- 0
+  data <- data.frame(bdate = bdate, spatial = spatial[[1]], cohort = as.factor(cohort))
+  
+  #For each cohort (usually year, but may also be breeding period)...  
+  for (i in unique(data$cohort)) {
     
-    #Create a data frame with the biological data and its spatial information.  
-    sample.size <- 0
-    data <- data.frame(bdate = bdate, spatial = spatial[[1]], cohort = as.factor(cohort))
-    
-    #For each cohort (usually year, but may also be breeding period)...  
-    for (i in unique(data$cohort)) {
-      
-      #Take a subset of the data for that cohort...
-      sub <- subset(data, cohort = i)
-      #Relevel spatial...
-      sub$spatial <- factor(sub$spatial)
-      #Add 1 to sample size for every site in each cohort.
-      sample.size <- sample.size + length(levels(sub$spatial))
-      
-    }
-    
-    #If spatial is not provided...
-  } else if (is.null(spatial)) {
-    
-    #Sample size is just the length of cohorts (i.e. number of years)
-    sample.size <- length(unique(cohort))
+    #Take a subset of the data for that cohort...
+    sub <- subset(data, cohort = i)
+    #Relevel spatial...
+    sub$spatial <- factor(sub$spatial)
+    #Add 1 to sample size for every site in each cohort.
+    sample.size <- sample.size + length(levels(sub$spatial))
     
   }
   
