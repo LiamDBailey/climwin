@@ -211,8 +211,8 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
                                          .fns = ~mean(., nr.rm = TRUE)), .groups = "drop")
         # newclim2    <- melt(newclim, id = "cintno") #melt so that there is mean climate data for each week 
         # newclim3    <- cast(newclim2, cintno ~ variable, mean, na.rm = TRUE)
-        cintno      <- newclim3$cintno #Extract week numbers
-        xvar        <- newclim3$xvar #Extract climate
+        cintno      <- newclim$cintno #Extract week numbers
+        xvar        <- newclim$xvar #Extract climate
       }
       
       if (type == "absolute") { #If we are dealing with absolute windows
@@ -281,7 +281,7 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
         newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "spatial" = climspatial) %>% 
           dplyr::group_by(.data$cintno, .data$spatial) %>% 
           dplyr::summarise(xvar = mean(.data$xvar, na.rm = TRUE), .groups = "drop") %>% 
-          dplyr::arrange(.data$spatial, .data$cintono)
+          dplyr::arrange(.data$spatial, .data$cintno)
         # newclim2    <- melt(newclim, id = c("cintno", "spatial")) #Melt to just have mean climate for each month number and site ID
         # newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean, na.rm = TRUE)
         # newclim3    <- newclim3[order(newclim3$spatial, newclim3$cintno), ] #Order by site ID and month
