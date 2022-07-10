@@ -82,8 +82,6 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
     spatial_join <- bdate_minmax %>% 
       dplyr::left_join(cdate_minmax, by = "spatial")
     
-    browser()
-    
     #Identify cdate issues
     #Too late (cdate starts later than bdate)
     toolate <- spatial_join %>% 
@@ -124,6 +122,8 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
   #   
   # }
   
+  ## FIXME: DO WE NEED THESE xvar2 CHECKS?
+  ## Don't worry about the spatial check here. Deal with that later when we deal with xvar2 checks
   if (!is.null(xvar2)) { # if there are multiple climate variables included (i.e. for crosswin/autowin)...
     if (!is.null(spatial)) { # ...and there is spatial data provided...
       xvar2      <- data.frame(Clim = xvar2, spatial = spatial[[2]]) # ...create a new dataframe with the second climate variable and spatial info
@@ -148,28 +148,36 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
     }
   }
   
-  if (!is.null(spatial)) { # If spatial replication is present...
-    xvar       <- data.frame(Clim = xvar, spatial = spatial[[2]]) # extract original climate info and spatial data
-    cdate      <- data.frame(Date = cdate, spatial = spatial[[2]]) # Do the same for date information
-    split.list <- list()
-    NUM <- 1
+  ## FIXME: THIS CODE MAY NOT BE NEEDED AT ALL WHEN WE HAVE A DATAFRAME INPUT
+  # if (!is.null(spatial)) { # If spatial replication is present...
     
-    for (i in unique(xvar$spatial)) { #For each site ID...
-      SUB <- subset(xvar, spatial == i) #Subset out climate data for that site...
-      SUBcdate  <- subset(cdate, spatial == i) #extract recorded date info for each site
-      SUBcdate2 <- subset(spatialcdate, spatial == i) #extract potential dates for each site (i.e. range from earliest to latest)
-      rownames(SUB) <- seq(1, nrow(SUB), 1)
-      rownames(SUBcdate) <- seq(1, nrow(SUBcdate), 1)
-      NewClim    <- SUB$Clim[match(SUBcdate2$Date, SUBcdate$Date)] #Determine where there are overlaps (i.e. NAs where there is no match)
-      Newspatial <- rep(i, times = length(NewClim))
-      split.list[[NUM]] <- data.frame(NewClim, Newspatial) # Create a new dataframe with this climate data and site ID info
-      NUM <- NUM + 1
-    }
-    xvar    <- (do.call(rbind, split.list))$NewClim #save climate data (with NAs)
-    climspatial <- (do.call(rbind, split.list))$Newspatial #Save site ID info (same length as that with NAs)
-  } else {
-    xvar    <- xvar[match(cdate2, cdate)] #When there is no spatial replication, simply check for missing date info.
-  }
+    joined_climate <- spatialcdate %>% 
+      dplyr::left_join(data.frame(Clim = xvar, cdate = cdate, spatial = spatial[[2]]), by = c("Date" = "cdate", "spatial"))
+    
+    xvar <- joined_climate$Clim
+    climspatial <- joined_climate$spatial
+    
+  #   xvar       <- data.frame(Clim = xvar, spatial = spatial[[2]]) # extract original climate info and spatial data
+  #   cdate      <- data.frame(Date = cdate, spatial = spatial[[2]]) # Do the same for date information
+  #   split.list <- list()
+  #   NUM <- 1
+  #   
+  #   for (i in unique(xvar$spatial)) { #For each site ID...
+  #     SUB <- subset(xvar, spatial == i) #Subset out climate data for that site...
+  #     SUBcdate  <- subset(cdate, spatial == i) #extract recorded date info for each site
+  #     SUBcdate2 <- subset(spatialcdate, spatial == i) #extract potential dates for each site (i.e. range from earliest to latest)
+  #     rownames(SUB) <- seq(1, nrow(SUB), 1)
+  #     rownames(SUBcdate) <- seq(1, nrow(SUBcdate), 1)
+  #     NewClim    <- SUB$Clim[match(SUBcdate2$Date, SUBcdate$Date)] #Determine where there are overlaps (i.e. NAs where there is no match)
+  #     Newspatial <- rep(i, times = length(NewClim))
+  #     split.list[[NUM]] <- data.frame(NewClim, Newspatial) # Create a new dataframe with this climate data and site ID info
+  #     NUM <- NUM + 1
+  #   }
+  #   xvar    <- (do.call(rbind, split.list))$NewClim #save climate data (with NAs)
+  #   climspatial <- (do.call(rbind, split.list))$Newspatial #Save site ID info (same length as that with NAs)
+  # } else {
+  #   xvar    <- xvar[match(cdate2, cdate)] #When there is no spatial replication, simply check for missing date info.
+  # }
   
   if (!cross) { #When we are not running crosswin...
     if (cinterval == "day") { #...and we are using daily data...
