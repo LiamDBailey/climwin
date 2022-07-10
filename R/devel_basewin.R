@@ -1,6 +1,6 @@
 convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type, 
-                        refday, cross = FALSE, cohort, spatial, 
-                        upper, lower, binary, thresholdQ = NA) {
+                              refday, cross = FALSE, cohort, spatial, 
+                              upper, lower, binary, thresholdQ = NA) {
   
   ######################################################################
   
@@ -12,60 +12,60 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
   
   ######################################################################
   
-    ## FIXME: This will be fixed with #22 when bdate and cdate are df already with spatial, cohort etc!
-    #Create dataframes for bdate and cdate with spatial info
-    bdate_df <- data.frame(bdate = bdate, spatial = spatial[[1]])
-    cdate_df <- data.frame(cdate = cdate, spatial = spatial[[2]])
-    
-    #Check there are no duplicate dates at any site
-    #Do this BEFORE our task below, because we make a sequence of ALL dates which can be intensive for large data
-    duplicates <- cdate_df %>% 
-      dplyr::group_by(.data$spatial) %>% 
-      dplyr::filter(dplyr::n() > length(unique(.data$cdate)))
-    
-    if (nrow(duplicates) > 0) {
-      stop("There are duplicate climate records in the data!")      
-    }
-    
-    #Now that we know there are no duplicates, we can expand out our climate data
-    spatialcdate <- cdate_df %>% 
-      dplyr::group_by(.data$spatial) %>% 
-      dplyr::summarise(Date = seq(min(cdate), max(cdate), by = "days"), .groups = "drop")
-    
-    cdate2       <- spatialcdate$Date # Save this new date data as cdate2..
-    cintno       <- as.numeric(cdate2) - min(as.numeric(cdate2)) + 1   # atrribute daynumbers for both climate and biological data with first date in the climate data set to cintno 1
-    realbintno   <- as.numeric(bdate) - min(as.numeric(cdate2)) + 1
-    
-    #For bdate and cdate determine earliest and latest date available for each site
-    bdate_minmax <- bdate_df %>% 
-      dplyr::group_by(.data$spatial) %>% 
-      dplyr::summarise(min_bdate = min(.data$bdate),
-                       max_bdate = max(.data$bdate), .groups = "drop")
-    cdate_minmax <- cdate_df %>% 
-      dplyr::group_by(.data$spatial) %>% 
-      dplyr::summarise(min_cdate = min(.data$cdate),
-                       max_cdate = max(.data$cdate), .groups = "drop")
-    
-    #Left join together
-    spatial_join <- bdate_minmax %>% 
-      dplyr::left_join(cdate_minmax, by = "spatial")
-    
-    #Identify cdate issues
-    #Too late (cdate starts later than bdate)
-    toolate <- spatial_join %>% 
-      dplyr::filter(.data$min_cdate > .data$min_bdate)
-    
-    #Too early (cdate ends before bdate)
-    tooearly <- spatial_join %>% 
-      dplyr::filter(.data$max_cdate < .data$max_bdate)
-    
-    if (nrow(toolate) > 0) {
-      stop(paste0("\nClimate data does not cover all years of biological data at site ", toolate$spatial,". Earliest climate data is ", toolate$min_cdate, " Earliest biological data is ", toolate$min_bdate, ". Please increase range of climate data"))
-    }
-    
-    if (nrow(tooearly) > 0) {
-      stop(paste0("\nClimate data does not cover all years of biological data at site ", tooearly$spatial ,". Latest climate data is ", tooearly$max_cdate, " Latest biological data is ", tooearly$max_bdate, ". Please increase range of climate data"))
-    }
+  ## FIXME: This will be fixed with #22 when bdate and cdate are df already with spatial, cohort etc!
+  #Create dataframes for bdate and cdate with spatial info
+  bdate_df <- data.frame(bdate = bdate, spatial = spatial[[1]])
+  cdate_df <- data.frame(cdate = cdate, spatial = spatial[[2]])
+  
+  #Check there are no duplicate dates at any site
+  #Do this BEFORE our task below, because we make a sequence of ALL dates which can be intensive for large data
+  duplicates <- cdate_df %>% 
+    dplyr::group_by(.data$spatial) %>% 
+    dplyr::filter(dplyr::n() > length(unique(.data$cdate)))
+  
+  if (nrow(duplicates) > 0) {
+    stop("There are duplicate climate records in the data!")      
+  }
+  
+  #Now that we know there are no duplicates, we can expand out our climate data
+  spatialcdate <- cdate_df %>% 
+    dplyr::group_by(.data$spatial) %>% 
+    dplyr::summarise(Date = seq(min(cdate), max(cdate), by = "days"), .groups = "drop")
+  
+  cdate2       <- spatialcdate$Date # Save this new date data as cdate2..
+  cintno       <- as.numeric(cdate2) - min(as.numeric(cdate2)) + 1   # atrribute daynumbers for both climate and biological data with first date in the climate data set to cintno 1
+  realbintno   <- as.numeric(bdate) - min(as.numeric(cdate2)) + 1
+  
+  #For bdate and cdate determine earliest and latest date available for each site
+  bdate_minmax <- bdate_df %>% 
+    dplyr::group_by(.data$spatial) %>% 
+    dplyr::summarise(min_bdate = min(.data$bdate),
+                     max_bdate = max(.data$bdate), .groups = "drop")
+  cdate_minmax <- cdate_df %>% 
+    dplyr::group_by(.data$spatial) %>% 
+    dplyr::summarise(min_cdate = min(.data$cdate),
+                     max_cdate = max(.data$cdate), .groups = "drop")
+  
+  #Left join together
+  spatial_join <- bdate_minmax %>% 
+    dplyr::left_join(cdate_minmax, by = "spatial")
+  
+  #Identify cdate issues
+  #Too late (cdate starts later than bdate)
+  toolate <- spatial_join %>% 
+    dplyr::filter(.data$min_cdate > .data$min_bdate)
+  
+  #Too early (cdate ends before bdate)
+  tooearly <- spatial_join %>% 
+    dplyr::filter(.data$max_cdate < .data$max_bdate)
+  
+  if (nrow(toolate) > 0) {
+    stop(paste0("\nClimate data does not cover all years of biological data at site ", toolate$spatial,". Earliest climate data is ", toolate$min_cdate, " Earliest biological data is ", toolate$min_bdate, ". Please increase range of climate data"))
+  }
+  
+  if (nrow(tooearly) > 0) {
+    stop(paste0("\nClimate data does not cover all years of biological data at site ", tooearly$spatial ,". Latest climate data is ", tooearly$max_cdate, " Latest biological data is ", tooearly$max_bdate, ". Please increase range of climate data"))
+  }
   
   ## FIXME: DO WE NEED THESE xvar2 CHECKS?
   ## Don't worry about the spatial check here. Deal with that later when we deal with xvar2 checks
@@ -94,11 +94,11 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
   }
   
   ## FIXME: THIS CODE MAY NOT BE NEEDED AT ALL WHEN WE HAVE A DATAFRAME INPUT
-    joined_climate <- spatialcdate %>% 
-      dplyr::left_join(data.frame(Clim = xvar, cdate = cdate, spatial = spatial[[2]]), by = c("Date" = "cdate", "spatial"))
-    
-    xvar <- joined_climate$Clim
-    climspatial <- joined_climate$spatial
+  joined_climate <- spatialcdate %>% 
+    dplyr::left_join(data.frame(Clim = xvar, cdate = cdate, spatial = spatial[[2]]), by = c("Date" = "cdate", "spatial"))
+  
+  xvar <- joined_climate$Clim
+  climspatial <- joined_climate$spatial
   
   ## FIXME: Again, is this needed?? Code with cross will be overlooked for now
   if (!cross) { #When we are not running crosswin...
@@ -172,14 +172,14 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       cyear      <- lubridate::year(cdate2) - min(lubridate::year(cdate2))
       cintno     <- cweek + 52 * cyear
       realbintno <- lubridate::week(bdate) + 52 * (lubridate::year(bdate) - min(lubridate::year(cdate2)))
-        newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "spatial" = climspatial) %>%
-          dplyr::group_by(.data$cintno, .data$spatial) %>% 
-          dplyr::summarise(dplyr::across(.cols = dplyr::starts_with("xvar"),
-                                         .fns = ~mean(., nr.rm = TRUE)), .groups = "drop") %>% 
-          dplyr::arrange(.data$spatial, .data$cintno)
-        cintno      <- newclim$cintno #Extract week numbers
-        xvar        <- newclim$xvar #Extract climate
-        climspatial <- newclim$spatial #Extract site ID
+      newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "spatial" = climspatial) %>%
+        dplyr::group_by(.data$cintno, .data$spatial) %>% 
+        dplyr::summarise(dplyr::across(.cols = dplyr::starts_with("xvar"),
+                                       .fns = ~mean(., nr.rm = TRUE)), .groups = "drop") %>% 
+        dplyr::arrange(.data$spatial, .data$cintno)
+      cintno      <- newclim$cintno #Extract week numbers
+      xvar        <- newclim$xvar #Extract climate
+      climspatial <- newclim$spatial #Extract site ID
       
       if (type == "absolute") { #If we are dealing with absolute windows
         newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort)) #Combine date numbers from biological data with the cohort (year by default)
@@ -240,13 +240,13 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       cintno     <- cmonth + 12 * cyear
       realbintno <- lubridate::month(bdate) + 12 * (lubridate::year(bdate) - min(lubridate::year(cdate2)))
       
-        newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "spatial" = climspatial) %>% 
-          dplyr::group_by(.data$cintno, .data$spatial) %>% 
-          dplyr::summarise(xvar = mean(.data$xvar, na.rm = TRUE), .groups = "drop") %>% 
-          dplyr::arrange(.data$spatial, .data$cintno)
-        cintno      <- newclim$cintno #Save month, climate data and site ID
-        xvar        <- newclim$xvar
-        climspatial <- newclim$spatial
+      newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "spatial" = climspatial) %>% 
+        dplyr::group_by(.data$cintno, .data$spatial) %>% 
+        dplyr::summarise(xvar = mean(.data$xvar, na.rm = TRUE), .groups = "drop") %>% 
+        dplyr::arrange(.data$spatial, .data$cintno)
+      cintno      <- newclim$cintno #Save month, climate data and site ID
+      xvar        <- newclim$xvar
+      climspatial <- newclim$spatial
       if (type == "absolute") { #When using absolute windows...
         newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort)) #Bind biological date and cohort info (year by default)
         datenum  <- 1
@@ -281,14 +281,14 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       cintno     <- cweek + 53 * cyear
       cintno     <- cintno - min(cintno) + 1
       realbintno <- lubridate::month(bdate) + 53 * (year(bdate) - min(year(cdate2)))
-        newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "xvar2" = xvar2, "spatial" = climspatial) %>% 
-          dplyr::group_by(.data$cintno, .data$spatial) %>% 
-          dplyr::summarise(dplyr::across(.cols = dplyr::starts_with("xvar"),
-                                         .fns = ~mean(., nr.rm = TRUE)), .groups = "drop")
-        cintno      <- newclim$cintno #Save info.
-        xvar        <- newclim$xvar
-        xvar2       <- newclim$xvar2
-        climspatial <- newclim$spatial
+      newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "xvar2" = xvar2, "spatial" = climspatial) %>% 
+        dplyr::group_by(.data$cintno, .data$spatial) %>% 
+        dplyr::summarise(dplyr::across(.cols = dplyr::starts_with("xvar"),
+                                       .fns = ~mean(., nr.rm = TRUE)), .groups = "drop")
+      cintno      <- newclim$cintno #Save info.
+      xvar        <- newclim$xvar
+      xvar2       <- newclim$xvar2
+      climspatial <- newclim$spatial
       if (type == "absolute") { #If using an absolute window.
         newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort)) #Combine biological data and cohort (year by default)
         datenum  <- 1
@@ -308,16 +308,16 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       cintno     <- cmonth + 12 * cyear
       realbintno <- lubridate::month(bdate) + 12 * (year(bdate) - min(year(cdate2)))
       
-        newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "xvar2" = xvar2, "spatial" = climspatial) %>% 
-          dplyr::group_by(.data$cintno, .data$spatial) %>% 
-          dplyr::summarise(dplyr::across(.cols = dplyr::starts_with("xvar"),
-                                         .fns = ~mean(., nr.rm = TRUE)), .groups = "drop")
-        
-        cintno      <- newclim$cintno #Save extracted data.
-        xvar        <- newclim$xvar
-        xvar2       <- newclim$xvar2
-        climspatial <- newclim$spatial
-        
+      newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "xvar2" = xvar2, "spatial" = climspatial) %>% 
+        dplyr::group_by(.data$cintno, .data$spatial) %>% 
+        dplyr::summarise(dplyr::across(.cols = dplyr::starts_with("xvar"),
+                                       .fns = ~mean(., nr.rm = TRUE)), .groups = "drop")
+      
+      cintno      <- newclim$cintno #Save extracted data.
+      xvar        <- newclim$xvar
+      xvar2       <- newclim$xvar2
+      climspatial <- newclim$spatial
+      
       if (type == "absolute") { #If using absolute windows.
         newdat   <- cbind(as.data.frame(bdate), as.data.frame(cohort)) #Extract date data and cohort (year by default)
         datenum  <- 1
@@ -342,18 +342,18 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
     
   }
   
-    if (!is.null(xvar2)) { #If a second climate variable is provided...
-      #Return climate date, biological date and both climate variables (with spatial data included)
-      return(list(cintno = data.frame(Date = cintno, spatial = climspatial),
-                  bintno = data.frame(Date = bintno, spatial = spatial[[1]]),
-                  xvar = data.frame(Clim = xvar, spatial = climspatial), 
-                  xvar2 = data.frame(Clim = xvar2, spatial = climspatial)))
-    } else { #If there is only one climate variable
-      #Return climate date, biological date and single climate variables (with spatial data included)
-      return(list(cintno = data.frame(Date = cintno, spatial = climspatial),
-                  bintno = data.frame(Date = bintno, spatial = spatial[[1]]),
-                  xvar = data.frame(Clim = xvar, spatial = climspatial)))
-    }
+  if (!is.null(xvar2)) { #If a second climate variable is provided...
+    #Return climate date, biological date and both climate variables (with spatial data included)
+    return(list(cintno = data.frame(Date = cintno, spatial = climspatial),
+                bintno = data.frame(Date = bintno, spatial = spatial[[1]]),
+                xvar = data.frame(Clim = xvar, spatial = climspatial), 
+                xvar2 = data.frame(Clim = xvar2, spatial = climspatial)))
+  } else { #If there is only one climate variable
+    #Return climate date, biological date and single climate variables (with spatial data included)
+    return(list(cintno = data.frame(Date = cintno, spatial = climspatial),
+                bintno = data.frame(Date = bintno, spatial = spatial[[1]]),
+                xvar = data.frame(Clim = xvar, spatial = climspatial)))
+  }
 }
 
 #'Test for a climate windows in data.
@@ -560,10 +560,10 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
 #'@export
 
 devel_slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline, 
-                       type, refday, stat = "mean", func = "lin", range, 
-                       cmissing = FALSE, cinterval = "day", k = 0,
-                       upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"),
-                       spatial = NULL, cohort = NULL) {
+                             type, refday, stat = "mean", func = "lin", range, 
+                             cmissing = FALSE, cinterval = "day", k = 0,
+                             upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"),
+                             spatial = NULL, cohort = NULL) {
   
   #Check bdate argument
   bdate   <- check_date(bdate, arg_name = "bdate")
@@ -660,12 +660,12 @@ devel_slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
   combined <- list()
   for (combo in 1:nrow(allcombos)) {
     runs <- devel_basewin(exclude = exclude, xvar = xvar[[paste(allcombos[combo, 1])]], cdate = cdate, bdate = bdate, baseline = baseline,
-                    range = range, type = paste(allcombos[combo, 2]), refday = refday, stat = paste(allcombos[combo, 3]), func = paste(allcombos[combo, 4]),
-                    cmissing = cmissing, cinterval = cinterval, k = k, 
-                    upper = ifelse(binarylevel == "two" || binarylevel == "upper", allcombos$upper[combo], NA),
-                    lower = ifelse(binarylevel == "two" || binarylevel == "lower", allcombos$lower[combo], NA),
-                    binary = paste(allcombos$binary[combo]), centre = centre, cohort = cohort,
-                    spatial = spatial)
+                          range = range, type = paste(allcombos[combo, 2]), refday = refday, stat = paste(allcombos[combo, 3]), func = paste(allcombos[combo, 4]),
+                          cmissing = cmissing, cinterval = cinterval, k = k, 
+                          upper = ifelse(binarylevel == "two" || binarylevel == "upper", allcombos$upper[combo], NA),
+                          lower = ifelse(binarylevel == "two" || binarylevel == "lower", allcombos$lower[combo], NA),
+                          binary = paste(allcombos$binary[combo]), centre = centre, cohort = cohort,
+                          spatial = spatial)
     
     combined[[combo]]            <- runs
     allcombos$DeltaAICc[combo]   <- round(runs$Dataset$deltaAICc[1], digits = 2)
@@ -890,13 +890,13 @@ devel_slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
 #'@export
 
 devel_randwin <- function(exclude = NA, repeats = 5, window = "sliding", xvar, cdate, bdate, baseline, 
-                    stat, range, func, type, refday,
-                    cmissing = FALSE, cinterval = "day",
-                    spatial = NULL, cohort = NULL,
-                    upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"), k = 0,
-                    weightfunc = "W", par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)), 
-                    method = "L-BFGS-B", cutoff.day = NULL, cutoff.month = NULL,
-                    furthest = NULL, closest = NULL, thresh = NULL, cvk = NULL) {
+                          stat, range, func, type, refday,
+                          cmissing = FALSE, cinterval = "day",
+                          spatial = NULL, cohort = NULL,
+                          upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"), k = 0,
+                          weightfunc = "W", par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)), 
+                          method = "L-BFGS-B", cutoff.day = NULL, cutoff.month = NULL,
+                          furthest = NULL, closest = NULL, thresh = NULL, cvk = NULL) {
   
   ### Implementing scientific notation can cause problems because years
   ### are converted to characters in scientific notation (e.g. 2000 = "2e+3")
@@ -1027,14 +1027,14 @@ devel_randwin <- function(exclude = NA, repeats = 5, window = "sliding", xvar, c
       if (window == "sliding") {
         
         outputrep <- devel_basewin(exclude = exclude, xvar = xvar[[paste(allcombos[combo, 1])]], cdate = cdate, bdate = bdateNew, 
-                             baseline = baseline, range = range, stat = paste(allcombos[combo, 3]), 
-                             func = paste(allcombos[combo, 4]), type = paste(allcombos[combo, 2]),
-                             refday = refday,
-                             nrandom = repeats, cmissing = cmissing, cinterval = cinterval,
-                             upper = ifelse(binarylevel == "two" || binarylevel == "upper", allcombos$upper[combo], NA),
-                             lower = ifelse(binarylevel == "two" || binarylevel == "lower", allcombos$lower[combo], NA),
-                             binary = paste(allcombos$binary[combo]), centre = centre, k = k, spatial = spatialNew,
-                             cohort = cohort, randwin = TRUE, randwin_thresholdQ = thresholdQ)
+                                   baseline = baseline, range = range, stat = paste(allcombos[combo, 3]), 
+                                   func = paste(allcombos[combo, 4]), type = paste(allcombos[combo, 2]),
+                                   refday = refday,
+                                   nrandom = repeats, cmissing = cmissing, cinterval = cinterval,
+                                   upper = ifelse(binarylevel == "two" || binarylevel == "upper", allcombos$upper[combo], NA),
+                                   lower = ifelse(binarylevel == "two" || binarylevel == "lower", allcombos$lower[combo], NA),
+                                   binary = paste(allcombos$binary[combo]), centre = centre, k = k, spatial = spatialNew,
+                                   cohort = cohort, randwin = TRUE, randwin_thresholdQ = thresholdQ)
         
         outputrep$Repeat <- r
         WeightDist <- sum(as.numeric(cumsum(outputrep$ModWeight) <= 0.95))/nrow(outputrep)
@@ -1091,10 +1091,10 @@ devel_randwin <- function(exclude = NA, repeats = 5, window = "sliding", xvar, c
 ################################
 
 devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range, 
-                    type, stat = "mean", func = "lin", refday,
-                    cmissing = FALSE, cinterval = "day", nrandom = 0, k = 0,
-                    spatial, upper = NA, lower = NA, binary = FALSE, scale = FALSE, centre = list(NULL, "both"),
-                    cohort = NULL, randwin = FALSE, randwin_thresholdQ) {
+                          type, stat = "mean", func = "lin", refday,
+                          cmissing = FALSE, cinterval = "day", nrandom = 0, k = 0,
+                          spatial, upper = NA, lower = NA, binary = FALSE, scale = FALSE, centre = list(NULL, "both"),
+                          cohort = NULL, randwin = FALSE, randwin_thresholdQ) {
   
   message("Initialising, please wait...")
   
@@ -1235,17 +1235,19 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   
   #Convert date information in to numbers and apply absolute window info (if appropriate)
   #This code creates a new climate dataframe with continuous daynumbers, leap days are not a problem
-  cont      <- convertdate_devel(bdate = bdate, cdate = cdate, xvar = xvar, 
-                           cinterval = cinterval, type = type, 
-                           refday = refday, cohort = cohort, spatial = spatial, 
-                           binary = binary, upper = upper, lower = lower, thresholdQ = thresholdQ)   
+  converted_dates <- convertdate_devel(bdate = bdate, cdate = cdate, xvar = xvar, 
+                                       cinterval = cinterval, type = type, 
+                                       refday = refday, cohort = cohort, spatial = spatial, 
+                                       binary = binary, upper = upper, lower = lower, thresholdQ = thresholdQ)
+  
+  browser()
   
   if (!is.null(spatial)) { #If spatial data is provided...
     
     for (i in unique(spatial[[1]])) { #For each site...
       
-      SUB_clim <- subset(cont$cintno, spatial == i) # ...subset the date numbers from climate data...
-      SUB_biol <- subset(cont$bintno, spatial == i) # ...subset the date numbers from biological data...
+      SUB_clim <- subset(converted_dates$cintno, spatial == i) # ...subset the date numbers from climate data...
+      SUB_biol <- subset(converted_dates$bintno, spatial == i) # ...subset the date numbers from biological data...
       
       #Check that you have enough data to go back the specified range at EACH SITE
       if ((min(SUB_biol$Date) - range[1]) < min(SUB_clim$Date)) {
@@ -1265,12 +1267,12 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   } else { #If spatial data is not provided.
     
     #Check that you have enough data to go back the specified range
-    if ((min(cont$bintno) - range[1]) < min(cont$cintno)) {
+    if ((min(converted_dates$bintno) - range[1]) < min(converted_dates$cintno)) {
       stop(paste("You do not have enough climate data to search ", range[1], " ", cinterval, "s before ", min(as.Date(bdate, format = "%d/%m/%Y")), ". Please adjust the value of range or add additional climate data.", sep = ""))
     }
     
     #Check that you have enough data to start in the specified range
-    if ((max(cont$bintno) - range[2] - 1) > max(cont$cintno)) {
+    if ((max(converted_dates$bintno) - range[2] - 1) > max(converted_dates$cintno)) {
       stop(paste("You need more recent climate data to test over this range. The most recent climate data is from ", max(as.Date(cdate, format = "%d/%m/%Y")), " while the most recent biological data is from ", max(as.Date(bdate, format = "%d/%m/%Y")), sep = ""))
     }
     
@@ -1347,25 +1349,25 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
       
       if (!is.na(upper) && is.na(lower)) { #...and an upper bound is provided...
         if (binary) { #...and we want data to be binary (i.e. it's above the value or it's not)
-          cont$xvar$Clim <- ifelse(cont$xvar$Clim > upper, 1, 0) #Then turn climate data into binary data.
+          converted_dates$xvar$Clim <- ifelse(converted_dates$xvar$Clim > upper, 1, 0) #Then turn climate data into binary data.
         } else { #Otherwise, if binary is not true, simply make all data below the upper limit into 0.
-          cont$xvar$Clim <- ifelse(cont$xvar$Clim > upper, cont$xvar$Clim, 0)
+          converted_dates$xvar$Clim <- ifelse(converted_dates$xvar$Clim > upper, converted_dates$xvar$Clim, 0)
         }
       }
       
       if (!is.na(lower) && is.na(upper)) { #If a lower limit has been provided, do the same.
         if (binary) {
-          cont$xvar$Clim <- ifelse(cont$xvar$Clim < lower, 1, 0)
+          converted_dates$xvar$Clim <- ifelse(converted_dates$xvar$Clim < lower, 1, 0)
         } else {
-          cont$xvar$Clim <- ifelse(cont$xvar$Clim < lower, cont$xvar$Clim, 0)
+          converted_dates$xvar$Clim <- ifelse(converted_dates$xvar$Clim < lower, converted_dates$xvar$Clim, 0)
         }
       }
       
       if (!is.na(lower) && !is.na(upper)) { #If both an upper and lower limit are provided, do the same.
         if (binary) {
-          cont$xvar$Clim <- ifelse(cont$xvar$Clim > lower && cont$xvar$Clim < upper, 1, 0)
+          converted_dates$xvar$Clim <- ifelse(converted_dates$xvar$Clim > lower && converted_dates$xvar$Clim < upper, 1, 0)
         } else {
-          cont$xvar$Clim <- ifelse(cont$xvar$Clim > lower && cont$xvar$Clim < upper, cont$xvar$Clim - lower, 0)
+          converted_dates$xvar$Clim <- ifelse(converted_dates$xvar$Clim > lower && converted_dates$xvar$Clim < upper, converted_dates$xvar$Clim - lower, 0)
         } 
       }
       
@@ -1373,25 +1375,25 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
       
       if (!is.na(upper) && is.na(lower)) {
         if (binary) {
-          cont$xvar <- ifelse(cont$xvar > upper, 1, 0)
+          converted_dates$xvar <- ifelse(converted_dates$xvar > upper, 1, 0)
         } else {
-          cont$xvar <- ifelse(cont$xvar > upper, cont$xvar, 0)
+          converted_dates$xvar <- ifelse(converted_dates$xvar > upper, converted_dates$xvar, 0)
         }
       }
       
       if (!is.na(lower) && is.na(upper)) {
         if (binary) {
-          cont$xvar <- ifelse(cont$xvar < lower, 1, 0)
+          converted_dates$xvar <- ifelse(converted_dates$xvar < lower, 1, 0)
         } else {
-          cont$xvar <- ifelse(cont$xvar < lower, cont$xvar, 0)
+          converted_dates$xvar <- ifelse(converted_dates$xvar < lower, converted_dates$xvar, 0)
         }
       }
       
       if (!is.na(lower) && !is.na(upper)) {
         if (binary) {
-          cont$xvar <- ifelse(cont$xvar > lower & cont$xvar < upper, 1, 0)
+          converted_dates$xvar <- ifelse(converted_dates$xvar > lower & converted_dates$xvar < upper, 1, 0)
         } else {
-          cont$xvar <- ifelse(cont$xvar > lower & cont$xvar < upper, cont$xvar - lower, 0)
+          converted_dates$xvar <- ifelse(converted_dates$xvar > lower & converted_dates$xvar < upper, converted_dates$xvar - lower, 0)
         } 
       } 
       
@@ -1402,11 +1404,11 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   if (!is.null(spatial)) { #If spatial information is provided...
     for (i in 1:length(bdate)) { #For each biological record we have...
       #Take a row in the empty matrix and add climate data from the correct site and over the full date range chosen by the user.
-      cmatrix[i, ] <- cont$xvar[which(cont$cintno$spatial %in% cont$bintno$spatial[i] & cont$cintno$Date %in% (cont$bintno$Date[i] - c(range[2]:range[1]))), 1]  
+      cmatrix[i, ] <- converted_dates$xvar[which(converted_dates$cintno$spatial %in% converted_dates$bintno$spatial[i] & converted_dates$cintno$Date %in% (converted_dates$bintno$Date[i] - c(range[2]:range[1]))), 1]  
     }
   } else { #If no spatial data is provided, do the same but without checking site ID
     for (i in 1:length(bdate)) {
-      cmatrix[i, ] <- cont$xvar[which(cont$cintno %in% (cont$bintno[i] - c(range[2]:range[1])))]    
+      cmatrix[i, ] <- converted_dates$xvar[which(converted_dates$cintno %in% (converted_dates$bintno[i] - c(range[2]:range[1])))]    
     } 
   }
   
@@ -1420,36 +1422,36 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
       
       if (cinterval == "day") { #Where a daily interval is used...
         #...save an object 'missing' with the full dates of all missing data.
-        .GlobalEnv$missing <- as.Date(cont$cintno$Date[is.na(cont$xvar$Clim)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1)
+        .GlobalEnv$missing <- as.Date(converted_dates$cintno$Date[is.na(converted_dates$xvar$Clim)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1)
       }
       
       if (cinterval == "month") { #Where a monthly interval is used...
         #...save an object 'missing' with the month and year of all missing data.
-        .GlobalEnv$missing <- c(paste("Month:", cont$cintno$Date[is.na(cont$xvar$Clim)] - (floor(cont$cintno$Date[is.na(cont$xvar$Clim)]/12) * 12),
-                                      #lubridate::month(as.Date(cont$cintno$Date[is.na(cont$xvar$Clim)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1)),
-                                      "Year:", lubridate::year(min(as.Date(cdate, format = "%d/%m/%Y"))) + floor(cont$cintno$Date[is.na(cont$xvar$Clim)]/12)))
-        #lubridate::year(as.Date(cont$cintno$Date[is.na(cont$xvar$Clim)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1))))
+        .GlobalEnv$missing <- c(paste("Month:", converted_dates$cintno$Date[is.na(converted_dates$xvar$Clim)] - (floor(converted_dates$cintno$Date[is.na(converted_dates$xvar$Clim)]/12) * 12),
+                                      #lubridate::month(as.Date(converted_dates$cintno$Date[is.na(converted_dates$xvar$Clim)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1)),
+                                      "Year:", lubridate::year(min(as.Date(cdate, format = "%d/%m/%Y"))) + floor(converted_dates$cintno$Date[is.na(converted_dates$xvar$Clim)]/12)))
+        #lubridate::year(as.Date(converted_dates$cintno$Date[is.na(converted_dates$xvar$Clim)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1))))
       }
       if (cinterval == "week") { #Where weekly data is used...
         #...save an object 'missing' with the week and year of all missing data.
-        .GlobalEnv$missing <- c(paste("Week:", cont$cintno$Date[is.na(cont$xvar$Clim)] - (floor(cont$cintno$Date[is.na(cont$xvar$Clim)]/52) * 52),
-                                      #lubridate::week(as.Date(cont$cintno$Date[is.na(cont$xvar$Clim)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1)),
-                                      "Year:", lubridate::year(min(as.Date(cdate, format = "%d/%m/%Y"))) + floor(cont$cintno$Date[is.na(cont$xvar$Clim)]/52)))
-        #lubridate::year(as.Date(cont$cintno$Date[is.na(cont$xvar$Clim)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1))))
+        .GlobalEnv$missing <- c(paste("Week:", converted_dates$cintno$Date[is.na(converted_dates$xvar$Clim)] - (floor(converted_dates$cintno$Date[is.na(converted_dates$xvar$Clim)]/52) * 52),
+                                      #lubridate::week(as.Date(converted_dates$cintno$Date[is.na(converted_dates$xvar$Clim)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1)),
+                                      "Year:", lubridate::year(min(as.Date(cdate, format = "%d/%m/%Y"))) + floor(converted_dates$cintno$Date[is.na(converted_dates$xvar$Clim)]/52)))
+        #lubridate::year(as.Date(converted_dates$cintno$Date[is.na(converted_dates$xvar$Clim)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1))))
       }
     } else { #If spatial data is not provided.
       
       if (cinterval == "day") { #Do the same for day (syntax is just a bit differen)
-        .GlobalEnv$missing <- as.Date(cont$cintno[is.na(cont$xvar)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1)
+        .GlobalEnv$missing <- as.Date(converted_dates$cintno[is.na(converted_dates$xvar)], origin = min(as.Date(cdate, format = "%d/%m/%Y")) - 1)
       }
       if (cinterval == "month") {
-        .GlobalEnv$missing <- c(paste("Month:", (lubridate::month(min(as.Date(cdate, format = "%d/%m/%Y"))) + (which(is.na(cont$xvar)) - 1)) - (floor((lubridate::month(min(as.Date(cdate, format = "%d/%m/%Y"))) + (which(is.na(cont$xvar)) - 1))/12)*12),
-                                      "Year:", (floor((which(is.na(cont$xvar)) - 1)/12) + lubridate::year(min(as.Date(cdate, format = "%d/%m/%Y"))))))
+        .GlobalEnv$missing <- c(paste("Month:", (lubridate::month(min(as.Date(cdate, format = "%d/%m/%Y"))) + (which(is.na(converted_dates$xvar)) - 1)) - (floor((lubridate::month(min(as.Date(cdate, format = "%d/%m/%Y"))) + (which(is.na(converted_dates$xvar)) - 1))/12)*12),
+                                      "Year:", (floor((which(is.na(converted_dates$xvar)) - 1)/12) + lubridate::year(min(as.Date(cdate, format = "%d/%m/%Y"))))))
       }
       if (cinterval == "week") {
-        .GlobalEnv$missing <- c(paste("Week:", cont$cintno[is.na(cont$xvar)] - (floor(cont$cintno[is.na(cont$xvar)]/52) * 52),
+        .GlobalEnv$missing <- c(paste("Week:", converted_dates$cintno[is.na(converted_dates$xvar)] - (floor(converted_dates$cintno[is.na(converted_dates$xvar)]/52) * 52),
                                       #ceiling(((as.numeric((as.Date(bdate[which(is.na(cmatrix)) - floor(which(is.na(cmatrix))/nrow(cmatrix))*nrow(cmatrix)], format = "%d/%m/%Y"))) - (floor(which(is.na(cmatrix))/nrow(cmatrix))*7)) - as.numeric(as.Date(paste("01/01/", lubridate::year(as.Date(bdate[which(is.na(cmatrix)) - floor(which(is.na(cmatrix))/nrow(cmatrix))*nrow(cmatrix)], format = "%d/%m/%Y")), sep = ""), format = "%d/%m/%Y")) + 1) / 7),
-                                      "Year:", lubridate::year(min(as.Date(cdate, format = "%d/%m/%Y"))) + floor(cont$cintno[is.na(cont$xvar)]/52)))
+                                      "Year:", lubridate::year(min(as.Date(cdate, format = "%d/%m/%Y"))) + floor(converted_dates$cintno[is.na(converted_dates$xvar)]/52)))
         #lubridate::year(as.Date(bdate[which(is.na(cmatrix)) - floor(which(is.na(cmatrix))/nrow(cmatrix))*nrow(cmatrix)], format = "%d/%m/%Y"))))
       }
     }
@@ -1516,31 +1518,31 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
           if (!is.null(spatial)) {
             
             #Extract the climate week numbers
-            cdate_new <- data.frame(Date = cont$cintno$Date,
-                                    spatial = cont$cintno$spatial)
+            cdate_new <- data.frame(Date = converted_dates$cintno$Date,
+                                    spatial = converted_dates$cintno$spatial)
             
             #Extract the biological week number that is missing
-            bioldate <- cont$bintno$Date[row]
+            bioldate <- converted_dates$bintno$Date[row]
             
             #Determine from this on which week data is missing
             missingdate <- bioldate - (col + range[2] - 1)
             
             siteID <- spatial[[1]][row]
             
-            cmatrix[row, col] <- mean(cont$xvar$Clim[which(cdate_new$Date %in% c(missingdate - (1:2), missingdate + (1:2)) & cdate_new$spatial %in% siteID)], na.rm = TRUE)
+            cmatrix[row, col] <- mean(converted_dates$xvar$Clim[which(cdate_new$Date %in% c(missingdate - (1:2), missingdate + (1:2)) & cdate_new$spatial %in% siteID)], na.rm = TRUE)
             
           } else {
             
             #Extract the climate week numbers
-            cdate_new <- data.frame(Date = cont$cintno)
+            cdate_new <- data.frame(Date = converted_dates$cintno)
             
             #Extract the biological week number that is missing
-            bioldate <- cont$bintno[row]
+            bioldate <- converted_dates$bintno[row]
             
             #Determine from this on which week data is missing
             missingdate <- bioldate - (col + range[2] - 1)
             
-            cmatrix[row, col] <- mean(cont$xvar[which(cdate_new$Date %in% c(missingdate - (1:2), missingdate + (1:2)))], na.rm = TRUE)
+            cmatrix[row, col] <- mean(converted_dates$xvar[which(cdate_new$Date %in% c(missingdate - (1:2), missingdate + (1:2)))], na.rm = TRUE)
             
           }
           
@@ -1591,11 +1593,11 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
           if (!is.null(spatial)) {
             
             #Extract the climate week numbers
-            cdate_new <- data.frame(Date = cont$cintno$Date,
-                                    spatial = cont$cintno$spatial)
+            cdate_new <- data.frame(Date = converted_dates$cintno$Date,
+                                    spatial = converted_dates$cintno$spatial)
             
             #Extract the biological week number that is missing
-            bioldate <- cont$bintno$Date[row]
+            bioldate <- converted_dates$bintno$Date[row]
             
             #Determine from this on which week data is missing
             missingdate <- bioldate - (col + range[2] - 1)
@@ -1621,15 +1623,15 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
             
             siteID <- spatial[[1]][row]
             
-            cmatrix[row, col] <- mean(cont$xvar$Clim[which(cdate_new$Date %in% missingdate & cdate_new$spatial %in% siteID)], na.rm = TRUE)
+            cmatrix[row, col] <- mean(converted_dates$xvar$Clim[which(cdate_new$Date %in% missingdate & cdate_new$spatial %in% siteID)], na.rm = TRUE)
             
           } else {
             
             #Extract the climate week numbers
-            cdate_new <- data.frame(Date = cont$cintno)
+            cdate_new <- data.frame(Date = converted_dates$cintno)
             
             #Extract the biological week number that is missing
-            bioldate <- cont$bintno[row]
+            bioldate <- converted_dates$bintno[row]
             
             #Determine from this on which week data is missing
             missingdate <- bioldate - (col + range[2] - 1)
@@ -1653,7 +1655,7 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
               
             }
             
-            cmatrix[row, col] <- mean(cont$xvar[which(cdate_new$Date %in% missingdate)], na.rm = TRUE)
+            cmatrix[row, col] <- mean(converted_dates$xvar[which(cdate_new$Date %in% missingdate)], na.rm = TRUE)
             
           }
         }
@@ -1870,7 +1872,7 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
         }
         
       }
-  
+      
     }
     
     setTxtProgressBar(pb, row)
