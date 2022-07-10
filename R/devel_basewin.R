@@ -61,7 +61,7 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
         stop(paste("Climate data does not cover all years of biological data at site ", i ,". Latest climate data is ", max(cdate), " Latest biological data is ", max(bdate), ". Please increase range of climate data", sep = ""))
       }
     }
-  } else if (is.null(spatial) == TRUE) {
+  } else if (is.null(spatial)) {
     
     if (min(cdate) > min(bdate)) { # If spatial data is not provided, also check the overlap between climate and biological data as above.
       stop(paste("Climate data does not cover all years of biological data. Earliest climate data is ", min(cdate), ". Earliest biological data is ", min(bdate), sep = ""))
@@ -654,7 +654,7 @@ devel_slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
     
   }
   
-  if (is.null(cohort) == TRUE) {
+  if (is.null(cohort)) {
     cohort = lubridate::year(bdate) #bdate is now definitely a date due to check function
   }
   
@@ -1287,7 +1287,7 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   if (stat == "slope") { 
     
     #Adjust number of models...
-    ifelse(is.na(exclude[2]) == TRUE,  maxmodno  <- maxmodno - duration, maxmodno  <- maxmodno - exclude[2] - 1)
+    ifelse(is.na(exclude[2]),  maxmodno  <- maxmodno - duration, maxmodno  <- maxmodno - exclude[2] - 1)
     
   }
   
