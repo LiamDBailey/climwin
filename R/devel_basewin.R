@@ -40,7 +40,7 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
     cintno       <- as.numeric(cdate2) - min(as.numeric(cdate2)) + 1   # atrribute daynumbers for both climate and biological data with first date in the climate data set to cintno 1
     realbintno   <- as.numeric(bdate) - min(as.numeric(cdate2)) + 1
   } else { # If there is no spatial information...
-    cdate2     <- seq(min(as.Date(cdate, format = "%d/%m/%Y")), max(as.Date(cdate, format = "%d/%m/%Y")), "days") # Create a new dataframe with all possible dates within the date range given... 
+    cdate2     <- seq(min(cdate), max(cdate), "days") # Create a new dataframe with all possible dates within the date range given... 
     cintno     <- as.numeric(cdate2) - min(as.numeric(cdate2)) + 1   # atrribute daynumbers for both datafiles with first date in CLimateData set to cintno 1
     realbintno <- as.numeric(bdate) - min(as.numeric(cdate2)) + 1
     if (length(cintno) != length(unique(cintno))){
@@ -48,7 +48,7 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
     }
   }
   
-  cdate  <- as.Date(cdate, format = "%d/%m/%Y") # Also have an object saving the original date information (this way we can work out where climate data is missing!)
+  if(!is.null(spatial)){ # If spatial data is provided...
   
   if(is.null(spatial) == FALSE){ # If spatial data is provided...
     
