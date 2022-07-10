@@ -658,8 +658,11 @@ devel_slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
                        spatial = NULL, cohort = NULL) {
   
   #Check bdate argument
-  bdate <- check_date(bdate, arg_name = "bdate")
-  cdate <- check_date(cdate, arg_name = "cdate")
+  bdate   <- check_date(bdate, arg_name = "bdate")
+  cdate   <- check_date(cdate, arg_name = "cdate")
+  spatial <- check_spatial(spatial = spatial,
+                           length_b = length(bdate),
+                           length_c = length(cdate))
   
   ### Implementing scientific notation can cause problems because years
   ### are converted to characters in scientific notation (e.g. 2000 = "2e+3")
