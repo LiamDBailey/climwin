@@ -49,8 +49,6 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
   }
   
   if(!is.null(spatial)){ # If spatial data is provided...
-  
-  if(is.null(spatial) == FALSE){ # If spatial data is provided...
     
     for(i in unique(spatial[[2]])){ # For each possible spatial site...
       
@@ -75,8 +73,8 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
     
   }
   
-  if (is.null(xvar2) == FALSE){ # if there are multiple climate variables included (i.e. for crosswin/autowin)...
-    if (is.null(spatial) == FALSE){ # ...and there is spatial data provided...
+  if (!is.null(xvar2)){ # if there are multiple climate variables included (i.e. for crosswin/autowin)...
+    if (!is.null(spatial)){ # ...and there is spatial data provided...
       xvar2      <- data.frame(Clim = xvar2, spatial = spatial[[2]]) # ...create a new dataframe with the second climate variable and spatial info
       cdatetemp  <- data.frame(Date = cdate, spatial = spatial[[2]]) # ...do the same for date information
       split.list <- list()
@@ -99,7 +97,7 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
     }
   }
   
-  if(is.null(spatial) == FALSE){ # If spatial replication is present...
+  if (!is.null(spatial)){ # If spatial replication is present...
     xvar       <- data.frame(Clim = xvar, spatial = spatial[[2]]) # extract original climate info and spatial data
     cdate      <- data.frame(Date = cdate, spatial = spatial[[2]]) # Do the same for date information
     split.list <- list()
@@ -122,7 +120,7 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
     xvar    <- xvar[match(cdate2, cdate)] #When there is no spatial replication, simply check for missing date info.
   }
   
-  if (cross == FALSE){ #When we are not running crosswin...
+  if (!cross){ #When we are not running crosswin...
     if (cinterval == "day"){ #...and we are using daily data...
       if (type == "absolute"){ #..and using an absolute window...
         
@@ -148,19 +146,19 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       #We have checked to see if this is the case using 'thresholdQ'.
       #If 'thresholdQ' is Y, the user wants thresholds estimated BEFORE calculated weekly/monthly data.
       
-      if(!is.na(thresholdQ) && thresholdQ == "Y"){
+      if (!is.na(thresholdQ) && thresholdQ == "Y"){
         
-        if(binary == T){
+        if (binary){
           
-          if(is.na(upper) == FALSE && is.na(lower) == TRUE){
+          if (!is.na(upper) && is.na(lower)){
             
             xvar <- ifelse(xvar > upper, 1, 0)
             
-          } else if(is.na(upper) == TRUE && is.na(lower) == FALSE){
+          } else if (is.na(upper) && !is.na(lower)){
             
             xvar <- ifelse(xvar < lower, 1, 0)
             
-          } else if(is.na(upper) == FALSE && is.na(lower) == FALSE){
+          } else if (!is.na(upper) && !is.na(lower)){
             
             xvar <- ifelse(xvar > lower & xvar < upper, 1, 0)
             
@@ -168,15 +166,15 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
           
         } else {
           
-          if(is.na(upper) == FALSE && is.na(lower) == TRUE){
+          if (!is.na(upper) && is.na(lower)){
             
             xvar <- ifelse(xvar > upper, xvar, 0)
             
-          } else if(is.na(upper) == TRUE && is.na(lower) == FALSE){
+          } else if (is.na(upper) && !is.na(lower)){
             
             xvar <- ifelse(xvar < lower, xvar, 0)
             
-          } else if(is.na(upper) == FALSE && is.na(lower) == FALSE){
+          } else if (!is.na(upper) && !is.na(lower)){
             
             xvar <- ifelse(xvar > lower & xvar < upper, xvar, 0)
             
@@ -195,7 +193,7 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       realbintno <- lubridate::week(bdate) + 52 * (lubridate::year(bdate) - min(lubridate::year(cdate2)))
       #cintno      <- ceiling((as.numeric(cdate2) - min(as.numeric(cdate2)) + 1) / 7)   
       #realbintno  <- ceiling((as.numeric(bdate) - min(as.numeric(cdate2)) + 1) / 7)
-      if(is.null(spatial) == FALSE){ # If there is spatial replication...
+      if (!is.null(spatial)){ # If there is spatial replication...
         newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "spatial" = climspatial) # ...create a dataframe with week number, climate data and site ID...
         newclim2    <- melt(newclim, id = c("cintno", "spatial")) # ...melt this so that we save the mean climate from each week at each site ID is seperated... #
         newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean, na.rm = T) 
@@ -228,19 +226,19 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       
       #Once again, check if the user wants to calculate thresholds before determining weekly/monthly means.
       
-      if(!is.na(thresholdQ) && thresholdQ == "Y"){
+      if (!is.na(thresholdQ) && thresholdQ == "Y"){
         
-        if(binary == T){
+        if (binary){
           
-          if(is.na(upper) == FALSE && is.na(lower) == TRUE){
+          if (!is.na(upper) && is.na(lower)){
             
             xvar <- ifelse(xvar > upper, 1, 0)
             
-          } else if(is.na(upper) == TRUE && is.na(lower) == FALSE){
+          } else if (is.na(upper) && !is.na(lower)){
             
             xvar <- ifelse(xvar < lower, 1, 0)
             
-          } else if(is.na(upper) == FALSE && is.na(lower) == FALSE){
+          } else if (!is.na(upper) && !is.na(lower)){
             
             xvar <- ifelse(xvar > lower & xvar < upper, 1, 0)
             
@@ -248,15 +246,15 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
           
         } else {
           
-          if(is.na(upper) == FALSE && is.na(lower) == TRUE){
+          if (!is.na(upper) && is.na(lower)){
             
             xvar <- ifelse(xvar > upper, xvar, 0)
             
-          } else if(is.na(upper) == TRUE && is.na(lower) == FALSE){
+          } else if (is.na(upper) && !is.na(lower)){
             
             xvar <- ifelse(xvar < lower, xvar, 0)
             
-          } else if(is.na(upper) == FALSE && is.na(lower) == FALSE){
+          } else if (!is.na(upper) && !is.na(lower)){
             
             xvar <- ifelse(xvar > lower & xvar < upper, xvar, 0)
             
@@ -270,7 +268,7 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       cintno     <- cmonth + 12 * cyear
       realbintno <- lubridate::month(bdate) + 12 * (lubridate::year(bdate) - min(lubridate::year(cdate2)))
       
-      if(is.null(spatial) == FALSE){ # If spatial replication is used...
+      if (!is.null(spatial)){ # If spatial replication is used...
         newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "spatial" = climspatial) #Create a new dataframe with month number, climate data and site ID
         newclim2    <- melt(newclim, id = c("cintno", "spatial")) #Melt to just have mean climate for each month number and site ID
         newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean, na.rm = T)
@@ -321,7 +319,7 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       realbintno <- lubridate::month(bdate) + 53 * (year(bdate) - min(year(cdate2)))
       #cintno     <- ceiling((as.numeric(cdate2) - min(as.numeric(cdate2)) + 1) / 7)   # atrribute weeknumbers for both datafiles with first week in CLimateData set to cintno 1
       #realbintno <- ceiling((as.numeric(bdate) - min(as.numeric(cdate2)) + 1) / 7)
-      if(is.null(spatial) == FALSE){ #When spatial data is available
+      if (!is.null(spatial)){ #When spatial data is available
         newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "xvar2" = xvar2, "spatial" = climspatial) #Create a dataset with both climate variables and siteID
         newclim2    <- melt(newclim, id = c("cintno", "spatial")) #Determine mean values for both climate variables each week at each site
         newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean, na.rm = T)
@@ -355,7 +353,7 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
       cyear      <- year(cdate2) - min(year(cdate2))
       cintno     <- cmonth + 12 * cyear
       realbintno <- lubridate::month(bdate) + 12 * (year(bdate) - min(year(cdate2)))
-      if(is.null(spatial) == FALSE){ #If spatial data is used...
+      if (!is.null(spatial)){ #If spatial data is used...
         newclim     <- data.frame("cintno" = cintno, "xvar" = xvar, "xvar2" = xvar2, "spatial" = climspatial) #Extract both climate variables and site ID
         newclim2    <- melt(newclim, id = c("cintno", "spatial")) #Determine mean climate for each climate variable at each site for each month.
         newclim3    <- cast(newclim2, cintno + spatial ~ variable, mean, na.rm = T)
@@ -389,14 +387,14 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
   #Sometimes data may have infinity variables. Always make these NAs
   xvar <- ifelse(is.infinite(xvar), NA, xvar)
   
-  if(is.null(xvar2) == FALSE){ #Do the same for the second climate variable if it is present.
+  if (!is.null(xvar2)){ #Do the same for the second climate variable if it is present.
     
     xvar2 <- ifelse(is.infinite(xvar2), NA, xvar2)
     
   }
   
-  if(is.null(spatial) == FALSE){ #If spatial data is provided...
-    if(is.null(xvar2) == FALSE){ #And a second climate variable is provided...
+  if (!is.null(spatial)){ #If spatial data is provided...
+    if (!is.null(xvar2)){ #And a second climate variable is provided...
       #Return climate date, biological date and both climate variables (with spatial data included)
       return(list(cintno = data.frame(Date = cintno, spatial = climspatial),
                   bintno = data.frame(Date = bintno, spatial = spatial[[1]]),
@@ -409,7 +407,7 @@ convertdate_devel <- function(bdate, cdate, xvar, xvar2 = NULL, cinterval, type,
                   xvar = data.frame(Clim = xvar, spatial = climspatial)))
     }
   } else { #If spatial data is not included.
-    if(is.null(xvar2) == FALSE){ #But a second climate variable is still used
+    if (!is.null(xvar2)){ #But a second climate variable is still used
       #Return climate date, biological date and both climate variables.
       return(list(cintno = cintno, bintno = bintno, xvar = xvar, xvar2 = xvar2))
     } else {
@@ -679,36 +677,36 @@ devel_slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
   }
   
   #Create a centre function that over-rides quadratics etc. when centre != NULL
-  if(is.null(centre[[1]]) == FALSE){
+  if (!is.null(centre[[1]])){
     func = "centre"
   }
   
   #Make xvar a list where the name of list object is the climate variable (e.g. Rain, Temp)
-  if (is.list(xvar) == FALSE){
+  if (!is.list(xvar)){
     stop("xvar should be an object of type list")
   }
   
-  if (is.null(names(xvar)) == TRUE){
+  if (is.null(names(xvar))){
     numbers <- seq(1, length(xvar), 1)
     for (xname in 1:length(xvar)){
       names(xvar)[xname] = paste("climate", numbers[xname])
     }
   }
   
-  if (is.na(upper) == FALSE && is.na(lower) == FALSE){
+  if (!is.na(upper) && !is.na(lower)){
     combos       <- expand.grid(list(upper = upper, lower = lower))
     combos       <- combos[which(combos$upper >= combos$lower), ]
     allcombos    <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func, gg = c(1:nrow(combos)), binary = binary))
     allcombos    <- cbind(allcombos, combos[allcombos$gg, ], deparse.level = 2)
     binarylevel  <- "two"
     allcombos$gg <- NULL
-  } else if (is.na(upper) == FALSE && is.na(lower) == TRUE){
+  } else if (!is.na(upper) && is.na(lower)){
     allcombos   <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func, upper = upper, lower = lower, binary = binary))
     binarylevel <- "upper"
-  } else if (is.na(upper) == TRUE && is.na(lower) == FALSE){
+  } else if (is.na(upper) && !is.na(lower)){
     allcombos   <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func, upper = upper, lower = lower, binary = binary))
     binarylevel <- "lower"
-  } else if (is.na(upper) == TRUE && is.na(lower) == TRUE){
+  } else if (is.na(upper) && is.na(lower)){
     allcombos   <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func))
     binarylevel <- "none"
   }
@@ -969,51 +967,51 @@ devel_randwin <- function(exclude = NA, repeats = 5, window = "sliding", xvar, c
   }
   
   #Create a centre function that over-rides quadratics etc. when centre != NULL
-  if(is.null(centre[[1]]) == FALSE){
+  if (!is.null(centre[[1]])){
     func = "centre"
   }
   
-  if(is.null(cohort) == TRUE){
+  if (is.null(cohort)){
     cohort = lubridate::year(as.Date(bdate, format = "%d/%m/%Y"))
   }
   
-  if(is.null(cvk) == FALSE){
+  if (!is.null(cvk)){
     stop("Parameter 'cvk' is now redundant. Please use parameter 'k' instead.")
   }
   
-  if(is.null(thresh) == FALSE){
+  if (!is.null(thresh)){
     stop("Parameter 'thresh' is now redundant. Please use parameter 'binary' instead.")
   }
   
-  if(type == "variable" || type == "fixed"){
+  if (type == "variable" || type == "fixed"){
     stop("Parameter 'type' now uses levels 'relative' and 'absolute' rather than 'variable' and 'fixed'.")
   }
   
-  if(is.null(furthest) == FALSE & is.null(closest) == FALSE){
+  if (!is.null(furthest) & !is.null(closest)){
     stop("furthest and closest are now redundant. Please use parameter 'range' instead.")
   }
   
-  if (is.null(names(xvar)) == TRUE){
+  if (is.null(names(xvar))){
     numbers <- seq(1, length(xvar), 1)
     for (xname in 1:length(xvar)){
       names(xvar)[xname] = paste("climate", numbers[xname])
     }
   }
   
-  if(is.null(cutoff.day) == FALSE & is.null(cutoff.month) == FALSE){
+  if (!is.null(cutoff.day) & !is.null(cutoff.month)){
     stop("cutoff.day and cutoff.month are now redundant. Please use parameter 'refday' instead.")
   }
   
-  if(window == "sliding"){
+  if (window == "sliding"){
     
-    if((!is.na(upper) || !is.na(lower)) && (cinterval == "week" || cinterval == "month")){
+    if ((!is.na(upper) || !is.na(lower)) && (cinterval == "week" || cinterval == "month")){
       
       thresholdQ <- readline("You specified a climate threshold using upper and/or lower and are working at a weekly or monthly scale. 
                              Do you want to apply this threshold before calculating weekly/monthly means (i.e. calculate thresholds for each day)? Y/N")
       
       thresholdQ <- toupper(thresholdQ)
       
-      if(thresholdQ != "Y" & thresholdQ != "N"){
+      if (thresholdQ != "Y" & thresholdQ != "N"){
         
         thresholdQ <- readline("Please specify yes (Y) or no (N)")
         
@@ -1021,40 +1019,40 @@ devel_randwin <- function(exclude = NA, repeats = 5, window = "sliding", xvar, c
       
     }
     
-    if (is.na(upper) == FALSE && is.na(lower) == FALSE){
+    if (!is.na(upper) && !is.na(lower)){
       combos       <- expand.grid(list(upper = upper, lower = lower))
       combos       <- combos[which(combos$upper >= combos$lower), ]
       allcombos    <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func, gg = c(1:nrow(combos)), binary = binary))
       allcombos    <- cbind(allcombos, combos[allcombos$gg, ], deparse.level = 2)
       binarylevel  <- "two"
       allcombos$gg <- NULL
-    } else if (is.na(upper) == FALSE && is.na(lower) == TRUE){
+    } else if (!is.na(upper) && is.na(lower)){
       allcombos   <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func, upper = upper, lower = lower, binary = binary))
       binarylevel <- "upper"
-    } else if (is.na(upper) == TRUE && is.na(lower) == FALSE){
+    } else if (is.na(upper) && !is.na(lower)){
       allcombos   <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func, upper = upper, lower = lower, binary = binary))
       binarylevel <- "lower"
-    } else if (is.na(upper) == TRUE && is.na(lower) == TRUE){
+    } else if (is.na(upper) && is.na(lower)){
       allcombos   <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func))
       binarylevel <- "none"
     }
     
   } else if(window == "weighted"){
     
-    if (is.na(upper) == FALSE && is.na(lower) == FALSE){
+    if (!is.na(upper) && !is.na(lower)){
       combos       <- expand.grid(list(upper = upper, lower = lower))
       combos       <- combos[which(combos$upper >= combos$lower), ]
       allcombos    <- expand.grid(list(climate = names(xvar), type = type, stat = NA, func = func, gg = c(1:nrow(combos)), binary = binary))
       allcombos    <- cbind(allcombos, combos[allcombos$gg, ], deparse.level = 2)
       binarylevel  <- "two"
       allcombos$gg <- NULL
-    } else if (is.na(upper) == FALSE && is.na(lower) == TRUE){
+    } else if (!is.na(upper) && is.na(lower)){
       allcombos   <- expand.grid(list(climate = names(xvar), type = type, stat = NA, func = func, upper = upper, lower = lower, binary = binary))
       binarylevel <- "upper"
-    } else if (is.na(upper) == TRUE && is.na(lower) == FALSE){
+    } else if (is.na(upper) && !is.na(lower)){
       allcombos   <- expand.grid(list(climate = names(xvar), type = type, stat = NA, func = func, upper = upper, lower = lower, binary = binary))
       binarylevel <- "lower"
-    } else if (is.na(upper) == TRUE && is.na(lower) == TRUE){
+    } else if (is.na(upper) && is.na(lower)){
       allcombos   <- expand.grid(list(climate = names(xvar), type = type, stat = NA, func = func))
       binarylevel <- "none"
     }
@@ -1074,7 +1072,7 @@ devel_randwin <- function(exclude = NA, repeats = 5, window = "sliding", xvar, c
       
       bdateNew  <- bdate[rand.rows]
       
-      if(is.null(spatial) == TRUE){
+      if (is.null(spatial)){
         
         spatialNew <- NULL
         
@@ -1204,7 +1202,7 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   thresholdQ <- "N"
   
   #If you are not using randwin, then ask the question about how thresholds should be applied.
-  if(randwin == FALSE){
+  if (!randwin){
     
     #If you have specified an upper or lower value for which a threshold should be applied and you are not working at a daily scale...
     if((!is.na(upper) || !is.na(lower)) && (cinterval == "week" || cinterval == "month")){
@@ -1362,7 +1360,7 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   
   if(attr(baseline, "class")[1] == "lme"){ #If model is fitted using nlme package
     
-    if(is.null(baseline$modelStruct$varStruct) == FALSE && !is.null(attr(baseline$modelStruct$varStruct, "groups"))){ #If a custom variance structure has been included and it has multiple levels...
+    if (!is.null(baseline$modelStruct$varStruct) && !is.null(attr(baseline$modelStruct$varStruct, "groups"))){ #If a custom variance structure has been included and it has multiple levels...
       
       modeldat <- cbind(modeldat, attr(baseline$modelStruct$varStruct, "groups")) #Add the variables from this variance structure to the model data used for updating models.
       
@@ -1390,39 +1388,39 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   colnames(modeldat)[1] <- "yvar"
   
   #If user has provided some variable for mean centring change the func to centre (i.e. you can't do mean centring and quadratic/cubic)
-  if (is.null(centre[[1]]) == FALSE){
+  if (!is.null(centre[[1]])){
     func <- "centre"
   }
   
   #Determine length of data provided for response variable.
-  ifelse(class(baseline)[length(class(baseline))]=="coxph", leng <- length(modeldat$yvar[,1]), leng <- length(modeldat$yvar))
+  ifelse(class(baseline)[length(class(baseline))] == "coxph", leng <- length(modeldat$yvar[,1]), leng <- length(modeldat$yvar))
   #If there are NAs present in the biological data, provide an error.
   if (leng != length(bdate)){
     stop("NA values present in biological response. Please remove NA values")
   }
   
-  if(cinterval == "day" || (!is.na(thresholdQ) && thresholdQ == "N")){ #If dealing with daily data OR user chose to apply threshold later...
+  if (cinterval == "day" || (!is.na(thresholdQ) && thresholdQ == "N")){ #If dealing with daily data OR user chose to apply threshold later...
     
-    if(is.null(spatial) == FALSE){ #...and spatial information is provided...
+    if (!is.null(spatial)){ #...and spatial information is provided...
       
-      if (is.na(upper) == FALSE && is.na(lower) == TRUE){ #...and an upper bound is provided...
-        if (binary == TRUE){ #...and we want data to be binary (i.e. it's above the value or it's not)
+      if (!is.na(upper) && is.na(lower)){ #...and an upper bound is provided...
+        if (binary){ #...and we want data to be binary (i.e. it's above the value or it's not)
           cont$xvar$Clim <- ifelse (cont$xvar$Clim > upper, 1, 0) #Then turn climate data into binary data.
         } else { #Otherwise, if binary is not true, simply make all data below the upper limit into 0.
           cont$xvar$Clim <- ifelse (cont$xvar$Clim > upper, cont$xvar$Clim, 0)
         }
       }
       
-      if (is.na(lower) == FALSE && is.na(upper) == TRUE){ #If a lower limit has been provided, do the same.
-        if (binary == TRUE){
+      if (!is.na(lower) && is.na(upper)){ #If a lower limit has been provided, do the same.
+        if (binary){
           cont$xvar$Clim <- ifelse (cont$xvar$Clim < lower, 1, 0)
         } else {
           cont$xvar$Clim <- ifelse (cont$xvar$Clim < lower, cont$xvar$Clim, 0)
         }
       }
       
-      if (is.na(lower) == FALSE && is.na(upper) == FALSE){ #If both an upper and lower limit are provided, do the same.
-        if (binary == TRUE){
+      if (!is.na(lower) && !is.na(upper)){ #If both an upper and lower limit are provided, do the same.
+        if (binary){
           cont$xvar$Clim <- ifelse (cont$xvar$Clim > lower && cont$xvar$Clim < upper, 1, 0)
         } else {
           cont$xvar$Clim <- ifelse (cont$xvar$Clim > lower && cont$xvar$Clim < upper, cont$xvar$Clim - lower, 0)
@@ -1431,24 +1429,24 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
       
     } else { #Do the same with non-spatial data (syntax is just a bit different, but method is the same.)
       
-      if (is.na(upper) == FALSE && is.na(lower) == TRUE){
-        if (binary == TRUE){
+      if (!is.na(upper) && is.na(lower)){
+        if (binary){
           cont$xvar <- ifelse (cont$xvar > upper, 1, 0)
         } else {
           cont$xvar <- ifelse (cont$xvar > upper, cont$xvar, 0)
         }
       }
       
-      if (is.na(lower) == FALSE && is.na(upper) == TRUE){
-        if (binary == TRUE){
+      if (!is.na(lower) && is.na(upper)){
+        if (binary){
           cont$xvar <- ifelse (cont$xvar < lower, 1, 0)
         } else {
           cont$xvar <- ifelse (cont$xvar < lower, cont$xvar, 0)
         }
       }
       
-      if (is.na(lower) == FALSE && is.na(upper) == FALSE){
-        if (binary == TRUE){
+      if (!is.na(lower) && !is.na(upper)){
+        if (binary){
           cont$xvar <- ifelse (cont$xvar > lower & cont$xvar < upper, 1, 0)
         } else {
           cont$xvar <- ifelse (cont$xvar > lower & cont$xvar < upper, cont$xvar - lower, 0)
@@ -1459,7 +1457,7 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     
   }
   
-  if(is.null(spatial) == FALSE){ #If spatial information is provided...
+  if (!is.null(spatial)){ #If spatial information is provided...
     for (i in 1:length(bdate)){ #For each biological record we have...
       #Take a row in the empty matrix and add climate data from the correct site and over the full date range chosen by the user.
       cmatrix[i, ] <- cont$xvar[which(cont$cintno$spatial %in% cont$bintno$spatial[i] & cont$cintno$Date %in% (cont$bintno$Date[i] - c(range[2]:range[1]))), 1]  
@@ -1475,8 +1473,8 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   
   #return(list(cmatrix, cont))
   
-  if(cmissing == FALSE & any(is.na(cmatrix))){ #If the user doesn't expect missing climate data BUT there are missing data present...
-    if(is.null(spatial) == FALSE){ #And spatial data has been provided...
+  if (!cmissing & any(is.na(cmatrix))){ #If the user doesn't expect missing climate data BUT there are missing data present...
+    if(!is.null(spatial)){ #And spatial data has been provided...
       
       if (cinterval == "day"){ #Where a daily interval is used...
         #...save an object 'missing' with the full dates of all missing data.
@@ -1521,7 +1519,7 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   }
   
   #If we expect NAs and choose a method to deal with them...
-  if (cmissing != FALSE && any(is.na(cmatrix))){
+  if (cmissing && any(is.na(cmatrix))){
     
     message("Missing climate data detected. Please wait while NAs are replaced.")
     
@@ -1557,7 +1555,7 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
           missingdate <- bioldate - (col + range[2] - 1)
           
           #If we have spatial replication
-          if(is.null(spatial) == FALSE){
+          if(!is.null(spatial)){
             
             cdate_new$spatial <- spatial[[2]]
             
@@ -1573,7 +1571,7 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
           
         } else if(cinterval == "week" || cinterval == "month"){
           
-          if(is.null(spatial) == FALSE){
+          if(!is.null(spatial)){
             
             #Extract the climate week numbers
             cdate_new <- data.frame(Date = cont$cintno$Date,
@@ -1632,7 +1630,7 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
                                     Month = lubridate::month(missingdate),
                                     Day   = lubridate::day(missingdate))
           
-          if(is.null(spatial) == FALSE){
+          if(!is.null(spatial)){
             
             cdate_new$spatial <- spatial[[2]]
             
@@ -1648,7 +1646,7 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
           
         } else if(cinterval == "week" || cinterval == "month"){
           
-          if(is.null(spatial) == FALSE){
+          if(!is.null(spatial)){
             
             #Extract the climate week numbers
             cdate_new <- data.frame(Date = cont$cintno$Date,
@@ -1745,31 +1743,6 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     names(modeldat)[length(names(modeldat))] <- weight_name
     
   }
-  # if (is.null(weights(baseline)) == FALSE){
-  #   if(class(baseline) == "lm"){
-  #     
-  #     if(!is.null(weights(baseline))){
-  #       
-  #       
-  #       
-  #     }
-  #     
-  #   }
-  #   if (class(baseline)[1] == "glm" && sum(weights(baseline)) == nrow(model.frame(baseline)) || attr(class(baseline), "package") == "lme4" && sum(weights(baseline)) == nrow(model.frame(baseline))){
-  #     
-  #   } else {
-  #     
-  #     modeldat$model_weights  <- weights(baseline)
-  #     #baseline <- update(baseline, yvar~., weights = model_weights, data = modeldat)
-  #     
-  #     call <- as.character(getCall(baseline))
-  #     
-  #     weight_name <- call[length(call)]
-  #     
-  #     names(modeldat)[length(names(modeldat))] <- weight_name
-  #     
-  #   }
-  # }
   
   #If using a mixed model, ensure that maximum likelihood is specified (because we are comparing models with different fixed effects)
   if(!is.null(attr(class(baseline), "package")) && attr(class(baseline), "package") == "lme4" && class(baseline)[1] == "lmerMod" && baseline@resp$REML == 1){
@@ -2453,7 +2426,7 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   }
   
   if (nrandom == 0){
-    if (is.null(centre[[1]]) == FALSE){
+    if (!is.null(centre[[1]])){
       LocalData         <- model.frame(LocalModel)
       LocalData$climate <- modeldat$climate
     } else {
