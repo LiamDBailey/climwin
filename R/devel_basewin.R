@@ -568,9 +568,6 @@ devel_slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
   #Check bdate argument
   bdate   <- check_date(bdate, arg_name = "bdate")
   cdate   <- check_date(cdate, arg_name = "cdate")
-  spatial <- check_spatial(spatial = spatial,
-                           length_b = length(bdate),
-                           length_c = length(cdate))
   
   ### Implementing scientific notation can cause problems because years
   ### are converted to characters in scientific notation (e.g. 2000 = "2e+3")
@@ -617,6 +614,12 @@ devel_slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
     stop("Your cdate variable has repeated date measures. Do you have climate data from multiple sites? If so, you should specify the parameter `spatial`.")
     
   }
+  
+  #Do the spatial check at this point for now
+  ## FIXME: Might not be needed once we are providing df
+  spatial <- check_spatial(spatial = spatial,
+                           length_b = length(bdate),
+                           length_c = length(cdate))
   
   #Create a centre function that over-rides quadratics etc. when centre != NULL
   if (!is.null(centre[[1]])) {
