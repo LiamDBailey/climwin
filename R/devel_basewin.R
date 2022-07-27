@@ -1980,6 +1980,7 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
       
       #Add in the deltaAICc
       coef_output_filter <- append(coef_output_filter, values = c("ModelAICc" = ModelAICc))
+      coef_output_filter <- append(coef_output_filter, values = c("logLik" = logLik(modeloutput)))
       
       #Transpose to named matrix
       coef_output_t <- t(coef_output_filter)
@@ -2062,7 +2063,7 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   
   modlist <- cbind(all_windows, do.call(rbind, modlist))
   modlist$deltaAICc <- modlist$ModelAICc - baselineAIC
-  modlist <- modlist[order(modlist$deltaAICc), ]
+  modlist <- modlist[order(modlist$logLik, decreasing = TRUE), ]
   
   #Save the best model
   start_index <- modlist$WindowClose[1] - range[2] + 1
@@ -2129,14 +2130,14 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     
     modlist$Randomised    <- "no"
     modlist               <- as.data.frame(modlist)
-    LocalOutput           <- modlist[order(modlist$deltaAICc), ]
+    LocalOutput           <- modlist[order(modlist$logLik, decreasing = TRUE), ]
     LocalOutput$ModelAICc <- NULL
   }
   
   if (nrandom > 0) {
     modlist$Randomised        <- "yes"
     modlist                   <- as.data.frame(modlist)
-    LocalOutputRand           <- modlist[order(modlist$deltaAICc), ]
+    LocalOutputRand           <- modlist[order(modlist$logLik, decreasing = TRUE), ]
     LocalOutputRand$ModelAICc <- NULL
   }
   
