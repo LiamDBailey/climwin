@@ -897,7 +897,12 @@ devel_randwin <- function(exclude = NA, repeats = 5, window = "sliding", xvar, c
                           upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"), k = 0,
                           weightfunc = "W", par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)), 
                           method = "L-BFGS-B", cutoff.day = NULL, cutoff.month = NULL,
-                          furthest = NULL, closest = NULL, thresh = NULL, cvk = NULL, CPU = 1) {
+                          furthest = NULL, closest = NULL, thresh = NULL, cvk = NULL,
+                          CPU = 1, parallel_modfit = TRUE, seed = NULL) {
+  
+  #Check bdate argument
+  bdate   <- check_date(bdate, arg_name = "bdate")
+  cdate   <- check_date(cdate, arg_name = "cdate")
   
   ### Implementing scientific notation can cause problems because years
   ### are converted to characters in scientific notation (e.g. 2000 = "2e+3")
@@ -909,29 +914,52 @@ devel_randwin <- function(exclude = NA, repeats = 5, window = "sliding", xvar, c
     
   }
   
+  #### INITIAL CHECKS ####
+  
+  if (cmissing != FALSE && cmissing != "method1" && cmissing != "method2") {
+    
+    stop("cmissing must be FALSE, 'method1' or 'method2'.")
+    
+  }
+  
+  if (type != "absolute" && type != "relative") {
+    
+    stop("type must be either absolute or relative.")
+    
+  }
+  
+  if (is.null(cohort)) {
+    cohort = lubridate::year(bdate) #bdate is now definitely a date due to check function
+  }
+  
+  if (k > 0 && inherits(baseline, "coxph")) {
+    stop("Sorry, cross-validation is not available yet for coxph models")
+  }
+  
+  #If the baseline model is fitted with nlme and cross validation is requested, return an error.
+  if (k > 0 && inherits(baseline, "lme")) {
+    stop("Sorry, cross-validation is currently not functioning for nlme models. Consider using lme4 if possible.")
+  }
+  
+  #If spatial information is not specified, check that there are no duplicate calendar dates.
+  if (is.null(spatial) & length(unique(cdate)) < length(cdate)) {
+    stop("Your cdate variable has repeated date measures. Do you have climate data from multiple sites? If so, you should specify the parameter `spatial`.")
+  }
+  
+  #Do the spatial check at this point for now
+  ## FIXME: Might not be needed once we are providing df
+  spatial <- check_spatial(spatial = spatial,
+                           length_b = length(bdate),
+                           length_c = length(cdate))
+  
   #Create a centre function that over-rides quadratics etc. when centre != NULL
   if (!is.null(centre[[1]])) {
     func = "centre"
   }
   
-  if (is.null(cohort)) {
-    cohort = lubridate::year(as.Date(bdate, format = "%d/%m/%Y"))
-  }
-  
-  if (!is.null(cvk)) {
-    stop("Parameter 'cvk' is now redundant. Please use parameter 'k' instead.")
-  }
-  
-  if (!is.null(thresh)) {
-    stop("Parameter 'thresh' is now redundant. Please use parameter 'binary' instead.")
-  }
-  
-  if (type == "variable" || type == "fixed") {
-    stop("Parameter 'type' now uses levels 'relative' and 'absolute' rather than 'variable' and 'fixed'.")
-  }
-  
-  if (!is.null(furthest) & !is.null(closest)) {
-    stop("furthest and closest are now redundant. Please use parameter 'range' instead.")
+  #Check xvar is a list where the name of list object is the climate variable (e.g. Rain, Temp)
+  if (!is.list(xvar)) {
+    stop("xvar should be an object of type list")
   }
   
   if (is.null(names(xvar))) {
@@ -941,139 +969,179 @@ devel_randwin <- function(exclude = NA, repeats = 5, window = "sliding", xvar, c
     }
   }
   
-  if (!is.null(cutoff.day) & !is.null(cutoff.month)) {
-    stop("cutoff.day and cutoff.month are now redundant. Please use parameter 'refday' instead.")
-  }
-  
-  if (window == "sliding") {
-    
-    if ((!is.na(upper) || !is.na(lower)) && (cinterval == "week" || cinterval == "month")) {
-      
-      thresholdQ <- readline("You specified a climate threshold using upper and/or lower and are working at a weekly or monthly scale. 
-                             Do you want to apply this threshold before calculating weekly/monthly means (i.e. calculate thresholds for each day)? Y/N")
-      
-      thresholdQ <- toupper(thresholdQ)
-      
-      if (thresholdQ != "Y" & thresholdQ != "N") {
-        
-        thresholdQ <- readline("Please specify yes (Y) or no (N)")
-        
-      }
-      
-    }
-    
-    if (!is.na(upper) && !is.na(lower)) {
-      combos       <- expand.grid(list(upper = upper, lower = lower))
-      combos       <- combos[which(combos$upper >= combos$lower), ]
-      allcombos    <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func, gg = c(1:nrow(combos)), binary = binary))
-      allcombos    <- cbind(allcombos, combos[allcombos$gg, ], deparse.level = 2)
-      binarylevel  <- "two"
-      allcombos$gg <- NULL
-    } else if (!is.na(upper) && is.na(lower)) {
-      allcombos   <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func, upper = upper, lower = lower, binary = binary))
-      binarylevel <- "upper"
-    } else if (is.na(upper) && !is.na(lower)) {
-      allcombos   <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func, upper = upper, lower = lower, binary = binary))
-      binarylevel <- "lower"
-    } else if (is.na(upper) && is.na(lower)) {
-      allcombos   <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func))
-      binarylevel <- "none"
-    }
-    
-  } else if (window == "weighted") {
-    
-    if (!is.na(upper) && !is.na(lower)) {
-      combos       <- expand.grid(list(upper = upper, lower = lower))
-      combos       <- combos[which(combos$upper >= combos$lower), ]
-      allcombos    <- expand.grid(list(climate = names(xvar), type = type, stat = NA, func = func, gg = c(1:nrow(combos)), binary = binary))
-      allcombos    <- cbind(allcombos, combos[allcombos$gg, ], deparse.level = 2)
-      binarylevel  <- "two"
-      allcombos$gg <- NULL
-    } else if (!is.na(upper) && is.na(lower)) {
-      allcombos   <- expand.grid(list(climate = names(xvar), type = type, stat = NA, func = func, upper = upper, lower = lower, binary = binary))
-      binarylevel <- "upper"
-    } else if (is.na(upper) && !is.na(lower)) {
-      allcombos   <- expand.grid(list(climate = names(xvar), type = type, stat = NA, func = func, upper = upper, lower = lower, binary = binary))
-      binarylevel <- "lower"
-    } else if (is.na(upper) && is.na(lower)) {
-      allcombos   <- expand.grid(list(climate = names(xvar), type = type, stat = NA, func = func))
-      binarylevel <- "none"
-    }
-    
+  if (!is.na(upper) && !is.na(lower)) {
+    combos       <- expand.grid(list(upper = upper, lower = lower))
+    combos       <- combos[which(combos$upper >= combos$lower), ]
+    allcombos    <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func, gg = c(1:nrow(combos)), binary = binary))
+    allcombos    <- cbind(allcombos, combos[allcombos$gg, ], deparse.level = 2)
+    binarylevel  <- "two"
+    allcombos$gg <- NULL
+  } else if (!is.na(upper) && is.na(lower)) {
+    allcombos   <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func, upper = upper, lower = lower, binary = binary))
+    binarylevel <- "upper"
+  } else if (is.na(upper) && !is.na(lower)) {
+    allcombos   <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func, upper = upper, lower = lower, binary = binary))
+    binarylevel <- "lower"
+  } else if (is.na(upper) && is.na(lower)) {
+    allcombos   <- expand.grid(list(climate = names(xvar), type = type, stat = stat, func = func))
+    binarylevel <- "none"
   }
   
   rownames(allcombos) <- seq(1, nrow(allcombos), 1)
-  # message("All combinations to be tested...")
-  # message(allcombos)
   
   combined <- list()
+  set.seed(seed)
+  sample_seeds <- runif(n = repeats, min = 0, max = 10000)
   for (combo in 1:nrow(allcombos)) {
-    for (r in 1:repeats) {
-      message(c("randomization number ", r))
-      
-      rand.rows <- sample(length(bdate))
-      
-      bdateNew  <- bdate[rand.rows]
-      
-      if (is.null(spatial)) {
-        
-        spatialNew <- NULL
-        
-      } else {
-        
-        spatialNew <- list(spatial[[1]][rand.rows], spatial[[2]])
-        
-      }
-      
-      if (window == "sliding") {
-        
-        outputrep <- devel_basewin(exclude = exclude, xvar = xvar[[paste(allcombos[combo, 1])]], cdate = cdate, bdate = bdateNew, 
-                                   baseline = baseline, range = range, stat = paste(allcombos[combo, 3]), 
-                                   func = paste(allcombos[combo, 4]), type = paste(allcombos[combo, 2]),
-                                   refday = refday,
-                                   nrandom = repeats, cmissing = cmissing, cinterval = cinterval,
-                                   upper = ifelse(binarylevel == "two" || binarylevel == "upper", allcombos$upper[combo], NA),
-                                   lower = ifelse(binarylevel == "two" || binarylevel == "lower", allcombos$lower[combo], NA),
-                                   binary = paste(allcombos$binary[combo]), centre = centre, k = k, spatial = spatialNew,
-                                   cohort = cohort, randwin = TRUE, randwin_thresholdQ = thresholdQ,
-                                   CPU = CPU)
-        
-        outputrep$Repeat <- r
-        WeightDist <- sum(as.numeric(cumsum(outputrep$ModWeight) <= 0.95))/nrow(outputrep)
-        outputrep <- outputrep[1, ]
-        outputrep$WeightDist <- WeightDist
-        
-        if (r == 1) { 
-          outputrand <- outputrep
-        } else { 
-          outputrand <- rbind(outputrand, outputrep)
-        }
-        
-      } else if (window == "weighted") {
-        
-        rep <- weightwin(xvar = xvar[[paste(allcombos[combo, 1])]], cdate = cdate, bdate = bdateNew, 
-                         baseline = baseline, range = range, func = paste(allcombos[combo, 4]), 
-                         type = paste(allcombos[combo, 2]), refday = refday,
-                         nrandom = repeats, cinterval = cinterval,
-                         centre = centre, spatial = spatialNew,
-                         cohort = cohort, weightfunc = weightfunc, par = par, 
-                         control = control, method = method)
-        
-        outputrep <- rep$WeightedOutput
-        outputrep$Repeat <- r
-        
-        if (r == 1) { 
-          outputrand <- outputrep 
-        } else { 
-          outputrand <- rbind(outputrand, outputrep)
-        }
-      }
-      
-      rm(outputrep)
-      if (r == repeats) {          
-        outputrand                   <- as.data.frame(outputrand)
-        combined[[combo]]            <- outputrand
-      }
+    if (CPU > 1 & !parallel_modfit) {
+      message("Using parallel processing...")
+      combined[[combo]] <- furrr::future_map2_dfr(.x = 1:repeats, .y = sample_seeds,
+                                         .f = function(r, seed){
+                                           message(c("randomization number ", r))
+                                           
+                                           set.seed(seed)
+                                           rand.rows <- sample(length(bdate))
+                                           
+                                           bdateNew  <- bdate[rand.rows]
+                                           
+                                           if (is.null(spatial)) {
+                                             
+                                             spatialNew <- NULL
+                                             
+                                           } else {
+                                             
+                                             spatialNew <- list(spatial[[1]][rand.rows], spatial[[2]])
+                                             
+                                           }
+                                           
+                                           if (window == "sliding") {
+                                             
+                                             outputrep <- devel_basewin(exclude = exclude, xvar = xvar[[paste(allcombos[combo, 1])]], cdate = cdate, bdate = bdateNew, 
+                                                                        baseline = baseline, range = range, stat = paste(allcombos[combo, 3]), 
+                                                                        func = paste(allcombos[combo, 4]), type = paste(allcombos[combo, 2]),
+                                                                        refday = refday,
+                                                                        nrandom = repeats, cmissing = cmissing, cinterval = cinterval,
+                                                                        upper = ifelse(binarylevel == "two" || binarylevel == "upper", allcombos$upper[combo], NA),
+                                                                        lower = ifelse(binarylevel == "two" || binarylevel == "lower", allcombos$lower[combo], NA),
+                                                                        binary = paste(allcombos$binary[combo]), centre = centre, k = k, spatial = spatialNew,
+                                                                        cohort = cohort, randwin = TRUE, randwin_thresholdQ = thresholdQ)
+                                             
+                                             outputrep$Repeat <- r
+                                             WeightDist <- sum(as.numeric(cumsum(outputrep$ModWeight) <= 0.95))/nrow(outputrep)
+                                             outputrep <- outputrep[1, ]
+                                             outputrep$WeightDist <- WeightDist
+                                             
+                                             return(outputrep)
+                                             
+                                           } else if (window == "weighted") {
+                                             
+                                             rep <- weightwin(xvar = xvar[[paste(allcombos[combo, 1])]], cdate = cdate, bdate = bdateNew, 
+                                                              baseline = baseline, range = range, func = paste(allcombos[combo, 4]), 
+                                                              type = paste(allcombos[combo, 2]), refday = refday,
+                                                              nrandom = repeats, cinterval = cinterval,
+                                                              centre = centre, spatial = spatialNew,
+                                                              cohort = cohort, weightfunc = weightfunc, par = par, 
+                                                              control = control, method = method)
+                                             
+                                             outputrep <- rep$WeightedOutput
+                                             outputrep$Repeat <- r
+                                             
+                                             return(outputrep)
+                                           }
+                                         },
+                                         .options = furrr_options(globals = c("exclude",
+                                                                              "xvar",
+                                                                              "allcombos",
+                                                                              "combo",
+                                                                              "cdate",
+                                                                              "bdate",
+                                                                              "baseline",
+                                                                              "range",
+                                                                              "refday",
+                                                                              "repeats",
+                                                                              "cmissing",
+                                                                              "cinterval",
+                                                                              "binarylevel",
+                                                                              "centre",
+                                                                              "k",
+                                                                              "spatial",
+                                                                              "cohort",
+                                                                              "Mass"),
+                                                                  seed = TRUE))
+    } else {
+      combined[[combo]] <- purrr::map2_df(.x = 1:repeats, .y = sample_seeds,
+                                         .f = function(r, seed){
+                                           message(c("randomization number ", r))
+                                           
+                                           set.seed(seed)
+                                           rand.rows <- sample(length(bdate))
+                                           
+                                           bdateNew  <- bdate[rand.rows]
+                                           
+                                           if (is.null(spatial)) {
+                                             
+                                             spatialNew <- NULL
+                                             
+                                           } else {
+                                             
+                                             spatialNew <- list(spatial[[1]][rand.rows], spatial[[2]])
+                                             
+                                           }
+                                           
+                                           if (window == "sliding") {
+                                             
+                                             outputrep <- devel_basewin(exclude = exclude, xvar = xvar[[paste(allcombos[combo, 1])]], cdate = cdate, bdate = bdateNew, 
+                                                                        baseline = baseline, range = range, stat = paste(allcombos[combo, 3]), 
+                                                                        func = paste(allcombos[combo, 4]), type = paste(allcombos[combo, 2]),
+                                                                        refday = refday,
+                                                                        nrandom = repeats, cmissing = cmissing, cinterval = cinterval,
+                                                                        upper = ifelse(binarylevel == "two" || binarylevel == "upper", allcombos$upper[combo], NA),
+                                                                        lower = ifelse(binarylevel == "two" || binarylevel == "lower", allcombos$lower[combo], NA),
+                                                                        binary = paste(allcombos$binary[combo]), centre = centre, k = k, spatial = spatialNew,
+                                                                        cohort = cohort, randwin = TRUE, randwin_thresholdQ = thresholdQ,
+                                                                        CPU = CPU)
+                                             
+                                             outputrep$Repeat <- r
+                                             WeightDist <- sum(as.numeric(cumsum(outputrep$ModWeight) <= 0.95))/nrow(outputrep)
+                                             outputrep <- outputrep[1, ]
+                                             outputrep$WeightDist <- WeightDist
+                                             
+                                             return(outputrep)
+                                             
+                                             # if (r == 1) { 
+                                             #   outputrand <- outputrep
+                                             # } else { 
+                                             #   outputrand <- rbind(outputrand, outputrep)
+                                             # }
+                                             
+                                           } else if (window == "weighted") {
+                                             
+                                             rep <- weightwin(xvar = xvar[[paste(allcombos[combo, 1])]], cdate = cdate, bdate = bdateNew, 
+                                                              baseline = baseline, range = range, func = paste(allcombos[combo, 4]), 
+                                                              type = paste(allcombos[combo, 2]), refday = refday,
+                                                              nrandom = repeats, cinterval = cinterval,
+                                                              centre = centre, spatial = spatialNew,
+                                                              cohort = cohort, weightfunc = weightfunc, par = par, 
+                                                              control = control, method = method)
+                                             
+                                             outputrep <- rep$WeightedOutput
+                                             outputrep$Repeat <- r
+                                             
+                                             return(outputrep)
+                                             
+                                             # if (r == 1) { 
+                                             #   outputrand <- outputrep 
+                                             # } else { 
+                                             #   outputrand <- rbind(outputrand, outputrep)
+                                             # }
+                                           }
+                                           
+                                           # rm(outputrep)
+                                           # if (r == repeats) {          
+                                           #   outputrand                   <- as.data.frame(outputrand)
+                                           #   combined[[combo]]            <- outputrand
+                                           # }
+                                         }) 
     }
   }
   allcombos <- cbind(response = colnames(model.frame(baseline))[1], allcombos)
@@ -1724,137 +1792,137 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     #Now, loop through every row and run models
     modlist <- furrr::future_pmap(.l = all_windows,
                                   .f = function(i, WindowOpen, WindowClose, duration) {
-      
-      #Start index is the column in the cmatrix that should be extracted
-      #This is the actual number of days in the past - range[2]
-      #column 1 in cmatrix is the first day that windows would be built
-      start_index <- WindowClose - range[2] + 1
-      end_index   <- WindowOpen - range[2] + 1
-      
-      new_climate <- cmatrix[, start_index:end_index]
-      
-      if (duration == 0) {
-        
-        modeldat$climate <- new_climate
-        
-      } else {
-        
-        modeldat$climate <- apply(new_climate, 1, FUN = stat)
-        
-      }
-      
-      modeloutput <- tryCatch({
-        
-        eval(getCall(modeloutput))
-        
-      }, error = function(e) {
-        
-        baseline
-        
-      })
-      
-      ## FIXME: Replace with logLik (Issue #27)
-      if (inherits(modeloutput, c("HLfit"))) {
-        #For spaMM, use marginal AIC
-        ModelAICc <- as.numeric(AIC(modeloutput, verbose = FALSE)[1])
-      } else {
-        ModelAICc <- AIC(modeloutput)
-      }
-      
-      
-      if (inherits(modeloutput, c("lm", "coxph"))) {
-        coef_fn <- coef
-      } else if (inherits(modeloutput, c("lme4", "HLfit"))) {
-        coef_fn <- fixef
-      }
-      
-      #Extract fixed effects coefficients
-      coef_output <- coef_fn(modeloutput)
-      
-      #Filter only intercept and coefs with climate
-      coef_output_filter <- coef_output[grepl(names(coef_output), pattern = "Intercept|climate")]
-      
-      #Add in the deltaAICc
-      coef_output_filter <- append(coef_output_filter, values = c("ModelAICc" = ModelAICc))
-      
-      #Transpose to named matrix
-      coef_output_t <- t(coef_output_filter)
-      # 
-      # 
-      # modlist <- data.frame(deltaAICc = ModelAICc - baselineAIC,
-      #                       ModelAICc = ModelAICc,
-      #                       WindowOpen = WindowOpen,
-      #                       WindowClose = WindowClose)
-      # 
-      # if (class(modeloutput)[1] %in% c("lm", "lmerMod")) {
-      #   
-      #   mod_summary <- coef(summary(modeloutput))
-      #   
-      #   modlist$ModelInt <- mod_summary[1, "Estimate"]
-      #   
-      #   #If a model did not fit a climate term (i.e. climate was all 0)
-      #   #Just return NA
-      #   if (!"climate" %in% rownames(mod_summary)) {
-      #     
-      #     modlist$ModelBeta  <- NA
-      #     modlist$Std.Error  <- NA
-      #     modlist$ModelBetaQ <- NA
-      #     modlist$ModelBetaC <- NA
-      #     
-      #     if (func == "quad") {
-      #       
-      #       modlist$Std.ErrorQ <- NA
-      #       
-      #     }
-      #     
-      #     if (func == "cub") {
-      #       
-      #       modlist$Std.ErrorQ <- NA
-      #       modlist$Std.ErrorC <- NA
-      #       
-      #     }
-      #     
-      #   } else {
-      #     
-      #     if (func == "quad") {
-      #       
-      #       modlist$ModelBeta  <- mod_summary[nrow(mod_summary) - 1, "Estimate"]
-      #       modlist$Std.Error  <- mod_summary[nrow(mod_summary) - 1, "Std. Error"]
-      #       modlist$ModelBetaQ <- mod_summary[nrow(mod_summary), "Estimate"]
-      #       modlist$Std.ErrorQ <- mod_summary[nrow(mod_summary), "Std. Error"]
-      #       modlist$ModelBetaC <- NA
-      #       
-      #     } else if (func == "cub") {
-      #       
-      #       modlist$ModelBeta  <- mod_summary[nrow(mod_summary) - 2, "Estimate"]
-      #       modlist$Std.Error  <- mod_summary[nrow(mod_summary) - 2, "Std. Error"]
-      #       modlist$ModelBetaQ <- mod_summary[nrow(mod_summary) - 1, "Estimate"]
-      #       modlist$Std.ErrorQ <- mod_summary[nrow(mod_summary) - 1, "Std. Error"]
-      #       modlist$ModelBetaC <- mod_summary[nrow(mod_summary), "Estimate"]
-      #       modlist$Std.ErrorC <- mod_summary[nrow(mod_summary), "Std. Error"]
-      #       
-      #     } else {
-      #       
-      #       modlist$ModelBeta  <- mod_summary[nrow(mod_summary), "Estimate"]
-      #       modlist$Std.Error  <- mod_summary[nrow(mod_summary), "Std. Error"]
-      #       modlist$ModelBetaQ <- NA
-      #       modlist$ModelBetaC <- NA
-      #       
-      #     }
-      #     
-      #   }
-      #   
-      # }
-      
-      return(coef_output_t)
-      
-    },
-    .progress = TRUE,
-    .options = furrr::furrr_options(globals = c("modeloutput", "range", "cmatrix", "modeldat", "baseline"),
-                                    packages = "spaMM"))
-  
+                                    
+                                    #Start index is the column in the cmatrix that should be extracted
+                                    #This is the actual number of days in the past - range[2]
+                                    #column 1 in cmatrix is the first day that windows would be built
+                                    start_index <- WindowClose - range[2] + 1
+                                    end_index   <- WindowOpen - range[2] + 1
+                                    
+                                    new_climate <- cmatrix[, start_index:end_index]
+                                    
+                                    if (duration == 0) {
+                                      
+                                      modeldat$climate <- new_climate
+                                      
+                                    } else {
+                                      
+                                      modeldat$climate <- apply(new_climate, 1, FUN = stat)
+                                      
+                                    }
+                                    
+                                    modeloutput <- tryCatch({
+                                      
+                                      eval(getCall(modeloutput))
+                                      
+                                    }, error = function(e) {
+                                      
+                                      baseline
+                                      
+                                    })
+                                    
+                                    ## FIXME: Replace with logLik (Issue #27)
+                                    if (inherits(modeloutput, c("HLfit"))) {
+                                      #For spaMM, use marginal AIC
+                                      ModelAICc <- as.numeric(AIC(modeloutput, verbose = FALSE)[1])
+                                    } else {
+                                      ModelAICc <- AIC(modeloutput)
+                                    }
+                                    
+                                    
+                                    if (inherits(modeloutput, c("lm", "coxph"))) {
+                                      coef_fn <- coef
+                                    } else if (inherits(modeloutput, c("lme4", "HLfit"))) {
+                                      coef_fn <- fixef
+                                    }
+                                    
+                                    #Extract fixed effects coefficients
+                                    coef_output <- coef_fn(modeloutput)
+                                    
+                                    #Filter only intercept and coefs with climate
+                                    coef_output_filter <- coef_output[grepl(names(coef_output), pattern = "Intercept|climate")]
+                                    
+                                    #Add in the deltaAICc
+                                    coef_output_filter <- append(coef_output_filter, values = c("ModelAICc" = ModelAICc))
+                                    
+                                    #Transpose to named matrix
+                                    coef_output_t <- t(coef_output_filter)
+                                    # 
+                                    # 
+                                    # modlist <- data.frame(deltaAICc = ModelAICc - baselineAIC,
+                                    #                       ModelAICc = ModelAICc,
+                                    #                       WindowOpen = WindowOpen,
+                                    #                       WindowClose = WindowClose)
+                                    # 
+                                    # if (class(modeloutput)[1] %in% c("lm", "lmerMod")) {
+                                    #   
+                                    #   mod_summary <- coef(summary(modeloutput))
+                                    #   
+                                    #   modlist$ModelInt <- mod_summary[1, "Estimate"]
+                                    #   
+                                    #   #If a model did not fit a climate term (i.e. climate was all 0)
+                                    #   #Just return NA
+                                    #   if (!"climate" %in% rownames(mod_summary)) {
+                                    #     
+                                    #     modlist$ModelBeta  <- NA
+                                    #     modlist$Std.Error  <- NA
+                                    #     modlist$ModelBetaQ <- NA
+                                    #     modlist$ModelBetaC <- NA
+                                    #     
+                                    #     if (func == "quad") {
+                                    #       
+                                    #       modlist$Std.ErrorQ <- NA
+                                    #       
+                                    #     }
+                                    #     
+                                    #     if (func == "cub") {
+                                    #       
+                                    #       modlist$Std.ErrorQ <- NA
+                                    #       modlist$Std.ErrorC <- NA
+                                    #       
+                                    #     }
+                                    #     
+                                    #   } else {
+                                    #     
+                                    #     if (func == "quad") {
+                                    #       
+                                    #       modlist$ModelBeta  <- mod_summary[nrow(mod_summary) - 1, "Estimate"]
+                                    #       modlist$Std.Error  <- mod_summary[nrow(mod_summary) - 1, "Std. Error"]
+                                    #       modlist$ModelBetaQ <- mod_summary[nrow(mod_summary), "Estimate"]
+                                    #       modlist$Std.ErrorQ <- mod_summary[nrow(mod_summary), "Std. Error"]
+                                    #       modlist$ModelBetaC <- NA
+                                    #       
+                                    #     } else if (func == "cub") {
+                                    #       
+                                    #       modlist$ModelBeta  <- mod_summary[nrow(mod_summary) - 2, "Estimate"]
+                                    #       modlist$Std.Error  <- mod_summary[nrow(mod_summary) - 2, "Std. Error"]
+                                    #       modlist$ModelBetaQ <- mod_summary[nrow(mod_summary) - 1, "Estimate"]
+                                    #       modlist$Std.ErrorQ <- mod_summary[nrow(mod_summary) - 1, "Std. Error"]
+                                    #       modlist$ModelBetaC <- mod_summary[nrow(mod_summary), "Estimate"]
+                                    #       modlist$Std.ErrorC <- mod_summary[nrow(mod_summary), "Std. Error"]
+                                    #       
+                                    #     } else {
+                                    #       
+                                    #       modlist$ModelBeta  <- mod_summary[nrow(mod_summary), "Estimate"]
+                                    #       modlist$Std.Error  <- mod_summary[nrow(mod_summary), "Std. Error"]
+                                    #       modlist$ModelBetaQ <- NA
+                                    #       modlist$ModelBetaC <- NA
+                                    #       
+                                    #     }
+                                    #     
+                                    #   }
+                                    #   
+                                    # }
+                                    
+                                    return(coef_output_t)
+                                    
+                                  },
+                                  .progress = TRUE,
+                                  .options = furrr::furrr_options(globals = c("modeloutput", "range", "cmatrix", "modeldat", "baseline"),
+                                                                  packages = "spaMM"))
+    
   } else {
-   
+    
     #Create the progress bar
     pb <- txtProgressBar(min = 1, max = nrow(all_windows), style = 3, char = "|")
     
@@ -1987,7 +2055,7 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
       return(coef_output_t)
       
     })
-     
+    
   }
   
   all_windows$i <- NULL
