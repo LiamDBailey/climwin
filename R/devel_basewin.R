@@ -563,7 +563,7 @@ devel_slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
                              type, refday, stat = "mean", func = "lin", range, 
                              cmissing = FALSE, cinterval = "day", k = 0,
                              upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"),
-                             spatial = NULL, cohort = NULL, CPU = 1) {
+                             spatial = NULL, cohort = NULL, CPU = 1, ...) {
   
   #Check bdate argument
   bdate   <- check_date(bdate, arg_name = "bdate")
@@ -662,7 +662,7 @@ devel_slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
                           upper = ifelse(binarylevel == "two" || binarylevel == "upper", allcombos$upper[combo], NA),
                           lower = ifelse(binarylevel == "two" || binarylevel == "lower", allcombos$lower[combo], NA),
                           binary = paste(allcombos$binary[combo]), centre = centre, cohort = cohort,
-                          spatial = spatial, CPU = CPU)
+                          spatial = spatial, CPU = CPU, ...)
     
     class(runs) <- c("climwinfit", "list")
     
@@ -1164,7 +1164,7 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
                           type, stat = "mean", func = "lin", refday,
                           cmissing = FALSE, cinterval = "day", nrandom = 0, k = 0,
                           spatial, upper = NA, lower = NA, binary = FALSE, scale = FALSE, centre = list(NULL, "both"),
-                          cohort = NULL, randwin = FALSE, randwin_thresholdQ, CPU = 1) {
+                          cohort = NULL, randwin = FALSE, randwin_thresholdQ, CPU = 1, ...) {
   
   message("Initialising, please wait...")
   
@@ -1919,7 +1919,7 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
                                   },
                                   .progress = TRUE,
                                   .options = furrr::furrr_options(globals = c("modeloutput", "range", "cmatrix", "modeldat", "baseline"),
-                                                                  packages = "spaMM"))
+                                                                  packages = "spaMM", ...))
     
   } else {
     
