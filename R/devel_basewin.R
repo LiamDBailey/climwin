@@ -664,6 +664,8 @@ devel_slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
                           binary = paste(allcombos$binary[combo]), centre = centre, cohort = cohort,
                           spatial = spatial)
     
+    class(runs) <- c("climwinfit", "list")
+    
     combined[[combo]]            <- runs
     allcombos$DeltaAICc[combo]   <- round(runs$Dataset$deltaAICc[1], digits = 2)
     allcombos$WindowOpen[combo]  <- runs$Dataset$WindowOpen[1]
