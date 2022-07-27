@@ -1706,21 +1706,23 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   pb <- txtProgressBar(min = 1, max = nrow(all_windows), style = 3, char = "|")
   
   #Now, loop through every row and run models
-  modlist <- purrr::map_dfr(.x = 1:nrow(all_windows), .f = function(row) {
+  modlist <- purrr::pmap_dfr(.l = all_windows, .f = function(WindowOpen, WindowClose, duration) {
     
     #Start index is the column in the cmatrix that should be extracted
     #This is the actual number of days in the past - range[2]
     #column 1 in cmatrix is the first day that windows would be built
-    start_index <- all_windows$WindowClose[row] - range[2] + 1
-    end_index   <- all_windows$WindowOpen[row] - range[2] + 1
+    start_index <- WindowClose - range[2] + 1
+    end_index   <- WindowOpen - range[2] + 1
     
-    if (all_windows$duration[row] == 0) {
+    new_climate <- cmatrix[, start_index:end_index]
+    
+    if (duration == 0) {
       
-      modeldat$climate <- cmatrix[, start_index:end_index]
+      modeldat$climate <- new_climate
       
     } else {
       
-      modeldat$climate <- apply(cmatrix[, start_index:end_index], 1, FUN = stat)
+      modeldat$climate <- apply(new_climate, 1, FUN = stat)
       
     }
     
@@ -1738,8 +1740,8 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     
     modlist <- data.frame(deltaAICc = ModelAICc - baselineAIC,
                           ModelAICc = ModelAICc,
-                          WindowOpen = all_windows$WindowOpen[row],
-                          WindowClose = all_windows$WindowClose[row])
+                          WindowOpen = WindowOpen,
+                          WindowClose = WindowClose)
     
     if (class(modeloutput)[1] %in% c("lm", "lmerMod")) {
       
