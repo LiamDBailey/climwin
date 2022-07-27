@@ -1705,12 +1705,13 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   all_windows <- subset(all_windows, all_windows$WindowClose <= all_windows$WindowOpen)
   #Determine duration of windows
   all_windows$duration <- all_windows$WindowOpen - all_windows$WindowClose
+  all_windows$i        <- 1:nrow(all_windows)
   
   #Create the progress bar
   pb <- txtProgressBar(min = 1, max = nrow(all_windows), style = 3, char = "|")
   
   #Now, loop through every row and run models
-  modlist <- purrr::pmap_dfr(.l = all_windows, .f = function(WindowOpen, WindowClose, duration) {
+  modlist <- purrr::pmap_dfr(.l = all_windows, .f = function(i, WindowOpen, WindowClose, duration) {
     
     #Start index is the column in the cmatrix that should be extracted
     #This is the actual number of days in the past - range[2]
@@ -1807,7 +1808,7 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
       
     }
     
-    setTxtProgressBar(pb, row)
+    setTxtProgressBar(pb, i)
     
     return(modlist)
     
