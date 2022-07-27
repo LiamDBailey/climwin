@@ -1639,7 +1639,13 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   
   #Save AICc value of baseline model
   #This is used to determine deltaAICc, we only want to estimate it once.
-  baselineAIC <- AICc(baseline)
+  ## FIXME: Replace with logLik (Issue #27)
+  if (inherits(baseline, c("HLfit"))) {
+    #For spaMM, use marginal AIC
+    baselineAIC <- as.numeric(AIC(baseline, verbose = FALSE)[1])
+  } else {
+    baselineAIC <- AICc(baseline)
+  }
   
   #If there are no variables in the baseline model called climate (i.e. the user has not specified more complex role for climate in the model, such as an interaction or random effects.)
   if (all(!grepl("climate", colnames(modeldat)))) {
@@ -1711,7 +1717,7 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   pb <- txtProgressBar(min = 1, max = nrow(all_windows), style = 3, char = "|")
   
   #Now, loop through every row and run models
-  modlist <- purrr::pmap_dfr(.l = all_windows, .f = function(i, WindowOpen, WindowClose, duration) {
+  modlist <- purrr::pmap(.l = all_windows, .f = function(i, WindowOpen, WindowClose, duration) {
     
     #Start index is the column in the cmatrix that should be extracted
     #This is the actual number of days in the past - range[2]
@@ -1740,79 +1746,109 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
       baseline
       
     })
-    
-    ModelAICc <- AICc(modeloutput)
-    
-    modlist <- data.frame(deltaAICc = ModelAICc - baselineAIC,
-                          ModelAICc = ModelAICc,
-                          WindowOpen = WindowOpen,
-                          WindowClose = WindowClose)
-    
-    if (class(modeloutput)[1] %in% c("lm", "lmerMod")) {
-      
-      mod_summary <- coef(summary(modeloutput))
-      
-      modlist$ModelInt <- mod_summary[1, "Estimate"]
-      
-      #If a model did not fit a climate term (i.e. climate was all 0)
-      #Just return NA
-      if (!"climate" %in% rownames(mod_summary)) {
-        
-        modlist$ModelBeta  <- NA
-        modlist$Std.Error  <- NA
-        modlist$ModelBetaQ <- NA
-        modlist$ModelBetaC <- NA
-        
-        if (func == "quad") {
-          
-          modlist$Std.ErrorQ <- NA
-          
-        }
-        
-        if (func == "cub") {
-          
-          modlist$Std.ErrorQ <- NA
-          modlist$Std.ErrorC <- NA
-          
-        }
-        
-      } else {
-        
-        if (func == "quad") {
-          
-          modlist$ModelBeta  <- mod_summary[nrow(mod_summary) - 1, "Estimate"]
-          modlist$Std.Error  <- mod_summary[nrow(mod_summary) - 1, "Std. Error"]
-          modlist$ModelBetaQ <- mod_summary[nrow(mod_summary), "Estimate"]
-          modlist$Std.ErrorQ <- mod_summary[nrow(mod_summary), "Std. Error"]
-          modlist$ModelBetaC <- NA
-          
-        } else if (func == "cub") {
-          
-          modlist$ModelBeta  <- mod_summary[nrow(mod_summary) - 2, "Estimate"]
-          modlist$Std.Error  <- mod_summary[nrow(mod_summary) - 2, "Std. Error"]
-          modlist$ModelBetaQ <- mod_summary[nrow(mod_summary) - 1, "Estimate"]
-          modlist$Std.ErrorQ <- mod_summary[nrow(mod_summary) - 1, "Std. Error"]
-          modlist$ModelBetaC <- mod_summary[nrow(mod_summary), "Estimate"]
-          modlist$Std.ErrorC <- mod_summary[nrow(mod_summary), "Std. Error"]
-          
-        } else {
-          
-          modlist$ModelBeta  <- mod_summary[nrow(mod_summary), "Estimate"]
-          modlist$Std.Error  <- mod_summary[nrow(mod_summary), "Std. Error"]
-          modlist$ModelBetaQ <- NA
-          modlist$ModelBetaC <- NA
-          
-        }
-        
-      }
-      
+  
+    ## FIXME: Replace with logLik (Issue #27)
+    if (inherits(modeloutput, c("HLfit"))) {
+      #For spaMM, use marginal AIC
+      ModelAICc <- as.numeric(AIC(modeloutput, verbose = FALSE)[1])
+    } else {
+      ModelAICc <- AIC(modeloutput)
     }
+    
+    
+    if (inherits(modeloutput, c("lm", "coxph"))) {
+      coef_fn <- coef
+    } else if (inherits(modeloutput, c("lme4", "HLfit"))) {
+      coef_fn <- fixef
+    }
+    
+    #Extract fixed effects coefficients
+    coef_output <- coef_fn(modeloutput)
+    
+    #Filter only intercept and coefs with climate
+    coef_output_filter <- coef_output[grepl(names(coef_output), pattern = "Intercept|climate")]
+    
+    #Add in the deltaAICc
+    coef_output_filter <- append(coef_output_filter, values = c("deltaAICc" = ModelAICc - baselineAIC))
+    
+    #Transpose to named matrix
+    coef_output_t <- t(coef_output_filter)
+    # 
+    # 
+    # modlist <- data.frame(deltaAICc = ModelAICc - baselineAIC,
+    #                       ModelAICc = ModelAICc,
+    #                       WindowOpen = WindowOpen,
+    #                       WindowClose = WindowClose)
+    # 
+    # if (class(modeloutput)[1] %in% c("lm", "lmerMod")) {
+    #   
+    #   mod_summary <- coef(summary(modeloutput))
+    #   
+    #   modlist$ModelInt <- mod_summary[1, "Estimate"]
+    #   
+    #   #If a model did not fit a climate term (i.e. climate was all 0)
+    #   #Just return NA
+    #   if (!"climate" %in% rownames(mod_summary)) {
+    #     
+    #     modlist$ModelBeta  <- NA
+    #     modlist$Std.Error  <- NA
+    #     modlist$ModelBetaQ <- NA
+    #     modlist$ModelBetaC <- NA
+    #     
+    #     if (func == "quad") {
+    #       
+    #       modlist$Std.ErrorQ <- NA
+    #       
+    #     }
+    #     
+    #     if (func == "cub") {
+    #       
+    #       modlist$Std.ErrorQ <- NA
+    #       modlist$Std.ErrorC <- NA
+    #       
+    #     }
+    #     
+    #   } else {
+    #     
+    #     if (func == "quad") {
+    #       
+    #       modlist$ModelBeta  <- mod_summary[nrow(mod_summary) - 1, "Estimate"]
+    #       modlist$Std.Error  <- mod_summary[nrow(mod_summary) - 1, "Std. Error"]
+    #       modlist$ModelBetaQ <- mod_summary[nrow(mod_summary), "Estimate"]
+    #       modlist$Std.ErrorQ <- mod_summary[nrow(mod_summary), "Std. Error"]
+    #       modlist$ModelBetaC <- NA
+    #       
+    #     } else if (func == "cub") {
+    #       
+    #       modlist$ModelBeta  <- mod_summary[nrow(mod_summary) - 2, "Estimate"]
+    #       modlist$Std.Error  <- mod_summary[nrow(mod_summary) - 2, "Std. Error"]
+    #       modlist$ModelBetaQ <- mod_summary[nrow(mod_summary) - 1, "Estimate"]
+    #       modlist$Std.ErrorQ <- mod_summary[nrow(mod_summary) - 1, "Std. Error"]
+    #       modlist$ModelBetaC <- mod_summary[nrow(mod_summary), "Estimate"]
+    #       modlist$Std.ErrorC <- mod_summary[nrow(mod_summary), "Std. Error"]
+    #       
+    #     } else {
+    #       
+    #       modlist$ModelBeta  <- mod_summary[nrow(mod_summary), "Estimate"]
+    #       modlist$Std.Error  <- mod_summary[nrow(mod_summary), "Std. Error"]
+    #       modlist$ModelBetaQ <- NA
+    #       modlist$ModelBetaC <- NA
+    #       
+    #     }
+    #     
+    #   }
+    #   
+    # }
     
     setTxtProgressBar(pb, i)
     
-    return(modlist)
+    return(coef_output_t)
     
   })
+  
+  all_windows$i <- NULL
+  
+  modlist <- cbind(all_windows, do.call(rbind, modlist))
   
   modlist <- modlist[order(modlist$deltaAICc), ]
   
@@ -1881,14 +1917,14 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     
     modlist$Randomised    <- "no"
     modlist               <- as.data.frame(modlist)
-    LocalOutput           <- modlist[order(modlist$ModelAICc), ]
+    LocalOutput           <- modlist[order(modlist$deltaAICc), ]
     LocalOutput$ModelAICc <- NULL
   }
   
   if (nrandom > 0) {
     modlist$Randomised        <- "yes"
     modlist                   <- as.data.frame(modlist)
-    LocalOutputRand           <- modlist[order(modlist$ModelAICc), ]
+    LocalOutputRand           <- modlist[order(modlist$deltaAICc), ]
     LocalOutputRand$ModelAICc <- NULL
   }
   
