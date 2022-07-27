@@ -1845,13 +1845,12 @@ devel_basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
       #   
       # }
       
-      setTxtProgressBar(pb, i)
-      
       return(coef_output_t)
       
     },
     .progress = TRUE,
-    .options = furrr::furrr_options(globals = c("modeloutput", "range", "cmatrix", "modeldat", "baseline")))
+    .options = furrr::furrr_options(globals = c("modeloutput", "range", "cmatrix", "modeldat", "baseline"),
+                                    packages = "spaMM"))
   
   } else {
    
