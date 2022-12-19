@@ -1166,7 +1166,8 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   modlist$Statistics   <- stat
   modlist$Type         <- type
   modlist$K            <- k
-  modlist$ModWeight    <- (exp(-0.5 * modlist$deltaAICc)) / sum(exp(-0.5 * modlist$deltaAICc))
+  tmpDeltaAICcShift    <- modlist$deltaAICc - min(modlist$deltaAICc)
+  modlist$ModWeight    <- (exp(-0.5 * tmpDeltaAICcShift)) / sum(exp(-0.5 * tmpDeltaAICcShift))
   modlist$sample.size  <- sample.size
   
   if (type == "absolute"){
