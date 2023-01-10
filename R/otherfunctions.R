@@ -1176,7 +1176,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
   
   if(exists("coef_data")){
     
-    modlist <- cbind(modlist, do.call(rbind, coef_data))
+    modlist <- cbind(modlist, dplyr::bind_rows(coef_data))
     
   }
   
