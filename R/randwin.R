@@ -321,7 +321,7 @@ randwin <- function(exclude = NA, repeats = 5, window = "sliding", xvar, cdate, 
         if(r == 1){ 
           outputrand <- outputrep
         } else { 
-          outputrand <- rbind(outputrand, outputrep)
+          outputrand <- dplyr::bind_rows(outputrand, outputrep)
         }
         
       } else if(window == "weighted"){
