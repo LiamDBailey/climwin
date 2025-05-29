@@ -1,4 +1,26 @@
-# Function to calculate mean temperatures for different date ranges
+#' Calculate Mean Temperatures for Different Date Ranges
+#'
+#' This function calculates the mean temperature for various date ranges relative to a reference date
+#' (January 1st, 1979). It processes climate data from a CSV file and returns mean temperatures
+#' for each specified range.
+#'
+#' @param range A numeric vector specifying the number of days to look back from the reference date.
+#'              For example, 0 represents the reference date itself, while 100 represents 100 days
+#'              before the reference date.
+#'
+#' @return A data frame containing:
+#'   \item{Start_Date}{The beginning date of each range}
+#'   \item{End_Date}{The reference date (1979-01-01)}
+#'   \item{Mean_Temperature}{The mean temperature for the specified range}
+#'
+#' @examples
+#' # Calculate means for ranges from 0 to 100 days
+#' result <- calculate_temp_means(0:100)
+#'
+#' # Calculate means for specific ranges
+#' result <- calculate_temp_means(c(0, 30, 60, 90))
+#'
+#' @export
 calculate_temp_means <- function(range) {
   # Read the climate data
   climate_data <- read.csv("MassClimate.csv")
@@ -41,8 +63,4 @@ calculate_temp_means <- function(range) {
   )
   
   return(results)
-}
-
-# Example usage:
-# result <- calculate_temp_means(0:100)
-# print(result) 
+} 
