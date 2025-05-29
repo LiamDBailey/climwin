@@ -65,7 +65,7 @@ As is often the case, we have no prior knowledge to help us select the best clim
 | 08/06/2014  |    138   |22                        |
 |...          |...       |...                       |
 
-Now that we have this new dataset, we can test the relationship between mass and temperature and determine an AICc value [[2](http://link.springer.com/article/10.1007/s00265-010-1029-6)]. Let's use a basic linear model:
+Now that we have this new dataset, we can test the relationship between mass and temperature and determine an AICc value [[2](https://doi.org/10.1007/s00265-010-1029-6)]. Let's use a basic linear model:
 
 `lm(Mass ~ Temperature[1 - 2 days])`
 
@@ -133,7 +133,7 @@ There are two distinct ways to carry out a sliding window analysis. In our simpl
 
 Alternatively, there may be situations where we expect all individuals to respond to the same climatic period (e.g. average April temperature). In this case, we assume that all climate windows will be calculated from an 'absolute' start date which will act as day 0. In this case, the additional parameter 'refday' will set the day and month of day 0 for the climate window analysis.
 
-In this example, we will test for absolute climate windows using a starting date of May 20th. For more details on different types of climate window analyses see [[3](http://onlinelibrary.wiley.com/doi/10.1111/2041-210X.12590/full)] and [[4](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0167980)]
+In this example, we will test for absolute climate windows using a starting date of May 20th. For more details on different types of climate window analyses see [[3](https://doi.org/10.1111/2041-210X.12590)] and [[4](https://doi.org/10.1371/journal.pone.0167980)]
 
 `type = "absolute"`
 
@@ -141,7 +141,7 @@ In this example, we will test for absolute climate windows using a starting date
 
 **stat**
 
-While we now have the ability to extract climate data for all possible climate windows, the aggregate statistic with which we analyse this data may also influence our results. Most commonly, we consider the mean value of climate within each window, yet it may be more appropriate to consider other possible aggregate statistics, such as maximum, minimum or slope [[3](http://onlinelibrary.wiley.com/doi/10.1111/2041-210X.12590/full), [4](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0167980)].
+While we now have the ability to extract climate data for all possible climate windows, the aggregate statistic with which we analyse this data may also influence our results. Most commonly, we consider the mean value of climate within each window, yet it may be more appropriate to consider other possible aggregate statistics, such as maximum, minimum or slope [[3](https://doi.org/10.1111/2041-210X.12590), [4](https://doi.org/10.1371/journal.pone.0167980)].
 
 The parameter stat allows users to select the aggregate statistic of their choice.
 
@@ -317,7 +317,7 @@ The dataset output from our `randwin` analysis.
  
  * When using large datasets, running 100+ repeats can take large amounts of computational time. When the number of repeats is limited, we use the metric "C". This estimates the distribution of $\Delta AICc$ using the information available from the limited number of repeats. In this scenario, with only 5 repeats, we will use the "C" metric.
  
-For more information on these metrics and their effectiveness see [[3](http://onlinelibrary.wiley.com/doi/10.1111/2041-210X.12590/full)].
+For more information on these metrics and their effectiveness see [[3](https://doi.org/10.1111/2041-210X.12590)].
  
 `metric = "C"`
 
@@ -373,11 +373,11 @@ plotdelta(dataset = MassOutput)
 
 ```
 
-It's worth noting that some biological data may exhibit multiple periods of sensitivity (e.g. long-lag and short-lag [[3](http://onlinelibrary.wiley.com/doi/10.1111/2041-210X.12590/full)]). These can be detected using the `plotdelta` function.
+It's worth noting that some biological data may exhibit multiple periods of sensitivity (e.g. long-lag and short-lag [[3](https://doi.org/10.1111/2041-210X.12590)]). These can be detected using the `plotdelta` function.
 
 ### Plot model weights
 
-Another way to visualise the $\Delta AICc$ data is through the use of model weights [[2](http://link.springer.com/article/10.1007/s00265-010-1029-6)]. In short, the higher a model weight value the greater confidence we have that this model is the true 'best' model. While our top climate window is the most likely **single** window to explain variation in the data, our confidence that this top window represents the true 'best' model may still be low.
+Another way to visualise the $\Delta AICc$ data is through the use of model weights [[2](https://doi.org/10.1007/s00265-010-1029-6)]. In short, the higher a model weight value the greater confidence we have that this model is the true 'best' model. While our top climate window is the most likely **single** window to explain variation in the data, our confidence that this top window represents the true 'best' model may still be low.
 
 If we sum the weights of multiple models, we can now be more confident that we encompass the true best model, but we are less sure of its exact location. In our model weights plot we shade all models that make up the top 95% of model weights (the 95% confidence set). Therefore, we can be 95% confident that the true 'best' model falls within the shaded region.
 
