@@ -262,11 +262,14 @@ weightwin <- function(n = 1, xvar, cdate, bdate, baseline, range, k = 0,
       
       par.list[[i]] <- merge(save_par, data.frame(deltaAICc = weight.list[[i]]$WeightedOutput$deltaAICc))
       
-      setTxtProgressBar(pb, i - 1)
-      
+      if (interactive()){
+        setTxtProgressBar(pb, i - 1)
+      }
     }
     
-    setTxtProgressBar(pb, n)
+    if (interactive()){
+      setTxtProgressBar(pb, n)
+    }
     
     print(do.call(rbind, par.list))
     

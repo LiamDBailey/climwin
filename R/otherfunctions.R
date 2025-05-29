@@ -1083,8 +1083,9 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
         }
       }
     }  
-    #Fill progress bar
-    setTxtProgressBar(pb, modno - 1)
+    if (interactive()){
+      setTxtProgressBar(pb, modno - 1) 
+    }
   }
   
   #Save the best model output
