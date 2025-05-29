@@ -1,8 +1,15 @@
 Package: climwin
 Type: Package
 Title: Climate Window Analysis
-Version: 1.2.3
-Author: Liam D. Bailey and Martijn van de Pol
+Version: 1.2.31
+Authors@R: c(person(given = c("Liam", "D."),
+                        family = "Bailey",
+                        role = c("aut", "cre"),
+                        email = "liam.bailey@liamdbailey.com"),
+                 person(given = "Martijn",
+                        family = "van de Pol",
+                        role = "aut",
+                        email = "martijn@myscience.eu"))
 Maintainer: Liam D. Bailey <liam.bailey@liamdbailey.com>
 URL: https://github.com/LiamDBailey/climwin
 BugReports: https://github.com/LiamDBailey/climwin/issues
@@ -11,7 +18,7 @@ Description: Contains functions to detect and visualise periods of climate
     Please see van de Pol et al. (2016) <doi:10.1111/2041-210X.12590> 
     and Bailey and van de Pol (2016) <doi:10.1371/journal.pone.0167980> for details.
 Depends:
-    R (>= 2.10),
+    R (>= 4.4.2),
     ggplot2,
     gridExtra,
     Matrix
@@ -32,4 +39,5 @@ License: GPL-2
 Repository: CRAN
 LazyData: True
 VignetteBuilder: knitr
-RoxygenNote: 7.1.0
+RoxygenNote: 7.3.2
+Encoding: UTF-8
