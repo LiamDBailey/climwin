@@ -137,4 +137,93 @@ test_that("calculate_temp_means handles multiple bio dates", {
   # Check values for second bio date (03/01/1979)
   second_date_values <- result$Summary_Value[result$Bio_Date == "03/01/1979"]
   expect_equal(second_date_values, c(14, 13, 12))
+})
+
+test_that("calculate_temp_means handles missing columns", {
+  # Create test data with missing columns
+  climate_data <- data.frame(
+    wrong_date = c("01/01/1979", "02/01/1979"),
+    wrong_temp = c(10, 12)
+  )
+  bio_data <- data.frame(
+    Date = c("02/01/1979")
+  )
+  
+  # Test missing date column
+  expect_error(
+    calculate_temp_means(0:1, climate_data = climate_data, bio_data = bio_data),
+    "climate_data must contain columns 'Date' and 'Temp'"
+  )
+  
+  # Test missing temperature column
+  climate_data$Date <- climate_data$wrong_date
+  expect_error(
+    calculate_temp_means(0:1, climate_data = climate_data, bio_data = bio_data),
+    "climate_data must contain columns 'Date' and 'Temp'"
+  )
+  
+  # Test missing bio date column
+  bio_data <- data.frame(
+    wrong_date = c("02/01/1979")
+  )
+  climate_data$Temp <- climate_data$wrong_temp
+  expect_error(
+    calculate_temp_means(0:1, climate_data = climate_data, bio_data = bio_data),
+    "bio_data must contain column 'Date'"
+  )
+})
+
+test_that("calculate_temp_means handles invalid function", {
+  # Create test data
+  climate_data <- data.frame(
+    Date = c("01/01/1979", "02/01/1979"),
+    Temp = c(10, 12)
+  )
+  bio_data <- data.frame(
+    Date = c("02/01/1979")
+  )
+  
+  # Test with non-function
+  expect_error(
+    calculate_temp_means(0:1, climate_data = climate_data, bio_data = bio_data, fn = "mean"),
+    "fn must be a function"
+  )
+  
+  # Test with invalid function
+  expect_error(
+    calculate_temp_means(0:1, climate_data = climate_data, bio_data = bio_data, fn = function(x) stop("error")),
+    "error"
+  )
+})
+
+test_that("calculate_temp_means handles invalid date formats", {
+  # Create test data with invalid date format
+  climate_data <- data.frame(
+    Date = c("1979-01-01", "1979-01-02"),
+    Temp = c(10, 12)
+  )
+  bio_data <- data.frame(
+    Date = c("1979-01-02")
+  )
+  
+  expect_error(
+    calculate_temp_means(0:1, climate_data = climate_data, bio_data = bio_data),
+    "All dates must be in format 'DD/MM/YYYY'"
+  )
+})
+
+test_that("calculate_temp_means handles empty data", {
+  # Create empty data frames
+  climate_data <- data.frame(
+    Date = character(),
+    Temp = numeric()
+  )
+  bio_data <- data.frame(
+    Date = character()
+  )
+  
+  # Test with empty data
+  result <- calculate_temp_means(0:1, climate_data = climate_data, bio_data = bio_data)
+  expect_equal(nrow(result), 0)
+  expect_named(result, c("Bio_Date", "Start_Date", "End_Date", "Summary_Value"))
 }) 

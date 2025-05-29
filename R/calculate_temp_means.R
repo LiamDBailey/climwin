@@ -74,22 +74,24 @@ calculate_temp_means <- function(range,
     stop(sprintf("bio_data must contain column '%s'", bdate))
   }
   
-  # Convert date columns to Date format
-  climate_data[[cdate]] <- as.Date(climate_data[[cdate]], format = "%d/%m/%Y")
-  bio_data[[bdate]] <- as.Date(bio_data[[bdate]], format = "%d/%m/%Y")
+  # Handle empty data frames
+  if (nrow(climate_data) == 0 || nrow(bio_data) == 0) {
+    return(data.frame(
+      Bio_Date = character(0),
+      Start_Date = character(0),
+      End_Date = character(0),
+      Summary_Value = numeric(0),
+      stringsAsFactors = FALSE
+    ))
+  }
   
-  # Find the earliest date in either dataset
-  min_date <- min(min(climate_data[[cdate]]), min(bio_data[[bdate]]))
+  # Convert dates to integers
+  climate_dates <- convert_dates_to_int(climate_data[[cdate]])
+  bio_dates <- convert_dates_to_int(bio_data[[bdate]], min_date = climate_dates$min_date)
   
-  # Convert dates to integers (days since min_date)
-  climate_data$date_int <- as.integer(climate_data[[cdate]] - min_date)
-  bio_data$date_int <- as.integer(bio_data[[bdate]] - min_date)
-  
-  # Create a lookup table for converting back to dates
-  date_lookup <- data.frame(
-    date_int = seq(0, max(climate_data$date_int)),
-    date_char = format(min_date + seq(0, max(climate_data$date_int)), "%d/%m/%Y")
-  )
+  # Add integer dates to data frames
+  climate_data$date_int <- climate_dates$date_int
+  bio_data$date_int <- bio_dates$date_int
   
   # Validate function
   if (!is.function(fn)) {
@@ -131,9 +133,9 @@ calculate_temp_means <- function(range,
   }
   
   # Convert integer dates back to character format
-  bio_dates <- date_lookup$date_char[match(bio_dates_int, date_lookup$date_int)]
-  start_dates <- date_lookup$date_char[match(start_dates_int, date_lookup$date_int)]
-  end_dates <- date_lookup$date_char[match(end_dates_int, date_lookup$date_int)]
+  bio_dates <- climate_dates$lookup_table$date_char[match(bio_dates_int, climate_dates$lookup_table$date_int)]
+  start_dates <- climate_dates$lookup_table$date_char[match(start_dates_int, climate_dates$lookup_table$date_int)]
+  end_dates <- climate_dates$lookup_table$date_char[match(end_dates_int, climate_dates$lookup_table$date_int)]
   
   # Create and return results dataframe
   results <- data.frame(
