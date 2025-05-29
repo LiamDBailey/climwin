@@ -20,7 +20,8 @@
 #' @param fn A function to use for summarizing the climate data. Defaults to mean().
 #'           Must be a function that can operate on a numeric vector.
 #'
-#' @return A data frame containing:
+#' @return A list of data frames, where each data frame corresponds to a specific range combination.
+#'        Each data frame contains:
 #'   \item{Bio_Date}{The date from bio_data (character string in DD/MM/YYYY format)}
 #'   \item{Start_Date}{The beginning date of each range (character string in DD/MM/YYYY format)}
 #'   \item{End_Date}{The end date of each range (character string in DD/MM/YYYY format)}
@@ -76,13 +77,13 @@ calculate_temp_means <- function(range,
   
   # Handle empty data frames
   if (nrow(climate_data) == 0 || nrow(bio_data) == 0) {
-    return(data.frame(
+    return(list(data.frame(
       Bio_Date = character(0),
       Start_Date = character(0),
       End_Date = character(0),
       Summary_Value = numeric(0),
       stringsAsFactors = FALSE
-    ))
+    )))
   }
   
   # Convert dates to integers
@@ -98,53 +99,53 @@ calculate_temp_means <- function(range,
     stop("fn must be a function")
   }
   
-  # Initialize empty vectors to store results
-  bio_dates_int <- integer()
-  start_dates_int <- integer()
-  end_dates_int <- integer()
-  summary_values <- numeric()
+  # Generate all valid range combinations
+  range_combinations <- expand.grid(start_days = range, end_days = range)
+  range_combinations <- range_combinations[range_combinations$end_days >= range_combinations$start_days, ]
   
-  # Loop through each date in bio_data
-  for (bio_date_int in bio_data$date_int) {
-    # Generate all possible combinations of start and end dates
-    for (start_days in range) {
-      for (end_days in range) {
-        # Only process if end_days >= start_days
-        if (end_days >= start_days) {
-          # Calculate start and end dates as integers
-          start_date_int <- bio_date_int - start_days
-          end_date_int <- bio_date_int - end_days
-          
-          # Filter data for the date range
-          date_range_data <- climate_data[climate_data$date_int >= end_date_int & 
-                                        climate_data$date_int <= start_date_int, ]
-          
-          # Calculate summary statistic for this range
-          summary_value <- fn(date_range_data[[xvar]])
-          
-          # Store results as integers
-          bio_dates_int <- c(bio_dates_int, bio_date_int)
-          start_dates_int <- c(start_dates_int, start_date_int)
-          end_dates_int <- c(end_dates_int, end_date_int)
-          summary_values <- c(summary_values, summary_value)
-        }
-      }
+  # Initialize list to store results for each range combination
+  results_list <- list()
+  
+  # Process each range combination
+  for (i in seq_len(nrow(range_combinations))) {
+    start_days <- range_combinations$start_days[i]
+    end_days <- range_combinations$end_days[i]
+    
+    # Calculate start and end dates for all bio dates at once
+    start_dates_int <- bio_data$date_int - start_days
+    end_dates_int <- bio_data$date_int - end_days
+    
+    # Initialize vectors for this combination
+    bio_dates_int <- bio_data$date_int
+    summary_values <- numeric(length(bio_dates_int))
+    
+    # Calculate summary for each bio date
+    for (j in seq_along(bio_dates_int)) {
+      # Filter data for the date range
+      date_range_data <- climate_data[climate_data$date_int >= end_dates_int[j] & 
+                                    climate_data$date_int <= start_dates_int[j], ]
+      
+      # Calculate summary statistic for this range
+      summary_values[j] <- fn(date_range_data[[xvar]])
     }
+    
+    # Convert integer dates back to character format
+    bio_dates <- climate_dates$lookup_table$date_char[match(bio_dates_int, climate_dates$lookup_table$date_int)]
+    start_dates <- climate_dates$lookup_table$date_char[match(start_dates_int, climate_dates$lookup_table$date_int)]
+    end_dates <- climate_dates$lookup_table$date_char[match(end_dates_int, climate_dates$lookup_table$date_int)]
+    
+    # Create results dataframe for this combination
+    results_list[[i]] <- data.frame(
+      Bio_Date = bio_dates,
+      Start_Date = start_dates,
+      End_Date = end_dates,
+      Summary_Value = summary_values,
+      stringsAsFactors = FALSE
+    )
+    
+    # Name the list element with the range combination
+    names(results_list)[i] <- sprintf("%d_%d", start_days, end_days)
   }
   
-  # Convert integer dates back to character format
-  bio_dates <- climate_dates$lookup_table$date_char[match(bio_dates_int, climate_dates$lookup_table$date_int)]
-  start_dates <- climate_dates$lookup_table$date_char[match(start_dates_int, climate_dates$lookup_table$date_int)]
-  end_dates <- climate_dates$lookup_table$date_char[match(end_dates_int, climate_dates$lookup_table$date_int)]
-  
-  # Create and return results dataframe
-  results <- data.frame(
-    Bio_Date = bio_dates,
-    Start_Date = start_dates,
-    End_Date = end_dates,
-    Summary_Value = summary_values,
-    stringsAsFactors = FALSE
-  )
-  
-  return(results)
+  return(results_list)
 } 
