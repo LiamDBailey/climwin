@@ -6,10 +6,7 @@
 #' that will be updated for each climate window.
 #'
 #' @param climate_means A LIST of data frames, each containing Bio_Date, Start_Date, End_Date, and Summary_Value columns
-#' @param bio_data A data frame containing biological data with a Date column. bio_data must also contain a 'climate' column (can be initialized with zeros).
 #' @param basemodel An lm model object that will be updated for each climate window (e.g., lm(Mass ~ climate, data = bio_data)). This argument is required and cannot be NULL.
-#' @param mass_col Character string specifying the name of the mass column in bio_data
-#' @param date_col Character string specifying the name of the date column in bio_data
 #'
 #' @return A data frame containing:
 #'         - Start_Date: Start date of the climate window
@@ -24,13 +21,13 @@
 #' climate_means <- calculate_temp_means(0:2, bio_data = Mass)
 #' Mass$climate <- 0
 #' basemodel <- lm(Mass ~ climate, data = Mass)
-#' results <- fit_climate_models(climate_means, Mass, basemodel = basemodel)
+#' results <- fit_climate_models(climate_means, basemodel = basemodel)
 #'
 #' @export
-fit_climate_models <- function(climate_means, bio_data, basemodel, mass_col = "Mass", date_col = "Date") {
+fit_climate_models <- function(climate_means, basemodel) {
   # Input validation
-  if (!is.list(climate_means) || !is.data.frame(bio_data)) {
-    stop("climate_means must be a list and bio_data must be a data frame")
+  if (!is.list(climate_means)) {
+    stop("climate_means must be a list")
   }
   
   if (missing(basemodel) || is.null(basemodel)) {
@@ -40,10 +37,9 @@ fit_climate_models <- function(climate_means, bio_data, basemodel, mass_col = "M
     stop("basemodel must be an lm object")
   }
   
-  # Check for climate column
-  if (!("climate" %in% names(bio_data))) {
-    stop("bio_data must contain a 'climate' column. Initialize it with zeros before creating the basemodel.")
-  }
+  # Extract the model frame from basemodel
+  model_data <- model.frame(basemodel)
+  response_var <- all.vars(formula(basemodel))[1]
   
   # Initialize results data frame
   results <- data.frame(
@@ -60,70 +56,84 @@ fit_climate_models <- function(climate_means, bio_data, basemodel, mass_col = "M
     # Check required columns in each list element
     required_cols <- c("Bio_Date", "Start_Date", "End_Date", "Summary_Value")
     if (!all(required_cols %in% names(window_data))) {
+      results <- rbind(results, data.frame(
+        Start_Date = NA_character_,
+        End_Date = NA_character_,
+        AIC = NA_real_,
+        R_squared = NA_real_,
+        Slope = NA_real_,
+        P_value = NA_real_,
+        stringsAsFactors = FALSE
+      ))
       next
     }
-    if (!all(c(mass_col, date_col) %in% names(bio_data))) {
-      next
-    }
-    
-    # Merge with biological data
-    plot_data <- merge(
-      window_data,
-      bio_data,
-      by.x = "Bio_Date",
-      by.y = date_col,
-      all = FALSE
-    )
     
     # Skip if not enough data points (at least 3 unique response values)
-    if (nrow(plot_data) < 3 || length(unique(plot_data[[mass_col]])) < 3) {
+    if (nrow(model_data) < 3 || length(unique(model_data[[response_var]])) < 3) {
+      results <- rbind(results, data.frame(
+        Start_Date = as.character(window_data$Start_Date[1]),
+        End_Date = as.character(window_data$End_Date[1]),
+        AIC = NA_real_,
+        R_squared = NA_real_,
+        Slope = NA_real_,
+        P_value = NA_real_,
+        stringsAsFactors = FALSE
+      ))
       next
     }
     
     # Update climate variable with Summary_Value
-    plot_data$climate <- plot_data$Summary_Value
-    # Use update with the new data
-    model <- try(update(basemodel, data = plot_data), silent = TRUE)
+    model_data$climate <- window_data$Summary_Value
     
-    if (inherits(model, "try-error")) {
-      next
-    }
+    # Try to fit the model and extract statistics
+    fit_result <- tryCatch({
+      model <- update(basemodel, data = model_data)
+      model_summary <- summary(model)
+      coef_summary <- coef(model_summary)
+      # Get the climate coefficient (either Summary_Value or climate)
+      climate_coef <- if ("Summary_Value" %in% rownames(coef_summary)) {
+        "Summary_Value"
+      } else if ("climate" %in% rownames(coef_summary)) {
+        "climate"
+      } else {
+        NA
+      }
+      # Extract slope and p-value
+      if (!is.na(climate_coef)) {
+        slope <- coef_summary[climate_coef, "Estimate"]
+        pval <- coef_summary[climate_coef, "Pr(>|t|)"]
+      } else {
+        slope <- NA
+        pval <- NA
+      }
+      list(
+        AIC = AIC(model),
+        R_squared = model_summary$r.squared,
+        Slope = slope,
+        P_value = pval
+      )
+    }, error = function(e) {
+      list(
+        AIC = NA_real_,
+        R_squared = NA_real_,
+        Slope = NA_real_,
+        P_value = NA_real_
+      )
+    })
     
-    model_summary <- summary(model)
-    coef_summary <- coef(model_summary)
-    
-    # Get the climate coefficient (either Summary_Value or climate)
-    climate_coef <- if ("Summary_Value" %in% rownames(coef_summary)) {
-      "Summary_Value"
-    } else if ("climate" %in% rownames(coef_summary)) {
-      "climate"
-    } else {
-      NA
-    }
-    
-    # Extract slope and p-value
-    if (!is.na(climate_coef)) {
-      slope <- coef_summary[climate_coef, "Estimate"]
-      pval <- coef_summary[climate_coef, "Pr(>|t|)"]
-    } else {
-      slope <- NA
-      pval <- NA
-    }
-    
-    # Use the first Start_Date and End_Date from this window
     results <- rbind(results, data.frame(
       Start_Date = as.character(window_data$Start_Date[1]),
       End_Date = as.character(window_data$End_Date[1]),
-      AIC = AIC(model),
-      R_squared = model_summary$r.squared,
-      Slope = slope,
-      P_value = pval,
+      AIC = fit_result$AIC,
+      R_squared = fit_result$R_squared,
+      Slope = fit_result$Slope,
+      P_value = fit_result$P_value,
       stringsAsFactors = FALSE
     ))
   }
   
-  # Sort by AIC
-  results <- results[order(results$AIC), ]
+  # Sort by AIC (NAs last)
+  results <- results[order(is.na(results$AIC), results$AIC), ]
   
   return(results)
 } 
