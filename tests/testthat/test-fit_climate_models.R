@@ -146,4 +146,29 @@ test_that("fit_climate_models works with log(climate)", {
   expect_equal(ncol(result), 5)
   expect_equal(names(result), c("Start_Date", "End_Date", "Start_Day", "End_Day", "AIC"))
   expect_equal(nrow(result), 1)
+})
+
+test_that("fit_climate_models gives identical results with parallel = TRUE and FALSE", {
+  # Create sample data
+  climate_means <- data.frame(
+    Bio_Date = c("01/01/1979", "01/01/1979", "01/01/1979"),
+    Start_Date = c("01/01/1979", "01/01/1979", "01/01/1979"),
+    End_Date = c("01/01/1979", "02/01/1979", "03/01/1979"),
+    Summary_Value = c(10, 15, 20)
+  )
+  
+  bio_data <- data.frame(
+    Mass = c(100, 110, 120),
+    climate = 0
+  )
+  basemodel <- lm(Mass ~ climate, data = bio_data)
+  
+  # Run with parallel = TRUE
+  result_parallel <- fit_climate_models(list(climate_means), basemodel = basemodel, bio_data = bio_data, parallel = TRUE)
+  
+  # Run with parallel = FALSE
+  result_sequential <- fit_climate_models(list(climate_means), basemodel = basemodel, bio_data = bio_data, parallel = FALSE)
+  
+  # Compare results
+  expect_identical(result_parallel, result_sequential)
 }) 
