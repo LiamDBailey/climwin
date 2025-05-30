@@ -26,16 +26,18 @@
 #'
 #' @export
 fit_climate_models <- function(climate_means, basemodel, bio_data) {
+
+  ## Substitute basemodel at the start so it doesn't try and run
+  ## and fail
+  basemodel <- substitute(basemodel)
+  
   # Input validation
   if (!is.list(climate_means)) {
     stop("climate_means must be a list")
   }
   
-  if (missing(basemodel) || is.null(basemodel)) {
-    stop("'basemodel' is required and cannot be NULL.")
-  }
-  if (!inherits(basemodel, "lm")) {
-    stop("basemodel must be an lm object")
+  if (missing(basemodel)) {
+    stop("'basemodel' is required.")
   }
   
   if (missing(bio_data) || is.null(bio_data)) {
@@ -44,9 +46,6 @@ fit_climate_models <- function(climate_means, basemodel, bio_data) {
   if (!is.data.frame(bio_data)) {
     stop("bio_data must be a data frame")
   }
-  
-  # Extract the response variable from the basemodel
-  response_var <- all.vars(formula(basemodel))[1]
   
   # Initialize results data frame
   results <- data.frame(
@@ -75,26 +74,12 @@ fit_climate_models <- function(climate_means, basemodel, bio_data) {
       next
     }
     
-    # Skip if not enough data points (at least 3 unique response values)
-    if (nrow(bio_data) < 3 || length(unique(bio_data[[response_var]])) < 3) {
-      results <- rbind(results, data.frame(
-        Start_Date = as.character(window_data$Start_Date[1]),
-        End_Date = as.character(window_data$End_Date[1]),
-        AIC = NA_real_,
-        R_squared = NA_real_,
-        Slope = NA_real_,
-        P_value = NA_real_,
-        stringsAsFactors = FALSE
-      ))
-      next
-    }
-    
     # Update climate variable with Summary_Value
     bio_data$climate <- window_data$Summary_Value
     
     # Try to fit the model and extract statistics
     fit_result <- tryCatch({
-      model <- update(basemodel, data = bio_data)
+      model <- eval(basemodel)
       model_summary <- summary(model)
       coef_summary <- coef(model_summary)
       # Get the climate coefficient (either Summary_Value, climate, or log(climate))
