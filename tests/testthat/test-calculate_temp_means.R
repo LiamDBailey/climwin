@@ -160,24 +160,19 @@ test_that("calculate_temp_means handles missing columns", {
 })
 
 test_that("calculate_temp_means handles invalid function", {
-  # Create test data
-  climate_data <- data.frame(
-    Date = c("01/01/1979"),
-    Temp = c(10)
-  )
-  bio_data <- data.frame(
-    Date = c("02/01/1979")
-  )
+  climate_data <- data.frame(Date = c("01/01/1979"), Temp = c(10))
+  bio_data <- data.frame(Date = c("01/01/1979"))
   
   # Test with non-function
-  expect_error(
-    calculate_temp_means(0:1, climate_data = climate_data, bio_data = bio_data, fn = "mean"),
-    "fn must be a function"
-  )
+  expect_error(calculate_temp_means(0:1, 
+                                  climate_data = climate_data,
+                                  bio_data = bio_data,
+                                  fn = "not_a_function"),
+               "fn must be a function")
   
-  # Test with invalid function
+  # Test with invalid function, but only if range is valid
   expect_error(
-    calculate_temp_means(0:1, climate_data = climate_data, bio_data = bio_data, fn = function(x) stop("error")),
+    calculate_temp_means(0, climate_data = climate_data, bio_data = bio_data, fn = function(x) stop("error")),
     "error"
   )
 })
@@ -347,4 +342,27 @@ test_that("calculate_temp_means handles invalid date formats", {
                                   climate_data = climate_data,
                                   bio_data = bio_data),
                "All dates must be in format 'DD/MM/YYYY'")
+})
+
+test_that("calculate_temp_means validates range against available data", {
+  # Create test data with 3 days of climate data
+  climate_data <- data.frame(
+    Date = c("01/01/1979", "02/01/1979", "03/01/1979"),
+    Temp = c(10, 12, 14)
+  )
+  bio_data <- data.frame(
+    Date = c("02/01/1979")
+  )
+  
+  # Test with range within available data
+  expect_silent(calculate_temp_means(0:2, climate_data = climate_data, bio_data = bio_data))
+  
+  # Test with range exceeding available data
+  expect_error(
+    calculate_temp_means(0:3, climate_data = climate_data, bio_data = bio_data),
+    "Requested range \\(3 days\\) exceeds available climate data range \\(2 days\\)"
+  )
+  
+  # Test with range exactly at the limit
+  expect_silent(calculate_temp_means(0:2, climate_data = climate_data, bio_data = bio_data))
 }) 

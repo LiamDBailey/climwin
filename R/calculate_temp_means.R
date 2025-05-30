@@ -60,6 +60,11 @@ calculate_temp_means <- function(range,
                                xvar = "Temp",
                                fn = mean) {
   
+  # Validate function first
+  if (!is.function(fn)) {
+    stop("fn must be a function")
+  }
+  
   # Read the climate data if not provided
   if (is.null(climate_data)) {
     climate_data <- read.csv("MassClimate.csv")
@@ -94,9 +99,20 @@ calculate_temp_means <- function(range,
   climate_data$date_int <- climate_dates$date_int
   bio_data$date_int <- bio_dates$date_int
   
-  # Validate function
-  if (!is.function(fn)) {
-    stop("fn must be a function")
+  # Calculate maximum possible range based on climate data
+  max_climate_days <- max(climate_data$date_int)
+  min_climate_days <- min(climate_data$date_int)
+  max_possible_range <- max_climate_days - min_climate_days
+  
+  # Check if any requested range exceeds the available data
+  max_requested_range <- max(range)
+  if (max_requested_range > max_possible_range) {
+    stop(sprintf(
+      "Requested range (%d days) exceeds available climate data range (%d days).\nMaximum possible range is 0 to %d.",
+      max_requested_range,
+      max_possible_range,
+      max_possible_range
+    ))
   }
   
   # Generate all valid range combinations
