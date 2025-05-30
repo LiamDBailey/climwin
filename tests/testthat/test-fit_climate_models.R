@@ -9,11 +9,14 @@ test_that("fit_climate_models works with valid input", {
   
   bio_data <- data.frame(
     Date = c("01/01/1979", "01/01/1979", "01/01/1979"),
-    Mass = c(100, 110, 120)
+    Mass = c(100, 110, 120),
+    climate = 0
   )
   
+  basemodel <- lm(Mass ~ climate, data = bio_data)
+  
   # Test function
-  result <- fit_climate_models(list(climate_means), bio_data)
+  result <- fit_climate_models(list(climate_means), bio_data, basemodel = basemodel)
   
   # Check structure
   expect_true(is.data.frame(result))
@@ -24,15 +27,15 @@ test_that("fit_climate_models works with valid input", {
 
 test_that("fit_climate_models handles invalid input", {
   # Test with non-data.frame input
-  expect_error(fit_climate_models("not a df", Mass))
-  expect_error(fit_climate_models(Mass, "not a df"))
+  expect_error(fit_climate_models("not a df", Mass, basemodel = lm(Mass ~ climate, data = data.frame(Mass = 1:3, climate = 1:3))))
+  expect_error(fit_climate_models(Mass, "not a df", basemodel = lm(Mass ~ climate, data = data.frame(Mass = 1:3, climate = 1:3))))
   
   # Test with missing columns
   invalid_climate <- data.frame(wrong_col = 1)
-  expect_error(fit_climate_models(list(invalid_climate), Mass))
+  expect_error(fit_climate_models(list(invalid_climate), Mass, basemodel = lm(Mass ~ climate, data = data.frame(Mass = 1:3, climate = 1:3))))
   
   invalid_bio <- data.frame(wrong_col = 1)
-  expect_error(fit_climate_models(list(Mass), invalid_bio))
+  expect_error(fit_climate_models(list(Mass), invalid_bio, basemodel = lm(Mass ~ climate, data = data.frame(Mass = 1:3, climate = 1:3))))
   
   # Test with invalid basemodel
   expect_error(fit_climate_models(list(Mass), Mass, basemodel = "not a model"))
@@ -44,6 +47,9 @@ test_that("fit_climate_models handles invalid input", {
   )
   basemodel <- lm(Mass ~ climate, data = data.frame(Mass = 1:3, climate = 1:3))
   expect_error(fit_climate_models(list(climate_means), bio_data, basemodel = basemodel))
+  
+  # Test with NULL basemodel
+  expect_error(fit_climate_models(list(climate_means), bio_data, basemodel = NULL))
 })
 
 test_that("fit_climate_models handles insufficient data", {
@@ -57,11 +63,13 @@ test_that("fit_climate_models handles insufficient data", {
   
   bio_data <- data.frame(
     Date = c("01/01/1979", "01/01/1979"),
-    Mass = c(100, 110)
+    Mass = c(100, 110),
+    climate = 0
   )
+  basemodel <- lm(Mass ~ climate, data = bio_data)
   
   # Test function
-  result <- fit_climate_models(list(climate_means), bio_data)
+  result <- fit_climate_models(list(climate_means), bio_data, basemodel = basemodel)
   
   # Should return empty data frame
   expect_equal(nrow(result), 0)
@@ -78,11 +86,14 @@ test_that("fit_climate_models handles custom column names", {
   
   bio_data <- data.frame(
     CustomDate = c("01/01/1979", "01/01/1979", "01/01/1979"),
-    CustomMass = c(100, 110, 120)
+    CustomMass = c(100, 110, 120),
+    climate = 0
   )
+  basemodel <- lm(CustomMass ~ climate, data = bio_data)
   
   # Test function with custom column names
   result <- fit_climate_models(list(climate_means), bio_data, 
+                             basemodel = basemodel,
                              mass_col = "CustomMass", 
                              date_col = "CustomDate")
   
@@ -103,11 +114,13 @@ test_that("fit_climate_models results are sorted by AIC", {
   
   bio_data <- data.frame(
     Date = c("01/01/1979", "01/01/1979", "01/01/1979"),
-    Mass = c(100, 110, 120)
+    Mass = c(100, 110, 120),
+    climate = 0
   )
+  basemodel <- lm(Mass ~ climate, data = bio_data)
   
   # Test function
-  result <- fit_climate_models(list(climate_means), bio_data)
+  result <- fit_climate_models(list(climate_means), bio_data, basemodel = basemodel)
   
   # Check if AIC values are sorted
   expect_true(all(diff(result$AIC) >= 0))

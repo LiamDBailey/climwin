@@ -2,13 +2,12 @@
 #'
 #' This function takes a list of data frames (output from splitting calculate_temp_means)
 #' and fits linear models between mass and climate data for each combination of days,
-#' returning AIC values and other statistics. The function can use a base model structure
+#' returning AIC values and other statistics. The function requires a base model structure
 #' that will be updated for each climate window.
 #'
 #' @param climate_means A LIST of data frames, each containing Bio_Date, Start_Date, End_Date, and Summary_Value columns
-#' @param bio_data A data frame containing biological data with a Date column. If basemodel is provided,
-#'        bio_data must also contain a 'climate' column (can be initialized with zeros).
-#' @param basemodel An lm model object that will be updated for each climate window (e.g., lm(Mass ~ climate, data = bio_data))
+#' @param bio_data A data frame containing biological data with a Date column. bio_data must also contain a 'climate' column (can be initialized with zeros).
+#' @param basemodel An lm model object that will be updated for each climate window (e.g., lm(Mass ~ climate, data = bio_data)). This argument is required and cannot be NULL.
 #' @param mass_col Character string specifying the name of the mass column in bio_data
 #' @param date_col Character string specifying the name of the date column in bio_data
 #'
@@ -21,32 +20,29 @@
 #'         - P_value: P-value for the slope
 #'
 #' @examples
-#' # Example usage with simple model:
+#' # Example usage:
 #' climate_means <- calculate_temp_means(0:2, bio_data = Mass)
-#' # Initialize climate column (required for basemodel)
 #' Mass$climate <- 0
 #' basemodel <- lm(Mass ~ climate, data = Mass)
 #' results <- fit_climate_models(climate_means, Mass, basemodel = basemodel)
 #'
-#' # Example with more complex model:
-#' Mass$climate <- 0  # Initialize climate column
-#' basemodel <- lm(Mass ~ climate + Age, data = Mass)
-#' results <- fit_climate_models(climate_means, Mass, basemodel = basemodel)
-#'
 #' @export
-fit_climate_models <- function(climate_means, bio_data, basemodel = NULL, mass_col = "Mass", date_col = "Date") {
+fit_climate_models <- function(climate_means, bio_data, basemodel, mass_col = "Mass", date_col = "Date") {
   # Input validation
   if (!is.list(climate_means) || !is.data.frame(bio_data)) {
     stop("climate_means must be a list and bio_data must be a data frame")
   }
   
-  if (!is.null(basemodel) && !inherits(basemodel, "lm")) {
+  if (missing(basemodel) || is.null(basemodel)) {
+    stop("'basemodel' is required and cannot be NULL.")
+  }
+  if (!inherits(basemodel, "lm")) {
     stop("basemodel must be an lm object")
   }
   
-  # Check for climate column if basemodel is provided
-  if (!is.null(basemodel) && !("climate" %in% names(bio_data))) {
-    stop("When using basemodel, bio_data must contain a 'climate' column. Initialize it with zeros before creating the basemodel.")
+  # Check for climate column
+  if (!("climate" %in% names(bio_data))) {
+    stop("bio_data must contain a 'climate' column. Initialize it with zeros before creating the basemodel.")
   }
   
   # Initialize results data frame
@@ -84,16 +80,10 @@ fit_climate_models <- function(climate_means, bio_data, basemodel = NULL, mass_c
       next
     }
     
-    # Fit model based on whether basemodel is provided
-    if (!is.null(basemodel)) {
-      # Update climate variable with Summary_Value
-      plot_data$climate <- plot_data$Summary_Value
-      # Use update with the new data
-      model <- try(update(basemodel, data = plot_data), silent = TRUE)
-    } else {
-      # Use default simple model if no basemodel provided
-      model <- try(lm(as.formula(paste(mass_col, "~ Summary_Value")), data = plot_data), silent = TRUE)
-    }
+    # Update climate variable with Summary_Value
+    plot_data$climate <- plot_data$Summary_Value
+    # Use update with the new data
+    model <- try(update(basemodel, data = plot_data), silent = TRUE)
     
     if (inherits(model, "try-error")) {
       next
