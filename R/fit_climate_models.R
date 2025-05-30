@@ -12,10 +12,9 @@
 #' @return A data frame containing:
 #'         - Start_Date: Start date of the climate window
 #'         - End_Date: End date of the climate window
+#'         - Start_Day: Start day as integer (number of days before Bio_Date)
+#'         - End_Day: End day as integer (number of days before Bio_Date)
 #'         - AIC: AIC value for the linear model
-#'         - R_squared: R-squared value for the model
-#'         - Slope: Slope of the relationship
-#'         - P_value: P-value for the slope
 #'
 #' @examples
 #' # Example usage:
@@ -51,24 +50,22 @@ fit_climate_models <- function(climate_means, basemodel, bio_data) {
   results <- data.frame(
     Start_Date = character(),
     End_Date = character(),
+    Start_Day = integer(),
+    End_Day = integer(),
     AIC = numeric(),
-    R_squared = numeric(),
-    Slope = numeric(),
-    P_value = numeric(),
     stringsAsFactors = FALSE
   )
   
   for (window_data in climate_means) {
     # Check required columns in each list element
-    required_cols <- c("Bio_Date", "Start_Date", "End_Date", "Summary_Value")
+    required_cols <- c("Bio_Date", "Start_Date", "End_Date", "Start_Day", "End_Day", "Summary_Value")
     if (!all(required_cols %in% names(window_data))) {
       results <- rbind(results, data.frame(
         Start_Date = NA_character_,
         End_Date = NA_character_,
+        Start_Day = NA_integer_,
+        End_Day = NA_integer_,
         AIC = NA_real_,
-        R_squared = NA_real_,
-        Slope = NA_real_,
-        P_value = NA_real_,
         stringsAsFactors = FALSE
       ))
       next
@@ -80,48 +77,21 @@ fit_climate_models <- function(climate_means, basemodel, bio_data) {
     # Try to fit the model and extract statistics
     fit_result <- tryCatch({
       model <- eval(basemodel)
-      model_summary <- summary(model)
-      coef_summary <- coef(model_summary)
-      # Get the climate coefficient (either Summary_Value, climate, or log(climate))
-      climate_coef <- if ("Summary_Value" %in% rownames(coef_summary)) {
-        "Summary_Value"
-      } else if ("climate" %in% rownames(coef_summary)) {
-        "climate"
-      } else if ("log(climate)" %in% rownames(coef_summary)) {
-        "log(climate)"
-      } else {
-        NA
-      }
-      # Extract slope and p-value
-      if (!is.na(climate_coef)) {
-        slope <- coef_summary[climate_coef, "Estimate"]
-        pval <- coef_summary[climate_coef, "Pr(>|t|)"]
-      } else {
-        slope <- NA
-        pval <- NA
-      }
       list(
-        AIC = AIC(model),
-        R_squared = model_summary$r.squared,
-        Slope = slope,
-        P_value = pval
+        AIC = AIC(model)
       )
     }, error = function(e) {
       list(
-        AIC = NA_real_,
-        R_squared = NA_real_,
-        Slope = NA_real_,
-        P_value = NA_real_
+        AIC = NA_real_
       )
     })
     
     results <- rbind(results, data.frame(
       Start_Date = as.character(window_data$Start_Date[1]),
       End_Date = as.character(window_data$End_Date[1]),
+      Start_Day = as.integer(window_data$Start_Day[1]),
+      End_Day = as.integer(window_data$End_Day[1]),
       AIC = fit_result$AIC,
-      R_squared = fit_result$R_squared,
-      Slope = fit_result$Slope,
-      P_value = fit_result$P_value,
       stringsAsFactors = FALSE
     ))
   }

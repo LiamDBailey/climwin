@@ -20,8 +20,8 @@ test_that("fit_climate_models works with valid input", {
   
   # Check structure
   expect_true(is.data.frame(result))
-  expect_equal(ncol(result), 6)
-  expect_equal(names(result), c("Start_Date", "End_Date", "AIC", "R_squared", "Slope", "P_value"))
+  expect_equal(ncol(result), 5)
+  expect_equal(names(result), c("Start_Date", "End_Date", "Start_Day", "End_Day", "AIC"))
   expect_equal(nrow(result), 1)
 })
 
@@ -33,7 +33,7 @@ test_that("fit_climate_models handles invalid input", {
   invalid_climate <- data.frame(wrong_col = 1)
   result <- fit_climate_models(list(invalid_climate), basemodel = lm(Mass ~ climate, data = data.frame(Mass = 1:3, climate = 1:3)), bio_data = data.frame(Mass = 1:3, climate = 1:3))
   expect_equal(nrow(result), 1)
-  expect_true(all(is.na(result[1, c("AIC", "R_squared", "Slope", "P_value")])) )
+  expect_true(all(is.na(result[1, c("AIC")])) )
   
   # Test with invalid basemodel
   expect_error(fit_climate_models(list(climate_means), basemodel = "not a model", bio_data = data.frame(Mass = 1:3, climate = 1:3)))
@@ -65,7 +65,7 @@ test_that("fit_climate_models handles insufficient data", {
   
   # Should return a row of NAs
   expect_equal(nrow(result), 1)
-  expect_true(all(is.na(result[1, c("AIC", "R_squared", "Slope", "P_value")])) )
+  expect_true(all(is.na(result[1, c("AIC")])) )
 })
 
 test_that("fit_climate_models results are sorted by AIC", {
@@ -115,11 +115,9 @@ test_that("fit_climate_models works with different basemodel structures", {
   for (basemodel in models) {
     result <- fit_climate_models(list(climate_means), basemodel = basemodel, bio_data = bio_data)
     expect_true(is.data.frame(result))
-    expect_equal(ncol(result), 6)
+    expect_equal(ncol(result), 5)
+    expect_equal(names(result), c("Start_Date", "End_Date", "Start_Day", "End_Day", "AIC"))
     expect_equal(nrow(result), 1)
-    # Allow NA p-values if model cannot estimate
-    expect_true(is.numeric(result$Slope))
-    expect_true(is.numeric(result$P_value) || is.na(result$P_value))
   }
 })
 
@@ -145,9 +143,7 @@ test_that("fit_climate_models works with log(climate)", {
   
   # Check structure
   expect_true(is.data.frame(result))
-  expect_equal(ncol(result), 6)
-  expect_equal(names(result), c("Start_Date", "End_Date", "AIC", "R_squared", "Slope", "P_value"))
+  expect_equal(ncol(result), 5)
+  expect_equal(names(result), c("Start_Date", "End_Date", "Start_Day", "End_Day", "AIC"))
   expect_equal(nrow(result), 1)
-  expect_true(!is.na(result$Slope))
-  expect_true(!is.na(result$P_value))
 }) 

@@ -19,11 +19,14 @@ test_that("calculate_temp_means returns correct format", {
   # Check structure of first dataframe
   first_df <- result[["0_0"]]
   expect_s3_class(first_df, "data.frame")
-  expect_named(first_df, c("Bio_Date", "Start_Date", "End_Date", "Summary_Value"))
+  expect_named(first_df, c("Bio_Date", "Start_Date", "End_Date", "Start_Day", "End_Day", "Summary_Value"))
   expect_type(first_df$Bio_Date, "character")
   expect_type(first_df$Start_Date, "character")
   expect_type(first_df$End_Date, "character")
+  expect_type(first_df$Start_Day, "integer")
+  expect_type(first_df$End_Day, "integer")
   expect_type(first_df$Summary_Value, "double")
+  expect_equal(ncol(result[["0_0"]]), 6)  # Bio_Date, Start_Date, End_Date, Start_Day, End_Day, Summary_Value
 })
 
 test_that("calculate_temp_means calculates correct summary values with mean", {
@@ -206,7 +209,8 @@ test_that("calculate_temp_means handles empty data", {
   # Test with empty data
   result <- calculate_temp_means(0:1, climate_data = climate_data, bio_data = bio_data)
   expect_equal(nrow(result[[1]]), 0)
-  expect_named(result[[1]], c("Bio_Date", "Start_Date", "End_Date", "Summary_Value"))
+  expect_named(result[[1]], c("Bio_Date", "Start_Date", "End_Date", "Start_Day", "End_Day", "Summary_Value"))
+  expect_equal(ncol(result[[1]]), 6)  # Bio_Date, Start_Date, End_Date, Start_Day, End_Day, Summary_Value
 })
 
 test_that("calculate_temp_means works with basic input", {
@@ -229,7 +233,7 @@ test_that("calculate_temp_means works with basic input", {
   # Check one of the dataframes
   expect_s3_class(result[["0_0"]], "data.frame")
   expect_equal(nrow(result[["0_0"]]), 2)  # One row per bio date
-  expect_equal(ncol(result[["0_0"]]), 4)  # Bio_Date, Start_Date, End_Date, Summary_Value
+  expect_equal(ncol(result[["0_0"]]), 6)  # Bio_Date, Start_Date, End_Date, Start_Day, End_Day, Summary_Value
   
   # Check values for 0-0 range
   expect_equal(result[["0_0"]]$Bio_Date, c("02/01/1979", "03/01/1979"))
@@ -294,7 +298,7 @@ test_that("calculate_temp_means handles empty data frames", {
   expect_type(result, "list")
   expect_length(result, 1)  # Should have one empty dataframe
   expect_equal(nrow(result[[1]]), 0)
-  expect_equal(ncol(result[[1]]), 4)
+  expect_equal(ncol(result[[1]]), 6)  # Bio_Date, Start_Date, End_Date, Start_Day, End_Day, Summary_Value
 })
 
 test_that("calculate_temp_means handles missing columns", {

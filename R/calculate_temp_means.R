@@ -25,6 +25,8 @@
 #'   \item{Bio_Date}{The date from bio_data (character string in DD/MM/YYYY format)}
 #'   \item{Start_Date}{The beginning date of each range (character string in DD/MM/YYYY format)}
 #'   \item{End_Date}{The end date of each range (character string in DD/MM/YYYY format)}
+#'   \item{Start_Day}{The start day as an integer (number of days before Bio_Date)}
+#'   \item{End_Day}{The end day as an integer (number of days before Bio_Date)}
 #'   \item{Summary_Value}{The summarized climate variable for the specified range}
 #'
 #' @examples
@@ -86,6 +88,8 @@ calculate_temp_means <- function(range,
       Bio_Date = character(0),
       Start_Date = character(0),
       End_Date = character(0),
+      Start_Day = integer(0),
+      End_Day = integer(0),
       Summary_Value = numeric(0),
       stringsAsFactors = FALSE
     )))
@@ -155,6 +159,8 @@ calculate_temp_means <- function(range,
       Bio_Date = bio_dates,
       Start_Date = start_dates,
       End_Date = end_dates,
+      Start_Day = rep(start_days, length(bio_dates)),
+      End_Day = rep(end_days, length(bio_dates)),
       Summary_Value = summary_values,
       stringsAsFactors = FALSE
     )
