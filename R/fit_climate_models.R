@@ -58,18 +58,6 @@ fit_climate_models <- function(climate_means, basemodel, bio_data, parallel = FA
   
   # Define a function to process each window
   process_window <- function(window_data) {
-    # Check required columns in each list element
-    required_cols <- c("Bio_Date", "Start_Date", "End_Date", "Start_Day", "End_Day", "Summary_Value")
-    if (!all(required_cols %in% names(window_data))) {
-      return(data.frame(
-        Start_Date = NA_character_,
-        End_Date = NA_character_,
-        Start_Day = NA_integer_,
-        End_Day = NA_integer_,
-        AIC = NA_real_,
-        stringsAsFactors = FALSE
-      ))
-    }
     
     # Update climate variable with Summary_Value
     bio_data$climate <- window_data$Summary_Value
