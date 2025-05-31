@@ -19,10 +19,9 @@
 #'
 #' @examples
 #' # Example usage:
+#' Mass <- read.csv("Mass.csv")
 #' climate_means <- calculate_temp_means(0:2, bio_data = Mass)
-#' Mass$climate <- 0
-#' basemodel <- lm(Mass ~ climate, data = Mass)
-#' results <- fit_climate_models(climate_means, basemodel = basemodel, bio_data = Mass)
+#' results <- fit_climate_models(climate_means, basemodel = lm(Mass ~ climate, data = bio_data), bio_data = Mass)
 #'
 #' @importFrom furrr future_map
 #' @importFrom future plan
