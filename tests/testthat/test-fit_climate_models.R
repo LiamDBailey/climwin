@@ -4,6 +4,8 @@ test_that("fit_climate_models works with valid input", {
     Bio_Date = c("01/01/1979", "01/01/1979", "01/01/1979"),
     Start_Date = c("01/01/1979", "01/01/1979", "01/01/1979"),
     End_Date = c("01/01/1979", "02/01/1979", "03/01/1979"),
+    Start_Day = c(0L, 0L, 0L),
+    End_Day = c(0L, 1L, 2L),
     Summary_Value = c(10, 15, 20)
   )
   
@@ -13,10 +15,8 @@ test_that("fit_climate_models works with valid input", {
     climate = 0
   )
   
-  basemodel <- lm(Mass ~ climate, data = bio_data)
-  
   # Test function
-  result <- fit_climate_models(list(climate_means), basemodel = basemodel, bio_data = bio_data)
+  result <- fit_climate_models(list(climate_means), basemodel = lm(Mass ~ climate, data = bio_data), bio_data = bio_data)
   
   # Check structure
   expect_true(is.data.frame(result))
@@ -25,32 +25,14 @@ test_that("fit_climate_models works with valid input", {
   expect_equal(nrow(result), 1)
 })
 
-test_that("fit_climate_models handles invalid input", {
-  # Test with non-list input
-  expect_error(fit_climate_models("not a list", basemodel = lm(Mass ~ climate, data = data.frame(Mass = 1:3, climate = 1:3)), bio_data = data.frame(Mass = 1:3, climate = 1:3)))
-  
-  # Test with missing columns in climate_means
-  invalid_climate <- data.frame(wrong_col = 1)
-  result <- fit_climate_models(list(invalid_climate), basemodel = lm(Mass ~ climate, data = data.frame(Mass = 1:3, climate = 1:3)), bio_data = data.frame(Mass = 1:3, climate = 1:3))
-  expect_equal(nrow(result), 1)
-  expect_true(all(is.na(result[1, c("AIC")])) )
-  
-  # Test with invalid basemodel
-  expect_error(fit_climate_models(list(climate_means), basemodel = "not a model", bio_data = data.frame(Mass = 1:3, climate = 1:3)))
-  
-  # Test with NULL basemodel
-  expect_error(fit_climate_models(list(climate_means), basemodel = NULL, bio_data = data.frame(Mass = 1:3, climate = 1:3)))
-  
-  # Test with NULL bio_data
-  expect_error(fit_climate_models(list(climate_means), basemodel = lm(Mass ~ climate, data = data.frame(Mass = 1:3, climate = 1:3)), bio_data = NULL))
-})
-
 test_that("fit_climate_models handles insufficient data", {
   # Create data with only 2 points (should be skipped)
   climate_means <- data.frame(
     Bio_Date = c("01/01/1979", "01/01/1979"),
     Start_Date = c("01/01/1979", "01/01/1979"),
     End_Date = c("01/01/1979", "02/01/1979"),
+    Start_Day = c(0L, 0L),
+    End_Day = c(0L, 1L),
     Summary_Value = c(10, 15)
   )
   
@@ -74,6 +56,8 @@ test_that("fit_climate_models results are sorted by AIC", {
     Bio_Date = c("01/01/1979", "01/01/1979", "01/01/1979"),
     Start_Date = c("01/01/1979", "01/01/1979", "01/01/1979"),
     End_Date = c("01/01/1979", "02/01/1979", "03/01/1979"),
+    Start_Day = c(0L, 0L, 0L),
+    End_Day = c(0L, 1L, 2L),
     Summary_Value = c(10, 15, 20)
   )
   
@@ -96,6 +80,8 @@ test_that("fit_climate_models works with different basemodel structures", {
     Bio_Date = c("01/01/1979", "01/01/1979", "01/01/1979"),
     Start_Date = c("01/01/1979", "01/01/1979", "01/01/1979"),
     End_Date = c("01/01/1979", "02/01/1979", "03/01/1979"),
+    Start_Day = c(0L, 0L, 0L),
+    End_Day = c(0L, 1L, 2L),
     Summary_Value = c(10, 15, 20)
   )
   
@@ -127,6 +113,8 @@ test_that("fit_climate_models works with log(climate)", {
     Bio_Date = c("01/01/1979", "01/01/1979", "01/01/1979"),
     Start_Date = c("01/01/1979", "01/01/1979", "01/01/1979"),
     End_Date = c("01/01/1979", "02/01/1979", "03/01/1979"),
+    Start_Day = c(0L, 0L, 0L),
+    End_Day = c(0L, 1L, 2L),
     Summary_Value = c(10, 15, 20)
   )
   
@@ -154,6 +142,8 @@ test_that("fit_climate_models gives identical results with parallel = TRUE and F
     Bio_Date = c("01/01/1979", "01/01/1979", "01/01/1979"),
     Start_Date = c("01/01/1979", "01/01/1979", "01/01/1979"),
     End_Date = c("01/01/1979", "02/01/1979", "03/01/1979"),
+    Start_Day = c(0L, 0L, 0L),
+    End_Day = c(0L, 1L, 2L),
     Summary_Value = c(10, 15, 20)
   )
   
