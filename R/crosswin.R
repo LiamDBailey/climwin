@@ -412,8 +412,9 @@ crosswin <- function(xvar, xvar2, cdate, bdate, range,
         }
       }
     }  
-    #Fill progress bar
-    setTxtProgressBar(pb, modno - 1)
+    if (interactive()){
+      setTxtProgressBar(pb, modno - 1) 
+    }
   }
   modlist$Furthest    <- range[1]
   modlist$Closest     <- range[2]

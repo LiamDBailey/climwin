@@ -43,7 +43,7 @@ if(max(datasetrand$Repeat) < 100){
       }
       
       with(datasetrand, {ggplot(datasetrand, aes(x = deltaAICc, fill = Randomised))+
-                        geom_histogram(aes(y = 2 * ..density..), colour = "black", binwidth = 2, alpha = 0.5, size = 1)+
+                        geom_histogram(aes(y = after_stat(2*density)), colour = "black", binwidth = 2, alpha = 0.5, size = 1)+
                         theme_climwin()+
                         geom_vline(aes(xintercept = dataset$deltaAICc[1]), linetype = "dashed", size = 1.5)+
                         ggtitle(bquote(atop(Histogram~of~Delta*AICc,P[Delta*AICc]~.(P2)~~P[C]~.(P))))+
@@ -59,7 +59,7 @@ if(max(datasetrand$Repeat) < 100){
         
         with(datasetrand, {
           ggplot(datasetrand, aes(x = deltaAICc)) +
-            geom_histogram(aes(y = 2 * ..density..), colour = "black", fill = "red", binwidth = 2, alpha = 0.5, size = 1) +
+            geom_histogram(aes(y = after_stat(2*density)), colour = "black", fill = "red", binwidth = 2, alpha = 0.5, size = 1) +
             theme_climwin() +
             geom_vline(aes(xintercept = dataset$deltaAICc[1]), linetype = "dashed", size = 1.5)+
             ggtitle(bquote(atop(Histogram~of~Delta*AICc,P[Delta*AICc]~.(P2)))) +

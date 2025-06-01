@@ -1,3 +1,20 @@
+# climwin 1.2.31
+
+Minor updates to ensure compatibility with R v4.5.0
+
+## Major changes
+
+None
+
+## Minor changes
+
+- Progress bars will only print in interactive mode.
+- Update documents to use stable DOI URLs in references.
+
+## Technical changes
+
+- Remove use of .. notation in `ggplot2` code. `climwin` now has dependency on `ggplot2` v3.4.0 or greater.
+
 # climwin 1.2.3
 
 climwin v1.2.3 includes mostly minor internal changes to make `climwin` compatible with upcoming R v4.0.0
@@ -75,7 +92,7 @@ Older versions of `climwin` allowed the use of mixed effects models with the pac
 
 ### K-fold cross validation included with `weightwin`
 
-Along with the use of `randwin`, k-fold cross validation is an important tool for overcoming [potential issues of over-fitting](http://onlinelibrary.wiley.com/doi/10.1111/2041-210X.12590/full) in `climwin`. K-fold cross validation was previously only functional in `slidingwin`, but has now been included with `weightwin`, using the argument `k`.
+Along with the use of `randwin`, k-fold cross validation is an important tool for overcoming [potential issues of over-fitting](https://doi.org/10.1111/2041-210X.12590) in `climwin`. K-fold cross validation was previously only functional in `slidingwin`, but has now been included with `weightwin`, using the argument `k`.
 
 ### Using climate thresholds on weekly/monthly data
 
@@ -147,16 +164,16 @@ The original design of `climwin` required users to provide their climate data at
 
 ## Major changes
 
-`climwin` version 1.0.0 includes a number of major changes to coincide with the release of our corresponding paper [[1](http://onlinelibrary.wiley.com/doi/10.1111/2041-210X.12590/full)]. We have tried to make most of our changes backwards compatible, but any major issues should be reported to the package maintainer (liam.bailey@anu.edu.au).
+`climwin` version 1.0.0 includes a number of major changes to coincide with the release of our corresponding paper [[1](https://doi.org/10.1111/2041-210X.12590)]. We have tried to make most of our changes backwards compatible, but any major issues should be reported to the package maintainer (liam.bailey@anu.edu.au).
 
 ### New function *slidingwin*:
-`climwin` aims to distinguish between two separate methods for testing climate windows. The commonly used sliding window approach [[1](http://onlinelibrary.wiley.com/doi/10.1111/2041-210X.12590/full)] and less common weighted window approach [[2](http://www.journals.uchicago.edu/doi/abs/10.1086/659101)]. To ensure the distinction between these two methods is clear, the function *climatewin* has been made redundant and been replaced with the function *slidingwin*. Parameters used in *slidingwin* and *climatewin* are identical. Users can now conduct a sliding window analysis using *slidingwin* and a weighted window analysis using *weightwin*. 
+`climwin` aims to distinguish between two separate methods for testing climate windows. The commonly used sliding window approach [[1](https://doi.org/10.1111/2041-210X.12590)] and less common weighted window approach [[2](https://doi.org/10.1086/659101)]. To ensure the distinction between these two methods is clear, the function *climatewin* has been made redundant and been replaced with the function *slidingwin*. Parameters used in *slidingwin* and *climatewin* are identical. Users can now conduct a sliding window analysis using *slidingwin* and a weighted window analysis using *weightwin*. 
 
 ### *randwin* for weighted window analysis:
 The function *randwin* can now also be used to conduct randomisations with a weighted window approach (i.e. using the function *weightwin*). Users must now define whether randomisations are to be conducted using a sliding window ("sliding") or weighted window ("weighted") approach with the parameter 'window'. Note that all parameters from *weightwin* will be required to run *randwin* using a weighted window approach (e.g. 'par', 'weightfunc').
 
 ### Cohort parameter:
-When a group of biological measurements covers two years (e.g. Southern hemisphere species which breed between November - February [[2](http://www.journals.uchicago.edu/doi/abs/10.1086/659101)]) use of 'absolute' climate windows will cause these measurements to be split across different calendar years. To overcome this issue, we include a 'cohort' parameter to our functions. 
+When a group of biological measurements covers two years (e.g. Southern hemisphere species which breed between November - February [[2](https://doi.org/10.1086/659101)]) use of 'absolute' climate windows will cause these measurements to be split across different calendar years. To overcome this issue, we include a 'cohort' parameter to our functions. 
 
 The cohort variable will determine which biological measurements should be grouped together (e.g. measurements from the same breeding season), and ensure that these measurements share the same reference day. The cohort variable should come from the same dataset as the 'bdate' parameter (i.e. variables should have equal lengths).
 
@@ -176,15 +193,15 @@ See our advanced vignette for more details:
 `vignette("advanced_climwin", package = "climwin")`
 
 ### Cox proportional hazard models:
-Proportional hazard models may often be useful for climate window analyses on phenological data. We have included the ability for users to fit proportional hazard models for the parameter 'baseline' using the function *coxph*.  For more detail on understanding the use of proportional hazard models for phenology analysis see [[2](http://www.journals.uchicago.edu/doi/abs/10.1086/659101)].
+Proportional hazard models may often be useful for climate window analyses on phenological data. We have included the ability for users to fit proportional hazard models for the parameter 'baseline' using the function *coxph*.  For more detail on understanding the use of proportional hazard models for phenology analysis see [[2](https://doi.org/10.1086/659101)].
 
 ### Function *pvalue*:
 In previous versions of `climwin` climate windows have been compared visually using a number of methods (e.g. deltaAICc distribution, model weights). In this newest version, we have included two metrics that allow for a standard method of distinguishing real periods of climate sensitivity in biological data.
 
-These two metrics, $P_{C}$ and $P_{\Delta AICc}$, determine the likelihood that a given climate window would occur by chance, given the results of a *randwin* analysis on the same data. They can be calculated using the new function *pvalue*. For more information on the effectiveness of the new metrics, please see [[1](http://onlinelibrary.wiley.com/doi/10.1111/2041-210X.12590/full)].
+These two metrics, $P_{C}$ and $P_{\Delta AICc}$, determine the likelihood that a given climate window would occur by chance, given the results of a *randwin* analysis on the same data. They can be calculated using the new function *pvalue*. For more information on the effectiveness of the new metrics, please see [[1](https://doi.org/10.1111/2041-210X.12590)].
 
 ### 'exclude' parameter:
-Although `climwin` helps us move away from the selection of arbitrary climate windows the method is inherently exploratory, raising concerns about overfitting. Climate data from short duration time windows are particularly likely to show spurious relationships in climate window analysis [[1](http://onlinelibrary.wiley.com/doi/10.1111/2041-210X.12590/full)]. The inclusion of the function *pvalue* (above) reduces the chance that these short duration windows will be mistaken as 'real' climate signals; however, these spurious windows can still cause problems when conducting multi-model inferencing as the short duration windows may be distinctly different from other top models. As a solution, we include the parameter 'exclude' in the functions *slidingwin* and *randwin*. This allows users to exclude windows of a specific duration and lag to prevent these small windows from interfering with analyses.
+Although `climwin` helps us move away from the selection of arbitrary climate windows the method is inherently exploratory, raising concerns about overfitting. Climate data from short duration time windows are particularly likely to show spurious relationships in climate window analysis [[1](https://doi.org/10.1111/2041-210X.12590)]. The inclusion of the function *pvalue* (above) reduces the chance that these short duration windows will be mistaken as 'real' climate signals; however, these spurious windows can still cause problems when conducting multi-model inferencing as the short duration windows may be distinctly different from other top models. As a solution, we include the parameter 'exclude' in the functions *slidingwin* and *randwin*. This allows users to exclude windows of a specific duration and lag to prevent these small windows from interfering with analyses.
 
 ## Minor changes
 

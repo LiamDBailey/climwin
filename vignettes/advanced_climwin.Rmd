@@ -211,7 +211,7 @@ head(MassWin[[1]]$BestModelData)
 
 ## Biological measurements grouped across two years
 
-Many long-term datasets that will be suitable for `climwin` are likely to be measured during Northern hemisphere spring/summer (e.g. breeding data). These biological records are measured during the middle of the year, meaning that biological records can be easily grouped by year. Yet in other circumstances biological measurements will fall across two years, particularly in Southern hemisphere species where spring/summer falls across the new year period [e.g., [1](http://www.journals.uchicago.edu/doi/abs/10.1086/659101)].
+Many long-term datasets that will be suitable for `climwin` are likely to be measured during Northern hemisphere spring/summer (e.g. breeding data). These biological records are measured during the middle of the year, meaning that biological records can be easily grouped by year. Yet in other circumstances biological measurements will fall across two years, particularly in Southern hemisphere species where spring/summer falls across the new year period [e.g., [1](https://doi.org/10.1086/659101)].
 
 This can cause issues when fitting 'absolute' climate windows. As described in the introductory vignette, 'absolute' windows will use a set reference day for all biological records. Where biological measurements cross two years however, measurements from the same breeding season can be split up. In the table below, where a reference day of November 1st is used, all those measurements taken at the start of the breeding season are given a date of November 1st 2014 while all values following the new year are set at November 1st 2015. This is obviously unrealistic, as biological measurements in January 2015 cannot be impacted by climatic conditions that will occur 11 months in the future!
 
@@ -256,7 +256,7 @@ SizeWin <- slidingwin(xvar = list(Temp = SizeClimate$Temperature),
 
 ## Spatial replication
 
-To detect climate signals using `climwin` can often require large amounts of data, particularly if the relationship between climate and biological response is weak [[2](http://onlinelibrary.wiley.com/doi/10.1111/2041-210X.12590/full)]. To obtain the required data through temporal replication requires the collection of data over multiple years, often decades; however, spatial replication may also allow users to expand their sample size over a shorter period by collecting data from multiple sites/populations.
+To detect climate signals using `climwin` can often require large amounts of data, particularly if the relationship between climate and biological response is weak [[2](https://doi.org/10.1111/2041-210X.12590)]. To obtain the required data through temporal replication requires the collection of data over multiple years, often decades; however, spatial replication may also allow users to expand their sample size over a shorter period by collecting data from multiple sites/populations.
 
 Using spatial replication assumes that the relationship between the biological response and climatic predictor is consistent across the different measured populations. Where this assumption is valid, spatial replication can help expand the amount of data available for `climwin` analyses.
 

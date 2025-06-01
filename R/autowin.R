@@ -617,7 +617,9 @@ Do you want to apply this threshold before calculating weekly/monthly means (i.e
       }
     }  
     #Fill progress bar
-    setTxtProgressBar(pb, modno - 1)
+    if (interactive()){
+      setTxtProgressBar(pb, modno - 1) 
+    }
   }
   
   modlist$Furthest        <- range[1]
