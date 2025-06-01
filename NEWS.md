@@ -1,3 +1,20 @@
+# climwin 1.2.31
+
+Minor updates to ensure compatibility with R v4.5.0
+
+## Major changes
+
+None
+
+## Minor changes
+
+- Progress bars will only print in interactive mode.
+- Update documents to use stable DOI URLs in references.
+
+## Technical changes
+
+- Remove use of .. notation in `ggplot2` code. `climwin` now has dependency on `ggplot2` v3.4.0 or greater.
+
 # climwin 1.2.3
 
 climwin v1.2.3 includes mostly minor internal changes to make `climwin` compatible with upcoming R v4.0.0
