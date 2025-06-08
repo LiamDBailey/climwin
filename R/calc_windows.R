@@ -179,8 +179,8 @@ calc_windows <- function(range,
     # Calculate summary for each bio date
     for (j in seq_along(bio_dates_int)) {
       # Filter data for the date range
-      date_range_data <- climate_data[climate_data$date_int >= end_dates_int[j] & 
-                                        climate_data$date_int <= start_dates_int[j], ]
+      date_range_data <- subset_data(climate_data, end_dates_int[j], start_dates_int[j])
+        # climate_data[climate_data$date_int >= end_dates_int[j] & climate_data$date_int <= start_dates_int[j], ]
       
       # Calculate summary statistic for this range
       summary_values[j] <- fn(date_range_data[[xvar]])
