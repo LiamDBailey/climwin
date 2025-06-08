@@ -37,6 +37,8 @@
 #' @importFrom furrr future_map
 #' @importFrom future plan
 #' @importFrom future multisession
+#' @importFrom progress progress_bar
+#' @importFrom progressr progressor
 #' @export
 run_slidingwin <- function(range,
                            climate_data,
@@ -48,7 +50,8 @@ run_slidingwin <- function(range,
                            fn = mean,
                            type = "relative",
                            refday = NULL,
-                           parallel = FALSE) {
+                           parallel = FALSE,
+                           progress = TRUE) {
   
   ### ARGUMENT CHECKS ####
   # Ensure future and furrr are loaded if parallel is TRUE
@@ -200,11 +203,30 @@ run_slidingwin <- function(range,
   }
   
   # Process each range combination
+  total_combinations <- nrow(range_combinations)
+  
   if (parallel){
+    p <- progressr::progressor(steps = total_combinations)
     results <- furrr::future_map(seq_len(nrow(range_combinations)),
-                                 process_window, .options = furrr::furrr_options(seed = TRUE))
+                                 function(i) {
+                                   result <- process_window(i)
+                                   p()
+                                   return(result)
+                                 }, .options = furrr::furrr_options(seed = TRUE))
   } else {
-    results <- purrr::map(seq_len(nrow(range_combinations)), process_window)
+    pb <- progress::progress_bar$new(
+      format = "Processing windows [:bar] :percent :elapsed",
+      total = total_combinations,
+      clear = FALSE,
+      width = 60
+    )
+    results <- purrr::map(seq_len(nrow(range_combinations)), function(i) {
+      result <- process_window(i)
+      if (interactive() & progress){
+        pb$tick() 
+      }
+      return(result)
+    })
   }
   
   # Combine results

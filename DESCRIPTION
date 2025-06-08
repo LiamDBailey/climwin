@@ -12,4 +12,7 @@ RoxygenNote: 7.3.2
 Encoding: UTF-8
 Imports:
     future,
-    furrr
+    furrr,
+    purrr,
+    dplyr,
+    progress
