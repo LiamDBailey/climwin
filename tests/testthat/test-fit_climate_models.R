@@ -1,7 +1,7 @@
 test_that("fit_climate_models works with valid input", {
   # Create sample data
   climate_means <- data.frame(
-    Bio_Date = c("01/01/1979", "01/01/1979", "01/01/1979"),
+    Date = c("01/01/1979", "01/01/1979", "01/01/1979"),
     Start_Date = c("01/01/1979", "01/01/1979", "01/01/1979"),
     End_Date = c("01/01/1979", "02/01/1979", "03/01/1979"),
     Start_Day = c(0L, 0L, 0L),
@@ -28,7 +28,7 @@ test_that("fit_climate_models works with valid input", {
 test_that("fit_climate_models handles insufficient data", {
   # Create data with only 2 points (should be skipped)
   climate_means <- data.frame(
-    Bio_Date = c("01/01/1979", "01/01/1979"),
+    Date = c("01/01/1979", "01/01/1979"),
     Start_Date = c("01/01/1979", "01/01/1979"),
     End_Date = c("01/01/1979", "02/01/1979"),
     Start_Day = c(0L, 0L),
@@ -53,7 +53,7 @@ test_that("fit_climate_models handles insufficient data", {
 test_that("fit_climate_models results are sorted by AIC", {
   # Create sample data
   climate_means <- data.frame(
-    Bio_Date = c("01/01/1979", "01/01/1979", "01/01/1979"),
+    Date = c("01/01/1979", "01/01/1979", "01/01/1979"),
     Start_Date = c("01/01/1979", "01/01/1979", "01/01/1979"),
     End_Date = c("01/01/1979", "02/01/1979", "03/01/1979"),
     Start_Day = c(0L, 0L, 0L),
@@ -77,7 +77,7 @@ test_that("fit_climate_models results are sorted by AIC", {
 test_that("fit_climate_models works with different basemodel structures", {
   # Create sample data
   climate_means <- data.frame(
-    Bio_Date = c("01/01/1979", "01/01/1979", "01/01/1979"),
+    Date = c("01/01/1979", "01/01/1979", "01/01/1979"),
     Start_Date = c("01/01/1979", "01/01/1979", "01/01/1979"),
     End_Date = c("01/01/1979", "02/01/1979", "03/01/1979"),
     Start_Day = c(0L, 0L, 0L),
@@ -110,7 +110,7 @@ test_that("fit_climate_models works with different basemodel structures", {
 test_that("fit_climate_models works with log(climate)", {
   # Create sample data
   climate_means <- data.frame(
-    Bio_Date = c("01/01/1979", "01/01/1979", "01/01/1979"),
+    Date = c("01/01/1979", "01/01/1979", "01/01/1979"),
     Start_Date = c("01/01/1979", "01/01/1979", "01/01/1979"),
     End_Date = c("01/01/1979", "02/01/1979", "03/01/1979"),
     Start_Day = c(0L, 0L, 0L),
@@ -139,7 +139,7 @@ test_that("fit_climate_models works with log(climate)", {
 test_that("fit_climate_models gives identical results with parallel = TRUE and FALSE", {
   # Create sample data
   climate_means <- data.frame(
-    Bio_Date = c("01/01/1979", "01/01/1979", "01/01/1979"),
+    Date = c("01/01/1979", "01/01/1979", "01/01/1979"),
     Start_Date = c("01/01/1979", "01/01/1979", "01/01/1979"),
     End_Date = c("01/01/1979", "02/01/1979", "03/01/1979"),
     Start_Day = c(0L, 0L, 0L),

@@ -19,7 +19,7 @@ convert_dates_to_int <- function(dates, min_date = NULL) {
   
   # Handle empty input
   if (length(dates) == 0) {
-    return(integer())
+    stop("dates missing")
   }
   
   # Convert input dates to Date objects

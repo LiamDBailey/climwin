@@ -190,13 +190,14 @@ test_that("calculate_temp_means handles missing climate data", {
   
   expect_error(
     calculate_temp_means(0:1, bio_data = bio_data),
-    "Provide 'climate_data'."
+    "climate_data must contain at least 1 row"
   )
   
   expect_error(
     calculate_temp_means(0:1, climate_data = climate_data, bio_data = bio_data),
-    "'climate_data' is empty."
+    "climate_data must contain at least 1 row"
   )
+  
 })
 
 test_that("calculate_temp_means handles missing bio data", {
@@ -209,12 +210,12 @@ test_that("calculate_temp_means handles missing bio data", {
   
   expect_error(
     calculate_temp_means(0:1, climate_data = climate_data),
-    "Provide 'bio_data'."
+    "bio_data must contain at least 1 row"
   )
   
   expect_error(
     calculate_temp_means(0:1, climate_data = climate_data, bio_data = bio_data),
-    "'bio_data' is empty."
+    "bio_data must contain at least 1 row"
   )
 })
 
@@ -342,3 +343,4 @@ test_that("calculate_temp_means validates range against available data", {
   # Test with range exactly at the limit
   expect_silent(calculate_temp_means(0:2, climate_data = climate_data, bio_data = bio_data))
 }) 
+

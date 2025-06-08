@@ -69,7 +69,7 @@
 #'
 #' @export
 calculate_temp_means <- function(range, 
-                                 climate_data = NULL,
+                                 climate_data,
                                  bio_data,
                                  cdate = "Date",
                                  bdate = "Date",
@@ -100,7 +100,7 @@ calculate_temp_means <- function(range,
   }
   
   # Read the climate data if not provided
-  if (is.null(climate_data) || nrow(climate_data) == 0) {
+  if (missing(climate_data) || nrow(climate_data) == 0) {
     stop("climate_data must contain at least 1 row")
   }
   
@@ -109,7 +109,7 @@ calculate_temp_means <- function(range,
     stop(sprintf("climate_data must contain columns '%s' and '%s'", cdate, xvar))
   }
   
-  if (is.null(bio_data) || nrow(bio_data) == 0) {
+  if (missing(bio_data) || nrow(bio_data) == 0) {
     stop("bio_data must contain at least 1 row")
   }
   
@@ -184,14 +184,15 @@ calculate_temp_means <- function(range,
       summary_values[j] <- fn(date_range_data[[xvar]])
     }
     
-    # Convert integer dates back to character format
-    bio_dates <- as.Date(bio_dates_int)
-    start_dates <- as.Date(start_dates_int)
-    end_dates <- as.Date(end_dates_int)
+    # Convert integer dates to character format
+    # Character format is more robust than Date
+    bio_dates <- format(as.Date(bio_dates_int), "%d/%m/%Y")
+    start_dates <- format(as.Date(start_dates_int), "%d/%m/%Y")
+    end_dates <- format(as.Date(end_dates_int), "%d/%m/%Y")
     
     # Create results dataframe for this combination
     results_list[[i]] <- data.frame(
-      Bio_Date = bio_dates,
+      Date = bio_dates,
       Start_Date = start_dates,
       End_Date = end_dates,
       Start_Day = rep(start_days, length(bio_dates)),
