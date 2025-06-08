@@ -16,19 +16,10 @@
 #' 
 #' @export
 convert_dates_to_int <- function(dates, min_date = NULL) {
+  
   # Handle empty input
   if (length(dates) == 0) {
-    if (is.null(min_date)) {
-      stop("Cannot convert empty dates without a min_date")
-    }
-    min_date <- as.Date(min_date, format = "%d/%m/%Y")
-    if (is.na(min_date)) {
-      stop("min_date must be in format 'DD/MM/YYYY'")
-    }
-    return(list(
-      date_int = integer(0),
-      min_date = min_date
-    ))
+    return(integer())
   }
   
   # Convert input dates to Date objects
@@ -41,19 +32,16 @@ convert_dates_to_int <- function(dates, min_date = NULL) {
   
   # Use provided min_date or find earliest date
   if (is.null(min_date)) {
-    min_date <- min(dates_as_date)
+    date_int <- as.integer(dates_as_date)
   } else {
     min_date <- as.Date(min_date, format = "%d/%m/%Y")
     if (is.na(min_date)) {
       stop("min_date must be in format 'DD/MM/YYYY'")
     }
+    # Convert to integers
+    date_int <- as.integer(dates_as_date - min_date) 
   }
   
-  # Convert to integers
-  date_int <- as.integer(dates_as_date - min_date)
+  return(date_int)
   
-  return(list(
-    date_int = date_int,
-    min_date = min_date
-  ))
 } 
