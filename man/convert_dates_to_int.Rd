@@ -23,4 +23,5 @@ The min_date parameter is used as the origin for integer conversion.
 \examples{
 dates <- c("01/01/1979", "02/01/1979", "03/01/1979")
 result <- convert_dates_to_int(dates)
+
 }

@@ -4,16 +4,43 @@
 \alias{fit_climate_models}
 \title{Fit Linear Models Between Mass and Climate Data}
 \usage{
-fit_climate_models(climate_means, basemodel, bio_data, parallel = FALSE)
+fit_climate_models(
+  range,
+  climate_data,
+  bio_data,
+  basemodel,
+  cdate = "Date",
+  bdate = "Date",
+  xvar = "Temp",
+  fn = mean,
+  type = "relative",
+  refday = NULL,
+  parallel = FALSE
+)
 }
 \arguments{
-\item{climate_means}{A LIST of data frames, each containing Bio_Date, Start_Date, End_Date, and Summary_Value columns}
+\item{range}{A numeric vector specifying the number of days to look back from each date in bio_data.
+For example, 0 represents the date itself, while 100 represents 100 days before that date.}
 
-\item{basemodel}{An lm model object that will be updated for each climate window (e.g., lm(Mass ~ climate, data = bio_data)). This argument is required and cannot be NULL.}
+\item{climate_data}{A data frame containing climate data. Required.}
 
-\item{bio_data}{A data frame containing all variables used in the basemodel. This argument is required and cannot be NULL.}
+\item{bio_data}{A data frame containing biological data with a date column. Required.}
 
-\item{parallel}{Logical. If TRUE, parallel processing is used. Default is TRUE.}
+\item{basemodel}{An lm model object that will be updated for each climate window (e.g., lm(Mass ~ climate, data = bio_data)). Required.}
+
+\item{cdate}{Character string specifying the name of the date column in climate_data. Defaults to "Date".}
+
+\item{bdate}{Character string specifying the name of the date column in bio_data. Defaults to "Date".}
+
+\item{xvar}{Character string specifying the name of the climate variable column in climate_data. Defaults to "Temp".}
+
+\item{fn}{A function to use for summarizing the climate data. Defaults to mean().}
+
+\item{type}{Character string specifying the type of date range calculation. Must be either "relative" (default) or "absolute".}
+
+\item{refday}{Character string in format "DD/MM/YYYY" specifying the reference date to use when type is "absolute".}
+
+\item{parallel}{Logical. If TRUE, parallel processing is used. Default is FALSE.}
 }
 \value{
 A data frame containing:
@@ -24,16 +51,18 @@ A data frame containing:
         - AIC: AIC value for the linear model
 }
 \description{
-This function takes a list of data frames (output from splitting calculate_temp_means)
-and fits linear models between mass and climate data for each combination of days,
+This function fits linear models between mass and climate data for each combination of days,
 returning AIC values and other statistics. The function requires a base model structure
-that will be updated for each climate window.
+that will be updated for each climate window. It internally calls calculate_temp_means
+to compute climate summaries for each window.
 }
 \examples{
 # Example usage:
 Climate <- read.csv("MassClimate.csv")
 Mass <- read.csv("Mass.csv")
-climate_means <- calculate_temp_means(0:2, climate_data = Climate, bio_data = Mass)
-results <- fit_climate_models(climate_means, basemodel = lm(Mass ~ climate, data = bio_data), bio_data = Mass)
+results <- fit_climate_models(range = 0:2, 
+                            climate_data = Climate, 
+                            bio_data = Mass,
+                            basemodel = lm(Mass ~ climate, data = bio_data))
 
 }

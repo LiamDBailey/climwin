@@ -45,9 +45,11 @@
 #'                                bio_data = bio_data)
 #'
 #' # Calculate temperature means using absolute mode with reference date
-#' result <- calculate_temp_means(0:2, bio_data = bio_data, 
-#'                              type = "absolute", 
-#'                              refday = "15/01/1979")
+#' result <- calculate_temp_means(0:2,
+#'                                climate_data = climate_data,
+#'                                bio_data = bio_data, 
+#'                                type = "absolute", 
+#'                                refday = "15/01/1979")
 #'
 #' # Calculate rainfall means using custom column names
 #' my_climate <- data.frame(
@@ -65,7 +67,9 @@
 #'                              xvar = "rainfall")
 #'
 #' # Use different summary function (e.g., median)
-#' result <- calculate_temp_means(0:2, bio_data = bio_data, fn = median)
+#' result <- calculate_temp_means(0:2,
+#'                                climate_data = climate_data,
+#'                                bio_data = bio_data, fn = median)
 #'
 #' @export
 calculate_temp_means <- function(range, 
