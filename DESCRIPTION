@@ -1,4 +1,4 @@
-Package: climwin_cursor
+Package: climwin
 Title: Climate Window Analysis Tools
 Version: 0.1.0
 Authors@R: 
@@ -15,4 +15,5 @@ Imports:
     furrr,
     purrr,
     dplyr,
-    progress
+    progress,
+    progressr

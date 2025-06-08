@@ -61,9 +61,11 @@ run_slidingwin <- function(range,
     future::plan(future::multisession)
   }
   
-  ## Substitute basemodel at the start so it doesn't try and run
-  ## and fail
-  basemodel <- substitute(basemodel)
+  ## It's possible that basemodel is already a substitute
+  ## with model lm()
+  if (!inherits(basemodel, "call")){
+    basemodel <- substitute(basemodel) 
+  }
   
   # Input validation
   if (missing(climate_data) || nrow(climate_data) == 0) {
