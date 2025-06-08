@@ -109,8 +109,8 @@ run_slidingwin <- function(range,
     })
     
     return(data.frame(
-      Start_Date = as.character(window_data$Start_Date[1]),
-      End_Date = as.character(window_data$End_Date[1]),
+      # Start_Date = as.character(window_data$Start_Date[1]),
+      # End_Date = as.character(window_data$End_Date[1]),
       Start_Day = as.integer(window_data$Start_Day[1]),
       End_Day = as.integer(window_data$End_Day[1]),
       AIC = fit_result$AIC,

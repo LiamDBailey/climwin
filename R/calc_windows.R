@@ -120,9 +120,34 @@ calc_windows <- function(range,
     stop(sprintf("bio_data must contain column '%s'", bdate))
   }
   
-  # Add integer dates to data frames
-  climate_data$date_int <- convert_dates_to_int(climate_data[[cdate]])
-  bio_data$date_int <- convert_dates_to_int(bio_data[[bdate]])
+  # Add integer dates to data frames (1 = earliest climate data)
+  ## FIXME: We assume climate data is ordered and first date = min date
+  ## Need to check it is actually ordered!!
+  climate_data$date_int <- 1:nrow(climate_data)
+  if (type == "relative"){
+    bio_data$date_int <- convert_dates_to_int(bio_data[[bdate]], min_date = climate_data[[cdate]][1]) + 1 
+  } else {
+    # Format bio dates and refday as date objects
+    bio_dates_as_date <- as.Date(bio_data[[bdate]], format = "%d/%m/%Y")
+    refday_parts_as_date <- as.Date(refday, format = "%d/%m/%Y")
+    
+    ## Create new bio data dates using refday
+    bio_data$date_int <- convert_dates_to_int(as.Date(paste(lubridate::day(refday_parts_as_date),
+                                                            lubridate::month(refday_parts_as_date),
+                                                            lubridate::year(bio_dates_as_date),
+                                                            sep = "/"), format = "%d/%m/%Y"),
+                                              min_date = climate_data[[cdate]][1]) + 1
+  }
+  
+  ## Each col is all the possible (integer) dates that are relevant across range
+  bio_int_ranges <- sapply(bio_data$date_int, FUN = \(x){
+    x - range
+  })
+  climate_data_vec <- climate_data[[xvar]]
+  ## Each col is all the possible xvar values that are relevant across range
+  bio_xvar_ranges <- apply(bio_int_ranges, MARGIN = 2, FUN = \(x){
+    climate_data_vec[x]
+  })
   
   # Calculate maximum possible range based on climate data
   max_climate_days <- max(climate_data$date_int)
@@ -149,54 +174,26 @@ calc_windows <- function(range,
   
   # Process each range combination
   for (i in seq_len(nrow(range_combinations))) {
-    start_days <- range_combinations$start_days[i]
-    end_days <- range_combinations$end_days[i]
-    
-    # Calculate start and end dates based on type
-    if (type == "relative") {
-      start_dates_int <- bio_data$date_int - start_days
-      end_dates_int <- bio_data$date_int - end_days
-    } else { # absolute mode
-      # Format bio dates and refday as date objects
-      bio_dates_as_date <- as.Date(bio_data[[bdate]], format = "%d/%m/%Y")
-      refday_parts_as_date <- as.Date(refday, format = "%d/%m/%Y")
-      
-      ## Create new bio data dates using refday
-      bio_data$date_int <- convert_dates_to_int(as.Date(paste(lubridate::day(refday_parts_as_date),
-                                                                  lubridate::month(refday_parts_as_date),
-                                                                  lubridate::year(bio_dates_as_date),
-                                                                  sep = "/"), format = "%d/%m/%Y"))
-      
-      # Calculate start and end dates
-      start_dates_int <- bio_data$date_int - start_days
-      end_dates_int <- bio_data$date_int - end_days
-    }
+    start_days <- range_combinations$start_days[i] + 1
+    end_days <- range_combinations$end_days[i] + 1
     
     # Initialize vectors for this combination
-    bio_dates_int <- bio_data$date_int
-    summary_values <- numeric(length(bio_dates_int))
-    
-    # Calculate summary for each bio date
-    for (j in seq_along(bio_dates_int)) {
-      # Filter data for the date range
-      date_range_data <- subset_data(climate_data, end_dates_int[j], start_dates_int[j])
-        # climate_data[climate_data$date_int >= end_dates_int[j] & climate_data$date_int <= start_dates_int[j], ]
-      
-      # Calculate summary statistic for this range
-      summary_values[j] <- fn(date_range_data[[xvar]])
-    }
+    summary_values <- apply(bio_xvar_ranges, MARGIN = 2, FUN = \(x){
+      fn(x[start_days:end_days])
+    })
     
     # Convert integer dates to character format
     # Character format is more robust than Date
-    bio_dates <- format(as.Date(bio_dates_int), "%d/%m/%Y")
-    start_dates <- format(as.Date(start_dates_int), "%d/%m/%Y")
-    end_dates <- format(as.Date(end_dates_int), "%d/%m/%Y")
+    min_date <- as.Date(climate_data[[cdate]][1], format = "%d/%m/%Y") - 1
+    bio_dates <- format(as.Date(bio_data$date_int, origin = min_date), "%d/%m/%Y")
+    # start_dates <- format(as.Date(start_dates_int, origin = min_date), "%d/%m/%Y")
+    # end_dates <- format(as.Date(end_dates_int, origin = min_date), "%d/%m/%Y")
     
     # Create results dataframe for this combination
     results_list[[i]] <- data.frame(
       Date = bio_dates,
-      Start_Date = start_dates,
-      End_Date = end_dates,
+      # Start_Date = start_dates,
+      # End_Date = end_dates,
       Start_Day = rep(start_days, length(bio_dates)),
       End_Day = rep(end_days, length(bio_dates)),
       Summary_Value = summary_values,
@@ -204,7 +201,7 @@ calc_windows <- function(range,
     )
     
     # Name the list element with the range combination
-    names(results_list)[i] <- sprintf("%d_%d", start_days, end_days)
+    names(results_list)[i] <- sprintf("%d_%d", start_days - 1, end_days - 1)
   }
   
   return(results_list)
