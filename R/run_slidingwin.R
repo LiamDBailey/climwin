@@ -39,23 +39,25 @@
 #' @importFrom future multisession
 #' @export
 run_slidingwin <- function(range,
-                         climate_data,
-                         bio_data,
-                         basemodel,
-                         cdate = "Date",
-                         bdate = "Date",
-                         xvar = "Temp",
-                         fn = mean,
-                         type = "relative",
-                         refday = NULL,
-                         parallel = FALSE) {
+                           climate_data,
+                           bio_data,
+                           basemodel,
+                           cdate = "Date",
+                           bdate = "Date",
+                           xvar = "Temp",
+                           fn = mean,
+                           type = "relative",
+                           refday = NULL,
+                           parallel = FALSE) {
+  
+  ### ARGUMENT CHECKS ####
   # Ensure future and furrr are loaded if parallel is TRUE
   if (parallel) {
     if (!requireNamespace("future", quietly = TRUE)) stop("Package 'future' is required.")
     if (!requireNamespace("furrr", quietly = TRUE)) stop("Package 'furrr' is required.")
     future::plan(future::multisession)
   }
-
+  
   ## Substitute basemodel at the start so it doesn't try and run
   ## and fail
   basemodel <- substitute(basemodel)
@@ -77,26 +79,107 @@ run_slidingwin <- function(range,
     stop("bio_data must be a data frame")
   }
   
-  # Calculate climate means using calc_windows
-  climate_means <- calc_windows(
-    range = range,
-    climate_data = climate_data,
-    bio_data = bio_data,
-    cdate = cdate,
-    bdate = bdate,
-    xvar = xvar,
-    fn = fn,
-    type = type,
-    refday = refday
-  )
+  # Validate function first
+  if (!is.function(fn)) {
+    stop("fn must be a function")
+  }
   
-  # Define a function to process each window
-  process_window <- function(window_data) {
+  # Validate type parameter
+  if (!type %in% c("relative", "absolute")) {
+    stop("type must be either 'relative' or 'absolute'")
+  }
+  
+  # Validate refday parameter
+  if (type == "absolute") {
+    if (is.null(refday)) {
+      stop("refday must be provided when type is 'absolute'")
+    }
+    refday_date <- as.Date(refday, format = "%d/%m/%Y")
+    if (is.na(refday_date)) {
+      stop("refday must be in format 'DD/MM/YYYY'")
+    }
+  }
+  
+  # Read the climate data if not provided
+  if (missing(climate_data) || nrow(climate_data) == 0) {
+    stop("climate_data must contain at least 1 row")
+  }
+  
+  # Validate climate data structure
+  if (!all(c(cdate, xvar) %in% names(climate_data))) {
+    stop(sprintf("climate_data must contain columns '%s' and '%s'", cdate, xvar))
+  }
+  
+  if (missing(bio_data) || nrow(bio_data) == 0) {
+    stop("bio_data must contain at least 1 row")
+  }
+  
+  # Validate bio data structure
+  if (!bdate %in% names(bio_data)) {
+    stop(sprintf("bio_data must contain column '%s'", bdate))
+  }
+  
+  ### FORMAT CLIMATE DATA ####
+  
+  # Add integer dates to data frames (1 = earliest climate data)
+  ## FIXME: We assume climate data is ordered and first date = min date
+  ## Need to check it is actually ordered!!
+  climate_data$date_int <- 1:nrow(climate_data)
+  if (type == "relative"){
+    bio_data$date_int <- convert_dates_to_int(bio_data[[bdate]], min_date = climate_data[[cdate]][1]) + 1 
+  } else {
+    # Format bio dates and refday as date objects
+    bio_dates_as_date <- as.Date(bio_data[[bdate]], format = "%d/%m/%Y")
+    refday_parts_as_date <- as.Date(refday, format = "%d/%m/%Y")
     
-    # Update climate variable with Summary_Value
-    bio_data$climate <- window_data$Summary_Value
+    ## Create new bio data dates using refday
+    bio_data$date_int <- convert_dates_to_int(as.Date(paste(lubridate::day(refday_parts_as_date),
+                                                            lubridate::month(refday_parts_as_date),
+                                                            lubridate::year(bio_dates_as_date),
+                                                            sep = "/"), format = "%d/%m/%Y"),
+                                              min_date = climate_data[[cdate]][1]) + 1
+  }
+  
+  ## Each col is all the possible (integer) dates that are relevant across range
+  bio_int_ranges <- sapply(bio_data$date_int, FUN = \(x){
+    x - range
+  })
+  climate_data_vec <- climate_data[[xvar]]
+  ## Each col is all the possible xvar values that are relevant across range
+  bio_xvar_ranges <- apply(bio_int_ranges, MARGIN = 2, FUN = \(x){
+    climate_data_vec[x]
+  })
+  
+  # Calculate maximum possible range based on climate data
+  max_climate_days <- max(climate_data$date_int)
+  min_climate_days <- min(climate_data$date_int)
+  max_possible_range <- max_climate_days - min_climate_days
+  
+  # Check if any requested range exceeds the available data
+  max_requested_range <- max(range)
+  if (max_requested_range > max_possible_range) {
+    stop(sprintf(
+      "Requested range (%d days) exceeds available climate data range (%d days).\nMaximum possible range is 0 to %d.",
+      max_requested_range,
+      max_possible_range,
+      max_possible_range
+    ))
+  }
+  
+  # Generate all valid range combinations
+  range_combinations <- expand.grid(start_days = range, end_days = range)
+  range_combinations <- range_combinations[range_combinations$end_days >= range_combinations$start_days, ]
+  
+  process_window <- function(i){
+    start_days <- range_combinations$start_days[i] + 1
+    end_days <- range_combinations$end_days[i] + 1
     
-    # Try to fit the model and extract statistics
+    # Initialize vectors for this combination
+    bio_data$climate <- apply(bio_xvar_ranges, MARGIN = 2, FUN = \(x){
+      fn(x[start_days:end_days])
+    })
+    
+    # Create results dataframe for this combination
     fit_result <- tryCatch({
       model <- eval(basemodel)
       list(
@@ -108,25 +191,24 @@ run_slidingwin <- function(range,
       )
     })
     
-    return(data.frame(
-      # Start_Date = as.character(window_data$Start_Date[1]),
-      # End_Date = as.character(window_data$End_Date[1]),
-      Start_Day = as.integer(window_data$Start_Day[1]),
-      End_Day = as.integer(window_data$End_Day[1]),
+    data.frame(
+      Start_Day = start_days - 1,
+      End_Day = end_days - 1,
       AIC = fit_result$AIC,
       stringsAsFactors = FALSE
-    ))
+    )
   }
   
-  # Process all windows in parallel or sequentially
-  if (parallel) {
-    results <- furrr::future_map(climate_means, process_window, .options = furrr::furrr_options(seed = TRUE))
+  # Process each range combination
+  if (parallel){
+    results <- furrr::future_map(seq_len(nrow(range_combinations)),
+                                 process_window, .options = furrr::furrr_options(seed = TRUE))
   } else {
-    results <- lapply(climate_means, process_window)
+    results <- purrr::map(seq_len(nrow(range_combinations)), process_window)
   }
   
   # Combine results
-  results <- do.call(rbind, results)
+  results <- dplyr::bind_rows(results)
   
   # Sort by AIC (NAs last)
   results <- results[order(is.na(results$AIC), results$AIC), ]
