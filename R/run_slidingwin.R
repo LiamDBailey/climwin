@@ -1,8 +1,8 @@
-#' Fit Linear Models Between Mass and Climate Data
+#' Run Sliding Window Analysis Between Mass and Climate Data
 #'
 #' This function fits linear models between mass and climate data for each combination of days,
 #' returning AIC values and other statistics. The function requires a base model structure
-#' that will be updated for each climate window. It internally calls calculate_temp_means
+#' that will be updated for each climate window. It internally calls calc_windows
 #' to compute climate summaries for each window.
 #'
 #' @param range A numeric vector specifying the number of days to look back from each date in bio_data.
@@ -29,26 +29,26 @@
 #' # Example usage:
 #' Climate <- read.csv("MassClimate.csv")
 #' Mass <- read.csv("Mass.csv")
-#' results <- fit_climate_models(range = 0:2, 
-#'                             climate_data = Climate, 
-#'                             bio_data = Mass,
-#'                             basemodel = lm(Mass ~ climate, data = bio_data))
+#' results <- run_slidingwin(range = 0:2, 
+#'                         climate_data = Climate, 
+#'                         bio_data = Mass,
+#'                         basemodel = lm(Mass ~ climate, data = bio_data))
 #'
 #' @importFrom furrr future_map
 #' @importFrom future plan
 #' @importFrom future multisession
 #' @export
-fit_climate_models <- function(range,
-                             climate_data,
-                             bio_data,
-                             basemodel,
-                             cdate = "Date",
-                             bdate = "Date",
-                             xvar = "Temp",
-                             fn = mean,
-                             type = "relative",
-                             refday = NULL,
-                             parallel = FALSE) {
+run_slidingwin <- function(range,
+                         climate_data,
+                         bio_data,
+                         basemodel,
+                         cdate = "Date",
+                         bdate = "Date",
+                         xvar = "Temp",
+                         fn = mean,
+                         type = "relative",
+                         refday = NULL,
+                         parallel = FALSE) {
   # Ensure future and furrr are loaded if parallel is TRUE
   if (parallel) {
     if (!requireNamespace("future", quietly = TRUE)) stop("Package 'future' is required.")
@@ -77,8 +77,8 @@ fit_climate_models <- function(range,
     stop("bio_data must be a data frame")
   }
   
-  # Calculate climate means using calculate_temp_means
-  climate_means <- calculate_temp_means(
+  # Calculate climate means using calc_windows
+  climate_means <- calc_windows(
     range = range,
     climate_data = climate_data,
     bio_data = bio_data,

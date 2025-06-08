@@ -1,4 +1,4 @@
-#' Calculate Climate Variable Means for Different Date Ranges
+#' Calculate Climate Variable Windows for Different Date Ranges
 #'
 #' This function calculates the mean (or other summary statistic) of a climate variable for every possible 
 #' combination of date ranges within the specified range, for each date in the biological data. The function
@@ -41,15 +41,13 @@
 #' # for each date in the biological data (relative mode)
 #' climate_data <- read.csv("MassClimate.csv")
 #' bio_data <- read.csv("Mass.csv")
-#' result <- calculate_temp_means(range = 0:2, climate_data = climate_data,
-#'                                bio_data = bio_data)
+#' result <- calc_windows(range = 0:2, climate_data = climate_data,
+#'                       bio_data = bio_data)
 #'
 #' # Calculate temperature means using absolute mode with reference date
-#' result <- calculate_temp_means(0:2,
-#'                                climate_data = climate_data,
-#'                                bio_data = bio_data, 
-#'                                type = "absolute", 
-#'                                refday = "15/01/1979")
+#' result <- calc_windows(0:2, bio_data = bio_data, 
+#'                       type = "absolute", 
+#'                       refday = "15/01/1979")
 #'
 #' # Calculate rainfall means using custom column names
 #' my_climate <- data.frame(
@@ -59,28 +57,28 @@
 #' my_bio <- data.frame(
 #'   bio_date = c("01/01/1979", "02/01/1979")
 #' )
-#' result <- calculate_temp_means(0:1, 
-#'                              climate_data = my_climate,
-#'                              bio_data = my_bio,
-#'                              cdate = "my_date",
-#'                              bdate = "bio_date",
-#'                              xvar = "rainfall")
+#' result <- calc_windows(0:1, 
+#'                       climate_data = my_climate,
+#'                       bio_data = my_bio,
+#'                       cdate = "my_date",
+#'                       bdate = "bio_date",
+#'                       xvar = "rainfall")
 #'
 #' # Use different summary function (e.g., median)
-#' result <- calculate_temp_means(0:2,
-#'                                climate_data = climate_data,
-#'                                bio_data = bio_data, fn = median)
+#' result <- calc_windows(0:2,
+#'                        climate_data = climate_data,
+#'                        bio_data = bio_data, fn = median)
 #'
 #' @export
-calculate_temp_means <- function(range, 
-                                 climate_data,
-                                 bio_data,
-                                 cdate = "Date",
-                                 bdate = "Date",
-                                 xvar = "Temp",
-                                 fn = mean,
-                                 type = "relative",
-                                 refday = NULL) {
+calc_windows <- function(range, 
+                       climate_data,
+                       bio_data,
+                       cdate = "Date",
+                       bdate = "Date",
+                       xvar = "Temp",
+                       fn = mean,
+                       type = "relative",
+                       refday = NULL) {
   
   # Validate function first
   if (!is.function(fn)) {

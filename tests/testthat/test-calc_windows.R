@@ -1,4 +1,4 @@
-test_that("calculate_temp_means returns correct format", {
+test_that("calc_windows returns correct format", {
   # Create test data
   climate_data <- data.frame(
     Date = c("01/01/1979", "02/01/1979", "03/01/1979"),
@@ -9,7 +9,7 @@ test_that("calculate_temp_means returns correct format", {
   )
   
   # Run function
-  result <- calculate_temp_means(0:1, climate_data = climate_data, bio_data = bio_data)
+  result <- calc_windows(0:1, climate_data = climate_data, bio_data = bio_data)
   
   # Check list structure
   expect_type(result, "list")
@@ -27,7 +27,7 @@ test_that("calculate_temp_means returns correct format", {
   expect_true(inherits(first_df$Summary_Value, "numeric"))
 })
 
-test_that("calculate_temp_means calculates correct summary values with mean", {
+test_that("calc_windows calculates correct summary values with mean", {
   # Create test data with known values
   climate_data <- data.frame(
     Date = c("01/01/1979", "02/01/1979", "03/01/1979"),
@@ -38,7 +38,7 @@ test_that("calculate_temp_means calculates correct summary values with mean", {
   )
   
   # Run function
-  result <- calculate_temp_means(0:1, climate_data = climate_data, bio_data = bio_data)
+  result <- calc_windows(0:1, climate_data = climate_data, bio_data = bio_data)
   
   # Check values for each range combination
   expect_equal(result[["0_0"]]$Summary_Value, c(12, 14))  # Single day
@@ -46,7 +46,7 @@ test_that("calculate_temp_means calculates correct summary values with mean", {
   expect_equal(result[["1_1"]]$Summary_Value, c(10, 12))  # Single day
 })
 
-test_that("calculate_temp_means works with different summary functions", {
+test_that("calc_windows works with different summary functions", {
   # Create test data
   climate_data <- data.frame(
     Date = c("01/01/1979", "02/01/1979", "03/01/1979"),
@@ -57,27 +57,27 @@ test_that("calculate_temp_means works with different summary functions", {
   )
   
   # Test with median
-  result_median <- calculate_temp_means(0:1, 
-                                      climate_data = climate_data,
-                                      bio_data = bio_data,
-                                      fn = median)
+  result_median <- calc_windows(0:1, 
+                              climate_data = climate_data,
+                              bio_data = bio_data,
+                              fn = median)
   
   expect_equal(result_median[["0_0"]]$Summary_Value, c(12, 14))
   expect_equal(result_median[["0_1"]]$Summary_Value, c(11, 13))
   expect_equal(result_median[["1_1"]]$Summary_Value, c(10, 12))
   
   # Test with max
-  result_max <- calculate_temp_means(0:1, 
-                                   climate_data = climate_data,
-                                   bio_data = bio_data,
-                                   fn = max)
+  result_max <- calc_windows(0:1, 
+                           climate_data = climate_data,
+                           bio_data = bio_data,
+                           fn = max)
   
   expect_equal(result_max[["0_0"]]$Summary_Value, c(12, 14))
   expect_equal(result_max[["0_1"]]$Summary_Value, c(12, 14))
   expect_equal(result_max[["1_1"]]$Summary_Value, c(10, 12))
 })
 
-test_that("calculate_temp_means handles custom column names", {
+test_that("calc_windows handles custom column names", {
   # Create test data with custom column names
   climate_data <- data.frame(
     my_date = c("01/01/1979", "02/01/1979", "03/01/1979"),
@@ -88,12 +88,12 @@ test_that("calculate_temp_means handles custom column names", {
   )
   
   # Run function with custom column names
-  result <- calculate_temp_means(0:1, 
-                               climate_data = climate_data,
-                               bio_data = bio_data,
-                               cdate = "my_date",
-                               bdate = "bio_date",
-                               xvar = "rainfall")
+  result <- calc_windows(0:1, 
+                       climate_data = climate_data,
+                       bio_data = bio_data,
+                       cdate = "my_date",
+                       bdate = "bio_date",
+                       xvar = "rainfall")
   
   # Check values for each range combination
   expect_equal(result[["0_0"]]$Summary_Value, c(12, 14))
@@ -101,7 +101,7 @@ test_that("calculate_temp_means handles custom column names", {
   expect_equal(result[["1_1"]]$Summary_Value, c(10, 12))
 })
 
-test_that("calculate_temp_means handles multiple bio dates", {
+test_that("calc_windows handles multiple bio dates", {
   # Create test data
   climate_data <- data.frame(
     Date = c("01/01/1979", "02/01/1979", "03/01/1979", "04/01/1979"),
@@ -112,7 +112,7 @@ test_that("calculate_temp_means handles multiple bio dates", {
   )
   
   # Run function
-  result <- calculate_temp_means(0:2, climate_data = climate_data, bio_data = bio_data)
+  result <- calc_windows(0:2, climate_data = climate_data, bio_data = bio_data)
   
   # Check number of combinations
   expect_length(result, 6)  # 0-0, 0-1, 0-2, 1-1, 1-2, 2-2
@@ -126,7 +126,7 @@ test_that("calculate_temp_means handles multiple bio dates", {
   expect_equal(as.numeric(second_date_values), c(16, 15, 14, 14, 13, 12))
 })
 
-test_that("calculate_temp_means handles missing columns", {
+test_that("calc_windows handles missing columns", {
   # Create test data with missing columns
   climate_data <- data.frame(
     wrong_date = c("01/01/1979"),
@@ -138,14 +138,14 @@ test_that("calculate_temp_means handles missing columns", {
   
   # Test missing date column
   expect_error(
-    calculate_temp_means(0:1, climate_data = climate_data, bio_data = bio_data),
+    calc_windows(0:1, climate_data = climate_data, bio_data = bio_data),
     "climate_data must contain columns 'Date' and 'Temp'"
   )
   
   # Test missing temperature column
   climate_data$Date <- climate_data$wrong_date
   expect_error(
-    calculate_temp_means(0:1, climate_data = climate_data, bio_data = bio_data),
+    calc_windows(0:1, climate_data = climate_data, bio_data = bio_data),
     "climate_data must contain columns 'Date' and 'Temp'"
   )
   
@@ -155,30 +155,30 @@ test_that("calculate_temp_means handles missing columns", {
   )
   climate_data$Temp <- climate_data$wrong_temp
   expect_error(
-    calculate_temp_means(0:1, climate_data = climate_data, bio_data = bio_data),
+    calc_windows(0:1, climate_data = climate_data, bio_data = bio_data),
     "bio_data must contain column 'Date'"
   )
 })
 
-test_that("calculate_temp_means handles invalid function", {
+test_that("calc_windows handles invalid function", {
   climate_data <- data.frame(Date = c("01/01/1979"), Temp = c(10))
   bio_data <- data.frame(Date = c("01/01/1979"))
   
   # Test with non-function
-  expect_error(calculate_temp_means(0:1, 
-                                  climate_data = climate_data,
-                                  bio_data = bio_data,
-                                  fn = "not_a_function"),
+  expect_error(calc_windows(0:1, 
+                          climate_data = climate_data,
+                          bio_data = bio_data,
+                          fn = "not_a_function"),
                "fn must be a function")
   
   # Test with invalid function, but only if range is valid
   expect_error(
-    calculate_temp_means(0, climate_data = climate_data, bio_data = bio_data, fn = function(x) stop("error")),
+    calc_windows(0, climate_data = climate_data, bio_data = bio_data, fn = function(x) stop("error")),
     "error"
   )
 })
 
-test_that("calculate_temp_means handles missing climate data", {
+test_that("calc_windows handles missing climate data", {
   # Create empty data frames
   climate_data <- data.frame(
     Date = character(),
@@ -189,18 +189,17 @@ test_that("calculate_temp_means handles missing climate data", {
   )
   
   expect_error(
-    calculate_temp_means(0:1, bio_data = bio_data),
+    calc_windows(0:1, bio_data = bio_data),
     "climate_data must contain at least 1 row"
   )
   
   expect_error(
-    calculate_temp_means(0:1, climate_data = climate_data, bio_data = bio_data),
+    calc_windows(0:1, climate_data = climate_data, bio_data = bio_data),
     "climate_data must contain at least 1 row"
   )
-  
 })
 
-test_that("calculate_temp_means handles missing bio data", {
+test_that("calc_windows handles missing bio data", {
   # Create empty data frames
   climate_data <- data.frame(Date = c("01/01/1979"), Temp = c(10))
   
@@ -209,18 +208,17 @@ test_that("calculate_temp_means handles missing bio data", {
   )
   
   expect_error(
-    calculate_temp_means(0:1, climate_data = climate_data),
+    calc_windows(0:1, climate_data = climate_data),
     "bio_data must contain at least 1 row"
   )
   
   expect_error(
-    calculate_temp_means(0:1, climate_data = climate_data, bio_data = bio_data),
+    calc_windows(0:1, climate_data = climate_data, bio_data = bio_data),
     "bio_data must contain at least 1 row"
   )
 })
 
-test_that("calculate_temp_means works with basic input", {
-  
+test_that("calc_windows works with basic input", {
   # Create test data
   climate_data <- data.frame(
     Date = c("01/01/1979", "02/01/1979", "03/01/1979"),
@@ -231,7 +229,7 @@ test_that("calculate_temp_means works with basic input", {
   )
   
   # Test with default parameters
-  result <- calculate_temp_means(0:1, climate_data = climate_data, bio_data = bio_data)
+  result <- calc_windows(0:1, climate_data = climate_data, bio_data = bio_data)
   
   # Check structure
   expect_type(result, "list")
@@ -248,7 +246,7 @@ test_that("calculate_temp_means works with basic input", {
   expect_equal(result[["0_0"]]$Summary_Value, c(12, 14))
 })
 
-test_that("calculate_temp_means works with custom column names", {
+test_that("calc_windows works with custom column names", {
   climate_data <- data.frame(
     my_date = c("01/01/1979", "02/01/1979"),
     rainfall = c(10, 12)
@@ -257,12 +255,12 @@ test_that("calculate_temp_means works with custom column names", {
     bio_date = c("01/01/1979", "02/01/1979")
   )
   
-  result <- calculate_temp_means(0:1, 
-                               climate_data = climate_data,
-                               bio_data = bio_data,
-                               cdate = "my_date",
-                               bdate = "bio_date",
-                               xvar = "rainfall")
+  result <- calc_windows(0:1, 
+                       climate_data = climate_data,
+                       bio_data = bio_data,
+                       cdate = "my_date",
+                       bdate = "bio_date",
+                       xvar = "rainfall")
   
   # Check structure
   expect_type(result, "list")
@@ -273,7 +271,7 @@ test_that("calculate_temp_means works with custom column names", {
   expect_equal(result[["0_0"]]$Summary_Value, c(10, 12))
 })
 
-test_that("calculate_temp_means works with different summary functions", {
+test_that("calc_windows works with different summary functions", {
   climate_data <- data.frame(
     Date = c("01/01/1979", "02/01/1979", "03/01/1979"),
     Temp = c(10, 12, 14)
@@ -283,45 +281,45 @@ test_that("calculate_temp_means works with different summary functions", {
   )
   
   # Test with median
-  result <- calculate_temp_means(0:1, 
-                               climate_data = climate_data,
-                               bio_data = bio_data,
-                               fn = median)
+  result <- calc_windows(0:1, 
+                       climate_data = climate_data,
+                       bio_data = bio_data,
+                       fn = median)
   
   # Check values for 0-0 range
   expect_equal(result[["0_0"]]$Summary_Value, c(12, 14))
 })
 
-test_that("calculate_temp_means handles missing columns", {
+test_that("calc_windows handles missing columns", {
   climate_data <- data.frame(wrong_date = c("01/01/1979"), Temp = c(10))
   bio_data <- data.frame(Date = c("01/01/1979"))
   
-  expect_error(calculate_temp_means(0:1, 
-                                  climate_data = climate_data,
-                                  bio_data = bio_data),
+  expect_error(calc_windows(0:1, 
+                          climate_data = climate_data,
+                          bio_data = bio_data),
                "climate_data must contain columns 'Date' and 'Temp'")
   
   climate_data <- data.frame(Date = c("01/01/1979"), Temp = c(10))
   bio_data <- data.frame(wrong_date = c("01/01/1979"))
   
-  expect_error(calculate_temp_means(0:1, 
-                                  climate_data = climate_data,
-                                  bio_data = bio_data),
+  expect_error(calc_windows(0:1, 
+                          climate_data = climate_data,
+                          bio_data = bio_data),
                "bio_data must contain column 'Date'")
 })
 
-test_that("calculate_temp_means handles invalid function", {
+test_that("calc_windows handles invalid function", {
   climate_data <- data.frame(Date = c("01/01/1979"), Temp = c(10))
   bio_data <- data.frame(Date = c("01/01/1979"))
   
-  expect_error(calculate_temp_means(0:1, 
-                                  climate_data = climate_data,
-                                  bio_data = bio_data,
-                                  fn = "not_a_function"),
+  expect_error(calc_windows(0:1, 
+                          climate_data = climate_data,
+                          bio_data = bio_data,
+                          fn = "not_a_function"),
                "fn must be a function")
 })
 
-test_that("calculate_temp_means validates range against available data", {
+test_that("calc_windows validates range against available data", {
   # Create test data with 3 days of climate data
   climate_data <- data.frame(
     Date = c("01/01/1979", "02/01/1979", "03/01/1979"),
@@ -332,15 +330,15 @@ test_that("calculate_temp_means validates range against available data", {
   )
   
   # Test with range within available data
-  expect_silent(calculate_temp_means(0:2, climate_data = climate_data, bio_data = bio_data))
+  expect_silent(calc_windows(0:2, climate_data = climate_data, bio_data = bio_data))
   
   # Test with range exceeding available data
   expect_error(
-    calculate_temp_means(0:3, climate_data = climate_data, bio_data = bio_data),
+    calc_windows(0:3, climate_data = climate_data, bio_data = bio_data),
     "Requested range \\(3 days\\) exceeds available climate data range \\(2 days\\)"
   )
   
   # Test with range exactly at the limit
-  expect_silent(calculate_temp_means(0:2, climate_data = climate_data, bio_data = bio_data))
+  expect_silent(calc_windows(0:2, climate_data = climate_data, bio_data = bio_data))
 }) 
 
