@@ -4,33 +4,24 @@
 \alias{fit_climate_models}
 \title{Fit Linear Models Between Mass and Climate Data}
 \usage{
-fit_climate_models(
-  climate_means,
-  bio_data,
-  basemodel,
-  mass_col = "Mass",
-  date_col = "Date"
-)
+fit_climate_models(climate_means, basemodel, bio_data, parallel = FALSE)
 }
 \arguments{
 \item{climate_means}{A LIST of data frames, each containing Bio_Date, Start_Date, End_Date, and Summary_Value columns}
 
-\item{bio_data}{A data frame containing biological data with a Date column. bio_data must also contain a 'climate' column (can be initialized with zeros).}
-
 \item{basemodel}{An lm model object that will be updated for each climate window (e.g., lm(Mass ~ climate, data = bio_data)). This argument is required and cannot be NULL.}
 
-\item{mass_col}{Character string specifying the name of the mass column in bio_data}
+\item{bio_data}{A data frame containing all variables used in the basemodel. This argument is required and cannot be NULL.}
 
-\item{date_col}{Character string specifying the name of the date column in bio_data}
+\item{parallel}{Logical. If TRUE, parallel processing is used. Default is TRUE.}
 }
 \value{
 A data frame containing:
         - Start_Date: Start date of the climate window
         - End_Date: End date of the climate window
+        - Start_Day: Start day as integer (number of days before Bio_Date)
+        - End_Day: End day as integer (number of days before Bio_Date)
         - AIC: AIC value for the linear model
-        - R_squared: R-squared value for the model
-        - Slope: Slope of the relationship
-        - P_value: P-value for the slope
 }
 \description{
 This function takes a list of data frames (output from splitting calculate_temp_means)
@@ -40,9 +31,8 @@ that will be updated for each climate window.
 }
 \examples{
 # Example usage:
+Mass <- read.csv("Mass.csv")
 climate_means <- calculate_temp_means(0:2, bio_data = Mass)
-Mass$climate <- 0
-basemodel <- lm(Mass ~ climate, data = Mass)
-results <- fit_climate_models(climate_means, Mass, basemodel = basemodel)
+results <- fit_climate_models(climate_means, basemodel = lm(Mass ~ climate, data = bio_data), bio_data = Mass)
 
 }

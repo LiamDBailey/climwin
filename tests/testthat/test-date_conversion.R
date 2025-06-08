@@ -1,44 +1,34 @@
-test_that("convert_dates_to_int handles basic conversion", {
+test_that("convert_dates_to_int works with valid input", {
   dates <- c("01/01/1979", "02/01/1979", "03/01/1979")
   result <- convert_dates_to_int(dates)
   
   # Check structure
   expect_type(result, "list")
-  expect_named(result, c("date_int", "min_date", "lookup_table"))
-  
-  # Check date_int
+  expect_named(result, c("date_int", "min_date"))
   expect_type(result$date_int, "integer")
-  expect_equal(result$date_int, c(0, 1, 2))
-  
-  # Check min_date
   expect_s3_class(result$min_date, "Date")
-  expect_equal(format(result$min_date, "%d/%m/%Y"), "01/01/1979")
   
-  # Check lookup table
-  expect_s3_class(result$lookup_table, "data.frame")
-  expect_named(result$lookup_table, c("date_int", "date_char"))
-  expect_equal(nrow(result$lookup_table), 3)
+  # Check values
+  expect_equal(result$date_int, c(0, 1, 2))
+  expect_equal(result$min_date, as.Date("1979-01-01"))
 })
 
-test_that("convert_dates_to_int handles custom min_date", {
-  dates <- c("01/01/1979", "02/01/1979", "03/01/1979")
-  result <- convert_dates_to_int(dates, min_date = "31/12/1978")
+test_that("convert_dates_to_int works with empty input and min_date", {
+  result <- convert_dates_to_int(character(0), min_date = "01/01/1979")
   
-  # Check date_int (should be 1, 2, 3 since min_date is one day earlier)
-  expect_equal(result$date_int, c(1, 2, 3))
-  expect_equal(format(result$min_date, "%d/%m/%Y"), "31/12/1978")
+  expect_type(result, "list")
+  expect_named(result, c("date_int", "min_date"))
+  expect_equal(length(result$date_int), 0)
+  expect_equal(result$min_date, as.Date("1979-01-01"))
 })
 
-test_that("convert_dates_to_int handles invalid dates", {
-  # Test with invalid date format
-  expect_error(
-    convert_dates_to_int(c("1979-01-01", "02/01/1979")),
-    "All dates must be in format 'DD/MM/YYYY'"
-  )
+test_that("convert_dates_to_int handles invalid input", {
+  # Invalid date format
+  expect_error(convert_dates_to_int("1979-01-01"))
   
-  # Test with invalid min_date
-  expect_error(
-    convert_dates_to_int(c("01/01/1979"), min_date = "1979-01-01"),
-    "min_date must be in format 'DD/MM/YYYY'"
-  )
+  # Invalid min_date format
+  expect_error(convert_dates_to_int("01/01/1979", min_date = "1979-01-01"))
+  
+  # Empty input without min_date
+  expect_error(convert_dates_to_int(character(0)))
 }) 

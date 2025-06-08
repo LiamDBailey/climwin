@@ -42,6 +42,8 @@ A list of data frames, where each data frame corresponds to a specific range com
   \item{Bio_Date}{The date from bio_data (character string in DD/MM/YYYY format)}
   \item{Start_Date}{The beginning date of each range (character string in DD/MM/YYYY format)}
   \item{End_Date}{The end date of each range (character string in DD/MM/YYYY format)}
+  \item{Start_Day}{The start day as an integer (number of days before Bio_Date)}
+  \item{End_Day}{The end day as an integer (number of days before Bio_Date)}
   \item{Summary_Value}{The summarized climate variable for the specified range}
 }
 \description{

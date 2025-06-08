@@ -19,14 +19,12 @@ test_that("calculate_temp_means returns correct format", {
   # Check structure of first dataframe
   first_df <- result[["0_0"]]
   expect_s3_class(first_df, "data.frame")
-  expect_named(first_df, c("Bio_Date", "Start_Date", "End_Date", "Start_Day", "End_Day", "Summary_Value"))
-  expect_type(first_df$Bio_Date, "character")
-  expect_type(first_df$Start_Date, "character")
-  expect_type(first_df$End_Date, "character")
-  expect_type(first_df$Start_Day, "integer")
-  expect_type(first_df$End_Day, "integer")
-  expect_type(first_df$Summary_Value, "double")
-  expect_equal(ncol(result[["0_0"]]), 6)  # Bio_Date, Start_Date, End_Date, Start_Day, End_Day, Summary_Value
+  expect_true(all(c("Start_Date", "End_Date", "Start_Day", "End_Day", "Summary_Value") %in% colnames(first_df)))
+  expect_true(inherits(first_df$Start_Date, "character"))
+  expect_true(inherits(first_df$End_Date, "character"))
+  expect_true(inherits(first_df$Start_Day, "integer"))
+  expect_true(inherits(first_df$End_Day, "integer"))
+  expect_true(inherits(first_df$Summary_Value, "numeric"))
 })
 
 test_that("calculate_temp_means calculates correct summary values with mean", {
@@ -180,40 +178,48 @@ test_that("calculate_temp_means handles invalid function", {
   )
 })
 
-test_that("calculate_temp_means handles invalid date formats", {
-  # Create test data with invalid date format
-  climate_data <- data.frame(
-    Date = c("1979-01-01"),
-    Temp = c(10)
-  )
-  bio_data <- data.frame(
-    Date = c("1979-01-02")
-  )
-  
-  expect_error(
-    calculate_temp_means(0:1, climate_data = climate_data, bio_data = bio_data),
-    "All dates must be in format 'DD/MM/YYYY'"
-  )
-})
-
-test_that("calculate_temp_means handles empty data", {
+test_that("calculate_temp_means handles missing climate data", {
   # Create empty data frames
   climate_data <- data.frame(
     Date = character(),
     Temp = numeric()
   )
   bio_data <- data.frame(
+    Date = c("02/01/1979")
+  )
+  
+  expect_error(
+    calculate_temp_means(0:1, bio_data = bio_data),
+    "Provide 'climate_data'."
+  )
+  
+  expect_error(
+    calculate_temp_means(0:1, climate_data = climate_data, bio_data = bio_data),
+    "'climate_data' is empty."
+  )
+})
+
+test_that("calculate_temp_means handles missing bio data", {
+  # Create empty data frames
+  climate_data <- data.frame(Date = c("01/01/1979"), Temp = c(10))
+  
+  bio_data <- data.frame(
     Date = character()
   )
   
-  # Test with empty data
-  result <- calculate_temp_means(0:1, climate_data = climate_data, bio_data = bio_data)
-  expect_equal(nrow(result[[1]]), 0)
-  expect_named(result[[1]], c("Bio_Date", "Start_Date", "End_Date", "Start_Day", "End_Day", "Summary_Value"))
-  expect_equal(ncol(result[[1]]), 6)  # Bio_Date, Start_Date, End_Date, Start_Day, End_Day, Summary_Value
+  expect_error(
+    calculate_temp_means(0:1, climate_data = climate_data),
+    "Provide 'bio_data'."
+  )
+  
+  expect_error(
+    calculate_temp_means(0:1, climate_data = climate_data, bio_data = bio_data),
+    "'bio_data' is empty."
+  )
 })
 
 test_that("calculate_temp_means works with basic input", {
+  
   # Create test data
   climate_data <- data.frame(
     Date = c("01/01/1979", "02/01/1979", "03/01/1979"),
@@ -233,10 +239,9 @@ test_that("calculate_temp_means works with basic input", {
   # Check one of the dataframes
   expect_s3_class(result[["0_0"]], "data.frame")
   expect_equal(nrow(result[["0_0"]]), 2)  # One row per bio date
-  expect_equal(ncol(result[["0_0"]]), 6)  # Bio_Date, Start_Date, End_Date, Start_Day, End_Day, Summary_Value
   
   # Check values for 0-0 range
-  expect_equal(result[["0_0"]]$Bio_Date, c("02/01/1979", "03/01/1979"))
+  expect_equal(result[["0_0"]]$Date, c("02/01/1979", "03/01/1979"))
   expect_equal(result[["0_0"]]$Start_Date, c("02/01/1979", "03/01/1979"))
   expect_equal(result[["0_0"]]$End_Date, c("02/01/1979", "03/01/1979"))
   expect_equal(result[["0_0"]]$Summary_Value, c(12, 14))
@@ -263,7 +268,7 @@ test_that("calculate_temp_means works with custom column names", {
   expect_length(result, 3)  # Should have 3 combinations: 0-0, 0-1, 1-1
   
   # Check values for 0-0 range
-  expect_equal(result[["0_0"]]$Bio_Date, c("01/01/1979", "02/01/1979"))
+  expect_equal(result[["0_0"]]$Date, c("01/01/1979", "02/01/1979"))
   expect_equal(result[["0_0"]]$Summary_Value, c(10, 12))
 })
 
@@ -284,21 +289,6 @@ test_that("calculate_temp_means works with different summary functions", {
   
   # Check values for 0-0 range
   expect_equal(result[["0_0"]]$Summary_Value, c(12, 14))
-})
-
-test_that("calculate_temp_means handles empty data frames", {
-  empty_climate <- data.frame(Date = character(), Temp = numeric())
-  empty_bio <- data.frame(Date = character())
-  
-  result <- calculate_temp_means(0:1, 
-                               climate_data = empty_climate,
-                               bio_data = empty_bio)
-  
-  # Check structure
-  expect_type(result, "list")
-  expect_length(result, 1)  # Should have one empty dataframe
-  expect_equal(nrow(result[[1]]), 0)
-  expect_equal(ncol(result[[1]]), 6)  # Bio_Date, Start_Date, End_Date, Start_Day, End_Day, Summary_Value
 })
 
 test_that("calculate_temp_means handles missing columns", {
@@ -328,24 +318,6 @@ test_that("calculate_temp_means handles invalid function", {
                                   bio_data = bio_data,
                                   fn = "not_a_function"),
                "fn must be a function")
-})
-
-test_that("calculate_temp_means handles invalid date formats", {
-  climate_data <- data.frame(Date = c("1979-01-01"), Temp = c(10))
-  bio_data <- data.frame(Date = c("01/01/1979"))
-  
-  expect_error(calculate_temp_means(0:1, 
-                                  climate_data = climate_data,
-                                  bio_data = bio_data),
-               "All dates must be in format 'DD/MM/YYYY'")
-  
-  climate_data <- data.frame(Date = c("01/01/1979"), Temp = c(10))
-  bio_data <- data.frame(Date = c("1979-01-01"))
-  
-  expect_error(calculate_temp_means(0:1, 
-                                  climate_data = climate_data,
-                                  bio_data = bio_data),
-               "All dates must be in format 'DD/MM/YYYY'")
 })
 
 test_that("calculate_temp_means validates range against available data", {

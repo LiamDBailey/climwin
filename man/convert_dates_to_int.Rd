@@ -15,14 +15,12 @@ convert_dates_to_int(dates, min_date = NULL)
 A list containing:
   \item{date_int}{Integer vector of days since min_date}
   \item{min_date}{The reference date used (as Date object)}
-  \item{lookup_table}{Data frame mapping integers to character dates}
 }
 \description{
 This function converts dates between character strings (DD/MM/YYYY) and integers (days since earliest date).
-It also provides a lookup table for converting back to character format.
+The min_date parameter is used as the origin for integer conversion.
 }
 \examples{
 dates <- c("01/01/1979", "02/01/1979", "03/01/1979")
 result <- convert_dates_to_int(dates)
-
 }
