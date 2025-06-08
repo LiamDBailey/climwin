@@ -150,9 +150,9 @@ calculate_temp_means <- function(range,
     }
     
     # Convert integer dates back to character format
-    bio_dates <- climate_dates$lookup_table$date_char[match(bio_dates_int, climate_dates$lookup_table$date_int)]
-    start_dates <- climate_dates$lookup_table$date_char[match(start_dates_int, climate_dates$lookup_table$date_int)]
-    end_dates <- climate_dates$lookup_table$date_char[match(end_dates_int, climate_dates$lookup_table$date_int)]
+    bio_dates <- format(climate_dates$min_date + bio_dates_int, "%d/%m/%Y")
+    start_dates <- format(climate_dates$min_date + start_dates_int, "%d/%m/%Y")
+    end_dates <- format(climate_dates$min_date + end_dates_int, "%d/%m/%Y")
     
     # Create results dataframe for this combination
     results_list[[i]] <- data.frame(
