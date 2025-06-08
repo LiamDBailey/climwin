@@ -11,7 +11,9 @@ calculate_temp_means(
   cdate = "Date",
   bdate = "Date",
   xvar = "Temp",
-  fn = mean
+  fn = mean,
+  type = "relative",
+  refday = NULL
 )
 }
 \arguments{
@@ -35,6 +37,12 @@ Defaults to "Temp".}
 
 \item{fn}{A function to use for summarizing the climate data. Defaults to mean().
 Must be a function that can operate on a numeric vector.}
+
+\item{type}{Character string specifying the type of date range calculation. Must be either "relative"
+(default) or "absolute".}
+
+\item{refday}{Character string in format "DD/MM/YYYY" specifying the reference date to use when
+type is "absolute". Required when type is "absolute".}
 }
 \value{
 A list of data frames, where each data frame corresponds to a specific range combination.
@@ -48,15 +56,26 @@ A list of data frames, where each data frame corresponds to a specific range com
 }
 \description{
 This function calculates the mean (or other summary statistic) of a climate variable for every possible 
-combination of date ranges within the specified range, for each date in the biological data. For example, 
-if range = c(0, 2), it will calculate means for ranges 0-0, 0-1, 0-2, 1-1, 1-2, and 2-2 for each date
-in the biological data.
+combination of date ranges within the specified range, for each date in the biological data. The function
+can operate in two modes:
+}
+\details{
+1. Relative mode (default): Calculates means relative to each date in bio_data
+2. Absolute mode: Uses a reference date to determine the date range, keeping the same day and month
+   but using the year from each bio_data date
 }
 \examples{
 # Calculate temperature means for all possible combinations in range 0 to 2
-# for each date in the biological data
+# for each date in the biological data (relative mode)
+climate_data <- read.csv("MassClimate.csv")
 bio_data <- read.csv("Mass.csv")
-result <- calculate_temp_means(0:2, bio_data = bio_data)
+result <- calculate_temp_means(range = 0:2, climate_data = climate_data,
+                               bio_data = bio_data)
+
+# Calculate temperature means using absolute mode with reference date
+result <- calculate_temp_means(0:2, bio_data = bio_data, 
+                             type = "absolute", 
+                             refday = "15/01/1979")
 
 # Calculate rainfall means using custom column names
 my_climate <- data.frame(
