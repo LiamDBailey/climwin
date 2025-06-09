@@ -33,6 +33,18 @@
 #'                         climate_data = Climate, 
 #'                         bio_data = Mass,
 #'                         basemodel = lm(Mass ~ climate, data = bio_data))
+#'                         
+#' Mass$site <- sample(c("A", "B"), size = nrow(Mass), replace = TRUE)
+#' Climate1 <- Climate
+#' Climate1$site <- "A"
+#' Climate2 <- Climate
+#' Climate2$site <- "B"
+#' Climate_site <- rbind(Climate1, Climate2)
+#' results_spatial <- run_slidingwin(range = 0:2, 
+#'                         climate_data = Climate_site, 
+#'                         bio_data = Mass,
+#'                         basemodel = lm(Mass ~ climate, data = bio_data),
+#'                         spatial = "site")
 #'
 #' @importFrom furrr future_map
 #' @importFrom future plan
@@ -50,6 +62,7 @@ run_slidingwin <- function(range,
                            fn = mean,
                            type = "relative",
                            refday = NULL,
+                           spatial = NULL,
                            parallel = FALSE,
                            progress = TRUE,
                            .basemodelIsCall = FALSE) {
@@ -113,7 +126,7 @@ run_slidingwin <- function(range,
   
   # Validate climate data structure
   if (!all(c(cdate, xvar) %in% names(climate_data))) {
-    stop(sprintf("climate_data must contain columns '%s' and '%s'", cdate, xvar))
+    stop(sprintf("climate_data must contain columns '%s', '%s', and '%s'", cdate, xvar, spatial))
   }
   
   if (missing(bio_data) || nrow(bio_data) == 0) {
@@ -121,8 +134,15 @@ run_slidingwin <- function(range,
   }
   
   # Validate bio data structure
-  if (!bdate %in% names(bio_data)) {
-    stop(sprintf("bio_data must contain column '%s'", bdate))
+  if (!c(bdate) %in% names(bio_data)) {
+    stop(sprintf("bio_data must contain columns '%s' and '%s'", bdate, spatial))
+  }
+  
+  # If spatial is not given, we create a dummy col
+  if (is.null(spatial)){
+    spatial <- "spatial"
+    climate_data$spatial <- "A"
+    bio_data$spatial <- "A"
   }
   
   ### FORMAT CLIMATE DATA ####
@@ -147,14 +167,32 @@ run_slidingwin <- function(range,
   }
   
   ## Each col is all the possible (integer) dates that are relevant across range
-  bio_int_ranges <- sapply(bio_data$date_int, FUN = \(x){
-    x - range
+  bio_int_split <- split(bio_data$date_int, bio_data[[spatial]])
+  ## Need to keep track of how the data are split so we can rejoin
+  bio_data_row  <- unlist(split(1:nrow(bio_data), bio_data[[spatial]]))
+  bio_int_ranges <- lapply(bio_int_split, FUN = \(site){
+    sapply(site, FUN = \(x){
+      x - range
+    })
   })
+  
+  ## Make climate data as a named list so that we can access the different spatial locations
   climate_data_vec <- climate_data[[xvar]]
+  climate_data_list <- split(climate_data_vec, climate_data[[spatial]])
+  
   ## Each col is all the possible xvar values that are relevant across range
-  bio_xvar_ranges <- apply(bio_int_ranges, MARGIN = 2, FUN = \(x){
-    climate_data_vec[x]
+  bio_xvar_ranges_list <- lapply(names(bio_int_ranges), \(site){
+    
+    climate_data_site <- climate_data_list[[site]]
+    bio_data_site <- bio_int_ranges[[site]]
+    
+    apply(bio_data_site, MARGIN = 2, FUN = \(x){
+      climate_data_site[x]
+    })
+    
   })
+  ## Convert back into a single matrix for later code
+  bio_xvar_ranges <- do.call(cbind, bio_xvar_ranges_list)
   
   # Calculate maximum possible range based on climate data
   max_climate_days <- max(climate_data$date_int)
@@ -181,9 +219,11 @@ run_slidingwin <- function(range,
     end_days <- range_combinations$end_days[i] + 1
     
     # Initialize vectors for this combination
-    bio_data$climate <- apply(bio_xvar_ranges, MARGIN = 2, FUN = \(x){
+    summary_data_unordered <- apply(bio_xvar_ranges, MARGIN = 2, FUN = \(x){
       fn(x[start_days:end_days])
     })
+    ## Need to reorder the data incase they were split during spatial joins
+    bio_data$climate <- summary_data_unordered[order(bio_data_row)]
     
     # Create results dataframe for this combination
     fit_result <- tryCatch({

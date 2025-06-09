@@ -15,8 +15,10 @@ run_slidingwin(
   fn = mean,
   type = "relative",
   refday = NULL,
+  spatial = NULL,
   parallel = FALSE,
-  progress = TRUE
+  progress = TRUE,
+  .basemodelIsCall = FALSE
 )
 }
 \arguments{
