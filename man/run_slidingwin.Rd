@@ -67,5 +67,17 @@ results <- run_slidingwin(range = 0:2,
                         climate_data = Climate, 
                         bio_data = Mass,
                         basemodel = lm(Mass ~ climate, data = bio_data))
+                        
+Mass$site <- sample(c("A", "B"), size = nrow(Mass), replace = TRUE)
+Climate1 <- Climate
+Climate1$site <- "A"
+Climate2 <- Climate
+Climate2$site <- "B"
+Climate_site <- rbind(Climate1, Climate2)
+results_spatial <- run_slidingwin(range = 0:2, 
+                        climate_data = Climate_site, 
+                        bio_data = Mass,
+                        basemodel = lm(Mass ~ climate, data = bio_data),
+                        spatial = "site")
 
 }
