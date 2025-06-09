@@ -126,7 +126,7 @@ run_slidingwin <- function(range,
   
   # Validate climate data structure
   if (!all(c(cdate, xvar) %in% names(climate_data))) {
-    stop(sprintf("climate_data must contain columns '%s', '%s', and '%s'", cdate, xvar, spatial))
+    stop(sprintf("climate_data must contain columns '%s' and '%s'", cdate, xvar))
   }
   
   if (missing(bio_data) || nrow(bio_data) == 0) {
@@ -135,7 +135,7 @@ run_slidingwin <- function(range,
   
   # Validate bio data structure
   if (!c(bdate) %in% names(bio_data)) {
-    stop(sprintf("bio_data must contain columns '%s' and '%s'", bdate, spatial))
+    stop(sprintf("bio_data must contain column '%s'", bdate))
   }
   
   # If spatial is not given, we create a dummy col
@@ -143,6 +143,14 @@ run_slidingwin <- function(range,
     spatial <- "spatial"
     climate_data$spatial <- "A"
     bio_data$spatial <- "A"
+  } else {
+    # Validate spatial column exists in both datasets
+    if (!spatial %in% names(climate_data)) {
+      stop(sprintf("climate_data must contain column '%s'", spatial))
+    }
+    if (!spatial %in% names(bio_data)) {
+      stop(sprintf("bio_data must contain column '%s'", spatial))
+    }
   }
   
   ### FORMAT CLIMATE DATA ####
