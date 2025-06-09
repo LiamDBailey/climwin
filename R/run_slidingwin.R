@@ -51,7 +51,8 @@ run_slidingwin <- function(range,
                            type = "relative",
                            refday = NULL,
                            parallel = FALSE,
-                           progress = TRUE) {
+                           progress = TRUE,
+                           .basemodelIsCall = FALSE) {
   
   ### ARGUMENT CHECKS ####
   # Ensure future and furrr are loaded if parallel is TRUE
@@ -63,7 +64,7 @@ run_slidingwin <- function(range,
   
   ## It's possible that basemodel is already a substitute
   ## with model lm()
-  if (!inherits(basemodel, "call")){
+  if (!.basemodelIsCall){
     basemodel <- substitute(basemodel) 
   }
   

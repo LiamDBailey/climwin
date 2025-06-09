@@ -109,8 +109,9 @@ run_randwin <- function(repeats,
       type = type,
       refday = refday,
       parallel = parallel,
-      progress = FALSE  # Disable progress for individual runs
-    )
+      progress = FALSE,  # Disable progress for individual runs
+      .basemodelIsCall = TRUE
+      )
     
     # Extract the top row (lowest AIC) and add iteration number
     if (nrow(sw_result) > 0) {
