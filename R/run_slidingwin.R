@@ -184,6 +184,10 @@ run_slidingwin <- function(range,
     })
   })
   
+  if (any(unlist(bio_int_ranges) < 1)){
+    stop("'range' covers time periods not included in climate data. Consider adding more climate data or reducing range.")
+  }
+  
   ## Make climate data as a named list so that we can access the different spatial locations
   climate_data_vec <- climate_data[[xvar]]
   climate_data_list <- split(climate_data_vec, climate_data[[spatial]])

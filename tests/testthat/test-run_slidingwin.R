@@ -23,6 +23,28 @@ test_that("run_slidingwin works with valid input", {
   expect_equal(nrow(result), 6)  # 6 combinations: 0-0, 0-1, 0-2, 1-1, 1-2, 2-2
 })
 
+test_that("run_slidingwin fails if we try to go back too far", {
+  
+  # Create sample data
+  climate_data <- data.frame(
+    Date = c("01/01/1979", "02/01/1979", "03/01/1979", "04/01/1979", "05/01/1979"),
+    Temp = c(10, 15, 20, 10, 12)
+  )
+  
+  # Create a data frame with the response variable and climate
+  bio_data <- data.frame(
+    Date = c("03/01/1979", "03/01/1979", "05/01/1979"),
+    Mass = c(100, 110, 120)
+  )
+  
+  # Test function
+  expect_error(run_slidingwin(range = 0:20,
+                           climate_data = climate_data,
+                           bio_data = bio_data,
+                           basemodel = lm(Mass ~ climate, data = bio_data)),
+               "'range' covers time periods not included in climate data. Consider adding more climate data or reducing range.")
+})
+
 test_that("run_slidingwin works with different basemodel structures", {
   # Create sample data
   climate_data <- data.frame(
