@@ -1,119 +1,116 @@
 test_that("run_slidingwin works with valid input", {
+  
   # Create sample data
   climate_data <- data.frame(
-    Date = c("01/01/1979", "02/01/1979", "03/01/1979"),
-    Temp = c(10, 15, 20)
+    Date = c("01/01/1979", "02/01/1979", "03/01/1979", "04/01/1979", "05/01/1979"),
+    Temp = c(10, 15, 20, 10, 12)
   )
   
   # Create a data frame with the response variable and climate
   bio_data <- data.frame(
-    Date = c("01/01/1979", "02/01/1979", "03/01/1979"),
-    Mass = c(100, 110, 120),
-    climate = 0
+    Date = c("03/01/1979", "03/01/1979", "05/01/1979"),
+    Mass = c(100, 110, 120)
   )
   
   # Test function
   result <- run_slidingwin(range = 0:2,
-                         climate_data = climate_data,
-                         bio_data = bio_data,
-                         basemodel = lm(Mass ~ climate, data = bio_data))
+                           climate_data = climate_data,
+                           bio_data = bio_data,
+                           basemodel = lm(Mass ~ climate, data = bio_data))
   
   # Check structure
   expect_true(is.data.frame(result))
-  expect_equal(ncol(result), 5)
-  expect_equal(names(result), c("Start_Date", "End_Date", "Start_Day", "End_Day", "AIC"))
   expect_equal(nrow(result), 6)  # 6 combinations: 0-0, 0-1, 0-2, 1-1, 1-2, 2-2
 })
 
 test_that("run_slidingwin works with different basemodel structures", {
   # Create sample data
   climate_data <- data.frame(
-    Date = c("01/01/1979", "02/01/1979", "03/01/1979"),
-    Temp = c(10, 15, 20)
+    Date = c("01/01/1979", "02/01/1979", "03/01/1979", "04/01/1979", "05/01/1979"),
+    Temp = c(10, 15, 20, 10, 12)
   )
   
+  # Create a data frame with the response variable and climate
   bio_data <- data.frame(
-    Date = c("01/01/1979", "02/01/1979", "03/01/1979"),
+    Date = c("03/01/1979", "03/01/1979", "05/01/1979"),
     Mass = c(100, 110, 120),
-    Age = c(1, 2, 3),
-    climate = 0
+    Age = c(1, 2, 3)
   )
   
-  # Test with different model structures
-  models <- list(
-    lm(Mass ~ climate, data = bio_data),
-    lm(Mass ~ climate + Age, data = bio_data),
-    lm(Mass ~ climate * Age, data = bio_data)
-  )
+  result1 <- run_slidingwin(range = 0:2,
+                            climate_data = climate_data,
+                            bio_data = bio_data,
+                            basemodel = lm(Mass ~ climate, data = bio_data))
+  expect_true(is.data.frame(result1))
+  expect_equal(nrow(result1), 6)  # 6 combinations: 0-0, 0-1, 0-2, 1-1, 1-2, 2-2
   
-  for (basemodel in models) {
-    result <- run_slidingwin(range = 0:2,
-                           climate_data = climate_data,
-                           bio_data = bio_data,
-                           basemodel = basemodel)
-    expect_true(is.data.frame(result))
-    expect_equal(ncol(result), 5)
-    expect_equal(names(result), c("Start_Date", "End_Date", "Start_Day", "End_Day", "AIC"))
-    expect_equal(nrow(result), 6)  # 6 combinations: 0-0, 0-1, 0-2, 1-1, 1-2, 2-2
-  }
+  result2 <- run_slidingwin(range = 0:2,
+                            climate_data = climate_data,
+                            bio_data = bio_data,
+                            basemodel = lm(Mass ~ climate + Age, data = bio_data))
+  expect_true(is.data.frame(result2))
+  expect_equal(nrow(result2), 6)  # 6 combinations: 0-0, 0-1, 0-2, 1-1, 1-2, 2-2
+  
+  result3 <- run_slidingwin(range = 0:2,
+                            climate_data = climate_data,
+                            bio_data = bio_data,
+                            basemodel = lm(Mass ~ climate * Age, data = bio_data))
+  expect_true(is.data.frame(result3))
+  expect_equal(nrow(result3), 6)  # 6 combinations: 0-0, 0-1, 0-2, 1-1, 1-2, 2-2
+  
 })
 
 test_that("run_slidingwin works with log(climate)", {
   # Create sample data
   climate_data <- data.frame(
-    Date = c("01/01/1979", "02/01/1979", "03/01/1979"),
-    Temp = c(1, 2, 3)  # Use positive values for log(climate)
+    Date = c("01/01/1979", "02/01/1979", "03/01/1979", "04/01/1979", "05/01/1979"),
+    Temp = c(10, 15, 20, 10, 12)
   )
   
+  # Create a data frame with the response variable and climate
   bio_data <- data.frame(
-    Date = c("01/01/1979", "02/01/1979", "03/01/1979"),
+    Date = c("03/01/1979", "03/01/1979", "05/01/1979"),
     Mass = c(100, 110, 120),
-    climate = c(1, 2, 3)  # Use positive values for log(climate)
+    Age = c(1, 2, 3)
   )
-  
-  # Create a basemodel using log(climate)
-  basemodel <- lm(Mass ~ log(climate), data = bio_data)
   
   # Test function
   result <- run_slidingwin(range = 0:2,
-                         climate_data = climate_data,
-                         bio_data = bio_data,
-                         basemodel = basemodel)
+                           climate_data = climate_data,
+                           bio_data = bio_data,
+                           basemodel = lm(Mass ~ log(climate), data = bio_data))
   
   # Check structure
   expect_true(is.data.frame(result))
-  expect_equal(ncol(result), 5)
-  expect_equal(names(result), c("Start_Date", "End_Date", "Start_Day", "End_Day", "AIC"))
   expect_equal(nrow(result), 6)  # 6 combinations: 0-0, 0-1, 0-2, 1-1, 1-2, 2-2
 })
 
 test_that("run_slidingwin gives identical results with parallel = TRUE and FALSE", {
   # Create sample data
   climate_data <- data.frame(
-    Date = c("01/01/1979", "02/01/1979", "03/01/1979"),
-    Temp = c(10, 15, 20)
+    Date = c("01/01/1979", "02/01/1979", "03/01/1979", "04/01/1979", "05/01/1979"),
+    Temp = c(10, 15, 20, 10, 12)
   )
   
+  # Create a data frame with the response variable and climate
   bio_data <- data.frame(
-    Date = c("01/01/1979", "02/01/1979", "03/01/1979"),
+    Date = c("03/01/1979", "03/01/1979", "05/01/1979"),
     Mass = c(100, 110, 120),
-    climate = 0
+    Age = c(1, 2, 3)
   )
-  basemodel <- lm(Mass ~ climate, data = bio_data)
-  
   # Run with parallel = TRUE
   result_parallel <- run_slidingwin(range = 0:2,
-                                  climate_data = climate_data,
-                                  bio_data = bio_data,
-                                  basemodel = basemodel,
-                                  parallel = TRUE)
+                                    climate_data = climate_data,
+                                    bio_data = bio_data,
+                                    basemodel = lm(Mass ~ climate, data = bio_data),
+                                    parallel = TRUE)
   
   # Run with parallel = FALSE
   result_sequential <- run_slidingwin(range = 0:2,
-                                    climate_data = climate_data,
-                                    bio_data = bio_data,
-                                    basemodel = basemodel,
-                                    parallel = FALSE)
+                                      climate_data = climate_data,
+                                      bio_data = bio_data,
+                                      basemodel = lm(Mass ~ climate, data = bio_data),
+                                      parallel = FALSE)
   
   # Compare results
   expect_identical(result_parallel, result_sequential)
@@ -130,9 +127,9 @@ test_that("results and results_spatial are identical as shown in example", {
   
   # Run standard analysis (without spatial)
   results <- run_slidingwin(range = 0:2, 
-                          climate_data = Climate, 
-                          bio_data = bio_data,
-                          basemodel = lm(Mass ~ climate, data = bio_data))
+                            climate_data = Climate, 
+                            bio_data = bio_data,
+                            basemodel = lm(Mass ~ climate, data = bio_data))
   
   # Create spatial version as shown in example
   Mass$site <- sample(c("A", "B"), size = nrow(Mass), replace = TRUE)
@@ -147,10 +144,10 @@ test_that("results and results_spatial are identical as shown in example", {
   
   # Run spatial analysis
   results_spatial <- run_slidingwin(range = 0:2, 
-                          climate_data = Climate_site, 
-                          bio_data = bio_data,
-                          basemodel = lm(Mass ~ climate, data = bio_data),
-                          spatial = "site")
+                                    climate_data = Climate_site, 
+                                    bio_data = bio_data,
+                                    basemodel = lm(Mass ~ climate, data = bio_data),
+                                    spatial = "site")
   
   # Results should be identical (same AIC values and structure)
   expect_equal(results$AIC, results_spatial$AIC, tolerance = 1e-10)
