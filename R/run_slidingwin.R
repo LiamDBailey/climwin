@@ -81,62 +81,44 @@ run_slidingwin <- function(range,
     basemodel <- substitute(basemodel) 
   }
   
-  # Input validation
-  if (missing(climate_data) || nrow(climate_data) == 0) {
-    stop("climate_data must contain at least 1 row")
-  }
+  # Validate required arguments
+  validate_arg("climate_data", climate_data, required = TRUE, type = "data.frame",
+              additional_checks = function(x) if(nrow(x) == 0) stop("must contain at least 1 row"))
   
-  if (missing(bio_data) || nrow(bio_data) == 0) {
-    stop("bio_data must contain at least 1 row")
-  }
+  validate_arg("bio_data", bio_data, required = TRUE, type = "data.frame",
+              additional_checks = function(x) if(nrow(x) == 0) stop("must contain at least 1 row"))
   
-  if (missing(basemodel)) {
-    stop("'basemodel' is required.")
-  }
+  validate_arg("basemodel", basemodel, required = TRUE)
   
-  if (!is.data.frame(bio_data)) {
-    stop("bio_data must be a data frame")
-  }
+  # Validate optional arguments
+  validate_arg("fn", fn, required = FALSE, type = "function")
   
-  # Validate function first
-  if (!is.function(fn)) {
-    stop("fn must be a function")
-  }
+  validate_arg("type", type, required = FALSE, type = "character",
+              additional_checks = function(x) if(!x %in% c("relative", "absolute")) 
+                stop("must be either 'relative' or 'absolute'"))
   
-  # Validate type parameter
-  if (!type %in% c("relative", "absolute")) {
-    stop("type must be either 'relative' or 'absolute'")
-  }
-  
-  # Validate refday parameter
+  # Validate refday parameter if type is absolute
   if (type == "absolute") {
-    if (is.null(refday)) {
-      stop("refday must be provided when type is 'absolute'")
-    }
-    refday_date <- as.Date(refday, format = "%d/%m/%Y")
-    if (is.na(refday_date)) {
-      stop("refday must be in format 'DD/MM/YYYY'")
-    }
+    validate_arg("refday", refday, required = TRUE, type = "character",
+                additional_checks = function(x) {
+                  refday_date <- as.Date(x, format = "%d/%m/%Y")
+                  if(is.na(refday_date)) stop("must be in format 'DD/MM/YYYY'")
+                })
   }
   
-  # Read the climate data if not provided
-  if (missing(climate_data) || nrow(climate_data) == 0) {
-    stop("climate_data must contain at least 1 row")
-  }
+  # Validate column names in climate_data
+  validate_arg("climate_data", climate_data, required = FALSE,
+              additional_checks = function(x) {
+                if(!all(c(cdate, xvar) %in% names(x))) 
+                  stop(sprintf("must contain columns '%s' and '%s'", cdate, xvar))
+              })
   
-  # Validate climate data structure
-  if (!all(c(cdate, xvar) %in% names(climate_data))) {
-    stop(sprintf("climate_data must contain columns '%s' and '%s'", cdate, xvar))
-  }
-  
-  if (missing(bio_data) || nrow(bio_data) == 0) {
-    stop("bio_data must contain at least 1 row")
-  }
-  
-  # Validate bio data structure
-  if (!c(bdate) %in% names(bio_data)) {
-    stop(sprintf("bio_data must contain column '%s'", bdate))
-  }
+  # Validate column names in bio_data
+  validate_arg("bio_data", bio_data, required = FALSE,
+              additional_checks = function(x) {
+                if(!bdate %in% names(x)) 
+                  stop(sprintf("must contain column '%s'", bdate))
+              })
   
   # If spatial is not given, we create a dummy col
   if (is.null(spatial)){
@@ -145,12 +127,17 @@ run_slidingwin <- function(range,
     bio_data$spatial <- "A"
   } else {
     # Validate spatial column exists in both datasets
-    if (!spatial %in% names(climate_data)) {
-      stop(sprintf("climate_data must contain column '%s'", spatial))
-    }
-    if (!spatial %in% names(bio_data)) {
-      stop(sprintf("bio_data must contain column '%s'", spatial))
-    }
+    validate_arg("climate_data", climate_data, required = FALSE,
+                additional_checks = function(x) {
+                  if(!spatial %in% names(x)) 
+                    stop(sprintf("must contain column '%s'", spatial))
+                })
+    
+    validate_arg("bio_data", bio_data, required = FALSE,
+                additional_checks = function(x) {
+                  if(!spatial %in% names(x)) 
+                    stop(sprintf("must contain column '%s'", spatial))
+                })
   }
   
   ### FORMAT CLIMATE DATA ####
