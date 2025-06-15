@@ -16,7 +16,11 @@
 #' @param fn A function to use for summarizing the climate data. Defaults to mean().
 #' @param type Character string specifying the type of date range calculation. Must be either "relative" (default) or "absolute".
 #' @param refday Character string in format "DD/MM/YYYY" specifying the reference date to use when type is "absolute".
+#' @param spatial Character string specifying the name of the spatial grouping column in both climate_data and bio_data. Defaults to NULL.
+#' @param cohort Character string specifying the name of the cohort column in bio_data. When type is "relative", each row will use the earliest year of all records in the same cohort. Defaults to NULL.
 #' @param parallel Logical. If TRUE, parallel processing is used. Default is FALSE.
+#' @param progress Logical. If TRUE, shows a progress bar. Default is TRUE.
+#' @param .basemodelIsCall Logical. Internal parameter used to handle basemodel substitution. Default is FALSE.
 #'
 #' @return A data frame containing:
 #'         - Start_Date: Start date of the climate window
@@ -63,6 +67,7 @@ run_slidingwin <- function(range,
                            type = "relative",
                            refday = NULL,
                            spatial = NULL,
+                           cohort = NULL,
                            parallel = FALSE,
                            progress = TRUE,
                            .basemodelIsCall = FALSE) {
@@ -142,6 +147,13 @@ run_slidingwin <- function(range,
           stop(sprintf("must contain column '%s'", spatial))
       }
     )
+  # Validate cohort column if provided
+  if (!is.null(cohort)) {
+    validate_arg("bio_data", bio_data, required = FALSE,
+                additional_checks = function(x) {
+                  if(!cohort %in% names(x)) 
+                    stop(sprintf("must contain column '%s'", cohort))
+                })
   }
   
   ### FORMAT CLIMATE DATA ####
@@ -151,7 +163,28 @@ run_slidingwin <- function(range,
   ## Need to check it is actually ordered!!
   climate_data$date_int <- 1:nrow(climate_data)
   if (type == "relative"){
-    bio_data$date_int <- convert_dates_to_int(bio_data[[bdate]], min_date = climate_data[[cdate]][1]) + 1 
+    if (!is.null(cohort)) {
+      # Convert dates to Date objects
+      bio_dates <- as.Date(bio_data[[bdate]], format = "%d/%m/%Y")
+      
+      # Get earliest year for each cohort
+      cohort_years <- tapply(bio_dates, bio_data[[cohort]], function(x) {
+        min(lubridate::year(x))
+      })
+      
+      # Create new dates using earliest year for each cohort
+      bio_data$date_int <- convert_dates_to_int(
+        as.Date(paste(
+          lubridate::day(bio_dates),
+          lubridate::month(bio_dates),
+          cohort_years[bio_data[[cohort]]],
+          sep = "/"
+        ), format = "%d/%m/%Y"),
+        min_date = climate_data[[cdate]][1]
+      ) + 1
+    } else {
+      bio_data$date_int <- convert_dates_to_int(bio_data[[bdate]], min_date = climate_data[[cdate]][1]) + 1
+    }
   } else {
     # Format bio dates and refday as date objects
     bio_dates_as_date <- as.Date(bio_data[[bdate]], format = "%d/%m/%Y")
