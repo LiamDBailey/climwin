@@ -157,95 +157,25 @@ run_slidingwin <- function(range,
                  })
   }
   
-  ### FORMAT CLIMATE DATA ####
+  ### PROCESS DATA ####
+  processed_data <- process_data(
+    climate_data = climate_data,
+    bio_data = bio_data,
+    range = range,
+    cdate = cdate,
+    bdate = bdate,
+    xvar = xvar,
+    spatial = spatial,
+    type = type,
+    refday = refday,
+    cohort = cohort
+  )
   
-  # Add integer dates to data frames (1 = earliest climate data)
-  ## FIXME: We assume climate data is ordered and first date = min date
-  ## Need to check it is actually ordered!!
-  climate_data$date_int <- 1:nrow(climate_data)
-  if (type == "relative"){
-    if (!is.null(cohort)) {
-      # Convert dates to Date objects
-      bio_dates <- as.Date(bio_data[[bdate]], format = "%d/%m/%Y")
-      
-      # Get earliest year for each cohort
-      cohort_years <- tapply(bio_dates, bio_data[[cohort]], function(x) {
-        min(lubridate::year(x))
-      })
-      
-      # Create new dates using earliest year for each cohort
-      bio_data$date_int <- convert_dates_to_int(
-        as.Date(paste(
-          lubridate::day(bio_dates),
-          lubridate::month(bio_dates),
-          cohort_years[bio_data[[cohort]]],
-          sep = "/"
-        ), format = "%d/%m/%Y"),
-        min_date = climate_data[[cdate]][1]
-      ) + 1
-    } else {
-      bio_data$date_int <- convert_dates_to_int(bio_data[[bdate]], min_date = climate_data[[cdate]][1]) + 1
-    }
-  } else {
-    # Format bio dates and refday as date objects
-    bio_dates_as_date <- as.Date(bio_data[[bdate]], format = "%d/%m/%Y")
-    refday_parts_as_date <- as.Date(refday, format = "%d/%m/%Y")
-    
-    ## Create new bio data dates using refday
-    bio_data$date_int <- convert_dates_to_int(as.Date(paste(lubridate::day(refday_parts_as_date),
-                                                            lubridate::month(refday_parts_as_date),
-                                                            lubridate::year(bio_dates_as_date),
-                                                            sep = "/"), format = "%d/%m/%Y"),
-                                              min_date = climate_data[[cdate]][1]) + 1
-  }
-  
-  ## Each col is all the possible (integer) dates that are relevant across range
-  bio_int_split <- split(bio_data$date_int, bio_data[[spatial]])
-  ## Need to keep track of how the data are split so we can rejoin
-  bio_data_row  <- unlist(split(1:nrow(bio_data), bio_data[[spatial]]))
-  bio_int_ranges <- lapply(bio_int_split, FUN = \(site){
-    sapply(site, FUN = \(x){
-      x - range
-    })
-  })
-  
-  if (any(unlist(bio_int_ranges) < 1)){
-    stop("'range' covers time periods not included in climate data. Consider adding more climate data or reducing range.")
-  }
-  
-  ## Make climate data as a named list so that we can access the different spatial locations
-  climate_data_vec <- climate_data[[xvar]]
-  climate_data_list <- split(climate_data_vec, climate_data[[spatial]])
-  
-  ## Each col is all the possible xvar values that are relevant across range
-  bio_xvar_ranges_list <- lapply(names(bio_int_ranges), \(site){
-    
-    climate_data_site <- climate_data_list[[site]]
-    bio_data_site <- bio_int_ranges[[site]]
-    
-    apply(bio_data_site, MARGIN = 2, FUN = \(x){
-      climate_data_site[x]
-    })
-    
-  })
-  ## Convert back into a single matrix for later code
-  bio_xvar_ranges <- do.call(cbind, bio_xvar_ranges_list)
-  
-  # Calculate maximum possible range based on climate data
-  max_climate_days <- max(climate_data$date_int)
-  min_climate_days <- min(climate_data$date_int)
-  max_possible_range <- max_climate_days - min_climate_days
-  
-  # Check if any requested range exceeds the available data
-  max_requested_range <- max(range)
-  if (max_requested_range > max_possible_range) {
-    stop(sprintf(
-      "Requested range (%d days) exceeds available climate data range (%d days).\nMaximum possible range is 0 to %d.",
-      max_requested_range,
-      max_possible_range,
-      max_possible_range
-    ))
-  }
+  # Extract processed data
+  bio_data <- processed_data$bio_data
+  bio_int_ranges <- processed_data$bio_int_ranges
+  bio_data_row <- processed_data$bio_data_row
+  bio_xvar_ranges <- processed_data$bio_xvar_ranges
   
   # Generate all valid range combinations
   range_combinations <- expand.grid(start_days = range, end_days = range)
