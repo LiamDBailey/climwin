@@ -81,12 +81,16 @@ run_slidingwin <- function(range,
     basemodel <- substitute(basemodel) 
   }
   
-  # Validate required arguments
-  validate_arg("climate_data", climate_data, required = TRUE, type = "data.frame",
-              additional_checks = function(x) if(nrow(x) == 0) stop("must contain at least 1 row"))
-  
-  validate_arg("bio_data", bio_data, required = TRUE, type = "data.frame",
-              additional_checks = function(x) if(nrow(x) == 0) stop("must contain at least 1 row"))
+  # Validate required data frames
+  validate_args(
+    args = list(
+      climate_data = climate_data,
+      bio_data = bio_data
+    ),
+    required = TRUE,
+    type = "data.frame",
+    additional_checks = function(x) if(nrow(x) == 0) stop("must contain at least 1 row")
+  )
   
   validate_arg("basemodel", basemodel, required = TRUE)
   
@@ -127,17 +131,17 @@ run_slidingwin <- function(range,
     bio_data$spatial <- "A"
   } else {
     # Validate spatial column exists in both datasets
-    validate_arg("climate_data", climate_data, required = FALSE,
-                additional_checks = function(x) {
-                  if(!spatial %in% names(x)) 
-                    stop(sprintf("must contain column '%s'", spatial))
-                })
-    
-    validate_arg("bio_data", bio_data, required = FALSE,
-                additional_checks = function(x) {
-                  if(!spatial %in% names(x)) 
-                    stop(sprintf("must contain column '%s'", spatial))
-                })
+    validate_args(
+      args = list(
+        climate_data = climate_data,
+        bio_data = bio_data
+      ),
+      required = FALSE,
+      additional_checks = function(x) {
+        if(!spatial %in% names(x)) 
+          stop(sprintf("must contain column '%s'", spatial))
+      }
+    )
   }
   
   ### FORMAT CLIMATE DATA ####

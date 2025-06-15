@@ -109,4 +109,103 @@ test_that("validate_arg handles complex validation scenarios", {
                   function(x) if(!grepl("^[A-Z]", x)) stop("must start with uppercase")
                 ))
   )
+})
+
+# Tests for validate_args
+test_that("validate_args handles input validation correctly", {
+  # Error if args is not a named list
+  expect_error(
+    validate_args(list(1, 2)),
+    "args must be a named list"
+  )
+  
+  expect_error(
+    validate_args(list(a = 1, 2)),
+    "args must be a named list"
+  )
+})
+
+test_that("validate_args applies validation to all arguments", {
+  # Error if any argument fails validation
+  expect_error(
+    validate_args(
+      args = list(
+        arg1 = "string",
+        arg2 = "string"
+      ),
+      type = "numeric"
+    ),
+    "'arg1' must be of type numeric"
+  )
+  
+  # No error if all arguments pass validation
+  expect_silent(
+    validate_args(
+      args = list(
+        arg1 = 1,
+        arg2 = 2
+      ),
+      type = "numeric"
+    )
+  )
+})
+
+test_that("validate_args handles additional checks correctly", {
+  # Error if any argument fails additional checks
+  expect_error(
+    validate_args(
+      args = list(
+        arg1 = 0,
+        arg2 = 1
+      ),
+      type = "numeric",
+      additional_checks = function(x) if(x <= 0) stop("must be positive")
+    ),
+    "'arg1': must be positive"
+  )
+  
+  # No error if all arguments pass additional checks
+  expect_silent(
+    validate_args(
+      args = list(
+        arg1 = 1,
+        arg2 = 2
+      ),
+      type = "numeric",
+      additional_checks = function(x) if(x <= 0) stop("must be positive")
+    )
+  )
+})
+
+test_that("validate_args handles complex validation scenarios", {
+  # Test with multiple conditions
+  expect_error(
+    validate_args(
+      args = list(
+        arg1 = "abc",
+        arg2 = "def"
+      ),
+      type = "character",
+      additional_checks = list(
+        function(x) if(nchar(x) < 4) stop("must be at least 4 characters"),
+        function(x) if(!grepl("^[A-Z]", x)) stop("must start with uppercase")
+      )
+    ),
+    "'arg1': must be at least 4 characters"
+  )
+  
+  # No error if all arguments pass all conditions
+  expect_silent(
+    validate_args(
+      args = list(
+        arg1 = "Abcd",
+        arg2 = "Efgh"
+      ),
+      type = "character",
+      additional_checks = list(
+        function(x) if(nchar(x) < 4) stop("must be at least 4 characters"),
+        function(x) if(!grepl("^[A-Z]", x)) stop("must start with uppercase")
+      )
+    )
+  )
 }) 
