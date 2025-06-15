@@ -48,7 +48,7 @@ test_that("run_randwin validates arguments correctly", {
                 climate_data = climate_data,
                 bio_data = bio_data,
                 basemodel = lm(Mass ~ climate, data = bio_data)),
-    "'repeats' must be a positive integer"
+    "'repeats' is required"
   )
   
   # Test invalid repeats
@@ -58,7 +58,7 @@ test_that("run_randwin validates arguments correctly", {
                 climate_data = climate_data,
                 bio_data = bio_data,
                 basemodel = lm(Mass ~ climate, data = bio_data)),
-    "'repeats' must be a positive integer"
+    "'repeats': must be a positive integer"
   )
   
   # Test missing range

@@ -17,29 +17,26 @@
 #' @export
 convert_dates_to_int <- function(dates, min_date = NULL) {
   
-  # Handle empty input
-  if (length(dates) == 0) {
-    stop("dates missing")
-  }
+  # Validate dates argument
+  validate_arg("dates", dates, required = TRUE,
+               additional_checks = function(x) if(length(x) == 0) stop("dates missing"))
   
   # Convert input dates to Date objects
   dates_as_date <- as.Date(dates, format = "%d/%m/%Y")
   
-  # Validate dates
-  if (any(is.na(dates_as_date))) {
-    stop("All dates must be in format 'DD/MM/YYYY'")
-  }
+  # Validate dates format
+  validate_arg("dates", dates_as_date, required = TRUE,
+               additional_checks = function(x) if(any(is.na(x))) stop("All dates must be in format 'DD/MM/YYYY'"))
   
   # Use provided min_date or find earliest date
   if (is.null(min_date)) {
     date_int <- as.integer(dates_as_date)
   } else {
-    min_date <- as.Date(min_date, format = "%d/%m/%Y")
-    if (is.na(min_date)) {
-      stop("min_date must be in format 'DD/MM/YYYY'")
-    }
+    min_date_date <- as.Date(min_date, format = "%d/%m/%Y")
+    validate_arg("min_date", min_date_date, required = TRUE,
+                 additional_checks = function(x) if(is.na(x)) stop("min_date must be in format 'DD/MM/YYYY'"))
     # Convert to integers
-    date_int <- as.integer(dates_as_date - min_date) 
+    date_int <- as.integer(dates_as_date - min_date_date) 
   }
   
   return(date_int)

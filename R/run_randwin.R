@@ -53,30 +53,41 @@ run_randwin <- function(repeats,
                         progress = TRUE) {
   
   ### ARGUMENT CHECKS ####
-  if (missing(repeats) || !is.numeric(repeats) || repeats < 1) {
-    stop("'repeats' must be a positive integer")
+  validate_arg("repeats", repeats, required = TRUE, type = "numeric",
+               additional_checks = list(
+                 function(x) if(length(x) != 1 || is.na(x)) stop("must be a single number"),
+                 function(x) if(x < 1) stop("must be a positive integer")
+               ))
+  
+  validate_arg("range", range, required = TRUE)
+  
+  validate_arg("climate_data", climate_data, required = TRUE, type = "data.frame",
+               additional_checks = function(x) if(nrow(x) == 0) stop("must contain at least 1 row"))
+  
+  validate_arg("bio_data", bio_data, required = TRUE, type = "data.frame",
+               additional_checks = function(x) if(nrow(x) == 0) stop("must contain at least 1 row"))
+  
+  validate_arg("basemodel", basemodel, required = TRUE)
+  
+  validate_arg("fn", fn, required = FALSE, type = "function")
+  
+  validate_arg("type", type, required = FALSE, type = "character",
+               additional_checks = function(x) if(!x %in% c("relative", "absolute")) 
+                 stop("must be either 'relative' or 'absolute'"))
+  
+  if (type == "absolute") {
+    validate_arg("refday", refday, required = TRUE, type = "character",
+                 additional_checks = function(x) {
+                   refday_date <- as.Date(x, format = "%d/%m/%Y")
+                   if(is.na(refday_date)) stop("must be in format 'DD/MM/YYYY'")
+                 })
   }
   
-  if (missing(range)) {
-    stop("'range' is required")
-  }
-  
-  if (missing(climate_data) || nrow(climate_data) == 0) {
-    stop("climate_data must contain at least 1 row")
-  }
-  
-  if (missing(bio_data) || nrow(bio_data) == 0) {
-    stop("bio_data must contain at least 1 row")
-  }
-  
-  if (missing(basemodel)) {
-    stop("'basemodel' is required")
-  }
-  
-  # Validate climate data structure
-  if (!all(c(cdate, xvar) %in% names(climate_data))) {
-    stop(sprintf("climate_data must contain columns '%s' and '%s'", cdate, xvar))
-  }
+  validate_arg("climate_data", climate_data, required = FALSE,
+               additional_checks = function(x) {
+                 if(!all(c(cdate, xvar) %in% names(x))) 
+                   stop(sprintf("must contain columns '%s' and '%s'", cdate, xvar))
+               })
   
   # Initialize progress bar for randomizations
   if (progress && interactive()) {
