@@ -199,7 +199,7 @@ test_that("run_slidingwin fails when spatial column doesn't exist in climate_dat
                    bio_data = bio_data,
                    basemodel = lm(Mass ~ climate, data = bio_data),
                    spatial = "site"),
-    "climate_data must contain column 'site'"
+    "'climate_data': must contain column 'site'"
   )
 })
 
@@ -225,7 +225,7 @@ test_that("run_slidingwin fails when spatial column doesn't exist in bio_data", 
                    bio_data = bio_data,
                    basemodel = lm(Mass ~ climate, data = bio_data),
                    spatial = "site"),
-    "bio_data must contain column 'site'"
+    "'bio_data': must contain column 'site'"
   )
 })
 
@@ -249,6 +249,6 @@ test_that("run_slidingwin fails when spatial column doesn't exist in both climat
                    bio_data = bio_data,
                    basemodel = lm(Mass ~ climate, data = bio_data),
                    spatial = "nonexistent_column"),
-    "climate_data must contain column 'nonexistent_column'"
+    "'climate_data': must contain column 'nonexistent_column'"
   )
 }) 
