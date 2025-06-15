@@ -6,13 +6,13 @@
 #' @param climate_data A data frame containing climate data
 #' @param bio_data A data frame containing biological data
 #' @param range A numeric vector specifying the number of days to look back
-#' @param cdate Character string specifying the name of the date column in climate_data
-#' @param bdate Character string specifying the name of the date column in bio_data
-#' @param xvar Character string specifying the name of the climate variable column
-#' @param spatial Character string specifying the name of the spatial grouping column
-#' @param type Character string specifying the type of date range calculation
-#' @param refday Character string specifying the reference date for absolute type
-#' @param cohort Character string specifying the name of the cohort column
+#' @param cdate Character string specifying the name of the date column in climate_data. Defaults to "Date".
+#' @param bdate Character string specifying the name of the date column in bio_data. Defaults to "Date".
+#' @param xvar Character string specifying the name of the climate variable column. Defaults to "Temp".
+#' @param spatial Character string specifying the name of the spatial grouping column. Defaults to NULL.
+#' @param type Character string specifying the type of date range calculation. Must be either "relative" (default) or "absolute".
+#' @param refday Character string specifying the reference date for absolute type. Defaults to NULL.
+#' @param cohort Character string specifying the name of the cohort column. Defaults to NULL.
 #'
 #' @return A list containing:
 #'         - bio_data: The processed biological data with date_int column
@@ -25,13 +25,84 @@
 process_data <- function(climate_data,
                         bio_data,
                         range,
-                        cdate,
-                        bdate,
-                        xvar,
-                        spatial,
-                        type,
+                        cdate = "Date",
+                        bdate = "Date",
+                        xvar = "Temp",
+                        spatial = NULL,
+                        type = "relative",
                         refday = NULL,
                         cohort = NULL) {
+  
+  ### ARGUMENT CHECKS ####
+  # Validate required data frames
+  validate_args(
+    args = list(
+      climate_data = climate_data,
+      bio_data = bio_data
+    ),
+    required = TRUE,
+    type = "data.frame",
+    additional_checks = function(x) if(nrow(x) == 0) stop("must contain at least 1 row")
+  )
+  
+  # Validate type parameter
+  validate_arg("type", type, required = FALSE, type = "character",
+              additional_checks = function(x) if(!x %in% c("relative", "absolute")) 
+                stop("must be either 'relative' or 'absolute'"))
+  
+  # Validate refday parameter if type is absolute
+  if (type == "absolute") {
+    validate_arg("refday", refday, required = TRUE, type = "character",
+                additional_checks = function(x) {
+                  refday_date <- as.Date(x, format = "%d/%m/%Y")
+                  if(is.na(refday_date)) stop("must be in format 'DD/MM/YYYY'")
+                })
+  }
+  
+  # Validate column names in climate_data
+  validate_arg("climate_data", climate_data, required = FALSE,
+              additional_checks = function(x) {
+                if(!all(c(cdate, xvar) %in% names(x))) 
+                  stop(sprintf("must contain columns '%s' and '%s'", cdate, xvar))
+              })
+  
+  # Validate column names in bio_data
+  validate_arg("bio_data", bio_data, required = FALSE,
+              additional_checks = function(x) {
+                if(!bdate %in% names(x)) 
+                  stop(sprintf("must contain column '%s'", bdate))
+              })
+  
+  # If spatial is not given, we create a dummy col
+  if (is.null(spatial)){
+    spatial <- "spatial"
+    climate_data$spatial <- "A"
+    bio_data$spatial <- "A"
+  } else {
+    # Validate spatial column exists in both datasets
+    validate_args(
+      args = list(
+        climate_data = climate_data,
+        bio_data = bio_data
+      ),
+      required = FALSE,
+      additional_checks = function(x) {
+        if(!spatial %in% names(x)) 
+          stop(sprintf("must contain column '%s'", spatial))
+      }
+    )
+  }
+  
+  # Validate cohort column if provided
+  if (!is.null(cohort)) {
+    validate_arg("bio_data", bio_data, required = FALSE,
+                additional_checks = function(x) {
+                  if(!cohort %in% names(x)) 
+                    stop(sprintf("must contain column '%s'", cohort))
+                })
+  }
+  
+  ### PROCESS DATA ####
   # Add integer dates to data frames (1 = earliest climate data)
   climate_data$date_int <- 1:nrow(climate_data)
   

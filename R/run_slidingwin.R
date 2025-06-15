@@ -86,76 +86,8 @@ run_slidingwin <- function(range,
     basemodel <- substitute(basemodel) 
   }
   
-  # Validate required data frames
-  validate_args(
-    args = list(
-      climate_data = climate_data,
-      bio_data = bio_data
-    ),
-    required = TRUE,
-    type = "data.frame",
-    additional_checks = function(x) if(nrow(x) == 0) stop("must contain at least 1 row")
-  )
-  
   validate_arg("basemodel", basemodel, required = TRUE)
-  
-  # Validate optional arguments
   validate_arg("fn", fn, required = FALSE, type = "function")
-  
-  validate_arg("type", type, required = FALSE, type = "character",
-               additional_checks = function(x) if(!x %in% c("relative", "absolute")) 
-                 stop("must be either 'relative' or 'absolute'"))
-  
-  # Validate refday parameter if type is absolute
-  if (type == "absolute") {
-    validate_arg("refday", refday, required = TRUE, type = "character",
-                 additional_checks = function(x) {
-                   refday_date <- as.Date(x, format = "%d/%m/%Y")
-                   if(is.na(refday_date)) stop("must be in format 'DD/MM/YYYY'")
-                 })
-  }
-  
-  # Validate column names in climate_data
-  validate_arg("climate_data", climate_data, required = FALSE,
-               additional_checks = function(x) {
-                 if(!all(c(cdate, xvar) %in% names(x))) 
-                   stop(sprintf("must contain columns '%s' and '%s'", cdate, xvar))
-               })
-  
-  # Validate column names in bio_data
-  validate_arg("bio_data", bio_data, required = FALSE,
-               additional_checks = function(x) {
-                 if(!bdate %in% names(x)) 
-                   stop(sprintf("must contain column '%s'", bdate))
-               })
-  
-  # If spatial is not given, we create a dummy col
-  if (is.null(spatial)){
-    spatial <- "spatial"
-    climate_data$spatial <- "A"
-    bio_data$spatial <- "A"
-  } else {
-    # Validate spatial column exists in both datasets
-    validate_args(
-      args = list(
-        climate_data = climate_data,
-        bio_data = bio_data
-      ),
-      required = FALSE,
-      additional_checks = function(x) {
-        if(!spatial %in% names(x)) 
-          stop(sprintf("must contain column '%s'", spatial))
-      }
-    )
-  }
-  # Validate cohort column if provided
-  if (!is.null(cohort)) {
-    validate_arg("bio_data", bio_data, required = FALSE,
-                 additional_checks = function(x) {
-                   if(!cohort %in% names(x)) 
-                     stop(sprintf("must contain column '%s'", cohort))
-                 })
-  }
   
   ### PROCESS DATA ####
   processed_data <- process_data(
