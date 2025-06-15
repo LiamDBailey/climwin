@@ -103,31 +103,31 @@ run_slidingwin <- function(range,
   validate_arg("fn", fn, required = FALSE, type = "function")
   
   validate_arg("type", type, required = FALSE, type = "character",
-              additional_checks = function(x) if(!x %in% c("relative", "absolute")) 
-                stop("must be either 'relative' or 'absolute'"))
+               additional_checks = function(x) if(!x %in% c("relative", "absolute")) 
+                 stop("must be either 'relative' or 'absolute'"))
   
   # Validate refday parameter if type is absolute
   if (type == "absolute") {
     validate_arg("refday", refday, required = TRUE, type = "character",
-                additional_checks = function(x) {
-                  refday_date <- as.Date(x, format = "%d/%m/%Y")
-                  if(is.na(refday_date)) stop("must be in format 'DD/MM/YYYY'")
-                })
+                 additional_checks = function(x) {
+                   refday_date <- as.Date(x, format = "%d/%m/%Y")
+                   if(is.na(refday_date)) stop("must be in format 'DD/MM/YYYY'")
+                 })
   }
   
   # Validate column names in climate_data
   validate_arg("climate_data", climate_data, required = FALSE,
-              additional_checks = function(x) {
-                if(!all(c(cdate, xvar) %in% names(x))) 
-                  stop(sprintf("must contain columns '%s' and '%s'", cdate, xvar))
-              })
+               additional_checks = function(x) {
+                 if(!all(c(cdate, xvar) %in% names(x))) 
+                   stop(sprintf("must contain columns '%s' and '%s'", cdate, xvar))
+               })
   
   # Validate column names in bio_data
   validate_arg("bio_data", bio_data, required = FALSE,
-              additional_checks = function(x) {
-                if(!bdate %in% names(x)) 
-                  stop(sprintf("must contain column '%s'", bdate))
-              })
+               additional_checks = function(x) {
+                 if(!bdate %in% names(x)) 
+                   stop(sprintf("must contain column '%s'", bdate))
+               })
   
   # If spatial is not given, we create a dummy col
   if (is.null(spatial)){
@@ -147,13 +147,14 @@ run_slidingwin <- function(range,
           stop(sprintf("must contain column '%s'", spatial))
       }
     )
+  }
   # Validate cohort column if provided
   if (!is.null(cohort)) {
     validate_arg("bio_data", bio_data, required = FALSE,
-                additional_checks = function(x) {
-                  if(!cohort %in% names(x)) 
-                    stop(sprintf("must contain column '%s'", cohort))
-                })
+                 additional_checks = function(x) {
+                   if(!cohort %in% names(x)) 
+                     stop(sprintf("must contain column '%s'", cohort))
+                 })
   }
   
   ### FORMAT CLIMATE DATA ####
@@ -315,4 +316,4 @@ run_slidingwin <- function(range,
   results <- results[order(is.na(results$AIC), results$AIC), ]
   
   return(results)
-} 
+}
