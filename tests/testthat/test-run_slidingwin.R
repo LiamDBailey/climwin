@@ -140,8 +140,8 @@ test_that("run_slidingwin gives identical results with parallel = TRUE and FALSE
 
 test_that("results and results_spatial are identical as shown in example", {
   # Load the actual example data files
-  Climate <- read.csv("../../MassClimate.csv")
-  Mass <- read.csv("../../Mass.csv")
+  Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+  Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
   
   # Create bio_data with climate column for the basemodel
   bio_data <- Mass

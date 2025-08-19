@@ -31,8 +31,8 @@
 #'
 #' @examples
 #' # Example usage:
-#' Climate <- read.csv("MassClimate.csv")
-#' Mass <- read.csv("Mass.csv")
+#' Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+#' Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
 #' results <- run_slidingwin(range = 0:2, 
 #'                         climate_data = Climate, 
 #'                         bio_data = Mass,

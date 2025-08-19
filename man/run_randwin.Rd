@@ -63,8 +63,8 @@ a null distribution for comparison with observed results.
 }
 \examples{
 # Example usage:
-Climate <- read.csv("MassClimate.csv")
-Mass <- read.csv("Mass.csv")
+Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
 null_results <- run_randwin(repeats = 100,
                            range = 0:50, 
                            climate_data = Climate, 
