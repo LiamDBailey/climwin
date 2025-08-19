@@ -43,6 +43,7 @@ plot_slidingwin <- function(dataset) {
       y = "Window open",
       title = "ΔAICc (compared to null model)"
     ) +
+    ggplot2::scale_y_reverse() +
     ggplot2::theme_minimal() +
     ggplot2::theme(
       panel.grid = ggplot2::element_blank(),

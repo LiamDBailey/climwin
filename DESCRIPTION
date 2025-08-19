@@ -16,4 +16,5 @@ Imports:
     purrr,
     dplyr,
     progress,
-    progressr
+    progressr,
+    ggplot2
