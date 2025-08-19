@@ -16,6 +16,7 @@ run_slidingwin(
   type = "relative",
   refday = NULL,
   spatial = NULL,
+  cohort = NULL,
   parallel = FALSE,
   progress = TRUE,
   .basemodelIsCall = FALSE
@@ -43,7 +44,15 @@ For example, 0 represents the date itself, while 100 represents 100 days before 
 
 \item{refday}{Character string in format "DD/MM/YYYY" specifying the reference date to use when type is "absolute".}
 
+\item{spatial}{Character string specifying the name of the spatial grouping column in both climate_data and bio_data. Defaults to NULL.}
+
+\item{cohort}{Character string specifying the name of the cohort column in bio_data. When type is "relative", each row will use the earliest year of all records in the same cohort. Defaults to NULL.}
+
 \item{parallel}{Logical. If TRUE, parallel processing is used. Default is FALSE.}
+
+\item{progress}{Logical. If TRUE, shows a progress bar. Default is TRUE.}
+
+\item{.basemodelIsCall}{Logical. Internal parameter used to handle basemodel substitution. Default is FALSE.}
 }
 \value{
 A data frame containing:

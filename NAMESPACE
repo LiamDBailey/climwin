@@ -3,6 +3,8 @@
 export(convert_dates_to_int)
 export(run_randwin)
 export(run_slidingwin)
+export(validate_arg)
+export(validate_args)
 importFrom(furrr,future_map)
 importFrom(future,multisession)
 importFrom(future,plan)
