@@ -21,8 +21,8 @@ test_that("run_randwin works with valid input", {
   
   # Check structure
   expect_true(is.data.frame(result))
-  expect_equal(ncol(result), 4)
-  expect_equal(names(result), c("Iteration", "Start_Day", "End_Day", "AIC"))
+  expect_equal(ncol(result), 5)
+  expect_equal(names(result), c("Iteration", "Start_Day", "End_Day", "AIC", "ModWeight"))
   expect_equal(nrow(result), 2)  # Should have 2 rows (one per repeat)
   
   # Check iteration numbers

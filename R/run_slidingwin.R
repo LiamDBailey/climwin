@@ -23,11 +23,10 @@
 #' @param .basemodelIsCall Logical. Internal parameter used to handle basemodel substitution. Default is FALSE.
 #'
 #' @return A data frame containing:
-#'         - Start_Date: Start date of the climate window
-#'         - End_Date: End date of the climate window
 #'         - Start_Day: Start day as integer (number of days before Bio_Date)
 #'         - End_Day: End day as integer (number of days before Bio_Date)
 #'         - AIC: AIC value for the linear model
+#'         - ModWeight: Model weight calculated as (exp(-0.5 * AIC)) / sum(exp(-0.5 * AIC))
 #'
 #' @examples
 #' # Example usage:
@@ -173,6 +172,19 @@ run_slidingwin <- function(range,
   
   # Combine results
   results <- dplyr::bind_rows(results)
+  
+  # Calculate model weights (ModWeight)
+  # Formula: (exp(-0.5 * AIC)) / sum(exp(-0.5 * AIC))
+  # Handle NA values by excluding them from the calculation
+  valid_aic <- !is.na(results$AIC)
+  if (any(valid_aic)) {
+    aic_weights <- exp(-0.5 * results$AIC[valid_aic])
+    total_weight <- sum(aic_weights)
+    results$ModWeight <- NA_real_
+    results$ModWeight[valid_aic] <- aic_weights / total_weight
+  } else {
+    results$ModWeight <- NA_real_
+  }
   
   # Sort by AIC (NAs last)
   results <- results[order(is.na(results$AIC), results$AIC), ]

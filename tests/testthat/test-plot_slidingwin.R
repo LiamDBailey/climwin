@@ -8,6 +8,12 @@ test_that("plot_slidingwin returns a ggplot object", {
                            bio_data = Mass,
                            basemodel = lm(Mass ~ climate, data = bio_data))
   
+  # Test that run_slidingwin output contains expected columns including ModWeight
+  expect_true("ModWeight" %in% names(results))
+  expect_true("Start_Day" %in% names(results))
+  expect_true("End_Day" %in% names(results))
+  expect_true("AIC" %in% names(results))
+  
   # Test that the function returns a ggplot object
   result <- plot_slidingwin(results)
   expect_s3_class(result, "ggplot")
@@ -22,6 +28,12 @@ test_that("plot_slidingwin can take inputs from run_slidingwin", {
                            climate_data = Climate, 
                            bio_data = Mass,
                            basemodel = lm(Mass ~ climate, data = bio_data))
+  
+  # Test that run_slidingwin output contains expected columns including ModWeight
+  expect_true("ModWeight" %in% names(results))
+  expect_true("Start_Day" %in% names(results))
+  expect_true("End_Day" %in% names(results))
+  expect_true("AIC" %in% names(results))
   
   # Test that the function works with actual run_slidingwin output
   result <- plot_slidingwin(results)
