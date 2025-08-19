@@ -5,7 +5,7 @@
 #'
 #' @param dataset A data frame output from run_slidingwin containing columns:
 #'                Start_Day, End_Day, AIC, and ModWeight
-#' @param cw1 A numeric value between 0 and 1 defining the cumulative weight threshold
+#' @param cw1 A numeric value between 0 and 1 defining the cumulative weight threshold. Defaults to 0.95.
 #'
 #' @return A ggplot object showing the distribution of climate window parameters
 #'
@@ -21,7 +21,7 @@
 #'
 #' @importFrom ggplot2 ggplot aes geom_boxplot labs theme_minimal coord_flip
 #' @export
-plot_window <- function(dataset, cw1) {
+plot_window <- function(dataset, cw1 = 0.95) {
   
   # Calculate cumulative sum of ModWeight
   dataset$cumulative_weight <- cumsum(dataset$ModWeight)
