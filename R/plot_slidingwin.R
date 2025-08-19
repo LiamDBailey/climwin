@@ -4,7 +4,7 @@
 #' The plot shows AIC values as a color gradient with End_Day on the x-axis and 
 #' Start_Day on the y-axis, using geom_tile for the visualization.
 #'
-#' @param dataset A data frame output from run_slidingwin containing columns:
+#' @param dataset Output from run_slidingwin (either a data frame or a list with 'dataset' item) containing columns:
 #'                Start_Day, End_Day, and AIC
 #'
 #' @return A ggplot object showing the heatmap of AIC values
@@ -22,6 +22,11 @@
 #' @importFrom ggplot2 ggplot aes geom_tile scale_fill_gradient2 labs theme_minimal
 #' @export
 plot_slidingwin <- function(dataset) {
+  
+  # Handle new list structure from run_slidingwin
+  if (is.list(dataset) && "dataset" %in% names(dataset)) {
+    dataset <- dataset$dataset
+  }
   
   # Calculate Delta AIC relative to null model (highest AIC)
   max_aic <- max(dataset$AIC, na.rm = TRUE)

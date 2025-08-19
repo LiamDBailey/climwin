@@ -22,11 +22,13 @@
 #' @param progress Logical. If TRUE, shows a progress bar. Default is TRUE.
 #' @param .basemodelIsCall Logical. Internal parameter used to handle basemodel substitution. Default is FALSE.
 #'
-#' @return A data frame containing:
-#'         - Start_Day: Start day as integer (number of days before Bio_Date)
-#'         - End_Day: End day as integer (number of days before Bio_Date)
-#'         - AIC: AIC value for the linear model
-#'         - ModWeight: Model weight calculated as (exp(-0.5 * AIC)) / sum(exp(-0.5 * AIC))
+#' @return A list containing:
+#'         - dataset: A data frame containing:
+#'           - Start_Day: Start day as integer (number of days before Bio_Date)
+#'           - End_Day: End day as integer (number of days before Bio_Date)
+#'           - AIC: AIC value for the linear model
+#'           - ModWeight: Model weight calculated as (exp(-0.5 * AIC)) / sum(exp(-0.5 * AIC))
+#'         - bestModel: The fitted model object with the lowest AIC value
 #'
 #' @examples
 #' # Example usage:
@@ -36,6 +38,10 @@
 #'                         climate_data = Climate, 
 #'                         bio_data = Mass,
 #'                         basemodel = lm(Mass ~ climate, data = bio_data))
+#'                         
+#' # Access the dataset and best model
+#' dataset_results <- results$dataset
+#' best_model <- results$bestModel
 #'                         
 #' Mass$site <- sample(c("A", "B"), size = nrow(Mass), replace = TRUE)
 #' Climate1 <- Climate
@@ -189,5 +195,31 @@ run_slidingwin <- function(range,
   # Sort by AIC (NAs last)
   results <- results[order(is.na(results$AIC), results$AIC), ]
   
-  return(results)
+  # Fit the best model (lowest AIC)
+  best_model <- NULL
+  if (nrow(results) > 0 && !is.na(results$AIC[1])) {
+    best_start <- results$Start_Day[1] + 1
+    best_end <- results$End_Day[1] + 1
+    
+    # Get the climate data for the best window
+    best_climate_summary <- apply(bio_xvar_ranges, MARGIN = 2, FUN = \(x){
+      fn(x[best_start:best_end])
+    })
+    
+    # Reorder and assign climate data
+    bio_data$climate <- best_climate_summary[order(bio_data_row)]
+    
+    # Fit the best model
+    best_model <- tryCatch({
+      eval(basemodel)
+    }, error = function(e) {
+      NULL
+    })
+  }
+  
+  # Return list with dataset and best model
+  return(list(
+    dataset = results,
+    bestModel = best_model
+  ))
 }

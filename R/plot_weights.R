@@ -4,7 +4,7 @@
 #' It identifies models within a specified cumulative weight threshold and plots
 #' them using geom_tile with cumulative weights as the color.
 #'
-#' @param dataset A data frame output from run_slidingwin containing columns:
+#' @param dataset Output from run_slidingwin (either a data frame or a list with 'dataset' item) containing columns:
 #'                Start_Day, End_Day, AIC, and ModWeight
 #' @param cw1 A numeric value between 0 and 1 defining the cumulative weight threshold. Defaults to 0.95.
 #'
@@ -23,6 +23,11 @@
 #' @importFrom ggplot2 ggplot aes geom_tile scale_fill_gradient labs theme_minimal scale_y_reverse
 #' @export
 plot_weights <- function(dataset, cw1 = 0.95) {
+  
+  # Handle new list structure from run_slidingwin
+  if (is.list(dataset) && "dataset" %in% names(dataset)) {
+    dataset <- dataset$dataset
+  }
   
   # Calculate cumulative sum of ModWeight
   dataset$cumulative_weight <- cumsum(dataset$ModWeight)

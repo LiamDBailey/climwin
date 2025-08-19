@@ -8,6 +8,11 @@ test_that("plot_weights takes output from run_slidingwin", {
                            bio_data = Mass,
                            basemodel = lm(Mass ~ climate, data = bio_data))
   
+  # Test that run_slidingwin output contains expected structure
+  expect_true(is.list(results))
+  expect_true("dataset" %in% names(results))
+  expect_true("bestModel" %in% names(results))
+  
   # Test that the function works with actual run_slidingwin output
   result <- plot_weights(results)
   expect_s3_class(result, "ggplot")

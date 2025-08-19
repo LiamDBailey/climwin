@@ -25,6 +25,7 @@
 #'         - Start_Day: Start day as integer (number of days before Bio_Date)
 #'         - End_Day: End day as integer (number of days before Bio_Date)
 #'         - AIC: AIC value for the linear model
+#'         - ModWeight: Model weight calculated as (exp(-0.5 * AIC)) / sum(exp(-0.5 * AIC))
 #'
 #' @examples
 #' # Example usage:
@@ -125,6 +126,11 @@ run_randwin <- function(repeats,
       )
     
     # Extract the top row (lowest AIC) and add iteration number
+    # Handle new list structure from run_slidingwin
+    if (is.list(sw_result) && "dataset" %in% names(sw_result)) {
+      sw_result <- sw_result$dataset
+    }
+    
     if (nrow(sw_result) > 0) {
       best_window <- sw_result[1, , drop = FALSE]
       best_window$Iteration <- i

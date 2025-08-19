@@ -3,7 +3,7 @@
 #' This function creates stacked boxplots showing the distribution of Start_Day and End_Day
 #' for all climate windows that fall within a specified cumulative weight threshold.
 #'
-#' @param dataset A data frame output from run_slidingwin containing columns:
+#' @param dataset Output from run_slidingwin (either a data frame or a list with 'dataset' item) containing columns:
 #'                Start_Day, End_Day, AIC, and ModWeight
 #' @param cw1 A numeric value between 0 and 1 defining the cumulative weight threshold. Defaults to 0.95.
 #'
@@ -22,6 +22,11 @@
 #' @importFrom ggplot2 ggplot aes geom_boxplot labs theme_minimal coord_flip
 #' @export
 plot_window <- function(dataset, cw1 = 0.95) {
+  
+  # Handle new list structure from run_slidingwin
+  if (is.list(dataset) && "dataset" %in% names(dataset)) {
+    dataset <- dataset$dataset
+  }
   
   # Calculate cumulative sum of ModWeight
   dataset$cumulative_weight <- cumsum(dataset$ModWeight)
