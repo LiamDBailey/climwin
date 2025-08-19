@@ -18,4 +18,5 @@ Imports:
     progress,
     progressr,
     ggplot2,
-    rlang
+    rlang,
+    patchwork

@@ -1,4 +1,4 @@
-test_that("plot_slidingwin returns a ggplot object", {
+test_that("plot_slidingwin returns a patchwork object with multiple plots", {
   # Use actual run_slidingwin output with small range for fast testing
   Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
   Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
@@ -19,12 +19,16 @@ test_that("plot_slidingwin returns a ggplot object", {
   expect_true("End_Day" %in% names(results$dataset))
   expect_true("AIC" %in% names(results$dataset))
   
-  # Test that the function returns a ggplot object
-  result <- plot_slidingwin(results)
-  expect_s3_class(result, "ggplot")
+  # Test that the function returns a patchwork object with multiple plots
+  result <- plot_slidingwin(results, plots = c('delta', 'weights'))
+  expect_s3_class(result, "patchwork")
+  
+  # Test that the function returns a patchwork object with default plots (all plots)
+  result_default <- plot_slidingwin(results)
+  expect_s3_class(result_default, "patchwork")
 })
 
-test_that("plot_slidingwin can take inputs from run_slidingwin", {
+test_that("plot_slidingwin can handle different plot combinations", {
   # Use actual run_slidingwin output with small range for fast testing
   Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
   Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
@@ -34,18 +38,30 @@ test_that("plot_slidingwin can take inputs from run_slidingwin", {
                            bio_data = Mass,
                            basemodel = lm(Mass ~ climate, data = bio_data))
   
-  # Test that run_slidingwin output contains expected structure
-  expect_true(is.list(results))
-  expect_true("dataset" %in% names(results))
-  expect_true("bestModel" %in% names(results))
+  # Test different plot combinations
+  result1 <- plot_slidingwin(results, plots = c('weights', 'windows'))
+  result2 <- plot_slidingwin(results, plots = c('delta', 'best'))
+  result3 <- plot_slidingwin(results, plots = 'weights')  # Single plot
   
-  # Test that dataset contains expected columns including ModWeight
-  expect_true("ModWeight" %in% names(results$dataset))
-  expect_true("Start_Day" %in% names(results$dataset))
-  expect_true("End_Day" %in% names(results$dataset))
-  expect_true("AIC" %in% names(results$dataset))
+  # All should return valid objects
+  expect_s3_class(result1, "patchwork")
+  expect_s3_class(result2, "patchwork")
+  expect_s3_class(result3, "ggplot")  # Single plot returns ggplot
+})
+
+test_that("plot_slidingwin validates plot types correctly", {
+  # Use actual run_slidingwin output with small range for fast testing
+  Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+  Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
   
-  # Test that the function works with actual run_slidingwin output
-  result <- plot_slidingwin(results)
-  expect_s3_class(result, "ggplot")
+  results <- run_slidingwin(range = 0:2, 
+                           climate_data = Climate, 
+                           bio_data = Mass,
+                           basemodel = lm(Mass ~ climate, data = bio_data))
+  
+  # Test invalid plot type
+  expect_error(
+    plot_slidingwin(results, plots = c('invalid', 'delta')),
+    "Invalid plot type"
+  )
 }) 

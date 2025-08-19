@@ -1,13 +1,15 @@
 #' Plot Sliding Window Analysis Results
 #'
-#' This function creates a heatmap visualization of sliding window analysis results.
-#' The plot shows AIC values as a color gradient with End_Day on the x-axis and 
-#' Start_Day on the y-axis, using geom_tile for the visualization.
+#' This function creates a combined visualization of sliding window analysis results
+#' by combining multiple plot types using patchwork. Available plot types include
+#' 'delta', 'weights', 'windows', and 'best'.
 #'
-#' @param dataset Output from run_slidingwin (either a data frame or a list with 'dataset' item) containing columns:
-#'                Start_Day, End_Day, and AIC
+#' @param dataset Output from run_slidingwin (a list with 'dataset' and 'bestModel' items)
+#' @param cw1 A numeric value between 0 and 1 defining the cumulative weight threshold. Defaults to 0.95.
+#' @param plots A character vector specifying which plots to include. Can include any of:
+#'              'delta', 'weights', 'windows', 'best'. Defaults to c('delta', 'weights', 'windows', 'best').
 #'
-#' @return A ggplot object showing the heatmap of AIC values
+#' @return A patchwork object combining the specified plots
 #'
 #' @examples
 #' # Example usage:
@@ -17,46 +19,47 @@
 #'                         climate_data = Climate, 
 #'                         bio_data = Mass,
 #'                         basemodel = lm(Mass ~ climate, data = bio_data))
+#' 
+#' # Create combined plot with all plots (default)
 #' plot_slidingwin(results)
+#' 
+#' # Create combined plot with specific plots
+#' plot_slidingwin(results, plots = c('weights', 'windows'))
 #'
-#' @importFrom ggplot2 ggplot aes geom_tile scale_fill_gradient2 labs theme_minimal
+#' @importFrom patchwork wrap_plots
 #' @export
-plot_slidingwin <- function(dataset) {
+plot_slidingwin <- function(dataset, cw1 = 0.95, plots = c('delta', 'weights', 'windows', 'best')) {
   
-  # Handle new list structure from run_slidingwin
-  if (is.list(dataset) && "dataset" %in% names(dataset)) {
-    dataset <- dataset$dataset
+  # Validate plots argument
+  valid_plots <- c('delta', 'weights', 'windows', 'best')
+  if (!all(plots %in% valid_plots)) {
+    stop("Invalid plot type. 'plots' can only include: ", paste(valid_plots, collapse = ", "))
   }
   
-  # Calculate Delta AIC relative to null model (highest AIC)
-  max_aic <- max(dataset$AIC, na.rm = TRUE)
-  dataset$Delta_AIC <- dataset$AIC - max_aic
+  # Create list to store plots
+  plot_list <- list()
   
-  # Create the heatmap
-  p <- ggplot2::ggplot(dataset, ggplot2::aes(x = End_Day, y = Start_Day, fill = Delta_AIC)) +
-    ggplot2::geom_tile() +
-    ggplot2::scale_fill_gradient2(
-      low = "red", 
-      mid = "yellow", 
-      high = "blue",
-      midpoint = median(dataset$Delta_AIC, na.rm = TRUE),
-      na.value = "white",
-      name = "ΔAICc"
-    ) +
-    ggplot2::labs(
-      x = "Window close",
-      y = "Window open",
-      title = "ΔAICc (compared to null model)"
-    ) +
-    ggplot2::scale_y_reverse() +
-    ggplot2::theme_minimal() +
-    ggplot2::theme(
-      panel.grid = ggplot2::element_blank(),
-      axis.text = ggplot2::element_text(size = 10),
-      axis.title = ggplot2::element_text(size = 12),
-      plot.title = ggplot2::element_text(size = 14, hjust = 0.5),
-      legend.title = ggplot2::element_text(size = 11)
-    )
+  # Generate requested plots
+  if ('delta' %in% plots) {
+    plot_list$delta <- plot_delta(dataset)
+  }
   
-  return(p)
+  if ('weights' %in% plots) {
+    plot_list$weights <- plot_weights(dataset, cw1)
+  }
+  
+  if ('windows' %in% plots) {
+    plot_list$windows <- plot_window(dataset, cw1)
+  }
+  
+  if ('best' %in% plots) {
+    plot_list$best <- plot_best(dataset)
+  }
+  
+  # Combine plots using patchwork
+  if (length(plot_list) == 1) {
+    return(plot_list[[1]])
+  } else {
+    return(patchwork::wrap_plots(plot_list, ncol = 2))
+  }
 } 
