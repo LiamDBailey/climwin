@@ -1,3 +1,20 @@
+# climwin 1.2.4
+
+Minor updates to ensure compatibility with ggplot v4.0.0
+
+## Major changes
+
+None
+
+## Minor changes
+
+- `plothist` and `plotall` now have a 'verbose' argument that allows warnings to be skipped if desired.
+- Potential bug when using 'cohort' argument now fixed.
+
+## Technical changes
+
+- Remove use of 'size' argument in ggplot2 line objects, now using 'linewidth'.
+
 # climwin 1.2.31
 
 Minor updates to ensure compatibility with R v4.5.0
