@@ -8,6 +8,7 @@
 #' @param cw1 A numeric value between 0 and 1 defining the cumulative weight threshold. Defaults to 0.95.
 #' @param plots A character vector specifying which plots to include. Can include any of:
 #'              'delta', 'weights', 'windows', 'best'. Defaults to c('delta', 'weights', 'windows', 'best').
+#' @param. ... Additional arguments passed to `plot_best` to define model predictions.
 #'
 #' @return A patchwork object combining the specified plots
 #'
@@ -28,7 +29,7 @@
 #'
 #' @importFrom patchwork wrap_plots
 #' @export
-plot_slidingwin <- function(dataset, cw1 = 0.95, plots = c('delta', 'weights', 'windows', 'best')) {
+plot_slidingwin <- function(dataset, cw1 = 0.95, plots = c('delta', 'weights', 'windows', 'best'), ...) {
   
   # Validate plots argument
   valid_plots <- c('delta', 'weights', 'windows', 'best')
@@ -53,7 +54,7 @@ plot_slidingwin <- function(dataset, cw1 = 0.95, plots = c('delta', 'weights', '
   }
   
   if ('best' %in% plots) {
-    plot_list$best <- plot_best(dataset)
+    plot_list$best <- plot_best(dataset, ...)
   }
   
   # Combine plots using patchwork

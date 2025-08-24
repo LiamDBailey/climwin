@@ -5,6 +5,8 @@
 #' The plot includes the data points and the fitted regression line.
 #'
 #' @param dataset Output from run_slidingwin (a list with 'dataset' and 'bestModel' items)
+#' @param x Character. Name of x variable to plot. If not provided, will be "climate".
+#' @param ... Additional arguments passed to 'predict' function to create model prediction line.
 #'
 #' @return A ggplot object showing the scatter plot with fitted line
 #'
@@ -21,7 +23,7 @@
 #' @importFrom ggplot2 ggplot aes geom_point geom_smooth labs theme_minimal
 #' @importFrom rlang .data
 #' @export
-plot_best <- function(dataset) {
+plot_best <- function(dataset, x, ...) {
   
   # Extract the best model from the list
   if (!is.list(dataset) || !"bestModel" %in% names(dataset)) {
@@ -29,33 +31,42 @@ plot_best <- function(dataset) {
   }
   
   best_model <- dataset$bestModel
-  if (is.null(best_model)) {
-    stop("No valid best model found in the dataset")
+  model_data <- model.frame(best_model)
+  
+  ## If x and/or y are missing we pick them
+  if (missing(x)){
+    x <- "climate"
   }
   
-  # Extract model data
-  model_data <- best_model$model
+  ## FIXME: Not great. Needs to be fixed
+  y <- names(model_data)[1]  # First column is typically the response
   
-  # Get variable names from the model
-  response_var <- names(model_data)[1]  # First column is typically the response
-  climate_var <- "climate"  # Climate variable is always named "climate"
+  ## Create our model predicted line
+  predict_data <- dplyr::tibble(!!as.symbol(x) := seq(min(model_data[[x]]),
+                                                      max(model_data[[x]]),
+                                                      length.out = 200))
+  
+  ## Check if there are other variables we can take the average...
+  if (ncol(model_data) > 2){
+    average_data <- model_data |> 
+      summarise(across(.cols = !any_of(c(x, y)), mean))
+    predict_data <- dplyr::bind_cols(predict_data, average_data)
+  }
+  
+  predict_data$y <- predict(best_model, newdata = predict_data, ...)
   
   # Create the scatter plot with fitted line
-  p <- ggplot2::ggplot(model_data, ggplot2::aes(x = .data[[climate_var]], y = .data[[response_var]])) +
+  p <- ggplot2::ggplot(model_data, ggplot2::aes(x = !!as.symbol(x), y = !!as.symbol(y))) +
     ggplot2::geom_point(color = "gray60", alpha = 0.7) +
-    ggplot2::geom_smooth(method = "lm", se = FALSE, color = "black", linewidth = 1) +
+    geom_line(data = predict_data,
+              aes(x = !!as.symbol(x), y = y)) +
+    # ggplot2::geom_smooth(method = "lm", se = FALSE, color = "black", linewidth = 1) +
     ggplot2::labs(
       x = "Climate variable",
       y = "Biological response",
       title = "Output of best model"
     ) +
-    ggplot2::theme_minimal() +
-    ggplot2::theme(
-      panel.grid = ggplot2::element_blank(),
-      axis.text = ggplot2::element_text(size = 10),
-      axis.title = ggplot2::element_text(size = 12),
-      plot.title = ggplot2::element_text(size = 14, hjust = 0.5)
-    )
+    theme_climwin()
   
   return(p)
 } 

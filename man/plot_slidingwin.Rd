@@ -7,7 +7,8 @@
 plot_slidingwin(
   dataset,
   cw1 = 0.95,
-  plots = c("delta", "weights", "windows", "best")
+  plots = c("delta", "weights", "windows", "best"),
+  ...
 )
 }
 \arguments{
@@ -17,6 +18,8 @@ plot_slidingwin(
 
 \item{plots}{A character vector specifying which plots to include. Can include any of:
 'delta', 'weights', 'windows', 'best'. Defaults to c('delta', 'weights', 'windows', 'best').}
+
+\item{.}{... Additional arguments passed to `plot_best` to define model predictions.}
 }
 \value{
 A patchwork object combining the specified plots

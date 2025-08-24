@@ -4,10 +4,14 @@
 \alias{plot_best}
 \title{Plot Best Model Fit}
 \usage{
-plot_best(dataset)
+plot_best(dataset, x, ...)
 }
 \arguments{
 \item{dataset}{Output from run_slidingwin (a list with 'dataset' and 'bestModel' items)}
+
+\item{x}{Character. Name of x variable to plot. If not provided, will be "climate".}
+
+\item{...}{Additional arguments passed to 'predict' function to create model prediction line.}
 }
 \value{
 A ggplot object showing the scatter plot with fitted line
