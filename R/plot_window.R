@@ -54,13 +54,15 @@ plot_window <- function(dataset, cw1 = 0.95) {
     geom_text(data = label_data,
               aes(x = Window_Type, y = median, label = median),
               colour = "black", hjust = -0.5) +
-    ggplot2::coord_flip() +
+    scale_y_continuous(limits = range(dataset$Start_Day), expand = c(0, 0)) +
+    coord_flip() +
     ggplot2::labs(
       x = "",
       y = "Climate window",
-      title = paste0("Climate window range for ", round(cw1 * 100), " % confidence set")
+      title = paste0("Climate window range for\n", round(cw1 * 100), " % confidence set")
     ) +
-    theme_climwin()
+    theme_climwin() +
+    theme(axis.text.y = element_text(angle = 90, hjust = 0.5, size = rel(2)))
   
   return(p)
 } 

@@ -35,9 +35,11 @@ plot_delta <- function(dataset) {
   # Create the heatmap
   p <- ggplot(dataset, aes(x = Start_Day, y = End_Day, z = Delta_AIC)) +
     geom_tile(aes(fill = Delta_AIC)) +
+    geom_abline(slope = 1, intercept = 0, linewidth = 0.5) +
     scale_fill_gradientn(colours = c("red", "yellow", "blue"), name = "") +
     theme_climwin() +
     theme(legend.position = c(0.75, 0.3)) +
+    coord_cartesian(expand = FALSE) + 
     ggtitle(expression(paste(Delta, "AICc (compared to null model)"))) +
     ylab("Window open") +
     xlab("Window close")

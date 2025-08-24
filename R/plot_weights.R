@@ -52,12 +52,13 @@ plot_weights <- function(dataset, cw1 = 0.95, cw2 = 0.5, cw3 = 0.25) {
   # Create the heatmap
   p <- ggplot(dataset, aes(x = Start_Day, y = End_Day, z = cumulative_weight)) +
     geom_tile(aes(fill = cw.full)) +
+    geom_abline(slope = 1, intercept = 0, linewidth = 0.5) +
     scale_fill_gradientn(colours = c("black", "white"), breaks=c(b[1], b[2], b[3]), limits = c(0, 1), name = "") +
     theme_climwin() +
     theme(legend.position = c(0.75, 0.3)) +
-    ggtitle(paste(WeightDist, "% of models fall within the \n", 100*cw1, "% confidence set", sep = "")) +
-    ylab("Window open") +
-    xlab("Window close")
+    coord_cartesian(expand = FALSE) + 
+    labs(title = paste(WeightDist, "% of models fall within the \n", 100*cw1, "% confidence set", sep = ""),
+         y = "Window open", x = "Window close")
   
   return(p)
 } 
