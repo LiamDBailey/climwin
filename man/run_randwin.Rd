@@ -54,6 +54,7 @@ A data frame containing the best climate window (lowest AIC) from each randomiza
         - Start_Day: Start day as integer (number of days before Bio_Date)
         - End_Day: End day as integer (number of days before Bio_Date)
         - AIC: AIC value for the linear model
+        - ModWeight: Model weight calculated as (exp(-0.5 * AIC)) / sum(exp(-0.5 * AIC))
 }
 \description{
 This function performs randomization tests by running sliding window analysis 

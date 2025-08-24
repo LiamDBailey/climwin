@@ -55,12 +55,13 @@ For example, 0 represents the date itself, while 100 represents 100 days before 
 \item{.basemodelIsCall}{Logical. Internal parameter used to handle basemodel substitution. Default is FALSE.}
 }
 \value{
-A data frame containing:
-        - Start_Date: Start date of the climate window
-        - End_Date: End date of the climate window
-        - Start_Day: Start day as integer (number of days before Bio_Date)
-        - End_Day: End day as integer (number of days before Bio_Date)
-        - AIC: AIC value for the linear model
+A list containing:
+        - dataset: A data frame containing:
+          - Start_Day: Start day as integer (number of days before Bio_Date)
+          - End_Day: End day as integer (number of days before Bio_Date)
+          - AIC: AIC value for the linear model
+          - ModWeight: Model weight calculated as (exp(-0.5 * AIC)) / sum(exp(-0.5 * AIC))
+        - bestModel: The fitted model object with the lowest AIC value
 }
 \description{
 This function fits linear models between mass and climate data for each combination of days,
@@ -77,6 +78,10 @@ results <- run_slidingwin(range = 0:2,
                         bio_data = Mass,
                         basemodel = lm(Mass ~ climate, data = bio_data))
                         
+# Access the dataset and best model
+dataset_results <- results$dataset
+best_model <- results$bestModel
+                        
 Mass$site <- sample(c("A", "B"), size = nrow(Mass), replace = TRUE)
 Climate1 <- Climate
 Climate1$site <- "A"
@@ -88,5 +93,60 @@ results_spatial <- run_slidingwin(range = 0:2,
                         bio_data = Mass,
                         basemodel = lm(Mass ~ climate, data = bio_data),
                         spatial = "site")
+                        
+\dontrun{
+
+# Full working examples
+
+##EXAMPLE 1## 
+ 
+# Test both a linear and quadratic variable climate window using datasets "Offspring"
+# and "OffspringClimate".
+
+# Load data.
+
+OffspringClimate <- read.csv(system.file("OffspringClimate.csv", package = "climwin"))
+Offspring <- read.csv(system.file("Offspring.csv", package = "climwin"))
+
+# Test both linear and quadratic functions with climate variable temperature
+
+OffspringWin <- run_slidingwin(
+                          range = 0:150,
+                          climate_data = OffspringClimate,
+                          bio_data = Offspring,
+                          basemodel = glm(Offspring ~ climate, data = bio_data, family = "poisson"),
+                          xvar = "Temperature", 
+                          cdate = "Date", 
+                          bdate = "Date", 
+                          type = "relative",
+                          parallel = TRUE, progress = TRUE
+                          )
+ 
+##EXAMPLE 2##
+ 
+# Test for an absolute climate window with both 'mean' and 'max' aggregate statistics
+# using datasets 'Mass' and 'MassClimate'.
+ 
+# Load data.
+ 
+Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
+ 
+# Test an absolute window, starting 20 May (refday = c(20, 5))
+# Test for climate windows between 100 and 0 days ago (range = c(100, 0))
+# Test both mean and max aggregate statistics (stat = c("mean", "max"))
+# Fit a linear term (func = "lin")
+# Test at the resolution of days (cinterval = "day")
+ 
+MassWin <- run_slidingwin(
+                     range = 0:100,
+                     climate_data = Climate, bio_data = Mass,
+                     basemodel = lm(Mass ~ climate, data = bio_data),
+                     xvar = "Temp",
+                     cdate = "Date", bdate = "Date", 
+                     type = "absolute", refday = "20/05/2025"
+                     )
+ 
+}
 
 }

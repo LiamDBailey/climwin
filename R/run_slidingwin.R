@@ -239,7 +239,8 @@ run_slidingwin <- function(range,
   # Handle NA values by excluding them from the calculation
   valid_aic <- !is.na(results$AIC)
   if (any(valid_aic)) {
-    aic_weights <- exp(-0.5 * results$AIC[valid_aic])
+    deltaAIC <- results$AIC - min(results$AIC)
+    aic_weights <- exp(-0.5 * deltaAIC[valid_aic])
     total_weight <- sum(aic_weights)
     results$ModWeight <- NA_real_
     results$ModWeight[valid_aic] <- aic_weights / total_weight
