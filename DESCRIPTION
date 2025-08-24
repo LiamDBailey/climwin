@@ -18,7 +18,7 @@ Description: Contains functions to detect and visualise periods of climate
     and Bailey and van de Pol (2016) <doi:10.1371/journal.pone.0167980> for details.
 Depends: R (>= 3.5.0)
 Imports:
-    ggplot2 (>= 4.0.0),
+    ggplot2 (>= 3.5.2),
     gridExtra,
     Matrix,
     evd,
