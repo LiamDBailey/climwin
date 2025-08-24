@@ -22,12 +22,21 @@
 #'
 #' @importFrom ggplot2 ggplot aes geom_tile scale_fill_gradient labs theme_minimal scale_y_reverse
 #' @export
-plot_weights <- function(dataset, cw1 = 0.95) {
+plot_weights <- function(dataset, cw1 = 0.95, cw2 = 0.5, cw3 = 0.25) {
   
   # Handle new list structure from run_slidingwin
   if (is.list(dataset) && "dataset" %in% names(dataset)) {
     dataset <- dataset$dataset
   }
+  
+  a          <- c(cw1, cw2, cw3)
+  b          <- a[order (-a)]
+  WeightDist <- ceiling(100*mean(as.numeric(cumsum(dataset$ModWeight) <= cw1)))
+  
+  dataset$cw1    <- as.numeric(cumsum(dataset$ModWeight) <= cw1)
+  dataset$cw2    <- as.numeric(cumsum(dataset$ModWeight) <= cw2)
+  dataset$cw3    <- as.numeric(cumsum(dataset$ModWeight) <= cw3)
+  dataset$cw.full <- dataset$cw1 + dataset$cw2 + dataset$cw3
   
   # Calculate cumulative sum of ModWeight
   dataset$cumulative_weight <- cumsum(dataset$ModWeight)
@@ -35,29 +44,20 @@ plot_weights <- function(dataset, cw1 = 0.95) {
   # Identify models within the cumulative weight threshold
   dataset$within_threshold <- dataset$cumulative_weight <= cw1
   
+  dataset$cw.full[which(dataset$cw.full == 3)] <- cw3
+  dataset$cw.full[which(dataset$cw.full == 2)] <- cw2
+  dataset$cw.full[which(dataset$cw.full == 1)] <- cw1
+  dataset$cw.full[which(dataset$cw.full == 0)] <- 1
+  
   # Create the heatmap
-  p <- ggplot2::ggplot(dataset, ggplot2::aes(x = End_Day, y = Start_Day, fill = cumulative_weight)) +
-    ggplot2::geom_tile() +
-    ggplot2::scale_fill_gradient(
-      low = "white",
-      high = "black",
-      na.value = "white",
-      name = "Cumulative Weight"
-    ) +
-    ggplot2::labs(
-      x = "Window close",
-      y = "Window open",
-      title = paste0(round(cw1 * 100), "% of models fall within the ", round(cw1 * 100), "% confidence set")
-    ) +
-    ggplot2::scale_y_reverse() +
-    ggplot2::theme_minimal() +
-    ggplot2::theme(
-      panel.grid = ggplot2::element_blank(),
-      axis.text = ggplot2::element_text(size = 10),
-      axis.title = ggplot2::element_text(size = 12),
-      plot.title = ggplot2::element_text(size = 14, hjust = 0.5),
-      legend.title = ggplot2::element_text(size = 11)
-    )
+  p <- ggplot(dataset, aes(x = Start_Day, y = End_Day, z = cumulative_weight)) +
+    geom_tile(aes(fill = cw.full)) +
+    scale_fill_gradientn(colours = c("black", "white"), breaks=c(b[1], b[2], b[3]), limits = c(0, 1), name = "") +
+    theme_climwin() +
+    theme(legend.position = c(0.75, 0.3)) +
+    ggtitle(paste(WeightDist, "% of models fall within the \n", 100*cw1, "% confidence set", sep = "")) +
+    ylab("Window open") +
+    xlab("Window close")
   
   return(p)
 } 

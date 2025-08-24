@@ -19,8 +19,9 @@
 #'                         basemodel = lm(Mass ~ climate, data = bio_data))
 #' plot_window(results, cw1 = 0.95)
 #'
-#' @importFrom ggplot2 ggplot aes geom_boxplot labs theme_minimal coord_flip
 #' @export
+#' @import ggplot2
+#' @import dplyr
 plot_window <- function(dataset, cw1 = 0.95) {
   
   # Handle new list structure from run_slidingwin
@@ -43,22 +44,23 @@ plot_window <- function(dataset, cw1 = 0.95) {
     Window_Type = rep(c("Window Open", "Window Close"), each = nrow(filtered_data))
   )
   
+  label_data <- plot_data |> 
+    dplyr::group_by(Window_Type) |> 
+    dplyr::summarise(median = median(Climate_Window))
+  
   # Create the boxplot
   p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = Window_Type, y = Climate_Window)) +
     ggplot2::geom_boxplot() +
+    geom_text(data = label_data,
+              aes(x = Window_Type, y = median, label = median),
+              colour = "black", hjust = -0.5) +
     ggplot2::coord_flip() +
     ggplot2::labs(
       x = "",
       y = "Climate window",
       title = paste0("Climate window range for ", round(cw1 * 100), " % confidence set")
     ) +
-    ggplot2::theme_minimal() +
-    ggplot2::theme(
-      panel.grid = ggplot2::element_blank(),
-      axis.text = ggplot2::element_text(size = 10),
-      axis.title = ggplot2::element_text(size = 12),
-      plot.title = ggplot2::element_text(size = 14, hjust = 0.5)
-    )
+    theme_climwin()
   
   return(p)
 } 

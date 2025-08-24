@@ -19,8 +19,8 @@
 #'                         basemodel = lm(Mass ~ climate, data = bio_data))
 #' plot_slidingwin(results)
 #'
-#' @importFrom ggplot2 ggplot aes geom_tile scale_fill_gradient2 labs theme_minimal
 #' @export
+#' @import ggplot2
 plot_delta <- function(dataset) {
   
   # Handle new list structure from run_slidingwin
@@ -33,30 +33,15 @@ plot_delta <- function(dataset) {
   dataset$Delta_AIC <- dataset$AIC - max_aic
   
   # Create the heatmap
-  p <- ggplot2::ggplot(dataset, ggplot2::aes(x = End_Day, y = Start_Day, fill = Delta_AIC)) +
-    ggplot2::geom_tile() +
-    ggplot2::scale_fill_gradient2(
-      low = "red", 
-      mid = "yellow", 
-      high = "blue",
-      midpoint = median(dataset$Delta_AIC, na.rm = TRUE),
-      na.value = "white",
-      name = "ΔAICc"
-    ) +
-    ggplot2::labs(
-      x = "Window close",
-      y = "Window open",
-      title = "ΔAICc (compared to null model)"
-    ) +
-    ggplot2::scale_y_reverse() +
-    ggplot2::theme_minimal() +
-    ggplot2::theme(
-      panel.grid = ggplot2::element_blank(),
-      axis.text = ggplot2::element_text(size = 10),
-      axis.title = ggplot2::element_text(size = 12),
-      plot.title = ggplot2::element_text(size = 14, hjust = 0.5),
-      legend.title = ggplot2::element_text(size = 11)
-    )
+  p <- ggplot(dataset, aes(x = Start_Day, y = End_Day, z = Delta_AIC)) +
+    geom_tile(aes(fill = Delta_AIC)) +
+    scale_fill_gradientn(colours = c("red", "yellow", "blue"), name = "") +
+    theme_climwin() +
+    theme(legend.position = c(0.75, 0.3)) +
+    ggtitle(expression(paste(Delta, "AICc (compared to null model)"))) +
+    ylab("Window open") +
+    xlab("Window close")
   
   return(p)
+  
 } 
