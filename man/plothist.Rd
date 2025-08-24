@@ -4,7 +4,7 @@
 \alias{plothist}
 \title{Create a histogram of randomised deltaAICc values}
 \usage{
-plothist(dataset, datasetrand)
+plothist(dataset, datasetrand, verbose = TRUE)
 }
 \arguments{
 \item{dataset}{A dataframe containing information on all fitted climate
@@ -12,6 +12,9 @@ windows from observed data. Output from \code{\link{slidingwin}}.}
 
 \item{datasetrand}{A dataframe containing information on all fitted climate 
 windows using randomised data. Output from \code{\link{randwin}}.}
+
+\item{verbose}{TRUE or FALSE. Should messages and warnings be printed while running
+function? Default: TRUE}
 }
 \value{
 plothist will return a histograms of deltaAICc values from 

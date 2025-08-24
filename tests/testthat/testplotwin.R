@@ -12,6 +12,6 @@ test_that("plotwin produces a graph", {
   test <- plotwin(dataset = testdata[[1]]$Dataset, cw = 0.95)
   
   # Test that plotwin produces a ggplot object
-  expect_true(attr(test, "class")[1] == "gg")
+  expect_true(inherits(test, "gg"))
   
 })

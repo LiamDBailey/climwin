@@ -126,7 +126,7 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     for(i in unique(data$cohort)){
         
       #Take a subset of the data for that cohort...
-      sub <- subset(data, cohort = i)
+      sub <- subset(data, cohort == i)
       #Relevel spatial...
       sub$spatial <- factor(sub$spatial)
       #Add 1 to sample size for every site in each cohort.
@@ -1274,7 +1274,7 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
       
       for(i in unique(data$cohort)){
         
-        sub <- subset(data, cohort = i)
+        sub <- subset(data, cohort == i)
         sub$spatial <- factor(sub$spatial)
         sample.size <- sample.size + length(levels(sub$spatial))
         
@@ -2824,13 +2824,13 @@ theme_climwin <- function(base_size = 12, base_family = "",
   theme(
     # Elements in this first block aren't used directly, but are inherited
     # by others. These set the defaults for line, rectangle and text elements.
-    line =               element_line(
-      colour = "black", size = base_line_size,
+    line = element_line(
+      colour = "black", linewidth = base_line_size,
       linetype = 1, lineend = "round"
     ),
     rect =               element_rect(
       fill = "white", colour = "black",
-      size = base_rect_size, linetype = 1
+      linewidth = base_rect_size, linetype = 1
     ),
     text =               element_text(
       family = base_family, face = "plain",
@@ -2847,7 +2847,7 @@ theme_climwin <- function(base_size = 12, base_family = "",
     axis.text.x.top =    element_text(margin = margin(b = 0.8 * half_line / 2), vjust = 0),
     axis.text.y =        element_text(margin = margin(r = 0.8 * half_line / 2), hjust = 1),
     axis.text.y.right =  element_text(margin = margin(l = 0.8 * half_line / 2), hjust = 0),
-    axis.ticks =         element_line(colour = "black", lineend = "round", size = 1),
+    axis.ticks =         element_line(colour = "black", lineend = "round", linewidth = 1),
     axis.ticks.length =  unit(half_line / 2, "pt"),
     axis.title.x =       element_text(
       margin = margin(t = half_line * 1.5),
@@ -2885,7 +2885,7 @@ theme_climwin <- function(base_size = 12, base_family = "",
     legend.text = element_text(family = base_family, size = rel(1)),
     
     panel.background =   element_rect(fill = "white", colour = NA),
-    panel.border =       element_rect(colour = "black", fill = NA, size = 1.5),
+    panel.border =       element_rect(colour = "black", fill = NA, linewidth = 1.5),
     panel.grid.major =   element_blank(),
     panel.grid.minor =   element_blank(),
     panel.spacing =      unit(half_line, "pt"),

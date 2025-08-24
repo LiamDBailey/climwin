@@ -14,6 +14,8 @@
 #'  distribution. See \code{\link{plotweights}} for more detail.
 #'@param title Title of the plot panel.
 #'@param arrow TRUE or FALSE. Add arrows to plots to pinpoint best window.
+#'@param verbose TRUE or FALSE. Should messages and warnings be printed while running
+#'function? Default: TRUE
 #'@return Will return a panel of 6-8 plots:
 #'  
 #'  \itemize{
@@ -74,11 +76,14 @@
 plotall <- function(dataset, datasetrand = NULL,
                     bestmodel = NULL, bestmodeldata = NULL,
                     cw1 = 0.95, cw2 = 0.5, cw3 = 0.25,
-                    title = NULL, arrow = FALSE){
+                    title = NULL, arrow = FALSE,
+                    verbose = TRUE){
 
     if (class(bestmodel)[length(class(bestmodel))] == "coxph" | class(bestmodel)[1] == "lme") {
       bestmodel = NULL
-      warning("plotall cannot yet plot the best model panel for a coxph or nlme models")
+      if (verbose){
+        warning("plotall cannot yet plot the best model panel for a coxph or nlme models") 
+      }
     }
   
   a       <- c(cw1, cw2, cw3)
@@ -111,7 +116,7 @@ plotall <- function(dataset, datasetrand = NULL,
   window <- plotwin(dataset = dataset, cw = cwa)
 
   if(!is.null(datasetrand)){
-    hist   <- plothist(dataset = dataset, datasetrand = datasetrand)    
+    hist   <- plothist(dataset = dataset, datasetrand = datasetrand, verbose = verbose)    
     
   if(is.null(bestmodel) == FALSE && is.null(bestmodeldata) == FALSE){
     

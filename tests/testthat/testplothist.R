@@ -13,9 +13,11 @@ test_that("plothist produces a graph", {
                           type = "relative", stat = "max", func = "lin", cmissing = FALSE,
                           window = "sliding")
   
-  test2 <- plothist(dataset = testdata[[1]]$Dataset, datasetrand = testdatarand[[1]])
+  test2 <- plothist(dataset = testdata[[1]]$Dataset, datasetrand = testdatarand[[1]],
+                    ## We know we will get low sample size warning
+                    verbose = FALSE)
     
   # Test that plothist creates a ggplot object with randomised data
-  expect_true(attr(test2, "class")[1] == "gg")
+  expect_true(inherits(test2, "gg"))
 
 })

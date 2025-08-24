@@ -94,7 +94,7 @@ plotbest <- function(dataset, bestmodel, bestmodeldata){
       
       return(ggplot(bestmodeldata)+
         geom_point(aes(x = climate, y = Yvar), size = 3, alpha = 0.5, shape = 21, fill = "dark grey")+
-        geom_line(aes(x = climate, y = model_pred), size = 1)+
+        geom_line(aes(x = climate, y = model_pred), linewidth = 1)+
         theme_climwin()+
         labs(title = "Output of best model", x = xlab_name, y = "Biological response"))
         

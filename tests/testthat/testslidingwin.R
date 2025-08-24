@@ -767,43 +767,43 @@ test_that("basic lme [nlme] models can run in slidingwin", {
   
 })
 
-# Test mixed effects models (nlme) #
+## Test mixed effects models (nlme) #
 test_that("lme [nlme] model with VarIdent can run in slidingwin", {
-  
+
   data(Offspring, envir = environment())
   data(OffspringClimate, envir = environment())
-  
-  assign("vI", varIdent(value = 10, form =~ Order), envir=globalenv())
-  
-  test <- slidingwin(xvar = list(OffspringClimate$Temp), cdate = OffspringClimate$Date, 
-                     bdate = Offspring$Date, 
-                     baseline = lme(Offspring ~ Order, random = ~ 1 | BirdID, data = Offspring, weights = vI, method = "ML"),  
-                     range = c(2, 0), type = "relative", 
+
+  suppressWarnings(assign("vI", varIdent(value = 10, form = ~Order), envir=globalenv()))
+
+  test <- slidingwin(xvar = list(OffspringClimate$Temp), cdate = OffspringClimate$Date,
+                     bdate = Offspring$Date,
+                     baseline = lme(Offspring ~ Order, random = ~ 1 | BirdID, data = Offspring, weights = vI, method = "ML"),
+                     range = c(2, 0), type = "relative",
                      stat = "max", func = "lin", cmissing = FALSE)
-  
+
   # Test that slidingwin produced an output
   expect_true(is.list(test))
-  
+
   # Test that lmer model produced an intercept
   expect_false(is.na(fixef(test[[1]]$BestModel)[1]))
-  
+
   # Test that lmer model produced a climate beta estimate
   expect_false(is.na(fixef(test[[1]]$BestModel)[2]))
-  
+
   # Test that best model data doesn't contain NAs
   expect_equal(length(which(is.na(test[[1]]$BestModelData))), 0)
-  
+
   # Test that best model data has at least 2 parameters
   expect_true(ncol(test[[1]]$BestModelData) >= 2)
-  
+
   #Test the values we get out have stayed the same as github version (7-9-17).
   #N.B. Earlier R version didn't have nlme compatability
   expect_true(round(test[[1]]$Dataset$deltaAICc[1], 1) == -22.7)
   expect_true(test[[1]]$Dataset$WindowOpen[1] == 2 & test[[1]]$Dataset$WindowClose[1] == 2)
   expect_true(round(test[[1]]$Dataset$ModelBeta[1], 1) == 0.0)
-  
+
   rm("vI", envir = .GlobalEnv)
-  
+
 })
 
 # Test mixed effects models (nlme) #

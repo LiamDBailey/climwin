@@ -13,6 +13,6 @@ test_that("plotcor produces a graph", {
   test <- plotcor(cor.output = cross, type = "A")
   
   # Test plotcor produces a ggplot object
-  expect_true(attr(test, "class")[1]=="gg") 
+  expect_true(inherits(test, "gg"))
   
 })

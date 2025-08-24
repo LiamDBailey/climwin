@@ -13,7 +13,7 @@ test_that("plotbetas produces a graph", {
   test    <- plotbetas(dataset = testdata[[1]]$Dataset)
   
   # Test that a ggplot object is produced
-  expect_true(attr(test, "class")[1] == "gg")
+  expect_true(inherits(test, "gg"))
  
   testdata[[1]]$Dataset$ModelBetaQ <- testdata[[1]]$Dataset$ModelBeta
   testdata[[1]]$Dataset$Function   <- "quad"

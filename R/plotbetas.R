@@ -44,11 +44,11 @@ plotbetas <- function(dataset, arrow = FALSE, plotallenv, plotall = FALSE){
         CIRC$ModelBeta <- 0
         
         beta <- beta +
-          geom_path(data = CIRC, aes(x = WindowClose, y = WindowOpen), size = 1.2, colour = "black")+
+          geom_path(data = CIRC, aes(x = WindowClose, y = WindowOpen), linewidth = 1.2, colour = "black")+
           geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = (WindowOpen[1] - 2.5)), 
-                       size = 1, linetype = "dashed") +
+                       linewidth = 1, linetype = "dashed") +
           geom_segment(aes(x = 0, y = WindowOpen[1], xend = (WindowClose[1] - 2.5), yend = WindowOpen[1]),
-                       size = 1, linetype = "dashed")
+                       linewidth = 1, linetype = "dashed")
       }
       
       if(plotall == TRUE){
@@ -83,17 +83,17 @@ plotbetas <- function(dataset, arrow = FALSE, plotallenv, plotall = FALSE){
         CIRC$ModelBetaQ <- 0
         
         beta <- beta +
-          geom_path(data = CIRC, aes(x = WindowClose, y = WindowOpen), size = 1.2, colour = "black")+
+          geom_path(data = CIRC, aes(x = WindowClose, y = WindowOpen), linewidth = 1.2, colour = "black")+
           geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = (WindowOpen[1] - 2.5)), 
-                       size = 1, linetype = "dashed") +
+                       linewidth = 1, linetype = "dashed") +
           geom_segment(aes(x = 0, y = WindowOpen[1], xend = (WindowClose[1] - 2.5), yend = WindowOpen[1]),
-                       size = 1, linetype = "dashed")        
+                       linewidth = 1, linetype = "dashed")        
         beta2 <- beta2 +
-          geom_path(data = CIRC, aes(x = WindowClose, y = WindowOpen), size = 1.2, colour = "black")+
+          geom_path(data = CIRC, aes(x = WindowClose, y = WindowOpen), linewidth = 1.2, colour = "black")+
           geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = (WindowOpen[1] - 2.5)), 
-                       size = 1, linetype = "dashed") +
+                       linewidth = 1, linetype = "dashed") +
           geom_segment(aes(x = 0, y = WindowOpen[1], xend = (WindowClose[1] - 2.5), yend = WindowOpen[1]),
-                       size = 1, linetype = "dashed")        
+                       linewidth = 1, linetype = "dashed")        
       }
       
       if(plotall == TRUE){
@@ -139,23 +139,23 @@ plotbetas <- function(dataset, arrow = FALSE, plotallenv, plotall = FALSE){
         CIRC$ModelBetaC <- 0
                 
         beta <- beta +
-          geom_path(data = CIRC, aes(x = WindowClose, y = WindowOpen), size = 1.2, colour = "black")+
+          geom_path(data = CIRC, aes(x = WindowClose, y = WindowOpen), linewidth = 1.2, colour = "black")+
           geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = (WindowOpen[1] - 2.5)), 
-                       size = 1, linetype = "dashed") +
+                       linewidth = 1, linetype = "dashed") +
           geom_segment(aes(x = 0, y = WindowOpen[1], xend = (WindowClose[1] - 2.5), yend = WindowOpen[1]),
-                       size = 1, linetype = "dashed")        
+                       linewidth = 1, linetype = "dashed")        
         beta2 <- beta2 +
-          geom_path(data = CIRC, aes(x = WindowClose, y = WindowOpen), size = 1.2, colour = "black")+
+          geom_path(data = CIRC, aes(x = WindowClose, y = WindowOpen), linewidth = 1.2, colour = "black")+
           geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = (WindowOpen[1] - 2.5)), 
-                       size = 1, linetype = "dashed") +
+                       linewidth = 1, linetype = "dashed") +
           geom_segment(aes(x = 0, y = WindowOpen[1], xend = (WindowClose[1] - 2.5), yend = WindowOpen[1]),
-                       size = 1, linetype = "dashed")        
+                       linewidth = 1, linetype = "dashed")        
         beta3 <- beta3 +
-          geom_path(data = CIRC, aes(x = WindowClose, y = WindowOpen), size = 1.2, colour = "black")+
+          geom_path(data = CIRC, aes(x = WindowClose, y = WindowOpen), linewidth = 1.2, colour = "black")+
           geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = (WindowOpen[1] - 2.5)), 
-                       size = 1, linetype = "dashed") +
+                       linewidth = 1, linetype = "dashed") +
           geom_segment(aes(x = 0, y = WindowOpen[1], xend = (WindowClose[1] - 2.5), yend = WindowOpen[1]),
-                       size = 1, linetype = "dashed")        
+                       linewidth = 1, linetype = "dashed")        
       }      
       
       if(plotall == TRUE){
@@ -192,17 +192,17 @@ plotbetas <- function(dataset, arrow = FALSE, plotallenv, plotall = FALSE){
         CIRC$WithinGrpDev <- 0
         
         wgmean <- wgmean +
-          geom_path(data = CIRC, aes(x = WindowClose, y = WindowOpen), size = 1.2, colour = "black")+
+          geom_path(data = CIRC, aes(x = WindowClose, y = WindowOpen), linewidth = 1.2, colour = "black")+
           geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = (WindowOpen[1] - 2.5)), 
-                       size = 1, linetype = "dashed") +
+                       linewidth = 1, linetype = "dashed") +
           geom_segment(aes(x = 0, y = WindowOpen[1], xend = (WindowClose[1] - 2.5), yend = WindowOpen[1]),
-                       size = 1, linetype = "dashed")        
+                       linewidth = 1, linetype = "dashed")        
         wgdev <- wgdev +
-          geom_path(data = CIRC, aes(x = WindowClose, y = WindowOpen), size = 1.2, colour = "black")+
+          geom_path(data = CIRC, aes(x = WindowClose, y = WindowOpen), linewidth = 1.2, colour = "black")+
           geom_segment(aes(x = WindowClose[1], y = 0, xend = WindowClose[1], yend = (WindowOpen[1] - 2.5)), 
-                       size = 1, linetype = "dashed") +
+                       linewidth = 1, linetype = "dashed") +
           geom_segment(aes(x = 0, y = WindowOpen[1], xend = (WindowClose[1] - 2.5), yend = WindowOpen[1]),
-                       size = 1, linetype = "dashed")              
+                       linewidth = 1, linetype = "dashed")              
       }
       
       if(is.null(dataset$WithinGrpDev) == FALSE & is.null(dataset$WithinGrpMean) == FALSE){

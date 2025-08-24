@@ -12,6 +12,6 @@ test_that("plotweights produces a graph", {
   test <- plotweights(dataset = testdata[[1]]$Dataset, cw1 = 0.95, cw2 = 0.75, cw3 = 0.25)
   
   # Test that plotweights produces a ggplot object
-  expect_true(attr(test, "class")[1] == "gg")
+  expect_true(inherits(test, "gg"))
   
 })

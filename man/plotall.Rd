@@ -13,7 +13,8 @@ plotall(
   cw2 = 0.5,
   cw3 = 0.25,
   title = NULL,
-  arrow = FALSE
+  arrow = FALSE,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -36,6 +37,9 @@ distribution. See \code{\link{plotweights}} for more detail.}
 \item{title}{Title of the plot panel.}
 
 \item{arrow}{TRUE or FALSE. Add arrows to plots to pinpoint best window.}
+
+\item{verbose}{TRUE or FALSE. Should messages and warnings be printed while running
+function? Default: TRUE}
 }
 \value{
 Will return a panel of 6-8 plots:

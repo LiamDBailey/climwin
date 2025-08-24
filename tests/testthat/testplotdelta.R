@@ -12,6 +12,6 @@ test_that("plotdelta produces a graph", {
   test <- plotdelta(dataset = testdata[[1]]$Dataset)
   
   # Test that plotdelta creates a ggplot item
-  expect_true(attr(test, "class")[1] == "gg")
+  expect_true(inherits(test, "gg"))
   
 })

@@ -21,6 +21,6 @@ test_that("plotbest produces a graph", {
            bestmodeldata = single[[2]])
   
   # Test that a ggplot object is produced
-  expect_true(attr(test, "class")[1] == "gg")
+  expect_true(inherits(test, "gg"))
   
 })
