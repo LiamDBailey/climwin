@@ -50,7 +50,7 @@ plot_slidingwin <- function(dataset, cw1 = 0.95, plots = c('delta', 'weights', '
   }
   
   if ('windows' %in% plots) {
-    plot_list$windows <- plot_window(dataset, cw1)
+    plot_list$windows <- plot_window(dataset, cw1, ...)
   }
   
   if ('best' %in% plots) {

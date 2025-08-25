@@ -22,7 +22,7 @@
 #' @export
 #' @import ggplot2
 #' @import dplyr
-plot_window <- function(dataset, cw1 = 0.95) {
+plot_window <- function(dataset, cw1 = 0.95, method = "box", ...) {
   
   # Handle new list structure from run_slidingwin
   if (is.list(dataset) && "dataset" %in% names(dataset)) {
@@ -49,11 +49,29 @@ plot_window <- function(dataset, cw1 = 0.95) {
     dplyr::summarise(median = median(Climate_Window))
   
   # Create the boxplot
-  p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = Window_Type, y = Climate_Window)) +
-    ggplot2::geom_boxplot() +
-    geom_text(data = label_data,
-              aes(x = Window_Type, y = median, label = median),
-              colour = "black", hjust = -0.5) +
+  p <- ggplot()
+  
+  if (method == "box"){
+    p <- p +
+      geom_boxplot(data = plot_data,
+                   aes(x = Window_Type, y = Climate_Window)) +
+      geom_text(data = label_data,
+                aes(x = Window_Type, y = median, label = median),
+                colour = "black", hjust = -0.5)
+  } else if (method == "violin"){
+    p <- p +
+      geom_violin(data = plot_data,
+                  aes(x = Window_Type, y = Climate_Window),
+                  fill = "grey80", alpha = 0.75) +
+      geom_point(data = label_data,
+                   aes(x = Window_Type,
+                       y = median)) +
+      geom_text(data = label_data,
+                aes(x = Window_Type, y = median, label = median),
+                colour = "black", hjust = 0.5, vjust = -0.5)
+  }
+     
+  p <- p +
     scale_y_continuous(limits = range(dataset$Start_Day), expand = c(0, 0)) +
     coord_flip() +
     ggplot2::labs(
