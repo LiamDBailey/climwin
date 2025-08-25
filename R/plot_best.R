@@ -23,7 +23,7 @@
 #' @importFrom ggplot2 ggplot aes geom_point geom_smooth labs theme_minimal
 #' @importFrom rlang .data
 #' @export
-plot_best <- function(dataset, x, ...) {
+plot_best <- function(dataset, model_data, x, verbose = TRUE, ...) {
   
   # Extract the best model from the list
   if (!is.list(dataset) || !"bestModel" %in% names(dataset)) {
@@ -31,7 +31,13 @@ plot_best <- function(dataset, x, ...) {
   }
   
   best_model <- dataset$bestModel
-  model_data <- model.frame(best_model)
+  
+  if (missing(model_data)) {
+    if (verbose){
+      message("Model data extracted from best model. This works less well for complex models.")  
+    }
+    model_data <- model.frame(best_model)
+  }
   
   ## If x and/or y are missing we pick them
   if (missing(x)){
@@ -56,12 +62,14 @@ plot_best <- function(dataset, x, ...) {
   predict_data$y <- predict(best_model, newdata = predict_data, ...)
   
   # Create the scatter plot with fitted line
-  p <- ggplot2::ggplot(model_data, ggplot2::aes(x = !!as.symbol(x), y = !!as.symbol(y))) +
-    ggplot2::geom_point(color = "gray60", alpha = 0.7) +
+  p <- ggplot() +
+    geom_point(data = model_data,
+               aes(x = !!as.symbol(x), y = !!as.symbol(y)),
+               color = "gray60", alpha = 0.7) +
     geom_line(data = predict_data,
               aes(x = !!as.symbol(x), y = y)) +
     # ggplot2::geom_smooth(method = "lm", se = FALSE, color = "black", linewidth = 1) +
-    ggplot2::labs(
+    labs(
       x = "Climate variable",
       y = "Biological response",
       title = "Output of best model"
