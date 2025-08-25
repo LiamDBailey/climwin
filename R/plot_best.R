@@ -23,7 +23,7 @@
 #' @importFrom ggplot2 ggplot aes geom_point geom_smooth labs theme_minimal
 #' @importFrom rlang .data
 #' @export
-plot_best <- function(dataset, model_data, x, verbose = TRUE, ...) {
+plot_best <- function(dataset, x, y, ...) {
   
   # Extract the best model from the list
   if (!is.list(dataset) || !"bestModel" %in% names(dataset)) {
@@ -31,21 +31,18 @@ plot_best <- function(dataset, model_data, x, verbose = TRUE, ...) {
   }
   
   best_model <- dataset$bestModel
-  
-  if (missing(model_data)) {
-    if (verbose){
-      message("Model data extracted from best model. This works less well for complex models.")  
-    }
-    model_data <- model.frame(best_model)
-  }
+  model_data <- dataset$bestModelData
   
   ## If x and/or y are missing we pick them
   if (missing(x)){
     x <- "climate"
   }
   
-  ## FIXME: Not great. Needs to be fixed
-  y <- names(model_data)[1]  # First column is typically the response
+  ## If no y is provided, we assume the first col is the response
+  if (missing(y)){
+    ## FIXME: Not great. Needs to be fixed
+    y <- names(model_data)[1]  # First column is typically the response 
+  }
   
   ## Create our model predicted line
   predict_data <- dplyr::tibble(!!as.symbol(x) := seq(min(model_data[[x]]),
@@ -55,7 +52,8 @@ plot_best <- function(dataset, model_data, x, verbose = TRUE, ...) {
   ## Check if there are other variables we can take the average...
   if (ncol(model_data) > 2){
     average_data <- model_data |> 
-      summarise(across(.cols = !any_of(c(x, y)), mean))
+      summarise(across(.cols = !any_of(c(x, y)) & is.numeric, mean),
+                across(.cols = !any_of(c(x, y)) & (is.character|is.factor), \(x) names(table(x))[which(table(x) == max(table(x)))][1]))
     predict_data <- dplyr::bind_cols(predict_data, average_data)
   }
   
