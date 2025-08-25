@@ -273,10 +273,10 @@ run_slidingwin <- function(range,
     })
   }
   
-  # Return list with dataset and best model
-  return(list(
-    dataset = results,
-    bestModel = best_model,
-    bestModelData = bio_data
-  ))
+  # Return climwin object with outputs
+  output <- climwin(dataset = results,
+          bestModel = list(model = best_model,
+                           data = bio_data),
+          range = range(range))
+  return(output)
 }

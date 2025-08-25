@@ -23,10 +23,7 @@
 #' @import ggplot2
 plot_delta <- function(dataset) {
   
-  # Handle new list structure from run_slidingwin
-  if (is.list(dataset) && "dataset" %in% names(dataset)) {
-    dataset <- dataset$dataset
-  }
+  dataset <- dataset@dataset
   
   # Calculate Delta AIC relative to null model (highest AIC)
   max_aic <- max(dataset$AIC, na.rm = TRUE)

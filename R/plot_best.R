@@ -25,13 +25,8 @@
 #' @export
 plot_best <- function(dataset, x, y, ...) {
   
-  # Extract the best model from the list
-  if (!is.list(dataset) || !"bestModel" %in% names(dataset)) {
-    stop("Input must be output from run_slidingwin containing 'bestModel' item")
-  }
-  
-  best_model <- dataset$bestModel
-  model_data <- dataset$bestModelData
+  best_model <- dataset@bestModel[["model"]]
+  model_data <- dataset@bestModel[["data"]]
   
   ## If x and/or y are missing we pick them
   if (missing(x)){

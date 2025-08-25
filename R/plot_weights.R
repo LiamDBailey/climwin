@@ -25,9 +25,7 @@
 plot_weights <- function(dataset, cw1 = 0.95, cw2 = 0.5, cw3 = 0.25) {
   
   # Handle new list structure from run_slidingwin
-  if (is.list(dataset) && "dataset" %in% names(dataset)) {
-    dataset <- dataset$dataset
-  }
+  dataset <- dataset@dataset
   
   a          <- c(cw1, cw2, cw3)
   b          <- a[order (-a)]

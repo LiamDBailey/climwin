@@ -25,9 +25,7 @@
 plot_window <- function(dataset, cw1 = 0.95, method = "box", ...) {
   
   # Handle new list structure from run_slidingwin
-  if (is.list(dataset) && "dataset" %in% names(dataset)) {
-    dataset <- dataset$dataset
-  }
+  dataset <- dataset@dataset
   
   # Calculate cumulative sum of ModWeight
   dataset$cumulative_weight <- cumsum(dataset$ModWeight)
