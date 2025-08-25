@@ -53,12 +53,15 @@ plot_weights <- function(dataset, cw1 = 0.95, cw2 = 0.5, cw3 = 0.25) {
   p <- ggplot(dataset, aes(x = Start_Day, y = End_Day, z = cumulative_weight)) +
     geom_tile(aes(fill = cw.full)) +
     geom_abline(slope = 1, intercept = 0, linewidth = 0.5) +
-    scale_fill_gradientn(colours = c("black", "white"), breaks=c(b[1], b[2], b[3]), limits = c(0, 1), name = "") +
-    theme_climwin() +
-    theme(legend.position = c(0.75, 0.3)) +
-    coord_cartesian(expand = FALSE) + 
     labs(title = paste(WeightDist, "% of models fall within the \n", 100*cw1, "% confidence set", sep = ""),
-         y = "Window open", x = "Window close")
+         y = "Window open", x = "Window close") +
+    coord_cartesian(expand = FALSE) + 
+    scale_fill_gradientn(colours = c("black", "grey98"), breaks=c(b[1], b[2], b[3]), limits = c(0, 1)) +
+    theme_climwin() +
+    theme(legend.position = c(0.85, 0.325),
+          legend.title = element_blank(),
+          legend.text.position = "left",
+          legend.text = element_text(size = rel(3)))
   
   return(p)
 } 

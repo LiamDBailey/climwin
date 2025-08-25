@@ -36,13 +36,15 @@ plot_delta <- function(dataset) {
   p <- ggplot(dataset, aes(x = Start_Day, y = End_Day, z = Delta_AIC)) +
     geom_tile(aes(fill = Delta_AIC)) +
     geom_abline(slope = 1, intercept = 0, linewidth = 0.5) +
-    scale_fill_gradientn(colours = c("red", "yellow", "blue"), name = "") +
-    theme_climwin() +
-    theme(legend.position = c(0.75, 0.3)) +
+    labs(title = expression(paste(Delta, "AICc (compared to null model)")),
+         y = "Window open", x = "Window close") +
     coord_cartesian(expand = FALSE) + 
-    ggtitle(expression(paste(Delta, "AICc (compared to null model)"))) +
-    ylab("Window open") +
-    xlab("Window close")
+    scale_fill_gradientn(colours = c("red", "yellow", "blue")) +
+    theme_climwin() +
+    theme(legend.position = c(0.85, 0.325),
+          legend.title = element_blank(),
+          legend.text.position = "left",
+          legend.text = element_text(size = rel(3)))
   
   return(p)
   

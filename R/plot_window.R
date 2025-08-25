@@ -80,7 +80,7 @@ plot_window <- function(dataset, cw1 = 0.95, method = "box", ...) {
       title = paste0("Climate window range for\n", round(cw1 * 100), " % confidence set")
     ) +
     theme_climwin() +
-    theme(axis.text.y = element_text(angle = 90, hjust = 0.5, size = rel(2)))
+    theme(axis.text.y = element_text(angle = 90, hjust = 0.5))
   
   return(p)
 } 
