@@ -93,3 +93,26 @@ test_that("repair_climate handles multiple columns...", {
   expect_equal(result$Wind, c(5, 8, 10, 12, 3))
   
 })
+
+test_that("repair_climate can use other methods for interpolation...", {
+  
+  # Test data with additional columns
+  climate_data <- data.frame(
+    Date = c("01/01/1979", "02/01/1979", "04/01/1979", "05/01/1979"),
+    Temp = c(10, 15, 20, 12),
+    Humidity = c(60, 65, 70, 55),
+    Wind = c(5, 8, 12, 3)
+  )
+  
+  ## Use values 2 either side
+  result <- repair_climate(climate_data, cdate = "Date",
+                           xvar = c("Temp", "Humidity", "Wind"),
+                           method = imputeTS::na_ma, k = 2, weighting = "simple")
+  
+  expect_equal(nrow(result), 5)
+  expect_equal(result$Date, c("01/01/1979", "02/01/1979", "03/01/1979", "04/01/1979", "05/01/1979"))
+  expect_equal(result$Temp, c(10, 15, 14.25, 20, 12))
+  expect_equal(result$Humidity, c(60, 65, 62.5, 70, 55))
+  expect_equal(result$Wind, c(5, 8, 7, 12, 3))
+  
+})
