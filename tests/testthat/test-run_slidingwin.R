@@ -19,11 +19,12 @@ test_that("run_slidingwin works with valid input", {
                            basemodel = lm(Mass ~ climate, data = bio_data))
   
   # Check structure
-  expect_true(is.list(result))
-  expect_true("dataset" %in% names(result))
-  expect_true("bestModel" %in% names(result))
-  expect_true(is.data.frame(result$dataset))
-  expect_equal(nrow(result$dataset), 6)  # 6 combinations: 0-0, 0-1, 0-2, 1-1, 1-2, 2-2
+  expect_true(inherits(result, "S7_object"))
+  expect_true(inherits(result@dataset, "data.frame"))
+  expect_true(inherits(result@bestModel, "list"))
+  expect_true(inherits(result@bestModel$data, "data.frame"))
+  expect_true(inherits(result@bestModel$model, "lm"))
+  expect_equal(nrow(result@dataset), 6)  # 6 combinations: 0-0, 0-1, 0-2, 1-1, 1-2, 2-2
 })
 
 test_that("run_slidingwin fails if we try to go back too far", {
@@ -66,31 +67,34 @@ test_that("run_slidingwin works with different basemodel structures", {
                             climate_data = climate_data,
                             bio_data = bio_data,
                             basemodel = lm(Mass ~ climate, data = bio_data))
-  expect_true(is.list(result1))
-  expect_true("dataset" %in% names(result1))
-  expect_true("bestModel" %in% names(result1))
-  expect_true(is.data.frame(result1$dataset))
-  expect_equal(nrow(result1$dataset), 6)  # 6 combinations: 0-0, 0-1, 0-2, 1-1, 1-2, 2-2
+  expect_true(inherits(result1, "S7_object"))
+  expect_true(inherits(result1@dataset, "data.frame"))
+  expect_true(inherits(result1@bestModel, "list"))
+  expect_true(inherits(result1@bestModel$data, "data.frame"))
+  expect_true(inherits(result1@bestModel$model, "lm"))
+  expect_equal(nrow(result1@dataset), 6)
   
   result2 <- run_slidingwin(range = 0:2,
                             climate_data = climate_data,
                             bio_data = bio_data,
                             basemodel = lm(Mass ~ climate + Age, data = bio_data))
-  expect_true(is.list(result2))
-  expect_true("dataset" %in% names(result2))
-  expect_true("bestModel" %in% names(result2))
-  expect_true(is.data.frame(result2$dataset))
-  expect_equal(nrow(result2$dataset), 6)  # 6 combinations: 0-0, 0-1, 0-2, 1-1, 1-2, 2-2
+  expect_true(inherits(result2, "S7_object"))
+  expect_true(inherits(result2@dataset, "data.frame"))
+  expect_true(inherits(result2@bestModel, "list"))
+  expect_true(inherits(result2@bestModel$data, "data.frame"))
+  expect_true(inherits(result2@bestModel$model, "lm"))
+  expect_equal(nrow(result2@dataset), 6)
   
   result3 <- run_slidingwin(range = 0:2,
                             climate_data = climate_data,
                             bio_data = bio_data,
                             basemodel = lm(Mass ~ climate * Age, data = bio_data))
-  expect_true(is.list(result3))
-  expect_true("dataset" %in% names(result3))
-  expect_true("bestModel" %in% names(result3))
-  expect_true(is.data.frame(result3$dataset))
-  expect_equal(nrow(result3$dataset), 6)  # 6 combinations: 0-0, 0-1, 0-2, 1-1, 1-2, 2-2
+  expect_true(inherits(result3, "S7_object"))
+  expect_true(inherits(result3@dataset, "data.frame"))
+  expect_true(inherits(result3@bestModel, "list"))
+  expect_true(inherits(result3@bestModel$data, "data.frame"))
+  expect_true(inherits(result3@bestModel$model, "lm"))
+  expect_equal(nrow(result3@dataset), 6)
   
 })
 
@@ -115,11 +119,12 @@ test_that("run_slidingwin works with log(climate)", {
                            basemodel = lm(Mass ~ log(climate), data = bio_data))
   
   # Check structure
-  expect_true(is.list(result))
-  expect_true("dataset" %in% names(result))
-  expect_true("bestModel" %in% names(result))
-  expect_true(is.data.frame(result$dataset))
-  expect_equal(nrow(result$dataset), 6)  # 6 combinations: 0-0, 0-1, 0-2, 1-1, 1-2, 2-2
+  expect_true(inherits(result, "S7_object"))
+  expect_true(inherits(result@dataset, "data.frame"))
+  expect_true(inherits(result@bestModel, "list"))
+  expect_true(inherits(result@bestModel$data, "data.frame"))
+  expect_true(inherits(result@bestModel$model, "lm"))
+  expect_equal(nrow(result@dataset), 6)
 })
 
 test_that("run_slidingwin gives identical results with parallel = TRUE and FALSE", {
@@ -150,7 +155,10 @@ test_that("run_slidingwin gives identical results with parallel = TRUE and FALSE
                                       parallel = FALSE)
   
   # Compare results - compare the dataset components
-  expect_identical(result_parallel$dataset, result_sequential$dataset)
+  expect_identical(result_parallel@dataset, result_sequential@dataset)
+  expect_identical(result_parallel@bestModel$data, result_sequential@bestModel$data)
+  expect_identical(coef(result_parallel@bestModel$model),
+                   coef(result_sequential@bestModel$model))
 })
 
 test_that("results and results_spatial are identical as shown in example", {
@@ -187,10 +195,10 @@ test_that("results and results_spatial are identical as shown in example", {
                                     spatial = "site")
   
   # Results should be identical (same AIC values and structure)
-  expect_equal(results$dataset$AIC, results_spatial$dataset$AIC, tolerance = 1e-10)
-  expect_equal(results$dataset$Start_Day, results_spatial$dataset$Start_Day)
-  expect_equal(results$dataset$End_Day, results_spatial$dataset$End_Day)
-  expect_equal(nrow(results$dataset), nrow(results_spatial$dataset))
+  expect_equal(results@dataset$AIC, results_spatial@dataset$AIC, tolerance = 1e-10)
+  expect_equal(results@dataset$Start_Day, results_spatial@dataset$Start_Day)
+  expect_equal(results@dataset$End_Day, results_spatial@dataset$End_Day)
+  expect_equal(nrow(results@dataset), nrow(results_spatial@dataset))
 })
 
 test_that("run_slidingwin fails when spatial column doesn't exist in climate_data", {
