@@ -127,9 +127,7 @@ run_randwin <- function(repeats,
     
     # Extract the top row (lowest AIC) and add iteration number
     # Handle new list structure from run_slidingwin
-    if (is.list(sw_result) && "dataset" %in% names(sw_result)) {
-      sw_result <- sw_result$dataset
-    }
+    sw_result <- getDataset(sw_result)
     
     if (nrow(sw_result) > 0) {
       best_window <- sw_result[1, , drop = FALSE]

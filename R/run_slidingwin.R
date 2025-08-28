@@ -40,8 +40,8 @@
 #'                         basemodel = lm(Mass ~ climate, data = bio_data))
 #'                         
 #' # Access the dataset and best model
-#' dataset_results <- results$dataset
-#' best_model <- results$bestModel
+#' dataset_results <- getDataset(results)
+#' best_model <- getBestModel(results)
 #'                         
 #' Mass$site <- sample(c("A", "B"), size = nrow(Mass), replace = TRUE)
 #' Climate1 <- Climate
