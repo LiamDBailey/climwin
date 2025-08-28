@@ -1,0 +1,76 @@
+test_that("repair_climate handles missing dates...", {
+  # Test data with missing dates
+  climate_data <- data.frame(
+    Date = c("01/01/1979", "02/01/1979", "04/01/1979", "05/01/1979"),
+    Temp = c(10, 15, 20, 12)
+  )
+  
+  result <- repair_climate(climate_data, cdate = "Date", xvar = "Temp")
+  
+  # Check that missing date was added
+  expect_equal(nrow(result), 5)
+  expect_equal(result$Date, c("01/01/1979", "02/01/1979", "03/01/1979", "04/01/1979", "05/01/1979"))
+  expect_equal(result$Temp, c(10, 15, 17.5, 20, 12))
+})
+
+test_that("repair_climate handles NA values...", {
+  # Test data with multiple missing dates
+  climate_data <- data.frame(
+    Date = c("01/01/1979", "02/01/1979", "03/01/1979", "04/01/1979", "05/01/1979"),
+    Temp = c(10, 15, NA, 20, 12)
+  )
+  
+  result <- repair_climate(climate_data, cdate = "Date", xvar = "Temp")
+  
+  # Check that missing date was added
+  expect_equal(nrow(result), 5)
+  expect_equal(result$Date, c("01/01/1979", "02/01/1979", "03/01/1979", "04/01/1979", "05/01/1979"))
+  expect_equal(result$Temp, c(10, 15, 17.5, 20, 12))
+})
+
+test_that("repair_climate handles Inf values...", {
+  # Test data with Inf values
+  climate_data <- data.frame(
+    Date = c("01/01/1979", "02/01/1979", "03/01/1979", "04/01/1979", "05/01/1979"),
+    Temp = c(10, 15, Inf, 20, 12)
+  )
+  
+  result <- repair_climate(climate_data, cdate = "Date", xvar = "Temp")
+  
+  # Check that Inf was replaced with interpolated value
+  expect_equal(nrow(result), 5)
+  expect_equal(result$Date, c("01/01/1979", "02/01/1979", "03/01/1979", "04/01/1979", "05/01/1979"))
+  expect_equal(result$Temp, c(10, 15, 17.5, 20, 12))
+})
+
+test_that("repair_climate handles data with no issues correctly", {
+  # Test data with no missing dates or values
+  climate_data <- data.frame(
+    Date = c("01/01/1979", "02/01/1979", "03/01/1979", "04/01/1979", "05/01/1979"),
+    Temp = c(10, 15, 20, 25, 30)
+  )
+  
+  result <- repair_climate(climate_data, cdate = "Date", xvar = "Temp")
+  
+  # Check that data is unchanged
+  expect_identical(climate_data, result)
+})
+
+test_that("repair_climate handles additional columns correctly", {
+  # Test data with additional columns
+  climate_data <- data.frame(
+    Date = c("01/01/1979", "02/01/1979", "04/01/1979", "05/01/1979"),
+    Temp = c(10, 15, 20, 12),
+    Humidity = c(60, 65, 70, 55),
+    Wind = c(5, 8, 12, 3)
+  )
+  
+  result <- repair_climate(climate_data, cdate = "Date", xvar = "Temp")
+  
+  expect_equal(nrow(result), 5)
+  expect_equal(result$Date, c("01/01/1979", "02/01/1979", "03/01/1979", "04/01/1979", "05/01/1979"))
+  expect_equal(result$Temp, c(10, 15, 17.5, 20, 12))
+  expect_equal(result$Humidity, c(60, 65, NA, 70, 55))
+  expect_equal(result$Wind, c(5, 8, NA, 12, 3))
+  
+})
