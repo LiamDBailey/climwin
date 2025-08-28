@@ -6,7 +6,7 @@
 #'
 #' @param climate_data A data frame containing climate data
 #' @param cdate Character string specifying the name of the date column. Defaults to "Date".
-#' @param xvar Character string specifying the name of the climate variable column. Defaults to "Temp".
+#' @param xvar Character vector specifying the names of the climate variable columns to repair. Defaults to "Temp".
 #'
 #' @return A data frame with repaired climate data containing:
 #'         - All dates from min to max in continuous sequence
@@ -21,19 +21,26 @@
 #'   Rain = c(1, 2, 3, 4)
 #' )
 #' 
-#' repaired_data <- repair_climate(climate_data, cdate = "Date", xvar = "Temp")
+#' repaired_data <- repair_climate(climate_data, cdate = "Date", xvar = c("Temp", "Rain"))
 #' 
 #' @export
 #' @importFrom dplyr bind_rows
-repair_climate <- function(climate_data, cdate, xvar) {
+repair_climate <- function(climate_data, cdate = "Date", xvar = "Temp") {
   
   # Validate column names exist
   if (!cdate %in% names(climate_data)) {
     stop(sprintf("Column '%s' not found in climate_data", cdate))
   }
   
-  if (!xvar %in% names(climate_data)) {
-    stop(sprintf("Column '%s' not found in climate_data", xvar))
+  # Ensure xvar is a character vector
+  if (!is.character(xvar)) {
+    stop("'xvar' must be a character vector")
+  }
+  
+  # Check that all xvar columns exist in climate_data
+  missing_cols <- setdiff(xvar, names(climate_data))
+  if (length(missing_cols) > 0) {
+    stop(sprintf("Columns not found in climate_data: %s", paste(missing_cols, collapse = ", ")))
   }
   
   # Validate cdate column is character in DD/MM/YYYY format
@@ -68,8 +75,10 @@ repair_climate <- function(climate_data, cdate, xvar) {
       stringsAsFactors = FALSE
     )
     
-    # Add NA values for the climate variable
-    missing_rows[[xvar]] <- NA
+    # Add NA values for all climate variables
+    for (col in xvar) {
+      missing_rows[[col]] <- NA
+    }
     
     # Combine original data with missing rows
     all_data <- dplyr::bind_rows(climate_data, missing_rows)
@@ -90,48 +99,51 @@ repair_climate <- function(climate_data, cdate, xvar) {
   }
   
   ### REPAIR MISSING VALUES ####
-  # Get the climate variable values
-  xvar_values <- all_data[[xvar]]
-  
-  # Find indices of NA and Inf values
-  missing_indices <- which(is.na(xvar_values) | is.infinite(xvar_values))
-  
-  if (length(missing_indices) > 0) {
-    # Sort missing indices to process in order
-    missing_indices <- sort(missing_indices)
+  # Repair each climate variable column
+  for (col in xvar) {
+    # Get the climate variable values
+    xvar_values <- all_data[[col]]
     
-    for (idx in missing_indices) {
-      # Find the nearest non-missing values before and after
-      before_idx <- idx - 1
-      after_idx <- idx + 1
+    # Find indices of NA and Inf values
+    missing_indices <- which(is.na(xvar_values) | is.infinite(xvar_values))
+    
+    if (length(missing_indices) > 0) {
+      # Sort missing indices to process in order
+      missing_indices <- sort(missing_indices)
       
-      # Look backwards for non-missing value
-      while (before_idx > 0 && (is.na(xvar_values[before_idx]) || is.infinite(xvar_values[before_idx]))) {
-        before_idx <- before_idx - 1
+      for (idx in missing_indices) {
+        # Find the nearest non-missing values before and after
+        before_idx <- idx - 1
+        after_idx <- idx + 1
+        
+        # Look backwards for non-missing value
+        while (before_idx > 0 && (is.na(xvar_values[before_idx]) || is.infinite(xvar_values[before_idx]))) {
+          before_idx <- before_idx - 1
+        }
+        
+        # Look forwards for non-missing value
+        while (after_idx <= length(xvar_values) && (is.na(xvar_values[after_idx]) || is.infinite(xvar_values[after_idx]))) {
+          after_idx <- after_idx + 1
+        }
+        
+        # Interpolate if we have both before and after values
+        if (before_idx > 0 && after_idx <= length(xvar_values)) {
+          before_val <- xvar_values[before_idx]
+          after_val <- xvar_values[after_idx]
+          xvar_values[idx] <- mean(c(before_val, after_val), na.rm = TRUE)
+        } else if (before_idx > 0) {
+          # Only have before value, use it
+          xvar_values[idx] <- xvar_values[before_idx]
+        } else if (after_idx <= length(xvar_values)) {
+          # Only have after value, use it
+          xvar_values[idx] <- xvar_values[after_idx]
+        }
+        # If no valid values found, leave as NA
       }
       
-      # Look forwards for non-missing value
-      while (after_idx <= length(xvar_values) && (is.na(xvar_values[after_idx]) || is.infinite(xvar_values[after_idx]))) {
-        after_idx <- after_idx + 1
-      }
-      
-      # Interpolate if we have both before and after values
-      if (before_idx > 0 && after_idx <= length(xvar_values)) {
-        before_val <- xvar_values[before_idx]
-        after_val <- xvar_values[after_idx]
-        xvar_values[idx] <- mean(c(before_val, after_val), na.rm = TRUE)
-      } else if (before_idx > 0) {
-        # Only have before value, use it
-        xvar_values[idx] <- xvar_values[before_idx]
-      } else if (after_idx <= length(xvar_values)) {
-        # Only have after value, use it
-        xvar_values[idx] <- xvar_values[after_idx]
-      }
-      # If no valid values found, leave as NA
+      # Update the data frame with repaired values
+      all_data[[col]] <- xvar_values
     }
-    
-    # Update the data frame with repaired values
-    all_data[[xvar]] <- xvar_values
   }
   
   return(all_data)
