@@ -102,6 +102,43 @@ process_data <- function(climate_data,
                 })
   }
   
+  ### CLIMATE DATA COMPLETENESS CHECKS ####
+  # Check 1: Validate that cdate column is a date column
+  climate_dates <- climate_data[[cdate]]
+  if (!is.character(climate_dates)) {
+    stop(sprintf("Column '%s' in climate_data must be a character in format 'DD/MM/YYYY'", cdate))
+  }
+  
+  # Convert to Date object for validation and processing
+  converted_dates <- as.Date(climate_dates, format = "%d/%m/%Y")
+  if (all(is.na(converted_dates))) {
+    stop(sprintf("Column '%s' in climate_data must be in format 'DD/MM/YYYY'", cdate))
+  }
+  climate_dates <- converted_dates
+  climate_data[[cdate]] <- climate_dates
+  
+  # Check 2: Verify continuous date series with no missing days
+  climate_dates_sorted <- sort(climate_dates)
+  expected_dates <- seq.Date(from = min(climate_dates_sorted), 
+                           to = max(climate_dates_sorted), 
+                           by = "day")
+  missing_dates <- setdiff(expected_dates, climate_dates_sorted)
+  if (length(missing_dates) > 0) {
+    stop(sprintf("Climate data has missing dates: %s. The date series must be continuous from %s to %s.", 
+                paste(missing_dates, collapse = ", "),
+                min(climate_dates_sorted),
+                max(climate_dates_sorted)))
+  }
+  
+  # Check 3: Verify no missing data in xvar column
+  xvar_data <- climate_data[[xvar]]
+  if (any(is.na(xvar_data) | is.infinite(xvar_data))) {
+    missing_count <- sum(is.na(xvar_data) | is.infinite(xvar_data))
+    total_count <- length(xvar_data)
+    stop(sprintf("Column '%s' in climate_data contains %d missing or infinite values out of %d total values. All climate data must be complete.", 
+                xvar, missing_count, total_count))
+  }
+  
   ### PROCESS DATA ####
   # Add integer dates to data frames (1 = earliest climate data)
   climate_data$date_int <- 1:nrow(climate_data)
