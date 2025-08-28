@@ -69,6 +69,13 @@ repair_climate <- function(climate_data, cdate, xvar, method = imputeTS::na_inte
   
   # Create new data frame with complete dates
   if (length(missing_dates) > 0) {
+    
+    ## If more than X% of data we throw a warning
+    prop_missing <- length(missing_dates)/length(complete_dates)
+    if (prop_missing > 0.2){
+      warning(paste0(round(prop_missing*100), "% of dates are missing. Interpolation may be unreliable with such large gaps."))
+    }
+    
     # Create rows for missing dates with NA values
     missing_rows <- data.frame(
       Date = format(missing_dates, format = "%d/%m/%Y"),

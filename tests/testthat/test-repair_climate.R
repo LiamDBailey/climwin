@@ -116,3 +116,27 @@ test_that("repair_climate can use other methods for interpolation...", {
   expect_equal(result$Wind, c(5, 8, 7, 12, 3))
   
 })
+
+test_that("Interpolation with big gaps works but throws warning...", {
+  
+  # Test data with additional columns
+  climate_data <- data.frame(
+    Date = c("01/01/1979", "03/01/1979", "05/01/1979"),
+    Temp = c(10, 15, 20),
+    Humidity = c(60, 65, 70),
+    Wind = c(6, 8, 10)
+  )
+  
+  ## Use values 2 either side
+  expect_warning(result <- repair_climate(climate_data, cdate = "Date",
+                           xvar = c("Temp", "Humidity", "Wind"),
+                           method = imputeTS::na_ma, k = 2, weighting = "simple"),
+                 "40% of dates are missing. Interpolation may be unreliable with such large gaps.")
+  
+  expect_equal(nrow(result), 5)
+  expect_equal(result$Date, c("01/01/1979", "02/01/1979", "03/01/1979", "04/01/1979", "05/01/1979"))
+  expect_equal(result$Temp, c(10, 12.5, 15, 17.5, 20))
+  expect_equal(result$Humidity, c(60, 62.5, 65, 67.5, 70))
+  expect_equal(result$Wind, c(6, 7, 8, 9, 10))
+  
+})
