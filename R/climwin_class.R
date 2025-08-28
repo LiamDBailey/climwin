@@ -25,21 +25,26 @@ climwin <- S7::new_class("climwin", properties = list(
   bestModel = class_list,
   range = class_numeric
 ))
+
 S7::method(print, climwin) <- function(x) {
   print(head(x@dataset))
 }
+
 S7::method(plot, climwin) <- function(x, ...) {
   plot_slidingwin(x, ...)
 }
+
 getDataset <- new_generic("getDataset", "x")
 S7::method(getDataset, climwin) <- function(x) {
   x@dataset
 }
+
 getBestModel <- new_generic("getBestModel", "x")
 S7::method(getBestModel, climwin) <- function(x) {
-  x@bestModel
+  x@bestModel$model
 }
-bestModelData <- new_generic("bestModelData", "x")
-S7::method(bestModelData, climwin) <- function(x) {
-  x@bestModelData
+
+getBestModelData <- new_generic("getBestModelData", "x")
+S7::method(getBestModelData, climwin) <- function(x) {
+  x@bestModel$data
 }
