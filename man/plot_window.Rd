@@ -4,7 +4,7 @@
 \alias{plot_window}
 \title{Plot Climate Window Range Distribution}
 \usage{
-plot_window(dataset, cw1 = 0.95)
+plot_window(dataset, cw1 = 0.95, method = "box", ...)
 }
 \arguments{
 \item{dataset}{Output from run_slidingwin (either a data frame or a list with 'dataset' item) containing columns:

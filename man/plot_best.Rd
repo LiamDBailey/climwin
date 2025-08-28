@@ -4,7 +4,7 @@
 \alias{plot_best}
 \title{Plot Best Model Fit}
 \usage{
-plot_best(dataset, x, ...)
+plot_best(dataset, x, y, ...)
 }
 \arguments{
 \item{dataset}{Output from run_slidingwin (a list with 'dataset' and 'bestModel' items)}
