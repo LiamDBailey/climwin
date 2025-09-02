@@ -1,7 +1,7 @@
 #' Optimise Weibull Parameters for Weighted Climate Windows
 #'
 #' This function uses the 'optim' function to find the optimal Weibull parameters (shape and scale)
-#' that create the best fitting model with the lowest AIC. It iteratively calls 'fit_weightwin'
+#' that create the best fitting model with the lowest AIC. It iteratively calls 'fit_weights'
 #' to create weighted climate data and then fits the basemodel to extract AIC values.
 #'
 #' @param range A numeric vector specifying the number of days to look back from each date in bio_data.
@@ -32,21 +32,20 @@
 #' Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
 #' Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
 #' 
-#' # Initial Weibull parameters: shape = 2, scale = 50, location = 0
-#' results <- optimise_weights(range = 0:100, 
+#' results <- run_weightwin(range = 0:100, 
 #'                            bio_data = Mass,
 #'                            climate_data = Climate,
 #'                            cdate = "Date", bdate = "Date",
 #'                            xvar = "Temp",
 #'                            basemodel = lm(Mass ~ climate, data = bio_data),
-#'                            par = c(2, 50, 0))
+#'                            par = c(1.25, 0.5))
 #'                            
 #' # Access the optimal parameters and data
 #' optimal_params <- results$par
 #' optimal_data <- results$optimal_data
 #'
 #' @export
-optimise_weights <- function(range,
+run_weightwin <- function(range,
                             bio_data,
                             climate_data,
                             basemodel,
@@ -55,48 +54,26 @@ optimise_weights <- function(range,
                             xvar,
                             par,
                             method = "L-BFGS-B",
-                            lower = c(0.1, 0.1, 0),
-                            upper = c(10, 1000, 100),
+                            lower = c(0.0001, 0.0001), 
+                            upper = c(Inf, Inf),
                             control = list(maxit = 100)) {
-  
-  ### ARGUMENT CHECKS ####
-  # Validate par parameter
-  validate_arg("par", par, required = TRUE, type = "numeric",
-               additional_checks = function(x) {
-                 if(length(x) != 3) stop("par must be a numeric vector of length 3")
-                 if(any(x <= 0)) stop("all par values must be positive")
-               })
   
   # Validate basemodel
   validate_arg("basemodel", basemodel, required = TRUE)
   
-  # Validate bounds
-  validate_arg("lower", lower, required = FALSE, type = "numeric",
-               additional_checks = function(x) {
-                 if(length(x) != 3) stop("lower must be a numeric vector of length 3")
-                 if(any(x < 0)) stop("all lower bounds must be positive")
-               })
-  
-  validate_arg("upper", upper, required = FALSE, type = "numeric",
-               additional_checks = function(x) {
-                 if(length(x) != 3) stop("upper must be a numeric vector of length 3")
-                 if(any(x <= 0)) stop("all upper bounds must be positive")
-               })
-  
   # Ensure lower < upper for each parameter
   if (any(lower >= upper)) stop("lower bounds must be less than upper bounds")
-  
-  # Ensure initial parameters are within bounds
   if (any(par < lower) || any(par > upper)) stop("initial parameters must be within bounds")
   
   ## Handle basemodel substitution
   basemodel <- substitute(basemodel)
   
   # Objective function to minimize (AIC)
-  objective_function <- function(params) {
+  objective_function <- function(params, fn_env) {
     tryCatch({
+      
       # Create weighted climate data using current parameters
-      bio_data <- fit_weightwin(
+      fitted_output <- fit_weights(
         range = range,
         bio_data = bio_data,
         climate_data = climate_data,
@@ -106,11 +83,27 @@ optimise_weights <- function(range,
         par = params
       )
       
+      bio_data <- fitted_output$bio_data
+      
       # Fit the basemodel with the weighted climate data
       model <- eval(basemodel)
       
       # Return AIC value
-      AIC(model)
+      outputAIC <- AIC(model)
+      
+      save_list <- list(shape = params[1], scale = params[2], AIC = outputAIC)
+      
+      for (i in 1:3){
+        fn_env$plot_save[[i]] <- append(fn_env$plot_save[[i]], save_list[[i]])
+      }
+      
+      par(mfrow = c(2, 2))
+      plot(fitted_output$weights, type = "l", ylab = "weight", xlab = "time step (e.g days)", main = "Output of current weighted window being tested")
+      plot(fn_env$plot_save[[3]], type = "l", ylab = "AIC", xlab = "convergence step")
+      plot(fn_env$plot_save[[1]], type = "l", ylab = "shape parameter", xlab = "convergence step", main = "Weibull parameter values being tested")
+      plot(fn_env$plot_save[[2]], type = "l", ylab = "scale parameter", xlab = "convergence step")
+      
+      outputAIC
       
     }, error = function(e) {
       # Return a very high AIC if there's an error
@@ -118,18 +111,21 @@ optimise_weights <- function(range,
     })
   }
   
+  plot_save <- list(shape = par[1], scale = par[2], AIC = NA)
+  
   # Run optimization
   optim_result <- optim(
     par = par,
     fn = objective_function,
     method = method,
-    lower = lower,
-    upper = upper,
-    control = control
+    control = control,
+    fn_env = environment(),
+    lower = lower, 
+    upper = upper
   )
   
   # Get the optimal weighted climate data
-  optimal_data <- fit_weightwin(
+  optimal_data <- fit_weights(
     range = range,
     bio_data = bio_data,
     climate_data = climate_data,

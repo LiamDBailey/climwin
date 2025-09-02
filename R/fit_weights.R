@@ -22,35 +22,24 @@
 #' Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
 #' 
 #' # Weibull parameters: shape = 2, scale = 50, location = 0
-#' results <- fit_weightwin(range = 0:100, 
+#' results <- fit_weights(range = 0:100, 
 #'                         bio_data = Mass,
 #'                         climate_data = Climate,
+#'                         cdate = "Date", bdate = "Date",
+#'                         xvar = "Temp",
 #'                         par = c(2, 50, 0))
 #'                         
 #' # Access the weighted climate data
 #' head(results)
 #'
 #' @export
-fit_weightwin <- function(range,
-                         bio_data,
-                         climate_data,
-                         cdate = "Date",
-                         bdate = "Date",
-                         xvar = "Temp",
-                         par) {
-  
-  ### ARGUMENT CHECKS ####
-  # Validate par parameter
-  validate_arg("par", par, required = TRUE, type = "numeric",
-               additional_checks = function(x) {
-                 if(length(x) != 3) stop("par must be a numeric vector of length 3")
-                 if(any(x <= 0)) stop("all par values must be positive")
-               })
-  
-  # Extract Weibull parameters
-  shape <- par[1]
-  scale <- par[2]
-  location <- par[3]
+fit_weights <- function(range,
+                          bio_data,
+                          climate_data,
+                          cdate,
+                          bdate,
+                          xvar,
+                          par) {
   
   ### PROCESS DATA ####
   processed_data <- process_data(
@@ -68,21 +57,18 @@ fit_weightwin <- function(range,
   
   # Extract processed data
   bio_data <- processed_data$bio_data
-  bio_int_ranges <- processed_data$bio_int_ranges
-  bio_data_row <- processed_data$bio_data_row
   bio_xvar_ranges <- processed_data$bio_xvar_ranges
   
   # Calculate weights for each day in range using manual Weibull function
-  range_days <- seq_along(range)
-  weights <- sapply(range_days, function(x) {
-    # Weibull function: shape/scale * ((x-location)/scale)^(shape-1) * exp(-((x-location)/scale)^shape)
-    # For x > location, otherwise 0
-    if (x < location) return(0)
-    x_norm <- (x - location) / scale
-    return((shape / scale) * (x_norm^(shape - 1)) * exp(-(x_norm^shape)))
-  })
+  weights <- dweibull(seq(0, 1, length.out = length(range)), par[1], par[2])
+    # weibull3(seq(0, 1, length.out = length(range)), par[1], par[2], par[3])
   
   # Normalize weights to sum to 1
+  # Replace NA and Inf with 0
+  weights[is.na(weights) | is.infinite(weights)] <- 0
+  if (sum(weights) == 0){
+    weights <- weights + 1
+  }
   weights <- weights / sum(weights)
   
   # Apply weighted mean to each bio_data row
@@ -92,9 +78,11 @@ fit_weightwin <- function(range,
     return(weighted_sum)
   })
   
-  # Reorder the weighted climate data to match bio_data rows
-  bio_data$climate <- climate[order(bio_data_row)]
+  bio_data$climate <- climate
+  
+  output <- list(bio_data = bio_data,
+                 weights = weights)
   
   # Return bio_data with the new climate column
-  return(bio_data)
+  return(output)
 }
