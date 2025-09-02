@@ -135,13 +135,15 @@ run_weightwin <- function(range,
     par = optim_result$par
   )
   
+  bio_data <- optimal_data$bio_data
+  best_model <- eval(basemodel)
+  
   # Return results
-  return(list(
-    par = optim_result$par,
-    value = optim_result$value,
-    convergence = optim_result$convergence,
-    message = optim_result$message,
-    counts = optim_result$counts,
-    optimal_data = optimal_data
-  ))
+  return(climwin(dataset = as.data.frame(plot_save)[-1, ] |> 
+                   arrange(desc(AIC)),
+                 bestModel = list(model = best_model,
+                                  data = optimal_data$bio_data),
+                 range = range,
+                 weights = list(par = optim_result$par,
+                                weights = optimal_data$weights)))
 }

@@ -23,14 +23,17 @@
 climwin <- S7::new_class("climwin", properties = list(
   dataset = class_data.frame,
   bestModel = class_list,
-  range = class_numeric
+  range = class_numeric,
+  weights = class_list
 ))
 
 S7::method(print, climwin) <- function(x) {
   minrange <- x@range[1]
   maxrange <- x@range[2]
-  bestwindow_start <- x@dataset$Start_Day[1]
-  bestwindow_end <- x@dataset$End_Day[1]
+  # bestwindow_start <- x@dataset$Start_Day[1]
+  # bestwindow_end <- x@dataset$End_Day[1]
+  bestwindow_start <- 0
+  bestwindow_end <- 0
   model_formula <- Reduce(paste, deparse(formula(x@bestModel$model)))
   cat(glue::glue("Slidingwin output using climwin:
       Range: {minrange} - {maxrange}

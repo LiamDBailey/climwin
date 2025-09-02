@@ -11,7 +11,7 @@
 #' @param bdate Character string specifying the name of the date column in bio_data. Defaults to "Date".
 #' @param xvar Character string specifying the name of the climate variable column in climate_data. Defaults to "Temp".
 #' @param par A numeric vector of length 3 containing the Weibull function parameters:
-#'            par[1] = shape, par[2] = scale, par[3] = location. Required.
+#'            par[1] = shape, par[2] = scale. Required.
 #'
 #' @return A data frame containing the original bio_data with an additional column 'climate'
 #'         containing the weighted mean climate values for each row
@@ -21,7 +21,6 @@
 #' Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
 #' Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
 #' 
-#' # Weibull parameters: shape = 2, scale = 50, location = 0
 #' results <- fit_weights(range = 0:100, 
 #'                         bio_data = Mass,
 #'                         climate_data = Climate,
