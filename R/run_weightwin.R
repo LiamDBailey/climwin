@@ -61,12 +61,14 @@ run_weightwin <- function(range,
   # Validate basemodel
   validate_arg("basemodel", basemodel, required = TRUE)
   
+  basemodel <- substitute(basemodel)
+  
   # Ensure lower < upper for each parameter
   if (any(lower >= upper)) stop("lower bounds must be less than upper bounds")
   if (any(par < lower) || any(par > upper)) stop("initial parameters must be within bounds")
   
   ## Handle basemodel substitution
-  basemodel <- substitute(basemodel)
+  # basemodel <- substitute(basemodel)
   
   # Objective function to minimize (AIC)
   objective_function <- function(params, fn_env) {
