@@ -20,7 +20,8 @@ climwin(
 
     })(),
   bestModel = list(),
-  range = integer(0)
+  range = integer(0),
+  weights = list()
 )
 }
 \description{
