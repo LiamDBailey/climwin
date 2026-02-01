@@ -26,7 +26,7 @@
 #' @import ggplot2
 plot_weibull <- function(dataset){
   
-  weights <- dataset@weights$weights
+  weights <- getWeights(dataset)
   
   p <- ggplot() +
     geom_line(aes(x = seq(min(dataset@range),

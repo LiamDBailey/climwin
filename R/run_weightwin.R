@@ -47,7 +47,8 @@
 #' optimal_data <- results$optimal_data
 #'
 #' @export
-run_weightwin <- function(n = 1, range,
+run_weightwin <- function(n = 1,
+                          range,
                           bio_data,
                           climate_data,
                           basemodel,
@@ -58,21 +59,17 @@ run_weightwin <- function(n = 1, range,
                           type = "relative",
                           refday = NULL,
                           method = "L-BFGS-B",
-                          lower = c(0.0001, 0.0001), 
-                          upper = c(Inf, Inf),
+                          lower = c(0.1, 0.1), 
+                          upper = c(10, 1000),
                           control = list(maxit = 100)) {
   
   # Validate basemodel
   validate_arg("basemodel", basemodel, required = TRUE)
-  
   basemodel <- substitute(basemodel)
   
   # Ensure lower < upper for each parameter
   if (any(lower >= upper)) stop("lower bounds must be less than upper bounds")
   if (any(par < lower) || any(par > upper)) stop("initial parameters must be within bounds")
-  
-  ## Handle basemodel substitution
-  # basemodel <- substitute(basemodel)
   
   # Objective function to minimize (AIC)
   objective_function <- function(params, fn_env) {
@@ -117,39 +114,63 @@ run_weightwin <- function(n = 1, range,
     })
   }
   
-  plot_save <- list(shape = par[1], scale = par[2], AIC = NA)
+  summary_output <- data.frame(start_par1 = numeric(), start_par2 = numeric(), AIC = numeric())
+  output <- list()
   
-  # Run optimization
-  optim_result <- optim(
-    par = par,
-    fn = objective_function,
-    method = method,
-    control = control,
-    fn_env = environment(),
-    lower = lower, 
-    upper = upper
-  )
+  for (i in 1:n){
+    
+    if (i > 1){
+      for (j in 1:length(par)){
+        par[j] <- runif(min = lower[j], max = upper[j], n = 1)
+      }
+    }
+    
+    plot_save <- list(shape = par[1], scale = par[2], AIC = NA)
+    
+    # Run optimization
+    optim_result <- optim(
+      par = par,
+      fn = objective_function,
+      method = method,
+      control = control,
+      fn_env = environment(),
+      lower = lower, 
+      upper = upper
+    )
+    
+    # Get the optimal weighted climate data
+    optimal_data <- fit_weights(
+      range = range,
+      bio_data = bio_data,
+      climate_data = climate_data,
+      cdate = cdate,
+      bdate = bdate,
+      xvar = xvar,
+      par = optim_result$par
+    )
+    
+    bio_data <- optimal_data$bio_data
+    best_model <- eval(basemodel)
+    
+    output <- append(output,
+                     list(list(dataset = as.data.frame(plot_save)[-1, ] |> 
+                                 arrange(desc(AIC)),
+                               bestModel = list(model = best_model,
+                                                data = optimal_data$bio_data),
+                               weights = list(par = optim_result$par,
+                                              weights = optimal_data$weights))))
+    
+    summary_output <- bind_rows(summary_output,
+                                data.frame(start_par1 = par[1], end_par1 = optim_result$par[1],
+                                           start_par2 = par[2], end_par1 = optim_result$par[2],
+                                           AIC = AIC(best_model)))
+    
+  }
   
-  # Get the optimal weighted climate data
-  optimal_data <- fit_weights(
-    range = range,
-    bio_data = bio_data,
-    climate_data = climate_data,
-    cdate = cdate,
-    bdate = bdate,
-    xvar = xvar,
-    par = optim_result$par
-  )
-  
-  bio_data <- optimal_data$bio_data
-  best_model <- eval(basemodel)
+  summary_output <- summary_output |> arrange(AIC)
   
   # Return results
-  return(climwin(dataset = as.data.frame(plot_save)[-1, ] |> 
-                   arrange(desc(AIC)),
-                 bestModel = list(model = best_model,
-                                  data = optimal_data$bio_data),
-                 range = range,
-                 weights = list(par = optim_result$par,
-                                weights = optimal_data$weights)))
+  return(climwin_weightwin(weightwin_summary = summary_output,
+                           weightwin_output = output,
+                           range = range))
 }
