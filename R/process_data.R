@@ -142,33 +142,35 @@ process_data <- function(climate_data,
   ### PROCESS DATA ####
   # Add integer dates to data frames (1 = earliest climate data)
   climate_data$date_int <- 1:nrow(climate_data)
+  # Convert dates to Date objects
+  bio_dates <- as.Date(bio_data[[bdate]], format = "%d/%m/%Y")
+  # Get year from cohort
+  if (!is.null(cohort)){
+    # Get earliest year for each cohort
+    cohort_years <- tapply(bio_dates, bio_data[[cohort]], function(x) {
+      min(lubridate::year(x))
+    })
+    years <- cohort_years[as.character(bio_data[[cohort]])]
+  } else {
+    years <- lubridate::year(bio_dates)
+  }
   
   if (type == "relative") {
-    if (!is.null(cohort)) {
-      # Convert dates to Date objects
-      bio_dates <- as.Date(bio_data[[bdate]], format = "%d/%m/%Y")
-      
-      # Get earliest year for each cohort
-      cohort_years <- tapply(bio_dates, bio_data[[cohort]], function(x) {
-        min(lubridate::year(x))
-      })
-      
-      # Create new dates using earliest year for each cohort
-      bio_data$date_int <- convert_dates_to_int(
-        as.Date(paste(
-          lubridate::day(bio_dates),
-          lubridate::month(bio_dates),
-          cohort_years[bio_data[[cohort]]],
-          sep = "/"
-        ), format = "%d/%m/%Y"),
-        min_date = climate_data[[cdate]][1]
-      ) + 1
-    } else {
-      bio_data$date_int <- convert_dates_to_int(bio_data[[bdate]], min_date = climate_data[[cdate]][1]) + 1
-    }
+    
+    # Create new dates using earliest year for each cohort
+    bio_data$date_int <- convert_dates_to_int(
+      as.Date(paste(
+        lubridate::day(bio_dates),
+        lubridate::month(bio_dates),
+        years,
+        sep = "/"
+      ), format = "%d/%m/%Y"),
+      min_date = climate_data[[cdate]][1]
+    ) + 1
+    
   } else {
+    
     # Format bio dates and refday as date objects
-    bio_dates_as_date <- as.Date(bio_data[[bdate]], format = "%d/%m/%Y")
     refday_parts_as_date <- as.Date(refday, format = "%d/%m/%Y")
     
     ## Create new bio data dates using refday
@@ -176,11 +178,12 @@ process_data <- function(climate_data,
       as.Date(paste(
         lubridate::day(refday_parts_as_date),
         lubridate::month(refday_parts_as_date),
-        lubridate::year(bio_dates_as_date),
+        years,
         sep = "/"
       ), format = "%d/%m/%Y"),
       min_date = climate_data[[cdate]][1]
     ) + 1
+    
   }
   
   ## Each col is all the possible (integer) dates that are relevant across range
