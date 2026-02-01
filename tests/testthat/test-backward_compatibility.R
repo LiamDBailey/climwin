@@ -139,3 +139,30 @@ test_that("Test cohort works", {
   expect_equal(new_results, old_results, tolerance = 0.001)
   
 })
+
+test_that("Weightwin has backwards compatibility", {
+  
+  # Example usage:
+  Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+  Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
+  
+  new_result <- run_weightwin(range = 0:150,
+                              bio_data = Mass, climate_data = Climate,
+                              basemodel = lm(Mass ~ climate, data = bio_data),
+                              par = c(3, 0.2),
+                              xvar = "Temp", cdate = "Date", bdate = "Date")
+  
+  old_result <- weightwin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, 
+                      bdate = Mass$Date, 
+                      baseline = lm(Mass ~ 1, data = Mass), 
+                      range = c(150, 0),
+                      func = "lin", type = "relative", 
+                      weightfunc = "W", cinterval = "day",
+                      par = c(3, 0.2, 0))
+  
+  ## Calculate difference in weights.
+  ## Sum of difference should be small
+  diff <- new_result@weights$weights - old_result$Weights
+  expect_true(sum(diff) < 0.00001)
+  
+})
