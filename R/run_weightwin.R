@@ -12,6 +12,8 @@
 #' @param cdate Character string specifying the name of the date column in climate_data. Defaults to "Date".
 #' @param bdate Character string specifying the name of the date column in bio_data. Defaults to "Date".
 #' @param xvar Character string specifying the name of the climate variable column in climate_data. Defaults to "Temp".
+#' @param type Character string specifying the type of date range calculation. Must be either "relative" (default) or "absolute".
+#' @param refday Character string in format "DD/MM/YYYY" specifying the reference date to use when type is "absolute".
 #' @param par A numeric vector of length 3 containing initial Weibull function parameters:
 #'            par[1] = shape, par[2] = scale, par[3] = location. Required.
 #' @param method The optimization method to use. Defaults to "L-BFGS-B".
@@ -45,18 +47,20 @@
 #' optimal_data <- results$optimal_data
 #'
 #' @export
-run_weightwin <- function(range,
-                            bio_data,
-                            climate_data,
-                            basemodel,
-                            cdate,
-                            bdate,
-                            xvar,
-                            par,
-                            method = "L-BFGS-B",
-                            lower = c(0.0001, 0.0001), 
-                            upper = c(Inf, Inf),
-                            control = list(maxit = 100)) {
+run_weightwin <- function(n = 1, range,
+                          bio_data,
+                          climate_data,
+                          basemodel,
+                          cdate,
+                          bdate,
+                          xvar,
+                          par = c(3, 0.2),
+                          type = "relative",
+                          refday = NULL,
+                          method = "L-BFGS-B",
+                          lower = c(0.0001, 0.0001), 
+                          upper = c(Inf, Inf),
+                          control = list(maxit = 100)) {
   
   # Validate basemodel
   validate_arg("basemodel", basemodel, required = TRUE)

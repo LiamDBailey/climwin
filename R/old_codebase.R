@@ -96,6 +96,7 @@
 #'@import utils
 #'@import graphics
 #'@import lme4
+#'@import MuMIn
 #'@importFrom lubridate weeks
 #'@importFrom MuMIn AICc
 #'@importFrom Matrix Matrix
