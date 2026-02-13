@@ -1,7 +1,7 @@
 Package: climwin
 Type: Package
 Title: Climate Window Analysis
-Version: 1.2.4
+Version: 1.2.32
 Authors@R: c(person(given = c("Liam", "D."), family = "Bailey",
                         role = c("aut", "cre"),
                         email = "liam.bailey@liamdbailey.com"),
