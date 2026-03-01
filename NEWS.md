@@ -1,4 +1,20 @@
-# climwin 1.2.4
+# climwin 1.2.33
+
+Hot fix to ensure compatibility with development version of R on Linux.
+
+## Major changes
+
+None
+
+## Minor changes
+
+Slight change to internal tests to pass all CRAN checks.
+
+## Technical changes
+
+- Remove use of 'size' argument in ggplot2 line objects, now using 'linewidth'.
+
+# climwin 1.2.32
 
 Minor updates to ensure compatibility with ggplot v4.0.0
 
