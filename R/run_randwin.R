@@ -28,6 +28,8 @@
 #' @param progress Logical. Show a progress bar. Default \code{TRUE}.
 #' @param window_type Character string. Either \code{"slidingwin"} (default)
 #'   or \code{"weightwin"}.
+#' @param cinterval Character string specifying the temporal resolution: \code{"day"} (default),
+#'   \code{"week"}, or \code{"month"}. Passed through to the underlying window function.
 #'
 #' @section weightwin arguments:
 #' The following arguments are passed to \code{\link{run_weightwin}} when
@@ -76,6 +78,7 @@ run_randwin <- function(repeats,
                         parallel = FALSE,
                         progress = TRUE,
                         window_type = "slidingwin",
+                        cinterval = "day",
                         # weightwin-specific arguments
                         weightfunc = "W",
                         par = c(3, 0.2),
@@ -157,6 +160,7 @@ run_randwin <- function(repeats,
         fn               = fn,
         type             = type,
         refday           = refday,
+        cinterval        = cinterval,
         parallel         = parallel,
         progress         = FALSE,
         .basemodelIsCall = TRUE
@@ -195,6 +199,7 @@ run_randwin <- function(repeats,
         plot_every       = NULL,
         par_min          = par_min,
         par_max          = par_max,
+        cinterval        = cinterval,
         .basemodelIsCall = TRUE
       )
 

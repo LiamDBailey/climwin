@@ -15,6 +15,8 @@
 #'   distribution parameters.
 #' @param par A numeric vector of parameters passed to \code{dfun} after
 #'   \code{x} (positionally).
+#' @param cinterval Character string specifying the temporal resolution: \code{"day"}
+#'   (default), \code{"week"}, or \code{"month"}.
 #'
 #' @return A list with \code{bio_data} (with added \code{climate} column)
 #'   and \code{weights}.
@@ -35,7 +37,8 @@ fit_weights <- function(range,
                         bdate,
                         xvar,
                         dfun,
-                        par) {
+                        par,
+                        cinterval = "day") {
 
   processed_data <- process_data(
     climate_data = climate_data,
@@ -47,7 +50,8 @@ fit_weights <- function(range,
     spatial      = NULL,
     type         = "relative",
     refday       = NULL,
-    cohort       = NULL
+    cohort       = NULL,
+    cinterval    = cinterval
   )
 
   bio_data        <- processed_data$bio_data

@@ -169,5 +169,114 @@ test_that("Weightwin has backwards compatibility", {
   ## Exact final model and coefs are hard to compare because they can vary stochastically, so this is our best option
   diff <- abs(new_result@weights$weights - old_result$Weights)
   expect_true(sum(diff) < 0.5) ## We don't get that close...but it's at least qualitatively similar
+
+})
+
+test_that("slidingwin and run_slidingwin give same results with cinterval = 'month'", {
+
+  Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+  Mass    <- read.csv(system.file("Mass.csv",        package = "climwin"))
+
+  # Old implementation: range = c(furthest, closest) in months
+  results_old <- slidingwin(
+    xvar      = list(Temp = Climate$Temp),
+    cdate     = Climate$Date,
+    bdate     = Mass$Date,
+    baseline  = lm(Mass ~ 1, data = Mass),
+    cinterval = "month",
+    range     = c(6, 0),
+    type      = "absolute",
+    refday    = c(20, 5),
+    stat      = "mean",
+    func      = "lin"
+  )
+
+  # New implementation: range = 0:N in months, refday as DD/MM/YYYY string
+  results_new <- run_slidingwin(
+    range        = 0:6,
+    climate_data = Climate,
+    bio_data     = Mass,
+    basemodel    = lm(Mass ~ climate, data = bio_data),
+    cinterval    = "month",
+    type         = "absolute",
+    refday       = "20/05/2025"
+  )
+
+  ## Compare window dataset (filter negligible weights to avoid AIC vs AICc rounding differences)
+  new_results <- getDataset(results_new) |>
+    select(Start_Day, End_Day, ModWeight) |>
+    mutate(Start_Day = as.integer(Start_Day),
+           End_Day   = as.integer(End_Day),
+           ModWeight = round(ModWeight, digits = 6)) |>
+    dplyr::filter(ModWeight > 0)
+
+  old_results <- results_old[[1]]$Dataset |>
+    select(Start_Day = WindowClose, End_Day = WindowOpen, ModWeight) |>
+    mutate(Start_Day = as.integer(Start_Day),
+           End_Day   = as.integer(End_Day),
+           ModWeight = round(ModWeight, digits = 6)) |>
+    dplyr::filter(ModWeight > 0)
+
+  expect_equal(new_results, old_results, tolerance = 0.001)
+
+  ## Compare best model coefficients
+  new_best_model <- getBestModel(results_new)
+  expect_equal(as.numeric(coef(new_best_model)),
+               as.numeric(coef(results_old[[1]]$BestModel)),
+               tolerance = 0.01)
+
+})
+
+test_that("slidingwin and run_slidingwin give same results with cinterval = 'week'", {
+  
+  Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+  Mass    <- read.csv(system.file("Mass.csv",        package = "climwin"))
+  
+  # Old implementation: range = c(furthest, closest) in months
+  results_old <- slidingwin(
+    xvar      = list(Temp = Climate$Temp),
+    cdate     = Climate$Date,
+    bdate     = Mass$Date,
+    baseline  = lm(Mass ~ 1, data = Mass),
+    cinterval = "week",
+    range     = c(24, 0),
+    type      = "absolute",
+    refday    = c(20, 5),
+    stat      = "mean",
+    func      = "lin"
+  )
+  
+  # New implementation: range = 0:N in months, refday as DD/MM/YYYY string
+  results_new <- run_slidingwin(
+    range        = 0:24,
+    climate_data = Climate,
+    bio_data     = Mass,
+    basemodel    = lm(Mass ~ climate, data = bio_data),
+    cinterval    = "week",
+    type         = "absolute",
+    refday       = "20/05/2025"
+  )
+  
+  ## Compare window dataset (filter negligible weights to avoid AIC vs AICc rounding differences)
+  ## We expect slight differences...do we at least get same top models
+  new_results <- getDataset(results_new) |>
+    select(Start_Day, End_Day) |>
+    mutate(Start_Day = as.integer(Start_Day),
+           End_Day   = as.integer(End_Day)) |> 
+    slice(1:2)
+  
+  old_results <- results_old[[1]]$Dataset |>
+    select(Start_Day = WindowClose, End_Day = WindowOpen) |>
+    mutate(Start_Day = as.integer(Start_Day),
+           End_Day   = as.integer(End_Day)) |> 
+    slice(1:2)
+  
+  expect_equal(new_results, old_results, tolerance = 0.01)
+  
+  ## Compare best model coefficients
+  new_best_model <- getBestModel(results_new)
+  expect_equal(as.numeric(coef(new_best_model)),
+               as.numeric(coef(results_old[[1]]$BestModel)),
+               tolerance = 0.01)
   
 })

@@ -13,6 +13,10 @@
 #' @param type Character string specifying the type of date range calculation. Must be either "relative" (default) or "absolute".
 #' @param refday Character string specifying the reference date for absolute type. Defaults to NULL.
 #' @param cohort Character string specifying the name of the cohort column. Defaults to NULL.
+#' @param cinterval Character string specifying the temporal resolution. Must be "day" (default),
+#'        "week", or "month". If "month", climate data are aggregated to monthly means and
+#'        date indices are in months. If "week", data are aggregated to 7-day blocks and indices
+#'        are in weeks.
 #'
 #' @return A list containing:
 #'         - bio_data: The processed biological data with date_int column
@@ -31,7 +35,8 @@ process_data <- function(climate_data,
                         spatial = NULL,
                         type = "relative",
                         refday = NULL,
-                        cohort = NULL) {
+                        cohort = NULL,
+                        cinterval = "day") {
   
   ### ARGUMENT CHECKS ####
   # Validate required data frames
@@ -47,8 +52,13 @@ process_data <- function(climate_data,
   
   # Validate type parameter
   validate_arg("type", type, required = FALSE, type = "character",
-              additional_checks = function(x) if(!x %in% c("relative", "absolute")) 
+              additional_checks = function(x) if(!x %in% c("relative", "absolute"))
                 stop("must be either 'relative' or 'absolute'"))
+
+  # Validate cinterval parameter
+  validate_arg("cinterval", cinterval, required = FALSE, type = "character",
+              additional_checks = function(x) if(!x %in% c("day", "week", "month"))
+                stop("must be 'day', 'week', or 'month'"))
   
   # Validate refday parameter if type is absolute
   if (type == "absolute") {
@@ -108,37 +118,79 @@ process_data <- function(climate_data,
   if (!is.character(climate_dates)) {
     stop(sprintf("Column '%s' in climate_data must be a character in format 'DD/MM/YYYY'", cdate))
   }
-  
+
   # Convert to Date object for validation and processing
   converted_dates <- as.Date(climate_dates, format = "%d/%m/%Y")
   if (all(is.na(converted_dates))) {
     stop(sprintf("Column '%s' in climate_data must be in format 'DD/MM/YYYY'", cdate))
   }
-  climate_dates <- converted_dates
-  climate_data[[cdate]] <- climate_dates
-  
-  # Check 2: Verify continuous date series with no missing days
-  climate_dates_sorted <- sort(climate_dates)
-  expected_dates <- seq.Date(from = min(climate_dates_sorted), 
-                           to = max(climate_dates_sorted), 
-                           by = "day")
-  missing_dates <- setdiff(expected_dates, climate_dates_sorted)
-  if (length(missing_dates) > 0) {
-    stop(sprintf("Climate data has missing dates: %s. The date series must be continuous from %s to %s.", 
-                paste(missing_dates, collapse = ", "),
-                min(climate_dates_sorted),
-                max(climate_dates_sorted)))
+  climate_data[[cdate]] <- converted_dates
+
+  # Aggregate climate data based on cinterval
+  if (cinterval == "month") {
+    climate_data[[cdate]] <- as.Date(format(climate_data[[cdate]], "%Y-%m-01"))
+    climate_data <- dplyr::group_by(climate_data, .data[[spatial]], .data[[cdate]]) |>
+      dplyr::summarise(!!rlang::sym(xvar) := mean(.data[[xvar]], na.rm = TRUE),
+                       .groups = "drop") |>
+      dplyr::arrange(.data[[spatial]], .data[[cdate]]) |>
+      as.data.frame()
+  } else if (cinterval == "week") {
+    min_climate_date <- min(climate_data[[cdate]])
+    days_since_start <- as.integer(climate_data[[cdate]] - min_climate_date)
+    climate_data[[cdate]] <- min_climate_date + floor(days_since_start / 7) * 7
+    climate_data <- dplyr::group_by(climate_data, .data[[spatial]], .data[[cdate]]) |>
+      dplyr::summarise(!!rlang::sym(xvar) := mean(.data[[xvar]], na.rm = TRUE),
+                       .groups = "drop") |>
+      dplyr::arrange(.data[[spatial]], .data[[cdate]]) |>
+      as.data.frame()
   }
-  
+
+  # Check 2: Verify continuous series with no missing periods
+  climate_dates_sorted <- sort(unique(climate_data[[cdate]]))
+  if (cinterval == "day") {
+    expected_dates <- seq.Date(from = min(climate_dates_sorted),
+                               to = max(climate_dates_sorted),
+                               by = "day")
+    missing_dates <- setdiff(as.character(expected_dates), as.character(climate_dates_sorted))
+    if (length(missing_dates) > 0) {
+      stop(sprintf("Climate data has missing dates: %s. The date series must be continuous from %s to %s.",
+                  paste(missing_dates, collapse = ", "),
+                  min(climate_dates_sorted),
+                  max(climate_dates_sorted)))
+    }
+  } else if (cinterval == "month") {
+    expected_months <- seq.Date(from = min(climate_dates_sorted),
+                                to = max(climate_dates_sorted),
+                                by = "month")
+    missing_months <- setdiff(as.character(expected_months), as.character(climate_dates_sorted))
+    if (length(missing_months) > 0) {
+      stop(sprintf("Climate data has missing months: %s. The monthly series must be continuous from %s to %s.",
+                  paste(missing_months, collapse = ", "),
+                  min(climate_dates_sorted),
+                  max(climate_dates_sorted)))
+    }
+  } else if (cinterval == "week") {
+    expected_weeks <- seq.Date(from = min(climate_dates_sorted),
+                               to = max(climate_dates_sorted),
+                               by = "week")
+    missing_weeks <- setdiff(as.character(expected_weeks), as.character(climate_dates_sorted))
+    if (length(missing_weeks) > 0) {
+      stop(sprintf("Climate data has missing weeks: %s. The weekly series must be continuous from %s to %s.",
+                  paste(missing_weeks, collapse = ", "),
+                  min(climate_dates_sorted),
+                  max(climate_dates_sorted)))
+    }
+  }
+
   # Check 3: Verify no missing data in xvar column
   xvar_data <- climate_data[[xvar]]
   if (any(is.na(xvar_data) | is.infinite(xvar_data))) {
     missing_count <- sum(is.na(xvar_data) | is.infinite(xvar_data))
     total_count <- length(xvar_data)
-    stop(sprintf("Column '%s' in climate_data contains %d missing or infinite values out of %d total values. All climate data must be complete.", 
+    stop(sprintf("Column '%s' in climate_data contains %d missing or infinite values out of %d total values. All climate data must be complete.",
                 xvar, missing_count, total_count))
   }
-  
+
   ### PROCESS DATA ####
   # Add integer dates to data frames (1 = earliest climate data)
   climate_data$date_int <- 1:nrow(climate_data)
@@ -154,36 +206,38 @@ process_data <- function(climate_data,
   } else {
     years <- lubridate::year(bio_dates)
   }
-  
+
+  # Compute effective bio dates (adjusted for relative/absolute type and cohort year)
   if (type == "relative") {
-    
-    # Create new dates using earliest year for each cohort
-    bio_data$date_int <- convert_dates_to_int(
-      as.Date(paste(
-        lubridate::day(bio_dates),
-        lubridate::month(bio_dates),
-        years,
-        sep = "/"
-      ), format = "%d/%m/%Y"),
-      min_date = climate_data[[cdate]][1]
-    ) + 1
-    
+    effective_bio_dates <- as.Date(paste(
+      lubridate::day(bio_dates),
+      lubridate::month(bio_dates),
+      years,
+      sep = "/"
+    ), format = "%d/%m/%Y")
   } else {
-    
-    # Format bio dates and refday as date objects
     refday_parts_as_date <- as.Date(refday, format = "%d/%m/%Y")
-    
-    ## Create new bio data dates using refday
-    bio_data$date_int <- convert_dates_to_int(
-      as.Date(paste(
-        lubridate::day(refday_parts_as_date),
-        lubridate::month(refday_parts_as_date),
-        years,
-        sep = "/"
-      ), format = "%d/%m/%Y"),
-      min_date = climate_data[[cdate]][1]
-    ) + 1
-    
+    effective_bio_dates <- as.Date(paste(
+      lubridate::day(refday_parts_as_date),
+      lubridate::month(refday_parts_as_date),
+      years,
+      sep = "/"
+    ), format = "%d/%m/%Y")
+  }
+
+  # Convert effective bio dates to integer indices matching the climate interval
+  first_climate_date <- climate_data[[cdate]][1]
+  if (cinterval == "day") {
+    bio_data$date_int <- convert_dates_to_int(effective_bio_dates,
+                                              min_date = first_climate_date) + 1
+  } else if (cinterval == "month") {
+    first_year  <- as.integer(format(first_climate_date, "%Y"))
+    first_month <- as.integer(format(first_climate_date, "%m"))
+    bio_year    <- as.integer(format(effective_bio_dates, "%Y"))
+    bio_month   <- as.integer(format(effective_bio_dates, "%m"))
+    bio_data$date_int <- (bio_year - first_year) * 12 + (bio_month - first_month) + 1
+  } else if (cinterval == "week") {
+    bio_data$date_int <- floor(as.integer(effective_bio_dates - first_climate_date) / 7) + 1
   }
   
   ## Each col is all the possible (integer) dates that are relevant across range

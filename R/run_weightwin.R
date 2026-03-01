@@ -50,6 +50,10 @@
 #'   when \code{n > 1}. Defaults to \code{lower}.
 #' @param par_max Numeric vector — upper bounds for random starting parameters
 #'   when \code{n > 1}. Defaults to \code{upper}.
+#' @param cinterval Character string specifying the temporal resolution: \code{"day"} (default),
+#'   \code{"week"}, or \code{"month"}. When \code{"month"}, climate data are aggregated to monthly
+#'   means and \code{range} is interpreted in months. When \code{"week"}, data are aggregated to
+#'   7-day blocks and \code{range} is in weeks.
 #'
 #' @return A \code{climwin_weightwin} S7 object.
 #'
@@ -85,6 +89,7 @@ run_weightwin <- function(n = 1,
                           plot_every = 10,
                           par_min = NULL,
                           par_max = NULL,
+                          cinterval = "day",
                           .basemodelIsCall = FALSE) {
 
   # Validate basemodel
@@ -153,7 +158,8 @@ run_weightwin <- function(n = 1,
         bdate        = bdate,
         xvar         = xvar,
         dfun         = dfun,
-        par          = params
+        par          = params,
+        cinterval    = cinterval
       )
 
       bio_data <- fitted_output$bio_data
@@ -226,7 +232,8 @@ run_weightwin <- function(n = 1,
       bdate        = bdate,
       xvar         = xvar,
       dfun         = dfun,
-      par          = optimal_par
+      par          = optimal_par,
+      cinterval    = cinterval
     )
 
     bio_data   <- optimal_data$bio_data
@@ -247,6 +254,8 @@ run_weightwin <- function(n = 1,
     output <- append(output,
                      list(list(
                        dataset    = as.data.frame(plot_save)[-1, ] |>
+                                      ## Track optim step for plotting
+                                      mutate(step = 1:n()) |>
                                       arrange(desc(AIC)),
                        bestModel  = list(model = best_model,
                                          data  = optimal_data$bio_data),

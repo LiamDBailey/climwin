@@ -18,6 +18,10 @@
 #' @param refday Character string in format "DD/MM/YYYY" specifying the reference date to use when type is "absolute".
 #' @param spatial Character string specifying the name of the spatial grouping column in both climate_data and bio_data. Defaults to NULL.
 #' @param cohort Character string specifying the name of the cohort column in bio_data. When type is "relative", each row will use the earliest year of all records in the same cohort. Defaults to NULL.
+#' @param cinterval Character string specifying the temporal resolution: \code{"day"} (default),
+#'   \code{"week"}, or \code{"month"}. When \code{"month"}, climate data are aggregated to monthly
+#'   means and \code{range} is interpreted in months. When \code{"week"}, data are aggregated to
+#'   7-day blocks and \code{range} is in weeks.
 #' @param parallel Logical. If TRUE, parallel processing is used. Default is FALSE.
 #' @param progress Logical. If TRUE, shows a progress bar. Default is TRUE.
 #' @param .basemodelIsCall Logical. Internal parameter used to handle basemodel substitution. Default is FALSE.
@@ -128,6 +132,7 @@ run_slidingwin <- function(range,
                            refday = NULL,
                            spatial = NULL,
                            cohort = NULL,
+                           cinterval = "day",
                            parallel = FALSE,
                            progress = TRUE,
                            .basemodelIsCall = FALSE) {
@@ -160,7 +165,8 @@ run_slidingwin <- function(range,
     spatial = spatial,
     type = type,
     refday = refday,
-    cohort = cohort
+    cohort = cohort,
+    cinterval = cinterval
   )
   
   # Extract processed data
