@@ -17,6 +17,8 @@
 #'   \code{x} (positionally).
 #' @param cinterval Character string specifying the temporal resolution: \code{"day"}
 #'   (default), \code{"week"}, or \code{"month"}.
+#' @param aggfunc A function used to aggregate climate values within each period when
+#'   \code{cinterval} is \code{"month"} or \code{"week"}. Defaults to \code{mean}.
 #'
 #' @return A list with \code{bio_data} (with added \code{climate} column)
 #'   and \code{weights}.
@@ -38,7 +40,8 @@ fit_weights <- function(range,
                         xvar,
                         dfun,
                         par,
-                        cinterval = "day") {
+                        cinterval = "day",
+                        aggfunc = mean) {
 
   processed_data <- process_data(
     climate_data = climate_data,
@@ -51,7 +54,8 @@ fit_weights <- function(range,
     type         = "relative",
     refday       = NULL,
     cohort       = NULL,
-    cinterval    = cinterval
+    cinterval    = cinterval,
+    aggfunc      = aggfunc
   )
 
   bio_data        <- processed_data$bio_data

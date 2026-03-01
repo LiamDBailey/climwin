@@ -54,6 +54,10 @@
 #'   \code{"week"}, or \code{"month"}. When \code{"month"}, climate data are aggregated to monthly
 #'   means and \code{range} is interpreted in months. When \code{"week"}, data are aggregated to
 #'   7-day blocks and \code{range} is in weeks.
+#' @param aggfunc A function used to aggregate climate values within each period when
+#'   \code{cinterval} is \code{"month"} or \code{"week"}. Defaults to \code{mean}. Any function
+#'   that accepts a numeric vector and returns a single value is valid (e.g. \code{sum},
+#'   \code{max}, \code{min}, \code{median}). Ignored when \code{cinterval = "day"}.
 #'
 #' @return A \code{climwin_weightwin} S7 object.
 #'
@@ -90,6 +94,7 @@ run_weightwin <- function(n = 1,
                           par_min = NULL,
                           par_max = NULL,
                           cinterval = "day",
+                          aggfunc = mean,
                           .basemodelIsCall = FALSE) {
 
   # Validate basemodel
@@ -159,7 +164,8 @@ run_weightwin <- function(n = 1,
         xvar         = xvar,
         dfun         = dfun,
         par          = params,
-        cinterval    = cinterval
+        cinterval    = cinterval,
+        aggfunc      = aggfunc
       )
 
       bio_data <- fitted_output$bio_data

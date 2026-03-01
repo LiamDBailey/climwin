@@ -17,6 +17,10 @@
 #'        "week", or "month". If "month", climate data are aggregated to monthly means and
 #'        date indices are in months. If "week", data are aggregated to 7-day blocks and indices
 #'        are in weeks.
+#' @param aggfunc A function used to aggregate climate values within each period when
+#'        \code{cinterval} is \code{"month"} or \code{"week"}. Defaults to \code{mean}.
+#'        Any function that accepts a numeric vector and returns a single value is valid
+#'        (e.g. \code{sum}, \code{max}, \code{min}, \code{median}).
 #'
 #' @return A list containing:
 #'         - bio_data: The processed biological data with date_int column
@@ -36,7 +40,8 @@ process_data <- function(climate_data,
                         type = "relative",
                         refday = NULL,
                         cohort = NULL,
-                        cinterval = "day") {
+                        cinterval = "day",
+                        aggfunc = mean) {
   
   ### ARGUMENT CHECKS ####
   # Validate required data frames
@@ -59,6 +64,9 @@ process_data <- function(climate_data,
   validate_arg("cinterval", cinterval, required = FALSE, type = "character",
               additional_checks = function(x) if(!x %in% c("day", "week", "month"))
                 stop("must be 'day', 'week', or 'month'"))
+
+  # Validate aggfunc parameter
+  validate_arg("aggfunc", aggfunc, required = FALSE, type = "function")
   
   # Validate refday parameter if type is absolute
   if (type == "absolute") {
@@ -130,7 +138,7 @@ process_data <- function(climate_data,
   if (cinterval == "month") {
     climate_data[[cdate]] <- as.Date(format(climate_data[[cdate]], "%Y-%m-01"))
     climate_data <- dplyr::group_by(climate_data, .data[[spatial]], .data[[cdate]]) |>
-      dplyr::summarise(!!rlang::sym(xvar) := mean(.data[[xvar]], na.rm = TRUE),
+      dplyr::summarise(!!rlang::sym(xvar) := aggfunc(.data[[xvar]]),
                        .groups = "drop") |>
       dplyr::arrange(.data[[spatial]], .data[[cdate]]) |>
       as.data.frame()
@@ -139,7 +147,7 @@ process_data <- function(climate_data,
     days_since_start <- as.integer(climate_data[[cdate]] - min_climate_date)
     climate_data[[cdate]] <- min_climate_date + floor(days_since_start / 7) * 7
     climate_data <- dplyr::group_by(climate_data, .data[[spatial]], .data[[cdate]]) |>
-      dplyr::summarise(!!rlang::sym(xvar) := mean(.data[[xvar]], na.rm = TRUE),
+      dplyr::summarise(!!rlang::sym(xvar) := aggfunc(.data[[xvar]]),
                        .groups = "drop") |>
       dplyr::arrange(.data[[spatial]], .data[[cdate]]) |>
       as.data.frame()
