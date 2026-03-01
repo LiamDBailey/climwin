@@ -84,11 +84,12 @@ run_weightwin <- function(n = 1,
                           control = list(maxit = 100),
                           plot_every = 10,
                           par_min = NULL,
-                          par_max = NULL) {
+                          par_max = NULL,
+                          .basemodelIsCall = FALSE) {
 
   # Validate basemodel
   validate_arg("basemodel", basemodel, required = TRUE)
-  basemodel <- substitute(basemodel)
+  if (!isTRUE(.basemodelIsCall)) basemodel <- substitute(basemodel)
 
   # Resolve weightfunc to a density function + metadata
   if (is.function(weightfunc)) {
@@ -112,8 +113,9 @@ run_weightwin <- function(n = 1,
       if (is.null(upper)) upper <- c(1.5, 5)
       par_labels <- c("loc", "scale")
     } else if (weightfunc == "F") {
-      if (length(par) != 2)
-        stop("For weightfunc = 'F', par must have 2 elements: c(scale, shape)")
+      ## Fix location at 0.
+      ## This is default and allows for easier optimisation
+      ## Can allow location to also vary using custom fn
       dfun <- function(x, scale, shape) evd::dfrechet(x, loc = 0,
                                                        scale = scale,
                                                        shape = shape)

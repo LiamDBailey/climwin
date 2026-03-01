@@ -17,7 +17,7 @@ make_test_data <- function() {
 
 # Weibull (weightfunc = "W") --------------------------------------------------
 
-test_that("run_weightwin ('W') returns a valid climwin_weightwin object", {
+test_that("run_weightwin ('W') returns a valid output", {
   d <- make_test_data()
   result <- run_weightwin(
     range      = 0:4,
@@ -29,42 +29,19 @@ test_that("run_weightwin ('W') returns a valid climwin_weightwin object", {
     plot_every = NULL
   )
 
+  ## returns climwin_weightwin object
   expect_true(inherits(result, "S7_object"))
   expect_true(inherits(result@weightwin_summary, "data.frame"))
   expect_true(inherits(result@weightwin_output, "list"))
   expect_length(result@weightwin_output, 1)
-})
 
-test_that("run_weightwin ('W') output has correct inner structure", {
-  d <- make_test_data()
-  result <- run_weightwin(
-    range      = 0:4,
-    bio_data   = d$bio_data,
-    climate_data = d$climate_data,
-    cdate = "Date", bdate = "Date", xvar = "Temp",
-    basemodel  = lm(Mass ~ climate, data = bio_data),
-    par        = c(1.25, 0.5),
-    plot_every = NULL
-  )
-
+  ## internal structure as expected
   out <- result@weightwin_output[[1]]
   expect_true(inherits(out$bestModel$model, "lm"))
   expect_true(inherits(out$bestModel$data, "data.frame"))
   expect_true("climate" %in% names(out$bestModel$data))
-})
 
-test_that("run_weightwin ('W') weights sum to 1 and have correct length", {
-  d <- make_test_data()
-  result <- run_weightwin(
-    range      = 0:4,
-    bio_data   = d$bio_data,
-    climate_data = d$climate_data,
-    cdate = "Date", bdate = "Date", xvar = "Temp",
-    basemodel  = lm(Mass ~ climate, data = bio_data),
-    par        = c(1.25, 0.5),
-    plot_every = NULL
-  )
-
+  ## Weights as expected
   weights <- result@weightwin_output[[1]]$weights$weights
   expect_length(weights, 5)           # length(0:4)
   expect_equal(sum(weights), 1, tolerance = 1e-10)
@@ -280,22 +257,6 @@ test_that("fit_weights (Frechet dfun, loc=0) produces normalised non-negative we
   expect_true(all(w >= 0))
 })
 
-test_that("run_weightwin ('F') errors when par does not have 2 elements", {
-  d <- make_test_data()
-  expect_error(
-    run_weightwin(
-      range      = 0:4,
-      bio_data   = d$bio_data,
-      climate_data = d$climate_data,
-      cdate = "Date", bdate = "Date", xvar = "Temp",
-      basemodel  = lm(Mass ~ climate, data = bio_data),
-      weightfunc = "F",
-      par        = c(0.1, 0.5, 2),   # 3 elements — loc no longer a free param
-      plot_every = NULL
-    ),
-    "par must have 2 elements"
-  )
-})
 
 test_that("run_weightwin ('F') summary has scale/shape start/end columns", {
   d <- make_test_data()
