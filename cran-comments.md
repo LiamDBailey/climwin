@@ -5,15 +5,14 @@ output: html_document
 ---
 
 ##New submission
-This is a new submission for this package.
+This is a hotfix for this package.
 
-This new submission is necessary to make compatible with
-R 4.0.0 to remove the package from archive.
+This new submission is necessary to fix ERROR when running on Fedora Linux 42.
 
 ## Test environments
-* ubuntu 16.04.6 (on travis-ci), R 4.0.0
-* local Windows 10 64bit, R 4.0.0
-* win-builder (devel and release)
+* Fedora Linux 42 (R devel)
+* Windows (R version 4.5.2 & R devel)
+* Mac (R version 4.5.2)
 
 ## R CMD check results
 There were no ERRORs, WARNINGs or NOTEs.

@@ -20,7 +20,7 @@ test_that("pvalue produces Pc metric", {
   expect_true(is.numeric(testpvalue))
   
   #Test that value is the same as current R version
-  expect_true(round(testpvalue, 2) == 0.96)
+  expect_equal(testpvalue, 0.96, tolerance = 0.001)
   
 })
 
