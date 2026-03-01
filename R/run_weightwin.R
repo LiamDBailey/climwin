@@ -19,13 +19,18 @@
 #' @param method The optimization method to use. Defaults to "L-BFGS-B".
 #' @param lower Lower bounds for the parameters. Defaults to c(0.1, 0.1).
 #' @param upper Upper bounds for the parameters. Defaults to c(10, 1000).
+#' @param weightfunc Character string specifying the weighting function. Either
+#'   \code{"W"} (Weibull, default) or \code{"U"} (uniform). When \code{"U"},
+#'   \code{par[1]} and \code{par[2]} represent the start and end of a uniform
+#'   window (on the same scale as \code{range}), and \code{lower}/\code{upper}
+#'   are set automatically from \code{range}.
 #' @param control Additional control parameters for optim. Defaults to list(maxit = 100).
 #' @param par_min A numeric vector of length 2 specifying the minimum values
-#'   for randomly drawn starting parameters (shape, scale) when n > 1. Required
-#'   when n > 1.
+#'   for randomly drawn starting parameters when n > 1. Defaults to \code{lower}
+#'   when not specified.
 #' @param par_max A numeric vector of length 2 specifying the maximum values
-#'   for randomly drawn starting parameters (shape, scale) when n > 1. Required
-#'   when n > 1.
+#'   for randomly drawn starting parameters when n > 1. Defaults to \code{upper}
+#'   when not specified.
 #'
 #' @return A list containing:
 #'         - par: The optimal Weibull parameters (shape, scale)
@@ -58,14 +63,15 @@ run_weightwin <- function(n = 1,
                           bio_data,
                           climate_data,
                           basemodel,
-                          cdate,
-                          bdate,
+                          cdate = "Date",
+                          bdate = "Date",
                           xvar,
                           par = c(3, 0.2),
                           type = "relative",
                           refday = NULL,
+                          weightfunc = "W",
                           method = "L-BFGS-B",
-                          lower = c(0.1, 0.1), 
+                          lower = c(0.1, 0.1),
                           upper = c(10, 1000),
                           control = list(maxit = 100),
                           plot_every = 10,
@@ -75,24 +81,42 @@ run_weightwin <- function(n = 1,
   # Validate basemodel
   validate_arg("basemodel", basemodel, required = TRUE)
   basemodel <- substitute(basemodel)
-  
+
+  weightfunc <- match.arg(weightfunc, choices = c("W", "U"))
+
+  # For uniform weighting, bounds are determined by range
+  if (weightfunc == "U") {
+    lower <- c(min(range), min(range))
+    upper <- c(max(range), max(range))
+    if (par[1] > par[2])
+      stop("For weightfunc = 'U', par[1] (window start) must be",
+           " <= par[2] (window end)")
+  }
+
   # Ensure lower < upper for each parameter
   if (any(lower >= upper)) stop("lower bounds must be less than upper bounds")
   if (any(par < lower) || any(par > upper)) stop("initial parameters must be within bounds")
 
-  if (n > 1) {
-    if (is.null(par_min) || is.null(par_max))
-      stop("par_min and par_max must be provided when n > 1")
-    if (any(par_min >= par_max))
-      stop("par_min must be less than par_max for each parameter")
-  }
+  # Default random-start bounds to optimisation bounds when not specified
+  if (is.null(par_min)) par_min <- lower
+  if (is.null(par_max)) par_max <- upper
+
+  if (any(par_min >= par_max))
+    stop("par_min must be less than par_max for each parameter")
   
   # Objective function to minimize (AIC)
   objective_function <- function(params, fn_env) {
     tryCatch({
       
+      # For uniform windows, snap parameters to integer day boundaries
+      if (weightfunc == "U") params <- round(params)
+
+      # Enforce ordering constraint for uniform windows
+      if (weightfunc == "U" && params[1] > params[2]) return(1e6)
+
       # Create weighted climate data using current parameters
-      fitted_output <- fit_weights(
+      fit_fn <- if (weightfunc == "U") fit_weights_uniform else fit_weights
+      fitted_output <- fit_fn(
         range = range,
         bio_data = bio_data,
         climate_data = climate_data,
@@ -161,14 +185,16 @@ run_weightwin <- function(n = 1,
     )
     
     # Get the optimal weighted climate data
-    optimal_data <- fit_weights(
+    optimal_par <- if (weightfunc == "U") round(optim_result$par) else optim_result$par
+    fit_fn <- if (weightfunc == "U") fit_weights_uniform else fit_weights
+    optimal_data <- fit_fn(
       range = range,
       bio_data = bio_data,
       climate_data = climate_data,
       cdate = cdate,
       bdate = bdate,
       xvar = xvar,
-      par = optim_result$par
+      par = optimal_par
     )
     
     bio_data <- optimal_data$bio_data
@@ -193,7 +219,7 @@ run_weightwin <- function(n = 1,
                                  arrange(desc(AIC)),
                                bestModel = list(model = best_model,
                                                 data = optimal_data$bio_data),
-                               weights = list(par = optim_result$par,
+                               weights = list(par = optimal_par,
                                               weights = optimal_data$weights))))
     
     summary_output <- bind_rows(summary_output,

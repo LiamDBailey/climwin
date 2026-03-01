@@ -85,3 +85,61 @@ fit_weights <- function(range,
   # Return bio_data with the new climate column
   return(output)
 }
+
+#' Fit Weighted Window Analysis Using a Uniform Distribution
+#'
+#' Creates weighted means of climate data using equal weights between two
+#' time-step boundaries. All time steps within [par[1], par[2]] receive
+#' equal weight; all others receive zero weight.
+#'
+#' @param range A numeric vector specifying the time steps to consider.
+#' @param bio_data A data frame containing biological data with a date column.
+#' @param climate_data A data frame containing climate data.
+#' @param cdate Character string specifying the date column in climate_data.
+#' @param bdate Character string specifying the date column in bio_data.
+#' @param xvar Character string specifying the climate variable column.
+#' @param par A numeric vector of length 2: par[1] = window start,
+#'   par[2] = window end, both on the same scale as \code{range}.
+#'   par[1] must be <= par[2].
+#'
+#' @return A list with \code{bio_data} (with added \code{climate} column)
+#'   and \code{weights}.
+#'
+#' @export
+fit_weights_uniform <- function(range,
+                                bio_data,
+                                climate_data,
+                                cdate,
+                                bdate,
+                                xvar,
+                                par) {
+
+  processed_data <- process_data(
+    climate_data = climate_data,
+    bio_data = bio_data,
+    range = range,
+    cdate = cdate,
+    bdate = bdate,
+    xvar = xvar,
+    spatial = NULL,
+    type = "relative",
+    refday = NULL,
+    cohort = NULL
+  )
+
+  bio_data        <- processed_data$bio_data
+  bio_xvar_ranges <- processed_data$bio_xvar_ranges
+
+  # Uniform weights: 1 inside [par[1], par[2]], 0 outside
+  weights <- as.numeric(range >= par[1] & range <= par[2])
+  if (sum(weights) == 0) weights <- weights + 1
+  weights <- weights / sum(weights)
+
+  climate <- apply(bio_xvar_ranges, MARGIN = 2, FUN = function(x) {
+    sum(x * weights, na.rm = TRUE)
+  })
+
+  bio_data$climate <- climate
+
+  list(bio_data = bio_data, weights = weights)
+}
