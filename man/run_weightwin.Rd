@@ -5,6 +5,7 @@
 \title{Optimise Weibull Parameters for Weighted Climate Windows}
 \usage{
 run_weightwin(
+  n = 1,
   range,
   bio_data,
   climate_data,
@@ -12,11 +13,16 @@ run_weightwin(
   cdate,
   bdate,
   xvar,
-  par,
+  par = c(3, 0.2),
+  type = "relative",
+  refday = NULL,
   method = "L-BFGS-B",
-  lower = c(1e-04, 1e-04),
-  upper = c(Inf, Inf),
-  control = list(maxit = 100)
+  lower = c(0.1, 0.1),
+  upper = c(10, 1000),
+  control = list(maxit = 100),
+  plot_every = 10,
+  par_min = NULL,
+  par_max = NULL
 )
 }
 \arguments{
@@ -38,6 +44,10 @@ For example, 0 represents the date itself, while 100 represents 100 days before 
 \item{par}{A numeric vector of length 3 containing initial Weibull function parameters:
 par[1] = shape, par[2] = scale, par[3] = location. Required.}
 
+\item{type}{Character string specifying the type of date range calculation. Must be either "relative" (default) or "absolute".}
+
+\item{refday}{Character string in format "DD/MM/YYYY" specifying the reference date to use when type is "absolute".}
+
 \item{method}{The optimization method to use. Defaults to "L-BFGS-B".}
 
 \item{lower}{Lower bounds for the parameters. Defaults to c(0.1, 0.1).}
@@ -45,6 +55,14 @@ par[1] = shape, par[2] = scale, par[3] = location. Required.}
 \item{upper}{Upper bounds for the parameters. Defaults to c(10, 1000).}
 
 \item{control}{Additional control parameters for optim. Defaults to list(maxit = 100).}
+
+\item{par_min}{A numeric vector of length 2 specifying the minimum values
+for randomly drawn starting parameters (shape, scale) when n > 1. Required
+when n > 1.}
+
+\item{par_max}{A numeric vector of length 2 specifying the maximum values
+for randomly drawn starting parameters (shape, scale) when n > 1. Required
+when n > 1.}
 }
 \value{
 A list containing:
