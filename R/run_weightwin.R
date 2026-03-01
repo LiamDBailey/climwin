@@ -1,9 +1,13 @@
 #' Optimise Parameters for Weighted Climate Windows
 #'
 #' Uses \code{optim} to find the optimal distribution parameters that minimise
-#' AIC when creating weighted means of climate data.  Supports Weibull
-#' (\code{"W"}), Gumbel (\code{"G"}), and Frechet (\code{"F"}) weighting
-#' functions.
+#' AIC when creating weighted means of climate data.
+#'
+#' Built-in weighting functions are selected by passing a character string to
+#' \code{weightfunc}: \code{"W"} (Weibull), \code{"G"} (Gumbel), or \code{"F"}
+#' (Frechet with location fixed at 0).  Alternatively, supply any density
+#' function directly — it must accept \code{(x, par1, par2, ...)} where
+#' \code{x} is a numeric vector on [0, 1].
 #'
 #' @param n Integer. Number of independent optimisation runs. The first run
 #'   uses \code{par}; subsequent runs draw starting parameters uniformly from
@@ -21,21 +25,22 @@
 #' @param xvar Character string — climate variable column in
 #'   \code{climate_data}.
 #' @param par Numeric vector of initial distribution parameters. Length depends
-#'   on \code{weightfunc}: 2 for \code{"W"} and \code{"G"};
-#'   3 for \code{"F"} (loc, scale, shape).
+#'   on \code{weightfunc}: 2 for \code{"W"} and \code{"G"}, 2 for \code{"F"}
+#'   (scale, shape), or however many your custom function expects.
 #' @param type \code{"relative"} (default) or \code{"absolute"}.
 #' @param refday Reference date (\code{"DD/MM/YYYY"}) used when
 #'   \code{type = "absolute"}.
-#' @param weightfunc Character string specifying the weighting function:
-#'   \code{"W"} (Weibull, default), \code{"G"} (Gumbel), or \code{"F"}
-#'   (Frechet). For \code{"F"}, \code{par} must have 3 elements and plots use
-#'   a 3x3 grid.
+#' @param weightfunc Either a character string (\code{"W"}, \code{"G"},
+#'   \code{"F"}) or a density function with signature
+#'   \code{function(x, par1, par2, ...)}. When a function is supplied,
+#'   \code{lower} and \code{upper} must be provided explicitly and
+#'   \code{par_labels} defaults to \code{"par1"}, \code{"par2"}, …
 #' @param method Optimisation method passed to \code{optim}.
 #'   Defaults to \code{"L-BFGS-B"}.
-#' @param lower Lower bounds for the parameters. Set automatically per
-#'   \code{weightfunc} when \code{NULL} (default).
-#' @param upper Upper bounds for the parameters. Set automatically per
-#'   \code{weightfunc} when \code{NULL} (default).
+#' @param lower Lower bounds for the parameters. Set automatically for
+#'   built-in \code{weightfunc} values when \code{NULL} (default).
+#' @param upper Upper bounds for the parameters. Set automatically for
+#'   built-in \code{weightfunc} values when \code{NULL} (default).
 #' @param control List of control parameters passed to \code{optim}.
 #'   Defaults to \code{list(maxit = 100)}.
 #' @param plot_every Integer or \code{NULL}. Plot diagnostics every
@@ -85,23 +90,37 @@ run_weightwin <- function(n = 1,
   validate_arg("basemodel", basemodel, required = TRUE)
   basemodel <- substitute(basemodel)
 
-  weightfunc <- match.arg(weightfunc, choices = c("W", "G", "F"))
+  # Resolve weightfunc to a density function + metadata
+  if (is.function(weightfunc)) {
+    dfun       <- weightfunc
+    par_labels <- paste0("par", seq_along(par))
+    weightfunc_name <- "custom"
+    if (is.null(lower) || is.null(upper))
+      stop("When weightfunc is a function, 'lower' and 'upper' must be supplied")
+  } else {
+    weightfunc <- match.arg(weightfunc, choices = c("W", "G", "F"))
+    weightfunc_name <- weightfunc
 
-  # Set bounds, labels, and validate par based on weightfunc
-  if (weightfunc == "W") {
-    if (is.null(lower)) lower <- c(0.1, 0.1)
-    if (is.null(upper)) upper <- c(10, 1000)
-    par_labels <- c("shape", "scale")
-  } else if (weightfunc == "G") {
-    if (is.null(lower)) lower <- c(-0.5, 0.01)
-    if (is.null(upper)) upper <- c(1.5, 5)
-    par_labels <- c("loc", "scale")
-  } else if (weightfunc == "F") {
-    if (length(par) != 3)
-      stop("For weightfunc = 'F', par must have 3 elements: c(loc, scale, shape)")
-    if (is.null(lower)) lower <- c(0, 0.01, 0.1)
-    if (is.null(upper)) upper <- c(1, 2, 10)
-    par_labels <- c("loc", "scale", "shape")
+    if (weightfunc == "W") {
+      dfun <- dweibull
+      if (is.null(lower)) lower <- c(0.1, 0.1)
+      if (is.null(upper)) upper <- c(10, 1000)
+      par_labels <- c("shape", "scale")
+    } else if (weightfunc == "G") {
+      dfun <- function(x, loc, scale) evd::dgumbel(x, loc = loc, scale = scale)
+      if (is.null(lower)) lower <- c(-0.5, 0.01)
+      if (is.null(upper)) upper <- c(1.5, 5)
+      par_labels <- c("loc", "scale")
+    } else if (weightfunc == "F") {
+      if (length(par) != 2)
+        stop("For weightfunc = 'F', par must have 2 elements: c(scale, shape)")
+      dfun <- function(x, scale, shape) evd::dfrechet(x, loc = 0,
+                                                       scale = scale,
+                                                       shape = shape)
+      if (is.null(lower)) lower <- c(0.01, 0.1)
+      if (is.null(upper)) upper <- c(2, 10)
+      par_labels <- c("scale", "shape")
+    }
   }
 
   n_par      <- length(par_labels)
@@ -119,25 +138,20 @@ run_weightwin <- function(n = 1,
   if (any(par_min >= par_max))
     stop("par_min must be less than par_max for each parameter")
 
-  fit_fn <- switch(weightfunc,
-    "W" = fit_weights,
-    "G" = fit_weights_gumbel,
-    "F" = fit_weights_frechet
-  )
-
   # Objective function to minimize (AIC)
   objective_function <- function(params, fn_env) {
     tryCatch({
 
       # Create weighted climate data using current parameters
-      fitted_output <- fit_fn(
-        range = range,
-        bio_data = bio_data,
+      fitted_output <- fit_weights(
+        range        = range,
+        bio_data     = bio_data,
         climate_data = climate_data,
-        cdate = cdate,
-        bdate = bdate,
-        xvar = xvar,
-        par = params
+        cdate        = cdate,
+        bdate        = bdate,
+        xvar         = xvar,
+        dfun         = dfun,
+        par          = params
       )
 
       bio_data <- fitted_output$bio_data
@@ -153,7 +167,7 @@ run_weightwin <- function(n = 1,
         fn_env$plot_save[[i]] <- append(fn_env$plot_save[[i]], save_list[[i]])
       }
 
-      fn_env$iter        <- fn_env$iter + 1L
+      fn_env$iter         <- fn_env$iter + 1L
       fn_env$last_weights <- fitted_output$weights
 
       if (!is.null(plot_every) && fn_env$iter %% plot_every == 0L) {
@@ -202,13 +216,14 @@ run_weightwin <- function(n = 1,
 
     # Get the optimal weighted climate data
     optimal_par  <- optim_result$par
-    optimal_data <- fit_fn(
+    optimal_data <- fit_weights(
       range        = range,
       bio_data     = bio_data,
       climate_data = climate_data,
       cdate        = cdate,
       bdate        = bdate,
       xvar         = xvar,
+      dfun         = dfun,
       par          = optimal_par
     )
 
@@ -229,17 +244,17 @@ run_weightwin <- function(n = 1,
 
     output <- append(output,
                      list(list(
-                       dataset   = as.data.frame(plot_save)[-1, ] |>
-                                     arrange(desc(AIC)),
-                       bestModel = list(model = best_model,
-                                        data  = optimal_data$bio_data),
-                       weights   = list(par     = optimal_par,
-                                        weights = optimal_data$weights),
-                       weightfunc = weightfunc
+                       dataset    = as.data.frame(plot_save)[-1, ] |>
+                                      arrange(desc(AIC)),
+                       bestModel  = list(model = best_model,
+                                         data  = optimal_data$bio_data),
+                       weights    = list(par     = optimal_par,
+                                         weights = optimal_data$weights),
+                       weightfunc = weightfunc_name
                      )))
 
     row_data <- c(
-      setNames(as.list(par),             paste0("start_", par_labels)),
+      setNames(as.list(par),              paste0("start_", par_labels)),
       setNames(as.list(optim_result$par), paste0("end_",   par_labels)),
       list(AIC = AIC(best_model))
     )

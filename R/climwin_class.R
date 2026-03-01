@@ -100,46 +100,25 @@ S7::method(plot, climwin_weightwin) <- function(x, ...) {
 
 S7::method(getDataset, climwin_weightwin) <- function(x, n) {
   output <- x@weightwin_output
-  
-  if (length(output) > 1 & missing(n)) {
-    n <- 1
-    message("Returning output from top iteration")
-  }
-  
+  if (missing(n)) n <- 1
   return(output[[n]]$dataset)
-  
 }
 
 S7::method(getBestModel, climwin_weightwin) <- function(x, n) {
   output <- x@weightwin_output
-  
-  if (length(output) > 1 & missing(n)) {
-    n <- 1
-    message("Returning output from top iteration")
-  }
-  
+  if (missing(n)) n <- 1
   return(output[[n]]$bestModel$model)
 }
 
 S7::method(getBestModelData, climwin_weightwin) <- function(x, n) {
   output <- x@weightwin_output
-  
-  if (length(output) > 1 & missing(n)) {
-    n <- 1
-    message("Returning output from top iteration")
-  }
-  
+  if (missing(n)) n <- 1
   return(output[[n]]$bestModel$data)
 }
 
 getWeights <- new_generic("getWeights", "x")
 S7::method(getWeights, climwin_weightwin) <- function(x, n) {
   output <- x@weightwin_output
-  
-  if (length(output) > 1 & missing(n)) {
-    n <- 1
-    message("Returning output from top iteration")
-  }
-  
+  if (missing(n)) n <- 1
   return(output[[n]]$weights$weights)
 }
