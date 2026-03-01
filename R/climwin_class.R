@@ -45,17 +45,17 @@ S7::method(plot, climwin) <- function(x, ...) {
 }
 
 getDataset <- new_generic("getDataset", "x")
-S7::method(getDataset, climwin) <- function(x) {
+S7::method(getDataset, climwin) <- function(x, ...) {
   x@dataset
 }
 
 getBestModel <- new_generic("getBestModel", "x")
-S7::method(getBestModel, climwin) <- function(x) {
+S7::method(getBestModel, climwin) <- function(x, ...) {
   x@bestModel$model
 }
 
 getBestModelData <- new_generic("getBestModelData", "x")
-S7::method(getBestModelData, climwin) <- function(x) {
+S7::method(getBestModelData, climwin) <- function(x, ...) {
   x@bestModel$data
 }
 
@@ -98,7 +98,6 @@ S7::method(plot, climwin_weightwin) <- function(x, ...) {
   plot_weightwin(x, ...)
 }
 
-getDataset <- new_generic("getDataset", "x")
 S7::method(getDataset, climwin_weightwin) <- function(x, n) {
   output <- x@weightwin_output
   
@@ -111,7 +110,6 @@ S7::method(getDataset, climwin_weightwin) <- function(x, n) {
   
 }
 
-getBestModel <- new_generic("getBestModel", "x")
 S7::method(getBestModel, climwin_weightwin) <- function(x, n) {
   output <- x@weightwin_output
   
@@ -123,7 +121,6 @@ S7::method(getBestModel, climwin_weightwin) <- function(x, n) {
   return(output[[n]]$bestModel$model)
 }
 
-getBestModelData <- new_generic("getBestModelData", "x")
 S7::method(getBestModelData, climwin_weightwin) <- function(x, n) {
   output <- x@weightwin_output
   
