@@ -1,61 +1,64 @@
-#' Optimise Weibull Parameters for Weighted Climate Windows
+#' Optimise Parameters for Weighted Climate Windows
 #'
-#' This function uses the 'optim' function to find the optimal Weibull parameters (shape and scale)
-#' that create the best fitting model with the lowest AIC. It iteratively calls 'fit_weights'
-#' to create weighted climate data and then fits the basemodel to extract AIC values.
+#' Uses \code{optim} to find the optimal distribution parameters that minimise
+#' AIC when creating weighted means of climate data.  Supports Weibull
+#' (\code{"W"}), Gumbel (\code{"G"}), and Frechet (\code{"F"}) weighting
+#' functions.
 #'
-#' @param range A numeric vector specifying the number of days to look back from each date in bio_data.
-#'              For example, 0 represents the date itself, while 100 represents 100 days before that date.
-#' @param bio_data A data frame containing biological data with a date column. Required.
-#' @param climate_data A data frame containing climate data. Required.
-#' @param basemodel An lm model object that will be updated for each set of weights (e.g., lm(Mass ~ climate, data = bio_data)). Required.
-#' @param cdate Character string specifying the name of the date column in climate_data. Defaults to "Date".
-#' @param bdate Character string specifying the name of the date column in bio_data. Defaults to "Date".
-#' @param xvar Character string specifying the name of the climate variable column in climate_data. Defaults to "Temp".
-#' @param type Character string specifying the type of date range calculation. Must be either "relative" (default) or "absolute".
-#' @param refday Character string in format "DD/MM/YYYY" specifying the reference date to use when type is "absolute".
-#' @param par A numeric vector of length 3 containing initial Weibull function parameters:
-#'            par[1] = shape, par[2] = scale, par[3] = location. Required.
-#' @param method The optimization method to use. Defaults to "L-BFGS-B".
-#' @param lower Lower bounds for the parameters. Defaults to c(0.1, 0.1).
-#' @param upper Upper bounds for the parameters. Defaults to c(10, 1000).
-#' @param weightfunc Character string specifying the weighting function. Either
-#'   \code{"W"} (Weibull, default) or \code{"U"} (uniform). When \code{"U"},
-#'   \code{par[1]} and \code{par[2]} represent the start and end of a uniform
-#'   window (on the same scale as \code{range}), and \code{lower}/\code{upper}
-#'   are set automatically from \code{range}.
-#' @param control Additional control parameters for optim. Defaults to list(maxit = 100).
-#' @param par_min A numeric vector of length 2 specifying the minimum values
-#'   for randomly drawn starting parameters when n > 1. Defaults to \code{lower}
-#'   when not specified.
-#' @param par_max A numeric vector of length 2 specifying the maximum values
-#'   for randomly drawn starting parameters when n > 1. Defaults to \code{upper}
-#'   when not specified.
+#' @param n Integer. Number of independent optimisation runs. The first run
+#'   uses \code{par}; subsequent runs draw starting parameters uniformly from
+#'   [\code{par_min}, \code{par_max}].
+#' @param range A numeric vector specifying the time steps to look back from
+#'   each date in \code{bio_data} (e.g. \code{0:100}).
+#' @param bio_data A data frame containing biological data with a date column.
+#' @param climate_data A data frame containing climate data.
+#' @param basemodel An \code{lm} call used as the model template
+#'   (e.g. \code{lm(Mass ~ climate, data = bio_data)}).
+#' @param cdate Character string — date column in \code{climate_data}.
+#'   Defaults to \code{"Date"}.
+#' @param bdate Character string — date column in \code{bio_data}.
+#'   Defaults to \code{"Date"}.
+#' @param xvar Character string — climate variable column in
+#'   \code{climate_data}.
+#' @param par Numeric vector of initial distribution parameters. Length depends
+#'   on \code{weightfunc}: 2 for \code{"W"} and \code{"G"};
+#'   3 for \code{"F"} (loc, scale, shape).
+#' @param type \code{"relative"} (default) or \code{"absolute"}.
+#' @param refday Reference date (\code{"DD/MM/YYYY"}) used when
+#'   \code{type = "absolute"}.
+#' @param weightfunc Character string specifying the weighting function:
+#'   \code{"W"} (Weibull, default), \code{"G"} (Gumbel), or \code{"F"}
+#'   (Frechet). For \code{"F"}, \code{par} must have 3 elements and plots use
+#'   a 3x3 grid.
+#' @param method Optimisation method passed to \code{optim}.
+#'   Defaults to \code{"L-BFGS-B"}.
+#' @param lower Lower bounds for the parameters. Set automatically per
+#'   \code{weightfunc} when \code{NULL} (default).
+#' @param upper Upper bounds for the parameters. Set automatically per
+#'   \code{weightfunc} when \code{NULL} (default).
+#' @param control List of control parameters passed to \code{optim}.
+#'   Defaults to \code{list(maxit = 100)}.
+#' @param plot_every Integer or \code{NULL}. Plot diagnostics every
+#'   \code{plot_every} objective evaluations, and always after convergence.
+#'   Pass \code{NULL} to suppress all plots.
+#' @param par_min Numeric vector — lower bounds for random starting parameters
+#'   when \code{n > 1}. Defaults to \code{lower}.
+#' @param par_max Numeric vector — upper bounds for random starting parameters
+#'   when \code{n > 1}. Defaults to \code{upper}.
 #'
-#' @return A list containing:
-#'         - par: The optimal Weibull parameters (shape, scale)
-#'         - value: The minimum AIC value achieved
-#'         - convergence: Convergence code from optim
-#'         - message: Any messages from optim
-#'         - counts: Function and gradient evaluation counts
-#'         - optimal_data: The bio_data with the optimal weighted climate column
+#' @return A \code{climwin_weightwin} S7 object.
 #'
 #' @examples
-#' # Example usage:
 #' Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
 #' Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
-#' 
-#' results <- run_weightwin(range = 0:100, 
-#'                            bio_data = Mass,
-#'                            climate_data = Climate,
-#'                            cdate = "Date", bdate = "Date",
-#'                            xvar = "Temp",
-#'                            basemodel = lm(Mass ~ climate, data = bio_data),
-#'                            par = c(1.25, 0.5))
-#'                            
-#' # Access the optimal parameters and data
-#' optimal_params <- results$par
-#' optimal_data <- results$optimal_data
+#'
+#' results <- run_weightwin(range = 0:100,
+#'                          bio_data = Mass,
+#'                          climate_data = Climate,
+#'                          cdate = "Date", bdate = "Date",
+#'                          xvar = "Temp",
+#'                          basemodel = lm(Mass ~ climate, data = bio_data),
+#'                          par = c(1.25, 0.5))
 #'
 #' @export
 run_weightwin <- function(n = 1,
@@ -71,31 +74,43 @@ run_weightwin <- function(n = 1,
                           refday = NULL,
                           weightfunc = "W",
                           method = "L-BFGS-B",
-                          lower = c(0.1, 0.1),
-                          upper = c(10, 1000),
+                          lower = NULL,
+                          upper = NULL,
                           control = list(maxit = 100),
                           plot_every = 10,
                           par_min = NULL,
                           par_max = NULL) {
-  
+
   # Validate basemodel
   validate_arg("basemodel", basemodel, required = TRUE)
   basemodel <- substitute(basemodel)
 
-  weightfunc <- match.arg(weightfunc, choices = c("W", "U"))
+  weightfunc <- match.arg(weightfunc, choices = c("W", "G", "F"))
 
-  # For uniform weighting, bounds are determined by range
-  if (weightfunc == "U") {
-    lower <- c(min(range), min(range))
-    upper <- c(max(range), max(range))
-    if (par[1] > par[2])
-      stop("For weightfunc = 'U', par[1] (window start) must be",
-           " <= par[2] (window end)")
+  # Set bounds, labels, and validate par based on weightfunc
+  if (weightfunc == "W") {
+    if (is.null(lower)) lower <- c(0.1, 0.1)
+    if (is.null(upper)) upper <- c(10, 1000)
+    par_labels <- c("shape", "scale")
+  } else if (weightfunc == "G") {
+    if (is.null(lower)) lower <- c(-0.5, 0.01)
+    if (is.null(upper)) upper <- c(1.5, 5)
+    par_labels <- c("loc", "scale")
+  } else if (weightfunc == "F") {
+    if (length(par) != 3)
+      stop("For weightfunc = 'F', par must have 3 elements: c(loc, scale, shape)")
+    if (is.null(lower)) lower <- c(0, 0.01, 0.1)
+    if (is.null(upper)) upper <- c(1, 2, 10)
+    par_labels <- c("loc", "scale", "shape")
   }
+
+  n_par      <- length(par_labels)
+  mfrow_dims <- if (n_par >= 3) c(3, 3) else c(2, 2)
 
   # Ensure lower < upper for each parameter
   if (any(lower >= upper)) stop("lower bounds must be less than upper bounds")
-  if (any(par < lower) || any(par > upper)) stop("initial parameters must be within bounds")
+  if (any(par < lower) || any(par > upper))
+    stop("initial parameters must be within bounds")
 
   # Default random-start bounds to optimisation bounds when not specified
   if (is.null(par_min)) par_min <- lower
@@ -103,19 +118,18 @@ run_weightwin <- function(n = 1,
 
   if (any(par_min >= par_max))
     stop("par_min must be less than par_max for each parameter")
-  
+
+  fit_fn <- switch(weightfunc,
+    "W" = fit_weights,
+    "G" = fit_weights_gumbel,
+    "F" = fit_weights_frechet
+  )
+
   # Objective function to minimize (AIC)
   objective_function <- function(params, fn_env) {
     tryCatch({
-      
-      # For uniform windows, snap parameters to integer day boundaries
-      if (weightfunc == "U") params <- round(params)
-
-      # Enforce ordering constraint for uniform windows
-      if (weightfunc == "U" && params[1] > params[2]) return(1e6)
 
       # Create weighted climate data using current parameters
-      fit_fn <- if (weightfunc == "U") fit_weights_uniform else fit_weights
       fitted_output <- fit_fn(
         range = range,
         bio_data = bio_data,
@@ -125,114 +139,117 @@ run_weightwin <- function(n = 1,
         xvar = xvar,
         par = params
       )
-      
+
       bio_data <- fitted_output$bio_data
-      
+
       # Fit the basemodel with the weighted climate data
       model <- eval(basemodel)
-      
-      # Return AIC value
+
       outputAIC <- AIC(model)
-      
-      save_list <- list(shape = params[1], scale = params[2], AIC = outputAIC)
-      
-      for (i in 1:3){
+
+      save_list <- c(setNames(as.list(params), par_labels), list(AIC = outputAIC))
+
+      for (i in seq_along(save_list)) {
         fn_env$plot_save[[i]] <- append(fn_env$plot_save[[i]], save_list[[i]])
       }
 
-      fn_env$iter <- fn_env$iter + 1L
+      fn_env$iter        <- fn_env$iter + 1L
       fn_env$last_weights <- fitted_output$weights
 
       if (!is.null(plot_every) && fn_env$iter %% plot_every == 0L) {
-        par(mfrow = c(2, 2))
-        plot(fn_env$last_weights, type = "l", ylab = "weight", xlab = "time step (e.g days)", main = "Output of current weighted window being tested")
-        plot(fn_env$plot_save[[3]], type = "l", ylab = "AIC", xlab = "convergence step")
-        plot(fn_env$plot_save[[1]], type = "l", ylab = "shape parameter", xlab = "convergence step", main = "Weibull parameter values being tested")
-        plot(fn_env$plot_save[[2]], type = "l", ylab = "scale parameter", xlab = "convergence step")
+        par(mfrow = mfrow_dims)
+        plot(fn_env$last_weights, type = "l",
+             ylab = "weight", xlab = "time step (e.g days)")
+        plot(fn_env$plot_save[[n_par + 1]], type = "l",
+             ylab = "AIC", xlab = "convergence step")
+        for (j in seq_len(n_par)) {
+          plot(fn_env$plot_save[[j]], type = "l",
+               ylab = par_labels[j], xlab = "convergence step")
+        }
       }
-      
+
       outputAIC
-      
+
     }, error = function(e) {
-      # Return a very high AIC if there's an error
       return(1e6)
     })
   }
-  
-  summary_output <- data.frame(start_par1 = numeric(), start_par2 = numeric(), AIC = numeric())
+
+  summary_output <- data.frame()
   output <- list()
-  
-  for (i in 1:n){
-    
-    if (i > 1){
-      for (j in 1:length(par)){
+
+  for (i in 1:n) {
+
+    if (i > 1) {
+      for (j in 1:length(par)) {
         par[j] <- runif(n = 1, min = par_min[j], max = par_max[j])
       }
     }
-    
-    plot_save <- list(shape = par[1], scale = par[2], AIC = NA)
+
+    plot_save <- c(setNames(lapply(par, identity), par_labels), list(AIC = NA))
     iter <- 0L
 
     # Run optimization
     optim_result <- optim(
-      par = par,
-      fn = objective_function,
-      method = method,
+      par     = par,
+      fn      = objective_function,
+      method  = method,
       control = control,
-      fn_env = environment(),
-      lower = lower, 
-      upper = upper
+      fn_env  = environment(),
+      lower   = lower,
+      upper   = upper
     )
-    
+
     # Get the optimal weighted climate data
-    optimal_par <- if (weightfunc == "U") round(optim_result$par) else optim_result$par
-    fit_fn <- if (weightfunc == "U") fit_weights_uniform else fit_weights
+    optimal_par  <- optim_result$par
     optimal_data <- fit_fn(
-      range = range,
-      bio_data = bio_data,
+      range        = range,
+      bio_data     = bio_data,
       climate_data = climate_data,
-      cdate = cdate,
-      bdate = bdate,
-      xvar = xvar,
-      par = optimal_par
+      cdate        = cdate,
+      bdate        = bdate,
+      xvar         = xvar,
+      par          = optimal_par
     )
-    
-    bio_data <- optimal_data$bio_data
+
+    bio_data   <- optimal_data$bio_data
     best_model <- eval(basemodel)
 
     if (!is.null(plot_every)) {
-      par(mfrow = c(2, 2))
-      plot(optimal_data$weights, type = "l", ylab = "weight",
-           xlab = "time step (e.g days)",
-           main = "Output of current weighted window being tested")
-      plot(plot_save[[3]], type = "l", ylab = "AIC",
-           xlab = "convergence step")
-      plot(plot_save[[1]], type = "l", ylab = "shape parameter",
-           xlab = "convergence step",
-           main = "Weibull parameter values being tested")
-      plot(plot_save[[2]], type = "l", ylab = "scale parameter",
-           xlab = "convergence step")
+      par(mfrow = mfrow_dims)
+      plot(optimal_data$weights, type = "l",
+           ylab = "weight", xlab = "time step (e.g days)")
+      plot(plot_save[[n_par + 1]], type = "l",
+           ylab = "AIC", xlab = "convergence step")
+      for (j in seq_len(n_par)) {
+        plot(plot_save[[j]], type = "l",
+             ylab = par_labels[j], xlab = "convergence step")
+      }
     }
-    
+
     output <- append(output,
-                     list(list(dataset = as.data.frame(plot_save)[-1, ] |> 
-                                 arrange(desc(AIC)),
-                               bestModel = list(model = best_model,
-                                                data = optimal_data$bio_data),
-                               weights = list(par = optimal_par,
-                                              weights = optimal_data$weights))))
-    
-    summary_output <- bind_rows(summary_output,
-                                data.frame(start_par1 = par[1], end_par1 = optim_result$par[1],
-                                           start_par2 = par[2], end_par1 = optim_result$par[2],
-                                           AIC = AIC(best_model)))
-    
+                     list(list(
+                       dataset   = as.data.frame(plot_save)[-1, ] |>
+                                     arrange(desc(AIC)),
+                       bestModel = list(model = best_model,
+                                        data  = optimal_data$bio_data),
+                       weights   = list(par     = optimal_par,
+                                        weights = optimal_data$weights),
+                       weightfunc = weightfunc
+                     )))
+
+    row_data <- c(
+      setNames(as.list(par),             paste0("start_", par_labels)),
+      setNames(as.list(optim_result$par), paste0("end_",   par_labels)),
+      list(AIC = AIC(best_model))
+    )
+    summary_output <- bind_rows(summary_output, as.data.frame(row_data))
+
   }
-  
+
   summary_output <- summary_output |> arrange(AIC)
-  
-  # Return results
+
   return(climwin_weightwin(weightwin_summary = summary_output,
-                           weightwin_output = output,
-                           range = range))
+                           weightwin_output  = output,
+                           range             = range))
 }

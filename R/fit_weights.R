@@ -86,11 +86,10 @@ fit_weights <- function(range,
   return(output)
 }
 
-#' Fit Weighted Window Analysis Using a Uniform Distribution
+#' Fit Weighted Window Analysis Using a Gumbel Distribution
 #'
-#' Creates weighted means of climate data using equal weights between two
-#' time-step boundaries. All time steps within [par[1], par[2]] receive
-#' equal weight; all others receive zero weight.
+#' Creates weighted means of climate data using a Gumbel density evaluated on a
+#' normalised [0, 1] domain spanning \code{range}.
 #'
 #' @param range A numeric vector specifying the time steps to consider.
 #' @param bio_data A data frame containing biological data with a date column.
@@ -98,15 +97,72 @@ fit_weights <- function(range,
 #' @param cdate Character string specifying the date column in climate_data.
 #' @param bdate Character string specifying the date column in bio_data.
 #' @param xvar Character string specifying the climate variable column.
-#' @param par A numeric vector of length 2: par[1] = window start,
-#'   par[2] = window end, both on the same scale as \code{range}.
-#'   par[1] must be <= par[2].
+#' @param par A numeric vector of length 2: par[1] = location, par[2] = scale
+#'   (scale must be > 0).
 #'
 #' @return A list with \code{bio_data} (with added \code{climate} column)
 #'   and \code{weights}.
 #'
+#' @importFrom evd dgumbel
 #' @export
-fit_weights_uniform <- function(range,
+fit_weights_gumbel <- function(range,
+                               bio_data,
+                               climate_data,
+                               cdate,
+                               bdate,
+                               xvar,
+                               par) {
+
+  processed_data <- process_data(
+    climate_data = climate_data,
+    bio_data = bio_data,
+    range = range,
+    cdate = cdate,
+    bdate = bdate,
+    xvar = xvar,
+    spatial = NULL,
+    type = "relative",
+    refday = NULL,
+    cohort = NULL
+  )
+
+  bio_data        <- processed_data$bio_data
+  bio_xvar_ranges <- processed_data$bio_xvar_ranges
+
+  weights <- evd::dgumbel(seq(0, 1, length.out = length(range)),
+                          loc = par[1], scale = par[2])
+  weights[is.na(weights) | is.infinite(weights)] <- 0
+  if (sum(weights) == 0) weights <- weights + 1
+  weights <- weights / sum(weights)
+
+  climate <- apply(bio_xvar_ranges, MARGIN = 2, FUN = function(x) {
+    sum(x * weights, na.rm = TRUE)
+  })
+
+  bio_data$climate <- climate
+  list(bio_data = bio_data, weights = weights)
+}
+
+#' Fit Weighted Window Analysis Using a Frechet Distribution
+#'
+#' Creates weighted means of climate data using a Frechet density evaluated on a
+#' normalised [0, 1] domain spanning \code{range}.
+#'
+#' @param range A numeric vector specifying the time steps to consider.
+#' @param bio_data A data frame containing biological data with a date column.
+#' @param climate_data A data frame containing climate data.
+#' @param cdate Character string specifying the date column in climate_data.
+#' @param bdate Character string specifying the date column in bio_data.
+#' @param xvar Character string specifying the climate variable column.
+#' @param par A numeric vector of length 3: par[1] = location, par[2] = scale,
+#'   par[3] = shape (scale and shape must be > 0).
+#'
+#' @return A list with \code{bio_data} (with added \code{climate} column)
+#'   and \code{weights}.
+#'
+#' @importFrom evd dfrechet
+#' @export
+fit_weights_frechet <- function(range,
                                 bio_data,
                                 climate_data,
                                 cdate,
@@ -130,8 +186,9 @@ fit_weights_uniform <- function(range,
   bio_data        <- processed_data$bio_data
   bio_xvar_ranges <- processed_data$bio_xvar_ranges
 
-  # Uniform weights: 1 inside [par[1], par[2]], 0 outside
-  weights <- as.numeric(range >= par[1] & range <= par[2])
+  weights <- evd::dfrechet(seq(0, 1, length.out = length(range)),
+                           loc = par[1], scale = par[2], shape = par[3])
+  weights[is.na(weights) | is.infinite(weights)] <- 0
   if (sum(weights) == 0) weights <- weights + 1
   weights <- weights / sum(weights)
 
@@ -140,6 +197,5 @@ fit_weights_uniform <- function(range,
   })
 
   bio_data$climate <- climate
-
   list(bio_data = bio_data, weights = weights)
 }
