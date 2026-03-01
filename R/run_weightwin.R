@@ -20,6 +20,12 @@
 #' @param lower Lower bounds for the parameters. Defaults to c(0.1, 0.1).
 #' @param upper Upper bounds for the parameters. Defaults to c(10, 1000).
 #' @param control Additional control parameters for optim. Defaults to list(maxit = 100).
+#' @param par_min A numeric vector of length 2 specifying the minimum values
+#'   for randomly drawn starting parameters (shape, scale) when n > 1. Required
+#'   when n > 1.
+#' @param par_max A numeric vector of length 2 specifying the maximum values
+#'   for randomly drawn starting parameters (shape, scale) when n > 1. Required
+#'   when n > 1.
 #'
 #' @return A list containing:
 #'         - par: The optimal Weibull parameters (shape, scale)
@@ -61,7 +67,10 @@ run_weightwin <- function(n = 1,
                           method = "L-BFGS-B",
                           lower = c(0.1, 0.1), 
                           upper = c(10, 1000),
-                          control = list(maxit = 100)) {
+                          control = list(maxit = 100),
+                          plot_every = 10,
+                          par_min = NULL,
+                          par_max = NULL) {
   
   # Validate basemodel
   validate_arg("basemodel", basemodel, required = TRUE)
@@ -70,6 +79,13 @@ run_weightwin <- function(n = 1,
   # Ensure lower < upper for each parameter
   if (any(lower >= upper)) stop("lower bounds must be less than upper bounds")
   if (any(par < lower) || any(par > upper)) stop("initial parameters must be within bounds")
+
+  if (n > 1) {
+    if (is.null(par_min) || is.null(par_max))
+      stop("par_min and par_max must be provided when n > 1")
+    if (any(par_min >= par_max))
+      stop("par_min must be less than par_max for each parameter")
+  }
   
   # Objective function to minimize (AIC)
   objective_function <- function(params, fn_env) {
@@ -99,12 +115,17 @@ run_weightwin <- function(n = 1,
       for (i in 1:3){
         fn_env$plot_save[[i]] <- append(fn_env$plot_save[[i]], save_list[[i]])
       }
-      
-      par(mfrow = c(2, 2))
-      plot(fitted_output$weights, type = "l", ylab = "weight", xlab = "time step (e.g days)", main = "Output of current weighted window being tested")
-      plot(fn_env$plot_save[[3]], type = "l", ylab = "AIC", xlab = "convergence step")
-      plot(fn_env$plot_save[[1]], type = "l", ylab = "shape parameter", xlab = "convergence step", main = "Weibull parameter values being tested")
-      plot(fn_env$plot_save[[2]], type = "l", ylab = "scale parameter", xlab = "convergence step")
+
+      fn_env$iter <- fn_env$iter + 1L
+      fn_env$last_weights <- fitted_output$weights
+
+      if (!is.null(plot_every) && fn_env$iter %% plot_every == 0L) {
+        par(mfrow = c(2, 2))
+        plot(fn_env$last_weights, type = "l", ylab = "weight", xlab = "time step (e.g days)", main = "Output of current weighted window being tested")
+        plot(fn_env$plot_save[[3]], type = "l", ylab = "AIC", xlab = "convergence step")
+        plot(fn_env$plot_save[[1]], type = "l", ylab = "shape parameter", xlab = "convergence step", main = "Weibull parameter values being tested")
+        plot(fn_env$plot_save[[2]], type = "l", ylab = "scale parameter", xlab = "convergence step")
+      }
       
       outputAIC
       
@@ -121,12 +142,13 @@ run_weightwin <- function(n = 1,
     
     if (i > 1){
       for (j in 1:length(par)){
-        par[j] <- runif(min = lower[j], max = upper[j], n = 1)
+        par[j] <- runif(n = 1, min = par_min[j], max = par_max[j])
       }
     }
     
     plot_save <- list(shape = par[1], scale = par[2], AIC = NA)
-    
+    iter <- 0L
+
     # Run optimization
     optim_result <- optim(
       par = par,
@@ -151,6 +173,20 @@ run_weightwin <- function(n = 1,
     
     bio_data <- optimal_data$bio_data
     best_model <- eval(basemodel)
+
+    if (!is.null(plot_every)) {
+      par(mfrow = c(2, 2))
+      plot(optimal_data$weights, type = "l", ylab = "weight",
+           xlab = "time step (e.g days)",
+           main = "Output of current weighted window being tested")
+      plot(plot_save[[3]], type = "l", ylab = "AIC",
+           xlab = "convergence step")
+      plot(plot_save[[1]], type = "l", ylab = "shape parameter",
+           xlab = "convergence step",
+           main = "Weibull parameter values being tested")
+      plot(plot_save[[2]], type = "l", ylab = "scale parameter",
+           xlab = "convergence step")
+    }
     
     output <- append(output,
                      list(list(dataset = as.data.frame(plot_save)[-1, ] |> 
