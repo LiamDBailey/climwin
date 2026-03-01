@@ -6,6 +6,7 @@
 #'
 #' @param dataset Output from run_slidingwin (a list with 'dataset' and 'bestModel' items)
 #' @param x Character. Name of x variable to plot. If not provided, will be "climate".
+#' @param n Integer. If weightwi
 #' @param ... Additional arguments passed to 'predict' function to create model prediction line.
 #'
 #' @return A ggplot object showing the scatter plot with fitted line
@@ -25,8 +26,8 @@
 #' @export
 plot_best <- function(dataset, x, y, ...) {
   
-  best_model <- dataset@bestModel[["model"]]
-  model_data <- dataset@bestModel[["data"]]
+  best_model <- getBestModel(dataset, ...)
+  model_data <- getBestModelData(dataset, ...)
   
   ## If x and/or y are missing we pick them
   if (missing(x)){
