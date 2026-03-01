@@ -105,7 +105,7 @@ run_weightwin <- function(n = 1,
   }
 
   n_par      <- length(par_labels)
-  mfrow_dims <- if (n_par >= 3) c(3, 3) else c(2, 2)
+  mfrow_dims <- if (n_par >= 3) c(2, 3) else c(2, 2)
 
   # Ensure lower < upper for each parameter
   if (any(lower >= upper)) stop("lower bounds must be less than upper bounds")
