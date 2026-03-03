@@ -29,10 +29,8 @@
 #' @param window_type Character string. Either \code{"slidingwin"} (default)
 #'   or \code{"weightwin"}.
 #' @param cinterval Character string specifying the temporal resolution: \code{"day"} (default),
-#'   \code{"week"}, or \code{"month"}. Passed through to the underlying window function.
-#' @param aggfunc A function used to aggregate climate values within each period when
-#'   \code{cinterval} is \code{"month"} or \code{"week"}. Defaults to \code{mean}. Passed
-#'   through to the underlying window function.
+#'   \code{"week"}, or \code{"month"}. When \code{"month"} or \code{"week"},
+#'   \code{climate_data} must be pre-aggregated with \code{\link{trans_clim_interval}}.
 #'
 #' @section weightwin arguments:
 #' The following arguments are passed to \code{\link{run_weightwin}} when
@@ -82,7 +80,6 @@ run_randwin <- function(repeats,
                         progress = TRUE,
                         window_type = "slidingwin",
                         cinterval = "day",
-                        aggfunc = mean,
                         # weightwin-specific arguments
                         weightfunc = "W",
                         par = c(3, 0.2),
@@ -165,7 +162,6 @@ run_randwin <- function(repeats,
         type             = type,
         refday           = refday,
         cinterval        = cinterval,
-        aggfunc          = aggfunc,
         parallel         = parallel,
         progress         = FALSE,
         .basemodelIsCall = TRUE
@@ -205,7 +201,6 @@ run_randwin <- function(repeats,
         par_min          = par_min,
         par_max          = par_max,
         cinterval        = cinterval,
-        aggfunc          = aggfunc,
         .basemodelIsCall = TRUE
       )
 

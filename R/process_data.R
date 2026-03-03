@@ -14,13 +14,8 @@
 #' @param refday Character string specifying the reference date for absolute type. Defaults to NULL.
 #' @param cohort Character string specifying the name of the cohort column. Defaults to NULL.
 #' @param cinterval Character string specifying the temporal resolution. Must be "day" (default),
-#'        "week", or "month". If "month", climate data are aggregated to monthly means and
-#'        date indices are in months. If "week", data are aggregated to 7-day blocks and indices
-#'        are in weeks.
-#' @param aggfunc A function used to aggregate climate values within each period when
-#'        \code{cinterval} is \code{"month"} or \code{"week"}. Defaults to \code{mean}.
-#'        Any function that accepts a numeric vector and returns a single value is valid
-#'        (e.g. \code{sum}, \code{max}, \code{min}, \code{median}).
+#'        "week", or "month". When "month" or "week", \code{climate_data} must already be
+#'        pre-aggregated to one row per period — use \code{\link{trans_clim_interval}} first.
 #'
 #' @return A list containing:
 #'         - bio_data: The processed biological data with date_int column
@@ -40,8 +35,7 @@ process_data <- function(climate_data,
                         type = "relative",
                         refday = NULL,
                         cohort = NULL,
-                        cinterval = "day",
-                        aggfunc = mean) {
+                        cinterval = "day") {
   
   ### ARGUMENT CHECKS ####
   # Validate required data frames
@@ -65,9 +59,6 @@ process_data <- function(climate_data,
               additional_checks = function(x) if(!x %in% c("day", "week", "month"))
                 stop("must be 'day', 'week', or 'month'"))
 
-  # Validate aggfunc parameter
-  validate_arg("aggfunc", aggfunc, required = FALSE, type = "function")
-  
   # Validate refday parameter if type is absolute
   if (type == "absolute") {
     validate_arg("refday", refday, required = TRUE, type = "character",
@@ -121,36 +112,43 @@ process_data <- function(climate_data,
   }
   
   ### CLIMATE DATA COMPLETENESS CHECKS ####
-  # Check 1: Validate that cdate column is a date column
+  # Check 1: Accept character ('DD/MM/YYYY') or Date dates
   climate_dates <- climate_data[[cdate]]
-  if (!is.character(climate_dates)) {
-    stop(sprintf("Column '%s' in climate_data must be a character in format 'DD/MM/YYYY'", cdate))
+  if (is.character(climate_dates)) {
+    converted_dates <- as.Date(climate_dates, format = "%d/%m/%Y")
+    if (all(is.na(converted_dates))) {
+      stop(sprintf("Column '%s' in climate_data must be in format 'DD/MM/YYYY'", cdate))
+    }
+    climate_data[[cdate]] <- converted_dates
+  } else if (!inherits(climate_dates, "Date")) {
+    stop(sprintf(
+      "Column '%s' in climate_data must be character ('DD/MM/YYYY') or Date class.", cdate
+    ))
   }
 
-  # Convert to Date object for validation and processing
-  converted_dates <- as.Date(climate_dates, format = "%d/%m/%Y")
-  if (all(is.na(converted_dates))) {
-    stop(sprintf("Column '%s' in climate_data must be in format 'DD/MM/YYYY'", cdate))
-  }
-  climate_data[[cdate]] <- converted_dates
-
-  # Aggregate climate data based on cinterval
+  # Check 2: Validate that dates are in the expected format for the chosen interval.
+  # Users must pre-aggregate with trans_clim_interval() when cinterval != "day".
   if (cinterval == "month") {
-    climate_data[[cdate]] <- as.Date(format(climate_data[[cdate]], "%Y-%m-01"))
-    climate_data <- dplyr::group_by(climate_data, .data[[spatial]], .data[[cdate]]) |>
-      dplyr::summarise(!!rlang::sym(xvar) := aggfunc(.data[[xvar]]),
-                       .groups = "drop") |>
-      dplyr::arrange(.data[[spatial]], .data[[cdate]]) |>
-      as.data.frame()
+    day_nums <- as.integer(format(climate_data[[cdate]], "%d"))
+    if (any(day_nums != 1L)) {
+      stop(paste0(
+        "When cinterval = 'month', all dates in '", cdate, "' must be the 1st of the ",
+        "month (one row per month). Pre-aggregate with ",
+        "trans_clim_interval(cinterval = 'month') first."
+      ))
+    }
   } else if (cinterval == "week") {
-    min_climate_date <- min(climate_data[[cdate]])
-    days_since_start <- as.integer(climate_data[[cdate]] - min_climate_date)
-    climate_data[[cdate]] <- min_climate_date + floor(days_since_start / 7) * 7
-    climate_data <- dplyr::group_by(climate_data, .data[[spatial]], .data[[cdate]]) |>
-      dplyr::summarise(!!rlang::sym(xvar) := aggfunc(.data[[xvar]]),
-                       .groups = "drop") |>
-      dplyr::arrange(.data[[spatial]], .data[[cdate]]) |>
-      as.data.frame()
+    unique_dates <- sort(unique(climate_data[[cdate]]))
+    if (length(unique_dates) > 1) {
+      diffs <- as.integer(diff(unique_dates))
+      if (any(diffs != 7L)) {
+        stop(paste0(
+          "When cinterval = 'week', dates in '", cdate, "' must be at 7-day intervals ",
+          "(one row per 7-day block). Pre-aggregate with ",
+          "trans_clim_interval(cinterval = 'week') first."
+        ))
+      }
+    }
   }
 
   # Check 2: Verify continuous series with no missing periods

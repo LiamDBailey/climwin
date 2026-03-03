@@ -19,13 +19,9 @@
 #' @param spatial Character string specifying the name of the spatial grouping column in both climate_data and bio_data. Defaults to NULL.
 #' @param cohort Character string specifying the name of the cohort column in bio_data. When type is "relative", each row will use the earliest year of all records in the same cohort. Defaults to NULL.
 #' @param cinterval Character string specifying the temporal resolution: \code{"day"} (default),
-#'   \code{"week"}, or \code{"month"}. When \code{"month"}, climate data are aggregated to monthly
-#'   means and \code{range} is interpreted in months. When \code{"week"}, data are aggregated to
-#'   7-day blocks and \code{range} is in weeks.
-#' @param aggfunc A function used to aggregate climate values within each period when
-#'   \code{cinterval} is \code{"month"} or \code{"week"}. Defaults to \code{mean}. Any function
-#'   that accepts a numeric vector and returns a single value is valid (e.g. \code{sum},
-#'   \code{max}, \code{min}, \code{median}). Ignored when \code{cinterval = "day"}.
+#'   \code{"week"}, or \code{"month"}. When \code{"month"} or \code{"week"},
+#'   \code{climate_data} must be pre-aggregated to one row per period — use
+#'   \code{\link{trans_clim_interval}} first.
 #' @param parallel Logical. If TRUE, parallel processing is used. Default is FALSE.
 #' @param progress Logical. If TRUE, shows a progress bar. Default is TRUE.
 #' @param .basemodelIsCall Logical. Internal parameter used to handle basemodel substitution. Default is FALSE.
@@ -137,7 +133,6 @@ run_slidingwin <- function(range,
                            spatial = NULL,
                            cohort = NULL,
                            cinterval = "day",
-                           aggfunc = mean,
                            parallel = FALSE,
                            progress = TRUE,
                            .basemodelIsCall = FALSE) {
@@ -158,7 +153,6 @@ run_slidingwin <- function(range,
   
   validate_arg("basemodel", basemodel, required = TRUE)
   validate_arg("fn", fn, required = FALSE, type = "function")
-  validate_arg("aggfunc", aggfunc, required = FALSE, type = "function")
   
   ### PROCESS DATA ####
   processed_data <- process_data(
@@ -172,8 +166,7 @@ run_slidingwin <- function(range,
     type = type,
     refday = refday,
     cohort = cohort,
-    cinterval = cinterval,
-    aggfunc = aggfunc
+    cinterval = cinterval
   )
   
   # Extract processed data

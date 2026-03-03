@@ -191,10 +191,11 @@ test_that("slidingwin and run_slidingwin give same results with cinterval = 'mon
     func      = "lin"
   )
 
-  # New implementation: range = 0:N in months, refday as DD/MM/YYYY string
+  # New implementation: pre-aggregate then run
+  Climate_monthly <- trans_clim_interval(Climate, cinterval = "month")
   results_new <- run_slidingwin(
     range        = 0:6,
-    climate_data = Climate,
+    climate_data = Climate_monthly,
     bio_data     = Mass,
     basemodel    = lm(Mass ~ climate, data = bio_data),
     cinterval    = "month",
@@ -246,10 +247,11 @@ test_that("slidingwin and run_slidingwin give same results with cinterval = 'wee
     func      = "lin"
   )
   
-  # New implementation: range = 0:N in months, refday as DD/MM/YYYY string
+  # New implementation: pre-aggregate then run
+  Climate_weekly <- trans_clim_interval(Climate, cinterval = "week")
   results_new <- run_slidingwin(
     range        = 0:24,
-    climate_data = Climate,
+    climate_data = Climate_weekly,
     bio_data     = Mass,
     basemodel    = lm(Mass ~ climate, data = bio_data),
     cinterval    = "week",
@@ -278,5 +280,73 @@ test_that("slidingwin and run_slidingwin give same results with cinterval = 'wee
   expect_equal(as.numeric(coef(new_best_model)),
                as.numeric(coef(results_old[[1]]$BestModel)),
                tolerance = 0.01)
-  
+
+})
+
+test_that("trans_clim_interval -> run_slidingwin pipeline produces valid output", {
+
+  Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+  Mass    <- read.csv(system.file("Mass.csv",        package = "climwin"))
+
+  ## ── monthly pipeline ───────────────────────────────────────────────────────
+  Climate_monthly <- trans_clim_interval(Climate, cinterval = "month")
+
+  # Climate_monthly has one row per month (Date is 1st of month, Date class)
+  expect_equal(as.integer(format(Climate_monthly$Date, "%d")),
+               rep(1L, nrow(Climate_monthly)))
+
+  results_monthly <- run_slidingwin(
+    range        = 0:6,
+    climate_data = Climate_monthly,
+    bio_data     = Mass,
+    basemodel    = lm(Mass ~ climate, data = bio_data),
+    cinterval    = "month",
+    type         = "absolute",
+    refday       = "20/05/2025"
+  )
+
+  ds_monthly <- getDataset(results_monthly)
+  # 7 start values × 7 end values, upper-triangle only → 28 windows
+  expect_equal(nrow(ds_monthly), 28L)
+  # ModWeights sum to 1
+  expect_equal(sum(ds_monthly$ModWeight), 1, tolerance = 1e-6)
+  # Best model is a valid lm object
+  expect_s3_class(getBestModel(results_monthly), "lm")
+
+  ## ── weekly pipeline ────────────────────────────────────────────────────────
+  Climate_weekly <- trans_clim_interval(Climate, cinterval = "week")
+
+  # Climate_weekly has 7-day gaps between consecutive dates
+  date_diffs <- as.integer(diff(sort(unique(Climate_weekly$Date))))
+  expect_true(all(date_diffs == 7L))
+
+  results_weekly <- run_slidingwin(
+    range        = 0:4,
+    climate_data = Climate_weekly,
+    bio_data     = Mass,
+    basemodel    = lm(Mass ~ climate, data = bio_data),
+    cinterval    = "week",
+    type         = "absolute",
+    refday       = "20/05/2025"
+  )
+
+  ds_weekly <- getDataset(results_weekly)
+  # 5 start values × 5 end values, upper-triangle only → 15 windows
+  expect_equal(nrow(ds_weekly), 15L)
+  expect_equal(sum(ds_weekly$ModWeight), 1, tolerance = 1e-6)
+
+  ## ── error: daily data passed with cinterval = "month" ─────────────────────
+  expect_error(
+    run_slidingwin(
+      range        = 0:6,
+      climate_data = Climate,
+      bio_data     = Mass,
+      basemodel    = lm(Mass ~ climate, data = bio_data),
+      cinterval    = "month",
+      type         = "absolute",
+      refday       = "20/05/2025"
+    ),
+    "trans_clim_interval"
+  )
+
 })
