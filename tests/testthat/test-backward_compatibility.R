@@ -937,3 +937,191 @@ test_that("old_weightwin, run_weightwin, and weightwin (CRAN) are comparable (We
   }
 
 })
+
+# ── cmissing tests: old_slidingwin ───────────────────────────────────────────
+
+test_that("old_slidingwin: cmissing = FALSE errors when xvar has NAs", {
+
+  Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+  Mass    <- read.csv(system.file("Mass.csv",        package = "climwin"))
+
+  Climate$Temp[c(50, 100, 200)] <- NA
+
+  expect_error(
+    old_slidingwin(
+      xvar     = list(Temp = Climate$Temp),
+      cdate    = Climate$Date,
+      bdate    = Mass$Date,
+      baseline = lm(Mass ~ 1, data = Mass),
+      range    = c(10, 0),
+      type     = "absolute",
+      refday   = c(20, 5),
+      cmissing = FALSE
+    ),
+    regexp = "Missing values found in 'Temp'"
+  )
+
+})
+
+test_that("old_slidingwin: invalid cmissing value errors", {
+
+  Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+  Mass    <- read.csv(system.file("Mass.csv",        package = "climwin"))
+
+  expect_error(
+    old_slidingwin(
+      xvar     = list(Temp = Climate$Temp),
+      cdate    = Climate$Date,
+      bdate    = Mass$Date,
+      baseline = lm(Mass ~ 1, data = Mass),
+      range    = c(10, 0),
+      type     = "relative",
+      cmissing = "bad_value"
+    ),
+    regexp = "'cmissing' must be FALSE, 'method1', or 'method2'"
+  )
+
+})
+
+test_that("old_slidingwin: cmissing = 'method1' imputes NAs and returns a result", {
+
+  Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+  Mass    <- read.csv(system.file("Mass.csv",        package = "climwin"))
+
+  Climate$Temp[c(50, 100, 200)] <- NA
+
+  result <- old_slidingwin(
+    xvar     = list(Temp = Climate$Temp),
+    cdate    = Climate$Date,
+    bdate    = Mass$Date,
+    baseline = lm(Mass ~ 1, data = Mass),
+    range    = c(10, 0),
+    type     = "absolute",
+    refday   = c(20, 5),
+    cmissing = "method1"
+  )
+
+  expect_true(is.data.frame(getDataset(result)))
+  expect_false(anyNA(getDataset(result)))
+
+})
+
+test_that("old_slidingwin: cmissing = 'method2' imputes NAs using day-month means", {
+
+  Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+  Mass    <- read.csv(system.file("Mass.csv",        package = "climwin"))
+
+  Climate$Temp[c(50, 100, 200)] <- NA
+
+  result <- old_slidingwin(
+    xvar     = list(Temp = Climate$Temp),
+    cdate    = Climate$Date,
+    bdate    = Mass$Date,
+    baseline = lm(Mass ~ 1, data = Mass),
+    range    = c(10, 0),
+    type     = "absolute",
+    refday   = c(20, 5),
+    cmissing = "method2"
+  )
+
+  expect_true(is.data.frame(getDataset(result)))
+  expect_false(anyNA(getDataset(result)))
+
+})
+
+# ── cmissing tests: old_weightwin ────────────────────────────────────────────
+
+test_that("old_weightwin: cmissing = FALSE errors when xvar has NAs", {
+
+  Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+  Mass    <- read.csv(system.file("Mass.csv",        package = "climwin"))
+
+  Climate$Temp[c(50, 100, 200)] <- NA
+
+  expect_error(
+    old_weightwin(
+      xvar     = list(Temp = Climate$Temp),
+      cdate    = Climate$Date,
+      bdate    = Mass$Date,
+      baseline = lm(Mass ~ 1, data = Mass),
+      range    = c(10, 0),
+      type     = "absolute",
+      refday   = c(20, 5),
+      cmissing = FALSE,
+      par      = c(3, 0.2, 0)
+    ),
+    regexp = "Missing values found in 'Temp'"
+  )
+
+})
+
+test_that("old_weightwin: invalid cmissing value errors", {
+
+  Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+  Mass    <- read.csv(system.file("Mass.csv",        package = "climwin"))
+
+  expect_error(
+    old_weightwin(
+      xvar     = list(Temp = Climate$Temp),
+      cdate    = Climate$Date,
+      bdate    = Mass$Date,
+      baseline = lm(Mass ~ 1, data = Mass),
+      range    = c(10, 0),
+      type     = "relative",
+      cmissing = "method3",
+      par      = c(3, 0.2, 0)
+    ),
+    regexp = "'cmissing' must be FALSE, 'method1', or 'method2'"
+  )
+
+})
+
+test_that("old_weightwin: cmissing = 'method1' imputes NAs and returns a result", {
+
+  Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+  Mass    <- read.csv(system.file("Mass.csv",        package = "climwin"))
+
+  Climate$Temp[c(50, 100, 200)] <- NA
+
+  set.seed(42)
+  result <- old_weightwin(
+    xvar     = list(Temp = Climate$Temp),
+    cdate    = Climate$Date,
+    bdate    = Mass$Date,
+    baseline = lm(Mass ~ 1, data = Mass),
+    range    = c(10, 0),
+    type     = "absolute",
+    refday   = c(20, 5),
+    cmissing = "method1",
+    par      = c(3, 0.2, 0)
+  )
+
+  expect_true(is.data.frame(getDataset(result)))
+  expect_true(length(getWeights(result)) > 0)
+
+})
+
+test_that("old_weightwin: cmissing = 'method2' imputes NAs using day-month means", {
+
+  Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+  Mass    <- read.csv(system.file("Mass.csv",        package = "climwin"))
+
+  Climate$Temp[c(50, 100, 200)] <- NA
+
+  set.seed(42)
+  result <- old_weightwin(
+    xvar     = list(Temp = Climate$Temp),
+    cdate    = Climate$Date,
+    bdate    = Mass$Date,
+    baseline = lm(Mass ~ 1, data = Mass),
+    range    = c(10, 0),
+    type     = "absolute",
+    refday   = c(20, 5),
+    cmissing = "method2",
+    par      = c(3, 0.2, 0)
+  )
+
+  expect_true(is.data.frame(getDataset(result)))
+  expect_true(length(getWeights(result)) > 0)
+
+})

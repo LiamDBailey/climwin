@@ -220,6 +220,11 @@ old_slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
     refday_str <- NULL
   }
 
+  ## Validate cmissing argument
+  if (!identical(cmissing, FALSE) && !cmissing %in% c("method1", "method2")) {
+    stop("'cmissing' must be FALSE, 'method1', or 'method2'")
+  }
+
   ## Convert range: c(furthest, closest) -> seq(closest, furthest)
   new_range <- seq(range[2], range[1])
 
@@ -241,6 +246,36 @@ old_slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
     ## Build climate data frame from the cdate vector and xvar values
     climate_df <- data.frame(Date = as.character(cdate), stringsAsFactors = FALSE)
     climate_df[[xvar_name]] <- xvar[[xvar_name]]
+
+    ## Handle missing values in xvar per cmissing
+    if (anyNA(climate_df[[xvar_name]])) {
+      if (identical(cmissing, FALSE)) {
+        stop(sprintf(
+          "Missing values found in '%s'. Set cmissing = 'method1' or 'method2' to impute.",
+          xvar_name
+        ))
+      } else if (cmissing == "method1") {
+        climate_df <- repair_climate(climate_df, cdate = "Date", xvar = xvar_name,
+                                     method = function(x) imputeTS::na_ma(x, k = 2))
+      } else {
+        temp_dates <- as.Date(climate_df$Date, format = "%d/%m/%Y")
+        full_dates <- seq.Date(min(temp_dates, na.rm = TRUE),
+                               max(temp_dates, na.rm = TRUE), by = "day")
+        dm_key <- format(full_dates, "%m-%d")
+        method2_fn <- local({
+          dm <- dm_key
+          function(x) {
+            for (i in which(is.na(x))) {
+              same_dm <- which(dm == dm[i] & !is.na(x))
+              if (length(same_dm) > 0L) x[i] <- mean(x[same_dm])
+            }
+            x
+          }
+        })
+        climate_df <- repair_climate(climate_df, cdate = "Date", xvar = xvar_name,
+                                     method = method2_fn)
+      }
+    }
 
     ## Build biological data frame from the baseline model frame + date column
     bio_df           <- model.frame(baseline)
@@ -3711,6 +3746,11 @@ old_weightwin <- function(n = 1, xvar, cdate, bdate, baseline, range, k = 0,
     par <- par[seq_len(min(2L, length(par)))]
   }
 
+  ## Validate cmissing argument
+  if (!identical(cmissing, FALSE) && !cmissing %in% c("method1", "method2")) {
+    stop("'cmissing' must be FALSE, 'method1', or 'method2'")
+  }
+
   ## Convert refday: c(day, month) -> "DD/MM/YYYY"
   if (!is.null(refday) && length(refday) >= 2 && !any(is.na(refday))) {
     refday_str <- sprintf("%02d/%02d/2000", as.integer(refday[1]), as.integer(refday[2]))
@@ -3724,6 +3764,36 @@ old_weightwin <- function(n = 1, xvar, cdate, bdate, baseline, range, k = 0,
   ## Build climate data frame from the cdate vector and xvar values
   climate_df <- data.frame(Date = as.character(cdate), stringsAsFactors = FALSE)
   climate_df[[xvar_name]] <- xvar[[xvar_name]]
+
+  ## Handle missing values in xvar per cmissing
+  if (anyNA(climate_df[[xvar_name]])) {
+    if (identical(cmissing, FALSE)) {
+      stop(sprintf(
+        "Missing values found in '%s'. Set cmissing = 'method1' or 'method2' to impute.",
+        xvar_name
+      ))
+    } else if (cmissing == "method1") {
+      climate_df <- repair_climate(climate_df, cdate = "Date", xvar = xvar_name,
+                                   method = function(x) imputeTS::na_ma(x, k = 2))
+    } else {
+      temp_dates <- as.Date(climate_df$Date, format = "%d/%m/%Y")
+      full_dates <- seq.Date(min(temp_dates, na.rm = TRUE),
+                             max(temp_dates, na.rm = TRUE), by = "day")
+      dm_key <- format(full_dates, "%m-%d")
+      method2_fn <- local({
+        dm <- dm_key
+        function(x) {
+          for (i in which(is.na(x))) {
+            same_dm <- which(dm == dm[i] & !is.na(x))
+            if (length(same_dm) > 0L) x[i] <- mean(x[same_dm])
+          }
+          x
+        }
+      })
+      climate_df <- repair_climate(climate_df, cdate = "Date", xvar = xvar_name,
+                                   method = method2_fn)
+    }
+  }
 
   ## Build biological data frame from the baseline model frame + date column
   bio_df           <- model.frame(baseline)
