@@ -3685,6 +3685,116 @@ theme_climwin <- function(base_size = 12, base_family = "",
 #'@import numDeriv
 #'@export
 
+old_weightwin <- function(n = 1, xvar, cdate, bdate, baseline, range, k = 0,
+                         func = "lin", type, refday = NULL, nrandom = 0, centre = NULL,
+                         weightfunc = "W", cinterval = "day", cmissing = FALSE,
+                         cohort = NULL, spatial = NULL,
+                         par = c(3, 0.2, 0),
+                         control = list(maxit = 100),
+                         method = "L-BFGS-B",
+                         cutoff.day = NULL, cutoff.month = NULL,
+                         furthest = NULL, closest = NULL, grad = FALSE) {
+
+  ## Validate xvar input
+  if (!is.list(xvar)) stop("xvar should be an object of type list")
+  if (is.null(names(xvar))) names(xvar) <- paste0("climate", seq_along(xvar))
+  xvar_name <- names(xvar)[1]
+
+  ## Warn when weightfunc = "G" — now explicitly the Gumbel distribution
+  if (is.character(weightfunc) && weightfunc == "G") {
+    warning("weightfunc = 'G' uses the Gumbel distribution via evd::dgumbel.")
+  }
+
+  ## Truncate par to 2 for standard built-in weightfuncs.
+  ## Old API used 3 parameters (shape, scale, location); new API uses 2.
+  if (is.character(weightfunc) && weightfunc %in% c("W", "G", "F")) {
+    par <- par[seq_len(min(2L, length(par)))]
+  }
+
+  ## Convert refday: c(day, month) -> "DD/MM/YYYY"
+  if (!is.null(refday) && length(refday) >= 2 && !any(is.na(refday))) {
+    refday_str <- sprintf("%02d/%02d/2000", as.integer(refday[1]), as.integer(refday[2]))
+  } else {
+    refday_str <- NULL
+  }
+
+  ## Convert range: c(furthest, closest) -> seq(closest, furthest)
+  new_range <- seq(range[2], range[1])
+
+  ## Build climate data frame from the cdate vector and xvar values
+  climate_df <- data.frame(Date = as.character(cdate), stringsAsFactors = FALSE)
+  climate_df[[xvar_name]] <- xvar[[xvar_name]]
+
+  ## Build biological data frame from the baseline model frame + date column
+  bio_df           <- model.frame(baseline)
+  bio_df[["Date"]] <- as.character(bdate)
+
+  ## Add cohort column if provided
+  cohort_col <- NULL
+  if (!is.null(cohort)) {
+    bio_df[["cohort_var"]] <- cohort
+    cohort_col <- "cohort_var"
+  }
+
+  ## Add spatial columns if provided (old API: list of two vectors)
+  spatial_col <- NULL
+  if (!is.null(spatial)) {
+    bio_df[["spatial_var"]]     <- spatial[[1]]
+    climate_df[["spatial_var"]] <- spatial[[2]]
+    spatial_col <- "spatial_var"
+  }
+
+  ## Pre-aggregate climate data for non-daily intervals
+  if (cinterval != "day") {
+    climate_df <- trans_clim_interval(climate_df,
+                                      xvar      = xvar_name,
+                                      cdate     = "Date",
+                                      cinterval = cinterval)
+  }
+
+  ## Build new model formula by adding the climate predictor based on func
+  base_formula <- formula(baseline)
+  if (func == "lin") {
+    new_formula <- update.formula(base_formula, . ~ . + climate)
+  } else if (func == "quad") {
+    new_formula <- update.formula(base_formula, . ~ . + poly(climate, 2))
+  } else if (func == "cub") {
+    new_formula <- update.formula(base_formula, . ~ . + poly(climate, 3))
+  } else if (func == "inv") {
+    new_formula <- update.formula(base_formula, . ~ . + I(1 / climate))
+  } else if (func == "log") {
+    new_formula <- update.formula(base_formula, . ~ . + log(climate))
+  } else {
+    new_formula <- update.formula(base_formula, . ~ . + climate)
+  }
+
+  ## Build model call: replace formula and data in baseline's call
+  model_call         <- baseline$call
+  model_call$formula <- new_formula
+  model_call$data    <- quote(bio_data)
+
+  ## Delegate to run_weightwin
+  run_weightwin(
+    n                = n,
+    range            = new_range,
+    bio_data         = bio_df,
+    climate_data     = climate_df,
+    basemodel        = model_call,
+    cdate            = "Date",
+    bdate            = "Date",
+    xvar             = xvar_name,
+    par              = par,
+    type             = type,
+    refday           = refday_str,
+    weightfunc       = weightfunc,
+    method           = method,
+    control          = control,
+    plot_every       = NULL,
+    cinterval        = cinterval,
+    .basemodelIsCall = TRUE
+  )
+}
+
 weightwin <- function(n = 1, xvar, cdate, bdate, baseline, range, k = 0,
                       func = "lin", type, refday, nrandom = 0, centre = NULL,
                       weightfunc = "W", cinterval = "day", cmissing = FALSE, cohort = NULL, spatial = NULL,

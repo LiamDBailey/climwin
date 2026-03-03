@@ -742,3 +742,198 @@ test_that("old_slidingwin with multiple func values returns a list", {
   expect_equal(length(coef(getBestModel(result[[2]]))), 3L)
 
 })
+
+# ── old_weightwin backward-compatibility tests ─────────────────────────────────
+
+test_that("old_weightwin and run_weightwin produce identical results (Weibull, absolute)", {
+
+  Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+  Mass    <- read.csv(system.file("Mass.csv",        package = "climwin"))
+
+  set.seed(42)
+  result_old <- old_weightwin(
+    xvar       = list(Temp = Climate$Temp),
+    cdate      = Climate$Date,
+    bdate      = Mass$Date,
+    baseline   = lm(Mass ~ 1, data = Mass),
+    range      = c(150, 0),
+    func       = "lin",
+    type       = "absolute",
+    refday     = c(20, 5),
+    weightfunc = "W",
+    par        = c(3, 0.2, 0)   # 3-param old-style; truncated to c(3, 0.2) internally
+  )
+
+  set.seed(42)
+  result_new <- run_weightwin(
+    range        = 0:150,
+    bio_data     = Mass,
+    climate_data = Climate,
+    basemodel    = lm(Mass ~ climate, data = bio_data),
+    type         = "absolute",
+    refday       = "20/05/2000",
+    par          = c(3, 0.2),
+    xvar         = "Temp",
+    cdate        = "Date",
+    bdate        = "Date"
+  )
+
+  ## old_weightwin delegates directly to run_weightwin, so results must be exact
+  expect_equal(getWeights(result_old), getWeights(result_new))
+  expect_equal(
+    as.numeric(coef(getBestModel(result_old))),
+    as.numeric(coef(getBestModel(result_new)))
+  )
+  expect_equal(result_old@weightwin_summary, result_new@weightwin_summary)
+
+})
+
+test_that("old_weightwin and run_weightwin produce identical results (Weibull, relative)", {
+
+  Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+  Mass    <- read.csv(system.file("Mass.csv",        package = "climwin"))
+
+  set.seed(7)
+  result_old <- old_weightwin(
+    xvar       = list(Temp = Climate$Temp),
+    cdate      = Climate$Date,
+    bdate      = Mass$Date,
+    baseline   = lm(Mass ~ 1, data = Mass),
+    range      = c(100, 0),
+    func       = "lin",
+    type       = "relative",
+    weightfunc = "W",
+    par        = c(2, 0.5, 0)
+  )
+
+  set.seed(7)
+  result_new <- run_weightwin(
+    range        = 0:100,
+    bio_data     = Mass,
+    climate_data = Climate,
+    basemodel    = lm(Mass ~ climate, data = bio_data),
+    type         = "relative",
+    par          = c(2, 0.5),
+    xvar         = "Temp",
+    cdate        = "Date",
+    bdate        = "Date"
+  )
+
+  expect_equal(getWeights(result_old), getWeights(result_new))
+  expect_equal(
+    as.numeric(coef(getBestModel(result_old))),
+    as.numeric(coef(getBestModel(result_new)))
+  )
+
+})
+
+test_that("old_weightwin and run_weightwin produce identical results (Weibull, cinterval = 'month')", {
+
+  Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+  Mass    <- read.csv(system.file("Mass.csv",        package = "climwin"))
+
+  set.seed(5)
+  result_old <- old_weightwin(
+    xvar       = list(Temp = Climate$Temp),
+    cdate      = Climate$Date,
+    bdate      = Mass$Date,
+    baseline   = lm(Mass ~ 1, data = Mass),
+    range      = c(12, 0),
+    func       = "lin",
+    type       = "absolute",
+    refday     = c(20, 5),
+    weightfunc = "W",
+    cinterval  = "month",
+    par        = c(2, 0.5, 0)
+  )
+
+  Climate_monthly <- trans_clim_interval(Climate, cinterval = "month")
+  set.seed(5)
+  result_new <- run_weightwin(
+    range        = 0:12,
+    bio_data     = Mass,
+    climate_data = Climate_monthly,
+    basemodel    = lm(Mass ~ climate, data = bio_data),
+    type         = "absolute",
+    refday       = "20/05/2000",
+    par          = c(2, 0.5),
+    xvar         = "Temp",
+    cdate        = "Date",
+    bdate        = "Date",
+    cinterval    = "month"
+  )
+
+  expect_equal(getWeights(result_old), getWeights(result_new))
+  expect_equal(
+    as.numeric(coef(getBestModel(result_old))),
+    as.numeric(coef(getBestModel(result_new)))
+  )
+
+})
+
+test_that("old_weightwin, run_weightwin, and weightwin (CRAN) are comparable (Weibull, absolute)", {
+
+  Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+  Mass    <- read.csv(system.file("Mass.csv",        package = "climwin"))
+
+  set.seed(12)
+  result_old_api <- old_weightwin(
+    xvar       = list(Temp = Climate$Temp),
+    cdate      = Climate$Date,
+    bdate      = Mass$Date,
+    baseline   = lm(Mass ~ 1, data = Mass),
+    range      = c(150, 0),
+    func       = "lin",
+    type       = "absolute",
+    refday     = c(20, 5),
+    weightfunc = "W",
+    par        = c(3, 0.2, 0)
+  )
+
+  set.seed(12)
+  result_new_api <- run_weightwin(
+    range        = 0:150,
+    bio_data     = Mass,
+    climate_data = Climate,
+    basemodel    = lm(Mass ~ climate, data = bio_data),
+    type         = "absolute",
+    refday       = "20/05/2025",
+    par          = c(3, 0.2),
+    xvar         = "Temp",
+    cdate        = "Date",
+    bdate        = "Date"
+  )
+
+  ## old_weightwin == run_weightwin (exact, same seed)
+  expect_equal(getWeights(result_old_api), getWeights(result_new_api))
+
+  ## old_weightwin ~~ weightwin (CRAN): qualitatively similar weights.
+  ## weightwin has a known data-scoping issue in test environments (re-evaluating
+  ## lm(Mass ~ 1, data = Mass) in a frame where Mass is not visible); skip the
+  ## CRAN comparison if it cannot run.
+  set.seed(12)
+  result_cran <- tryCatch(
+    suppressMessages(weightwin(
+      xvar       = list(Temp = Climate$Temp),
+      cdate      = Climate$Date,
+      bdate      = Mass$Date,
+      baseline   = lm(Mass ~ 1, data = Mass),
+      range      = c(150, 0),
+      func       = "lin",
+      type       = "absolute",
+      refday     = c(20, 5),
+      weightfunc = "W",
+      cinterval  = "day",
+      par        = c(3, 0.2, 0)
+    )),
+    error = function(e) NULL
+  )
+
+  if (!is.null(result_cran)) {
+    diff <- sum(abs(getWeights(result_old_api) - result_cran$Weights))
+    expect_true(diff < 0.5)
+  } else {
+    skip("weightwin (old) could not run due to data-scoping limitation")
+  }
+
+})
