@@ -2,7 +2,7 @@
 % Please edit documentation in R/run_weightwin.R
 \name{run_weightwin}
 \alias{run_weightwin}
-\title{Optimise Weibull Parameters for Weighted Climate Windows}
+\title{Optimise Parameters for Weighted Climate Windows}
 \usage{
 run_weightwin(
   n = 1,
@@ -10,89 +10,113 @@ run_weightwin(
   bio_data,
   climate_data,
   basemodel,
-  cdate,
-  bdate,
+  cdate = "Date",
+  bdate = "Date",
   xvar,
   par = c(3, 0.2),
   type = "relative",
   refday = NULL,
+  weightfunc = "W",
   method = "L-BFGS-B",
-  lower = c(0.1, 0.1),
-  upper = c(10, 1000),
+  lower = NULL,
+  upper = NULL,
   control = list(maxit = 100),
   plot_every = 10,
   par_min = NULL,
-  par_max = NULL
+  par_max = NULL,
+  cinterval = "day",
+  .basemodelIsCall = FALSE
 )
 }
 \arguments{
-\item{range}{A numeric vector specifying the number of days to look back from each date in bio_data.
-For example, 0 represents the date itself, while 100 represents 100 days before that date.}
+\item{n}{Integer. Number of independent optimisation runs. The first run
+uses \code{par}; subsequent runs draw starting parameters uniformly from
+[\code{par_min}, \code{par_max}].}
 
-\item{bio_data}{A data frame containing biological data with a date column. Required.}
+\item{range}{A numeric vector specifying the time steps to look back from
+each date in \code{bio_data} (e.g. \code{0:100}).}
 
-\item{climate_data}{A data frame containing climate data. Required.}
+\item{bio_data}{A data frame containing biological data with a date column.}
 
-\item{basemodel}{An lm model object that will be updated for each set of weights (e.g., lm(Mass ~ climate, data = bio_data)). Required.}
+\item{climate_data}{A data frame containing climate data.}
 
-\item{cdate}{Character string specifying the name of the date column in climate_data. Defaults to "Date".}
+\item{basemodel}{An \code{lm} call used as the model template
+(e.g. \code{lm(Mass ~ climate, data = bio_data)}).}
 
-\item{bdate}{Character string specifying the name of the date column in bio_data. Defaults to "Date".}
+\item{cdate}{Character string — date column in \code{climate_data}.
+Defaults to \code{"Date"}.}
 
-\item{xvar}{Character string specifying the name of the climate variable column in climate_data. Defaults to "Temp".}
+\item{bdate}{Character string — date column in \code{bio_data}.
+Defaults to \code{"Date"}.}
 
-\item{par}{A numeric vector of length 3 containing initial Weibull function parameters:
-par[1] = shape, par[2] = scale, par[3] = location. Required.}
+\item{xvar}{Character string — climate variable column in
+\code{climate_data}.}
 
-\item{type}{Character string specifying the type of date range calculation. Must be either "relative" (default) or "absolute".}
+\item{par}{Numeric vector of initial distribution parameters. Length depends
+on \code{weightfunc}: 2 for \code{"W"} and \code{"G"}, 2 for \code{"F"}
+(scale, shape), or however many your custom function expects.}
 
-\item{refday}{Character string in format "DD/MM/YYYY" specifying the reference date to use when type is "absolute".}
+\item{type}{\code{"relative"} (default) or \code{"absolute"}.}
 
-\item{method}{The optimization method to use. Defaults to "L-BFGS-B".}
+\item{refday}{Reference date (\code{"DD/MM/YYYY"}) used when
+\code{type = "absolute"}.}
 
-\item{lower}{Lower bounds for the parameters. Defaults to c(0.1, 0.1).}
+\item{weightfunc}{Either a character string (\code{"W"}, \code{"G"},
+\code{"F"}) or a density function with signature
+\code{function(x, par1, par2, ...)}. When a function is supplied,
+\code{lower} and \code{upper} must be provided explicitly and
+\code{par_labels} defaults to \code{"par1"}, \code{"par2"}, …}
 
-\item{upper}{Upper bounds for the parameters. Defaults to c(10, 1000).}
+\item{method}{Optimisation method passed to \code{optim}.
+Defaults to \code{"L-BFGS-B"}.}
 
-\item{control}{Additional control parameters for optim. Defaults to list(maxit = 100).}
+\item{lower}{Lower bounds for the parameters. Set automatically for
+built-in \code{weightfunc} values when \code{NULL} (default).}
 
-\item{par_min}{A numeric vector of length 2 specifying the minimum values
-for randomly drawn starting parameters (shape, scale) when n > 1. Required
-when n > 1.}
+\item{upper}{Upper bounds for the parameters. Set automatically for
+built-in \code{weightfunc} values when \code{NULL} (default).}
 
-\item{par_max}{A numeric vector of length 2 specifying the maximum values
-for randomly drawn starting parameters (shape, scale) when n > 1. Required
-when n > 1.}
+\item{control}{List of control parameters passed to \code{optim}.
+Defaults to \code{list(maxit = 100)}.}
+
+\item{plot_every}{Integer or \code{NULL}. Plot diagnostics every
+\code{plot_every} objective evaluations, and always after convergence.
+Pass \code{NULL} to suppress all plots.}
+
+\item{par_min}{Numeric vector — lower bounds for random starting parameters
+when \code{n > 1}. Defaults to \code{lower}.}
+
+\item{par_max}{Numeric vector — upper bounds for random starting parameters
+when \code{n > 1}. Defaults to \code{upper}.}
+
+\item{cinterval}{Character string specifying the temporal resolution: \code{"day"} (default),
+\code{"week"}, or \code{"month"}. When \code{"month"} or \code{"week"},
+\code{climate_data} must be pre-aggregated with \code{\link{trans_clim_interval}}.}
 }
 \value{
-A list containing:
-        - par: The optimal Weibull parameters (shape, scale)
-        - value: The minimum AIC value achieved
-        - convergence: Convergence code from optim
-        - message: Any messages from optim
-        - counts: Function and gradient evaluation counts
-        - optimal_data: The bio_data with the optimal weighted climate column
+A \code{climwin_weightwin} S7 object.
 }
 \description{
-This function uses the 'optim' function to find the optimal Weibull parameters (shape and scale)
-that create the best fitting model with the lowest AIC. It iteratively calls 'fit_weights'
-to create weighted climate data and then fits the basemodel to extract AIC values.
+Uses \code{optim} to find the optimal distribution parameters that minimise
+AIC when creating weighted means of climate data.
+}
+\details{
+Built-in weighting functions are selected by passing a character string to
+\code{weightfunc}: \code{"W"} (Weibull), \code{"G"} (Gumbel), or \code{"F"}
+(Frechet with location fixed at 0).  Alternatively, supply any density
+function directly — it must accept \code{(x, par1, par2, ...)} where
+\code{x} is a numeric vector on [0, 1].
 }
 \examples{
-# Example usage:
 Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
 Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
 
-results <- run_weightwin(range = 0:100, 
-                           bio_data = Mass,
-                           climate_data = Climate,
-                           cdate = "Date", bdate = "Date",
-                           xvar = "Temp",
-                           basemodel = lm(Mass ~ climate, data = bio_data),
-                           par = c(1.25, 0.5))
-                           
-# Access the optimal parameters and data
-optimal_params <- results$par
-optimal_data <- results$optimal_data
+results <- run_weightwin(range = 0:100,
+                         bio_data = Mass,
+                         climate_data = Climate,
+                         cdate = "Date", bdate = "Date",
+                         xvar = "Temp",
+                         basemodel = lm(Mass ~ climate, data = bio_data),
+                         par = c(1.25, 0.5))
 
 }

@@ -2,48 +2,59 @@
 % Please edit documentation in R/fit_weights.R
 \name{fit_weights}
 \alias{fit_weights}
-\title{Fit Weighted Window Analysis Using Weibull Function}
+\title{Fit a Weighted Climate Window Using a Density Function}
 \usage{
-fit_weights(range, bio_data, climate_data, cdate, bdate, xvar, par)
+fit_weights(
+  range,
+  bio_data,
+  climate_data,
+  cdate,
+  bdate,
+  xvar,
+  dfun,
+  par,
+  cinterval = "day"
+)
 }
 \arguments{
-\item{range}{A numeric vector specifying the number of days to look back from each date in bio_data.
-For example, 0 represents the date itself, while 100 represents 100 days before that date.}
+\item{range}{A numeric vector specifying the time steps to consider.}
 
-\item{bio_data}{A data frame containing biological data with a date column. Required.}
+\item{bio_data}{A data frame containing biological data with a date column.}
 
-\item{climate_data}{A data frame containing climate data. Required.}
+\item{climate_data}{A data frame containing climate data.}
 
-\item{cdate}{Character string specifying the name of the date column in climate_data. Defaults to "Date".}
+\item{cdate}{Character string specifying the date column in climate_data.}
 
-\item{bdate}{Character string specifying the name of the date column in bio_data. Defaults to "Date".}
+\item{bdate}{Character string specifying the date column in bio_data.}
 
-\item{xvar}{Character string specifying the name of the climate variable column in climate_data. Defaults to "Temp".}
+\item{xvar}{Character string specifying the climate variable column.}
 
-\item{par}{A numeric vector of length 3 containing the Weibull function parameters:
-par[1] = shape, par[2] = scale. Required.}
+\item{dfun}{A density function with signature \code{function(x, ...)} where
+\code{x} is a numeric vector on [0, 1].  Additional arguments are the
+distribution parameters.}
+
+\item{par}{A numeric vector of parameters passed to \code{dfun} after
+\code{x} (positionally).}
+
+\item{cinterval}{Character string specifying the temporal resolution: \code{"day"}
+(default), \code{"week"}, or \code{"month"}. When \code{"month"} or \code{"week"},
+\code{climate_data} must be pre-aggregated with \code{\link{trans_clim_interval}}.}
 }
 \value{
-A data frame containing the original bio_data with an additional column 'climate'
-        containing the weighted mean climate values for each row
+A list with \code{bio_data} (with added \code{climate} column)
+  and \code{weights}.
 }
 \description{
-This function creates weighted means of climate data for each row in bio_data across a specified range.
-The weights are drawn from a Weibull function parameterized by shape, scale, and location parameters.
+Computes a weighted mean of climate data for each row in \code{bio_data}
+by evaluating \code{dfun} on a normalised [0, 1] domain that spans
+\code{range}, then applying the resulting weights.
 }
 \examples{
-# Example usage:
 Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
-Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
+Mass    <- read.csv(system.file("Mass.csv",        package = "climwin"))
 
-results <- fit_weights(range = 0:100, 
-                        bio_data = Mass,
-                        climate_data = Climate,
-                        cdate = "Date", bdate = "Date",
-                        xvar = "Temp",
-                        par = c(2, 50, 0))
-                        
-# Access the weighted climate data
-head(results)
+out <- fit_weights(range = 0:100, bio_data = Mass, climate_data = Climate,
+                   cdate = "Date", bdate = "Date", xvar = "Temp",
+                   dfun = dweibull, par = c(2, 0.5))
 
 }

@@ -12,6 +12,8 @@ plot_best(dataset, x, y, ...)
 \item{x}{Character. Name of x variable to plot. If not provided, will be "climate".}
 
 \item{...}{Additional arguments passed to 'predict' function to create model prediction line.}
+
+\item{n}{Integer. If weightwi}
 }
 \value{
 A ggplot object showing the scatter plot with fitted line

@@ -17,6 +17,7 @@ run_slidingwin(
   refday = NULL,
   spatial = NULL,
   cohort = NULL,
+  cinterval = "day",
   parallel = FALSE,
   progress = TRUE,
   .basemodelIsCall = FALSE
@@ -47,6 +48,11 @@ For example, 0 represents the date itself, while 100 represents 100 days before 
 \item{spatial}{Character string specifying the name of the spatial grouping column in both climate_data and bio_data. Defaults to NULL.}
 
 \item{cohort}{Character string specifying the name of the cohort column in bio_data. When type is "relative", each row will use the earliest year of all records in the same cohort. Defaults to NULL.}
+
+\item{cinterval}{Character string specifying the temporal resolution: \code{"day"} (default),
+\code{"week"}, or \code{"month"}. When \code{"month"} or \code{"week"},
+\code{climate_data} must be pre-aggregated to one row per period — use
+\code{\link{trans_clim_interval}} first.}
 
 \item{parallel}{Logical. If TRUE, parallel processing is used. Default is FALSE.}
 

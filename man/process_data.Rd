@@ -14,7 +14,8 @@ process_data(
   spatial = NULL,
   type = "relative",
   refday = NULL,
-  cohort = NULL
+  cohort = NULL,
+  cinterval = "day"
 )
 }
 \arguments{
@@ -37,6 +38,10 @@ process_data(
 \item{refday}{Character string specifying the reference date for absolute type. Defaults to NULL.}
 
 \item{cohort}{Character string specifying the name of the cohort column. Defaults to NULL.}
+
+\item{cinterval}{Character string specifying the temporal resolution. Must be "day" (default),
+"week", or "month". When "month" or "week", \code{climate_data} must already be
+pre-aggregated to one row per period — use \code{\link{trans_clim_interval}} first.}
 }
 \value{
 A list containing:

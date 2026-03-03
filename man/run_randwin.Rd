@@ -2,7 +2,7 @@
 % Please edit documentation in R/run_randwin.R
 \name{run_randwin}
 \alias{run_randwin}
-\title{Run Randomized Sliding Window Analysis}
+\title{Run Randomized Window Analysis}
 \usage{
 run_randwin(
   repeats,
@@ -17,59 +17,106 @@ run_randwin(
   type = "relative",
   refday = NULL,
   parallel = FALSE,
-  progress = TRUE
+  progress = TRUE,
+  window_type = "slidingwin",
+  cinterval = "day",
+  weightfunc = "W",
+  par = c(3, 0.2),
+  method = "L-BFGS-B",
+  lower = NULL,
+  upper = NULL,
+  control = list(maxit = 100),
+  par_min = NULL,
+  par_max = NULL
 )
 }
 \arguments{
 \item{repeats}{Integer. Number of randomization iterations to perform.}
 
-\item{range}{A numeric vector specifying the number of days to look back from each date in bio_data.
-For example, 0 represents the date itself, while 100 represents 100 days before that date.}
+\item{range}{A numeric vector specifying the number of days to look back
+from each date in bio_data.}
 
 \item{climate_data}{A data frame containing climate data. Required.}
 
-\item{bio_data}{A data frame containing biological data with a date column. Required.}
+\item{bio_data}{A data frame containing biological data with a date column.
+Required.}
 
-\item{basemodel}{An lm model object that will be updated for each climate window (e.g., lm(Mass ~ climate, data = bio_data)). Required.}
+\item{basemodel}{An lm model object used as the model template. Required.}
 
-\item{cdate}{Character string specifying the name of the date column in climate_data. Defaults to "Date".}
+\item{cdate}{Character string — date column in climate_data.
+Defaults to \code{"Date"}.}
 
-\item{bdate}{Character string specifying the name of the date column in bio_data. Defaults to "Date".}
+\item{bdate}{Character string — date column in bio_data.
+Defaults to \code{"Date"}.}
 
-\item{xvar}{Character string specifying the name of the climate variable column in climate_data. Defaults to "Temp".}
+\item{xvar}{Character string — climate variable column in climate_data.
+Defaults to \code{"Temp"}.}
 
-\item{fn}{A function to use for summarizing the climate data. Defaults to mean().}
+\item{fn}{A function for summarising climate data (slidingwin only).
+Defaults to \code{mean}.}
 
-\item{type}{Character string specifying the type of date range calculation. Must be either "relative" (default) or "absolute".}
+\item{type}{\code{"relative"} (default) or \code{"absolute"}.}
 
-\item{refday}{Character string in format "DD/MM/YYYY" specifying the reference date to use when type is "absolute".}
+\item{refday}{Reference date (\code{"DD/MM/YYYY"}) when
+\code{type = "absolute"}.}
 
-\item{parallel}{Logical. If TRUE, parallel processing is used. Default is FALSE.}
+\item{parallel}{Logical. Use parallel processing (slidingwin only).
+Default \code{FALSE}.}
 
-\item{progress}{Logical. If TRUE, progress bars are shown. Default is TRUE.}
+\item{progress}{Logical. Show a progress bar. Default \code{TRUE}.}
+
+\item{window_type}{Character string. Either \code{"slidingwin"} (default)
+or \code{"weightwin"}.}
+
+\item{cinterval}{Character string specifying the temporal resolution: \code{"day"} (default),
+\code{"week"}, or \code{"month"}. When \code{"month"} or \code{"week"},
+\code{climate_data} must be pre-aggregated with \code{\link{trans_clim_interval}}.}
+
+\item{weightfunc}{Weighting function — see \code{\link{run_weightwin}}.
+Defaults to \code{"W"}.}
+
+\item{par}{Initial distribution parameters — see \code{\link{run_weightwin}}.}
+
+\item{method}{Optimisation method. Defaults to \code{"L-BFGS-B"}.}
+
+\item{lower}{Lower bounds. Set automatically when \code{NULL}.}
+
+\item{upper}{Upper bounds. Set automatically when \code{NULL}.}
+
+\item{control}{\code{optim} control list. Defaults to
+\code{list(maxit = 100)}.}
+
+\item{par_min}{Lower bounds for random starting parameters.}
+
+\item{par_max}{Upper bounds for random starting parameters.}
 }
 \value{
-A data frame containing the best climate window (lowest AIC) from each randomization iteration:
-        - Iteration: The randomization iteration number
-        - Start_Day: Start day as integer (number of days before Bio_Date)
-        - End_Day: End day as integer (number of days before Bio_Date)
-        - AIC: AIC value for the linear model
-        - ModWeight: Model weight calculated as (exp(-0.5 * AIC)) / sum(exp(-0.5 * AIC))
+A data frame with one row per randomization iteration. For
+  \code{"slidingwin"}, columns include \code{Iteration}, \code{Start_Day},
+  \code{End_Day}, \code{AIC}, and \code{ModWeight}.  For
+  \code{"weightwin"}, columns include \code{Iteration}, the optimal
+  parameter columns from \code{weightwin_summary}, and \code{AIC}.
 }
 \description{
-This function performs randomization tests by running sliding window analysis 
-on randomized climate data. For each iteration, the climate variable is 
-randomized and the best climate window (lowest AIC) is extracted. This creates
-a null distribution for comparison with observed results.
+Performs randomization tests by running sliding or weighted window analysis
+on randomized climate data. For each iteration the climate variable is
+shuffled and the best-fitting window is extracted, building a null
+distribution for comparison with observed results.
 }
+\section{weightwin arguments}{
+
+The following arguments are passed to \code{\link{run_weightwin}} when
+\code{window_type = "weightwin"}.  Plots are always suppressed
+(\code{plot_every = NULL}).
+}
+
 \examples{
-# Example usage:
 Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
-Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
+Mass    <- read.csv(system.file("Mass.csv",        package = "climwin"))
 null_results <- run_randwin(repeats = 100,
-                           range = 0:50, 
-                           climate_data = Climate, 
-                           bio_data = Mass,
-                           basemodel = lm(Mass ~ climate, data = bio_data))
+                            range = 0:50,
+                            climate_data = Climate,
+                            bio_data = Mass,
+                            basemodel = lm(Mass ~ climate, data = bio_data))
 
 }
