@@ -61,7 +61,7 @@ trans_clim_interval <- function(climate_data,
   validate_arg("climate_data", climate_data,
                required = TRUE, type = "data.frame",
                additional_checks = function(x) {
-                 if (nrow(x) == 0) stop("must contain at least 1 row")
+                 if (nrow(x) == 0) stop("must contain atleast 1 row")
                })
 
   validate_arg("cdate", cdate,
