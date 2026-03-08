@@ -1,0 +1,116 @@
+---
+title: "Backward compatibility"
+author: "Liam D. Bailey and Martijn van de Pol"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+%\VignetteIndexEntry{climwin}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+  ---
+  
+  The newest release of `climwin` is built to ensure maximum backwards compatibility with older versions of the package (<= v1.2.33). This vignette describes some common tasks in climwin and shows how they can be carried out using the new syntax.
+  
+  *PLEASE NOTE:* The current version of `climwin` includes the old code base for full backwards compatibility if needed (signified with the `old_` prefix); however, the outputs will not be fully compatible with new utility functions like plotting. We cannot guarantee that this old code base will be maintained in the future and encourage you to convert any code to use the new syntax.
+  
+  ************************************
+  
+  ## Sliding window analysis
+  
+  ```{r}
+Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
+MassClimate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+```
+
+**Old syntax**
+```{r}
+old_output <- slidingwin(xvar = list(Temp = MassClimate$Temp),
+                         cdate = MassClimate$Date, 
+                         bdate = Mass$Date, 
+                         baseline = lm(Mass ~ 1, data = Mass),
+                         range = c(100, 0), 
+                         type = "absolute", refday = c(20, 5),
+                         stat = "mean", 
+                         func = c("lin"), cmissing = FALSE, cinterval = "day")
+```
+
+**New syntax**
+```{r}
+new_output <- run_slidingwin(range = 0:100, type = "absolute", refday = "20/05/2020",
+                             climate_data = MassClimate, 
+                             bio_data = Mass,
+                             basemodel = lm(Mass ~ climate, data = bio_data))
+```
+
+**Comparison**
+
+```{r}
+plotdelta(old_output[[1]]$Dataset)
+```
+
+```{r}
+plot_delta(new_output)
+```
+
+************************************
+
+## Monthly data
+
+************************************
+
+## Thresholds & growing degree days
+
+```{r}
+Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
+MassClimate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+```
+
+**Old syntax**
+```{r}
+old_output <- slidingwin(xvar = list(Temp = MassClimate$Temp),
+                         cdate = MassClimate$Date, 
+                         bdate = Mass$Date, 
+                         baseline = lm(Mass ~ 1, data = Mass),
+                         range = c(12, 0), 
+                         type = "absolute", refday = c(20, 5),
+                         stat = "sum",
+                         func = c("lin"), cmissing = FALSE,
+                         cinterval = "month", upper = 10, binary = TRUE)
+```
+
+**New syntax**
+
+In the new syntax we separate out data preparation and window fitting into separate functions. This has several benefits a) easier to spot mistakes & debug. You can inspect the input data before running windows b) customisable. Infinite number of ways to process data before windows, c) easier to maintain code (`run_slidingwin`) is now much leaner.
+
+```{r}
+## Convert to months (NOTE: If you want to apply threshold to data BEFORE taking monthly summary, just reverse the order!!)
+MassClimate_mo <- trans_clim_interval(MassClimate, xvar = "Temp", cdate = "Date", aggfunc = mean, cinterval = "month")
+MassClimate_mo
+```
+
+```{r}
+## Create a new binary column
+MassClimate_mo_binary <- append_clim_threshold(MassClimate_mo, xvar = "Temp", upper = 10, binary = TRUE)
+MassClimate_mo_binary
+```
+
+
+
+
+```{r}
+new_output <- run_slidingwin(range = 0:12, type = "absolute", refday = "20/05/2020",
+                             climate_data = MassClimate_mo_binary,
+                             xvar = "threshold", fn = sum,
+                             cinterval = "month",
+                             bio_data = Mass,
+                             basemodel = lm(Mass ~ climate, data = bio_data))
+```
+
+```{r}
+plotdelta(old_output[[1]]$Dataset)
+```
+
+```{r}
+plot_delta(new_output)
+```
+

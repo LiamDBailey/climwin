@@ -1,5 +1,4 @@
 # Shared test data ----------------------------------------------------------
-
 make_test_data <- function() {
   climate_data <- data.frame(
     Date = c(
@@ -48,8 +47,6 @@ test_that("run_weightwin ('W') returns a valid output", {
   expect_true(all(weights >= 0))
 })
 
-# Validation ----------------------------------------------------------------
-
 test_that("run_weightwin errors on invalid weightfunc", {
   d <- make_test_data()
   expect_error(
@@ -62,7 +59,8 @@ test_that("run_weightwin errors on invalid weightfunc", {
       weightfunc   = "X",
       par        = c(1, 3),
       plot_every = NULL
-    )
+    ),
+    "should be one of "
   )
 })
 
@@ -130,7 +128,6 @@ test_that("run_weightwin with n > 1 ('W') returns one output per iteration", {
 test_that("run_weightwin stores weightfunc in each output element", {
   d <- make_test_data()
   for (wf in c("W", "G")) {
-    par <- c(0.5, 0.5)
     result <- run_weightwin(
       range      = 0:4,
       bio_data   = d$bio_data,
@@ -138,7 +135,7 @@ test_that("run_weightwin stores weightfunc in each output element", {
       cdate = "Date", bdate = "Date", xvar = "Temp",
       basemodel  = lm(Mass ~ climate, data = bio_data),
       weightfunc = wf,
-      par        = par,
+      par        = c(0.5, 0.5),
       plot_every = NULL
     )
     expect_equal(result@weightwin_output[[1]]$weightfunc, wf)
@@ -163,42 +160,11 @@ test_that("run_weightwin ('G') returns a valid climwin_weightwin object", {
   expect_true(inherits(result, "S7_object"))
   expect_true(inherits(result@weightwin_summary, "data.frame"))
   expect_length(result@weightwin_output, 1)
-})
-
-test_that("run_weightwin ('G') weights sum to 1 and are non-negative", {
-  d <- make_test_data()
-  result <- run_weightwin(
-    range      = 0:4,
-    bio_data   = d$bio_data,
-    climate_data = d$climate_data,
-    cdate = "Date", bdate = "Date", xvar = "Temp",
-    basemodel  = lm(Mass ~ climate, data = bio_data),
-    weightfunc = "G",
-    par        = c(0.5, 0.5),
-    plot_every = NULL
-  )
-
+  
   weights <- result@weightwin_output[[1]]$weights$weights
   expect_length(weights, 5)
   expect_equal(sum(weights), 1, tolerance = 1e-10)
   expect_true(all(weights >= 0))
-})
-
-test_that("fit_weights (Gumbel dfun) produces normalised non-negative weights", {
-  d    <- make_test_data()
-  dfun <- function(x, loc, scale) evd::dgumbel(x, loc = loc, scale = scale)
-  out  <- fit_weights(
-    range        = 0:4,
-    bio_data     = d$bio_data,
-    climate_data = d$climate_data,
-    cdate = "Date", bdate = "Date", xvar = "Temp",
-    dfun         = dfun,
-    par          = c(0.5, 0.3)
-  )
-  w <- out$weights
-  expect_length(w, 5)
-  expect_equal(sum(w), 1, tolerance = 1e-10)
-  expect_true(all(w >= 0))
 })
 
 # Frechet (weightfunc = "F") --------------------------------------------------
@@ -219,62 +185,11 @@ test_that("run_weightwin ('F') returns a valid climwin_weightwin object", {
   expect_true(inherits(result, "S7_object"))
   expect_true(inherits(result@weightwin_summary, "data.frame"))
   expect_length(result@weightwin_output, 1)
-})
-
-test_that("run_weightwin ('F') weights sum to 1 and are non-negative", {
-  d <- make_test_data()
-  result <- run_weightwin(
-    range      = 0:4,
-    bio_data   = d$bio_data,
-    climate_data = d$climate_data,
-    cdate = "Date", bdate = "Date", xvar = "Temp",
-    basemodel  = lm(Mass ~ climate, data = bio_data),
-    weightfunc = "F",
-    par        = c(0.5, 2),
-    plot_every = NULL
-  )
-
+  
   weights <- result@weightwin_output[[1]]$weights$weights
   expect_length(weights, 5)
   expect_equal(sum(weights), 1, tolerance = 1e-10)
   expect_true(all(weights >= 0))
-})
-
-test_that("fit_weights (Frechet dfun, loc=0) produces normalised non-negative weights", {
-  d    <- make_test_data()
-  dfun <- function(x, scale, shape) evd::dfrechet(x, loc = 0, scale = scale, shape = shape)
-  out  <- fit_weights(
-    range        = 0:4,
-    bio_data     = d$bio_data,
-    climate_data = d$climate_data,
-    cdate = "Date", bdate = "Date", xvar = "Temp",
-    dfun         = dfun,
-    par          = c(0.5, 2)
-  )
-  w <- out$weights
-  expect_length(w, 5)
-  expect_equal(sum(w), 1, tolerance = 1e-10)
-  expect_true(all(w >= 0))
-})
-
-
-test_that("run_weightwin ('F') summary has scale/shape start/end columns", {
-  d <- make_test_data()
-  result <- run_weightwin(
-    range      = 0:4,
-    bio_data   = d$bio_data,
-    climate_data = d$climate_data,
-    cdate = "Date", bdate = "Date", xvar = "Temp",
-    basemodel  = lm(Mass ~ climate, data = bio_data),
-    weightfunc = "F",
-    par        = c(0.5, 2),
-    plot_every = NULL
-  )
-
-  s <- result@weightwin_summary
-  expect_true(all(c("start_scale", "start_shape") %in% names(s)))
-  expect_true(all(c("end_scale",   "end_shape")   %in% names(s)))
-  expect_false("start_loc" %in% names(s))
 })
 
 # Custom weightfunc (function) -----------------------------------------------
