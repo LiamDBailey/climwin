@@ -9,7 +9,8 @@ append_clim_threshold(
   xvar = "Temp",
   upper = NULL,
   lower = NULL,
-  binary = FALSE
+  binary = FALSE,
+  .name = "threshold"
 )
 }
 \arguments{
@@ -30,10 +31,13 @@ are retained; values at or above are set to 0. At least one of
 \item{binary}{Logical. If \code{TRUE}, retained values are set to 1.
 If \code{FALSE} (default), retained values keep their original
 \code{xvar} value.}
+
+\item{.name}{Character string. Name of the output column added to
+\code{climate_data}. Defaults to \code{"threshold"}.}
 }
 \value{
-The original \code{climate_data} with an additional column
-  \code{threshold} containing the thresholded values.
+The original \code{climate_data} with an additional column named
+  \code{.name} containing the thresholded values.
 }
 \description{
 Adds a new column \code{threshold} to \code{climate_data} by applying an

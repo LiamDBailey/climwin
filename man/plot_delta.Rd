@@ -4,7 +4,7 @@
 \alias{plot_delta}
 \title{Plot Delta AIC Heatmap}
 \usage{
-plot_delta(dataset)
+plot_delta(dataset, smooth = FALSE)
 }
 \arguments{
 \item{dataset}{Output from run_slidingwin (either a data frame or a list with 'dataset' item) containing columns:
@@ -26,6 +26,6 @@ results <- run_slidingwin(range = 0:100,
                         climate_data = Climate, 
                         bio_data = Mass,
                         basemodel = lm(Mass ~ climate, data = bio_data))
-plot_slidingwin(results)
+plot_delta(results)
 
 }
