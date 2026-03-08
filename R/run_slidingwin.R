@@ -114,11 +114,10 @@
 #'  
 #'}
 #'
-#' @importFrom furrr future_map
+#' @importFrom future.apply future_vapply
 #' @importFrom future plan
 #' @importFrom future multisession
 #' @importFrom progress progress_bar
-#' @importFrom progressr progressor
 #' @export
 run_slidingwin <- function(range,
                            climate_data,
@@ -141,7 +140,7 @@ run_slidingwin <- function(range,
   # Ensure future and furrr are loaded if parallel is TRUE
   if (parallel) {
     if (!requireNamespace("future", quietly = TRUE)) stop("Package 'future' is required.")
-    if (!requireNamespace("furrr", quietly = TRUE)) stop("Package 'furrr' is required.")
+    if (!requireNamespace("future.apply", quietly = TRUE)) stop("Package 'future.apply' is required.")
     future::plan(future::multisession)
   }
   
@@ -170,119 +169,124 @@ run_slidingwin <- function(range,
   )
   
   # Extract processed data
-  bio_data <- processed_data$bio_data
-  bio_int_ranges <- processed_data$bio_int_ranges
-  bio_data_row <- processed_data$bio_data_row
+  bio_data        <- processed_data$bio_data
+  bio_int_ranges  <- processed_data$bio_int_ranges
+  bio_data_row    <- processed_data$bio_data_row
   bio_xvar_ranges <- processed_data$bio_xvar_ranges
-  
+
+  # Pre-compute row ordering once (spatial joins may reorder columns)
+  row_order <- order(bio_data_row)
+
+  # Pre-compute column-wise cumulative sums when fn is mean or sum —
+  # avoids matrix slicing inside the window loop
+  use_cumsum <- identical(fn, mean) || identical(fn, sum)
+  if (use_cumsum) {
+    xvar_cumsum <- rbind(0, apply(bio_xvar_ranges, 2L, cumsum))
+  }
+
   # Generate all valid range combinations
   range_combinations <- expand.grid(start_days = range, end_days = range)
   range_combinations <- range_combinations[range_combinations$end_days >= range_combinations$start_days, ]
-  
-  process_window <- function(i){
-    start_days <- range_combinations$start_days[i] + 1
-    end_days <- range_combinations$end_days[i] + 1
-    
-    # Initialize vectors for this combination
-    summary_data_unordered <- apply(bio_xvar_ranges, MARGIN = 2, FUN = \(x){
-      fn(x[start_days:end_days])
-    })
-    ## Need to reorder the data incase they were split during spatial joins
-    bio_data$climate <- summary_data_unordered[order(bio_data_row)]
-    
-    # Create results dataframe for this combination
-    fit_result <- tryCatch({
-      model <- eval(basemodel)
-      list(
-        AIC = AIC(model)
-      )
-    }, error = function(e) {
-      list(
-        AIC = NA_real_
-      )
-    })
-    
-    data.frame(
-      Start_Day = start_days - 1,
-      End_Day = end_days - 1,
-      AIC = fit_result$AIC,
-      stringsAsFactors = FALSE
-    )
-  }
-  
-  # Process each range combination
-  total_combinations <- nrow(range_combinations)
-  
-  if (parallel){
-    p <- progressr::progressor(steps = total_combinations)
-    results <- furrr::future_map(seq_len(nrow(range_combinations)),
-                                 function(i) {
-                                   result <- process_window(i)
-                                   p()
-                                   return(result)
-                                 }, .options = furrr::furrr_options(seed = TRUE))
-  } else {
-    pb <- progress::progress_bar$new(
-      format = "Processing windows [:bar] :percent :elapsed",
-      total = total_combinations,
-      clear = FALSE,
-      width = 60
-    )
-    results <- purrr::map(seq_len(nrow(range_combinations)), function(i) {
-      result <- process_window(i)
-      if (interactive() & progress){
-        pb$tick() 
+
+  # Returns c(Start_Day, End_Day, AIC) for window combination i
+  process_window <- function(i) {
+    start_days <- range_combinations$start_days[i] + 1L
+    end_days   <- range_combinations$end_days[i]   + 1L
+
+    # Aggregate climate across the window for each bio record
+    if (use_cumsum) {
+      col_sums <- xvar_cumsum[end_days + 1L, ] - xvar_cumsum[start_days, ]
+      summary_data_unordered <- if (identical(fn, mean)) {
+        col_sums / (end_days - start_days + 1L)
+      } else {
+        col_sums
       }
-      return(result)
-    })
+    } else {
+      summary_data_unordered <- apply(bio_xvar_ranges, MARGIN = 2L,
+                                      FUN = \(x) fn(x[start_days:end_days]))
+    }
+
+    bio_data$climate <- summary_data_unordered[row_order]
+
+    aic_val <- tryCatch(AIC(eval(basemodel)), error = function(e) NA_real_)
+
+    c(start_days - 1L, end_days - 1L, aic_val)
   }
-  
-  # Combine results
-  results <- dplyr::bind_rows(results)
-  
-  # Calculate model weights (ModWeight)
-  # Formula: (exp(-0.5 * AIC)) / sum(exp(-0.5 * AIC))
-  # Handle NA values by excluding them from the calculation
+
+  total_combinations <- nrow(range_combinations)
+
+  if (parallel) {
+    result_mat <- future.apply::future_vapply(
+      seq_len(total_combinations),
+      process_window,
+      numeric(3L),
+      future.seed = TRUE
+    )
+  } else {
+    if (progress && interactive()) {
+      pb <- progress::progress_bar$new(
+        format = "Processing windows [:bar] :percent :elapsed",
+        total  = total_combinations,
+        clear  = FALSE,
+        width  = 60
+      )
+    }
+    result_mat <- matrix(NA_real_, nrow = 3L, ncol = total_combinations)
+    for (i in seq_len(total_combinations)) {
+      result_mat[, i] <- process_window(i)
+      if (progress && interactive()) pb$tick()
+    }
+  }
+
+  results <- data.frame(
+    Start_Day = as.integer(result_mat[1L, ]),
+    End_Day   = as.integer(result_mat[2L, ]),
+    AIC       = result_mat[3L, ]
+  )
+
+  # Calculate model weights
+  # Formula: (exp(-0.5 * deltaAIC)) / sum(exp(-0.5 * deltaAIC))
   valid_aic <- !is.na(results$AIC)
   if (any(valid_aic)) {
-    deltaAIC <- results$AIC - min(results$AIC)
+    deltaAIC    <- results$AIC - min(results$AIC[valid_aic])
     aic_weights <- exp(-0.5 * deltaAIC[valid_aic])
-    total_weight <- sum(aic_weights)
     results$ModWeight <- NA_real_
-    results$ModWeight[valid_aic] <- aic_weights / total_weight
+    results$ModWeight[valid_aic] <- aic_weights / sum(aic_weights)
   } else {
     results$ModWeight <- NA_real_
   }
-  
+
   # Sort by AIC (NAs last)
   results <- results[order(is.na(results$AIC), results$AIC), ]
-  
+
   # Fit the best model (lowest AIC)
   best_model <- NULL
   if (nrow(results) > 0 && !is.na(results$AIC[1])) {
-    best_start <- results$Start_Day[1] + 1
-    best_end <- results$End_Day[1] + 1
-    
-    # Get the climate data for the best window
-    best_climate_summary <- apply(bio_xvar_ranges, MARGIN = 2, FUN = \(x){
-      fn(x[best_start:best_end])
-    })
-    
-    # Reorder and assign climate data
-    bio_data$climate <- best_climate_summary[order(bio_data_row)]
-    
-    # Fit the best model
-    best_model <- tryCatch({
-      eval(basemodel)
-    }, error = function(e) {
-      NULL
-    })
+    best_start <- results$Start_Day[1] + 1L
+    best_end   <- results$End_Day[1]   + 1L
+
+    if (use_cumsum) {
+      col_sums <- xvar_cumsum[best_end + 1L, ] - xvar_cumsum[best_start, ]
+      best_climate_summary <- if (identical(fn, mean)) {
+        col_sums / (best_end - best_start + 1L)
+      } else {
+        col_sums
+      }
+    } else {
+      best_climate_summary <- apply(bio_xvar_ranges, MARGIN = 2L,
+                                    FUN = \(x) fn(x[best_start:best_end]))
+    }
+
+    bio_data$climate <- best_climate_summary[row_order]
+
+    best_model <- tryCatch(eval(basemodel), error = function(e) NULL)
   }
-  
-  # Return climwin object with outputs
-  output <- climwin(dataset = results,
-          bestModel = list(model = best_model,
-                           data = bio_data),
-          range = range(range))
+
+  # Return climwin S7 object
+  output <- climwin(
+    dataset   = results,
+    bestModel = list(model = best_model, data = bio_data),
+    range     = range(range)
+  )
   return(output)
 }
