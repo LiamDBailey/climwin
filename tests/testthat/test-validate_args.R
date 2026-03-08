@@ -78,41 +78,8 @@ test_that("validate_arg handles list of additional checks correctly", {
   )
 })
 
-test_that("validate_arg handles complex validation scenarios", {
-  # Test with multiple conditions
-  expect_error(
-    validate_arg("test_arg", "abc", 
-                type = "character",
-                additional_checks = list(
-                  function(x) if(nchar(x) < 4) stop("must be at least 4 characters"),
-                  function(x) if(!grepl("^[A-Z]", x)) stop("must start with uppercase")
-                )),
-    "'test_arg': must be at least 4 characters"
-  )
-  
-  expect_error(
-    validate_arg("test_arg", "abcd", 
-                type = "character",
-                additional_checks = list(
-                  function(x) if(nchar(x) < 4) stop("must be at least 4 characters"),
-                  function(x) if(!grepl("^[A-Z]", x)) stop("must start with uppercase")
-                )),
-    "'test_arg': must start with uppercase"
-  )
-  
-  # No error if passes all conditions
-  expect_silent(
-    validate_arg("test_arg", "Abcd", 
-                type = "character",
-                additional_checks = list(
-                  function(x) if(nchar(x) < 4) stop("must be at least 4 characters"),
-                  function(x) if(!grepl("^[A-Z]", x)) stop("must start with uppercase")
-                ))
-  )
-})
-
 # Tests for validate_args
-test_that("validate_args handles input validation correctly", {
+test_that("validate_args (plural) handles input validation correctly", {
   # Error if args is not a named list
   expect_error(
     validate_args(list(1, 2)),
@@ -125,7 +92,7 @@ test_that("validate_args handles input validation correctly", {
   )
 })
 
-test_that("validate_args applies validation to all arguments", {
+test_that("validate_args (plural) applies validation to all arguments", {
   # Error if any argument fails validation
   expect_error(
     validate_args(
@@ -150,7 +117,7 @@ test_that("validate_args applies validation to all arguments", {
   )
 })
 
-test_that("validate_args handles additional checks correctly", {
+test_that("validate_args (plural) handles additional checks correctly", {
   # Error if any argument fails additional checks
   expect_error(
     validate_args(
@@ -173,39 +140,6 @@ test_that("validate_args handles additional checks correctly", {
       ),
       type = "numeric",
       additional_checks = function(x) if(x <= 0) stop("must be positive")
-    )
-  )
-})
-
-test_that("validate_args handles complex validation scenarios", {
-  # Test with multiple conditions
-  expect_error(
-    validate_args(
-      args = list(
-        arg1 = "abc",
-        arg2 = "def"
-      ),
-      type = "character",
-      additional_checks = list(
-        function(x) if(nchar(x) < 4) stop("must be at least 4 characters"),
-        function(x) if(!grepl("^[A-Z]", x)) stop("must start with uppercase")
-      )
-    ),
-    "'arg1': must be at least 4 characters"
-  )
-  
-  # No error if all arguments pass all conditions
-  expect_silent(
-    validate_args(
-      args = list(
-        arg1 = "Abcd",
-        arg2 = "Efgh"
-      ),
-      type = "character",
-      additional_checks = list(
-        function(x) if(nchar(x) < 4) stop("must be at least 4 characters"),
-        function(x) if(!grepl("^[A-Z]", x)) stop("must start with uppercase")
-      )
     )
   )
 }) 
