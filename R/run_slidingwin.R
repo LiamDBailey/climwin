@@ -118,6 +118,7 @@
 #' @importFrom future plan
 #' @importFrom future multisession
 #' @importFrom progress progress_bar
+#' @importFrom progressr progressor with_progress
 #' @export
 run_slidingwin <- function(range,
                            climate_data,
@@ -216,12 +217,24 @@ run_slidingwin <- function(range,
   total_combinations <- nrow(range_combinations)
 
   if (parallel) {
-    result_mat <- future.apply::future_vapply(
-      seq_len(total_combinations),
-      process_window,
-      numeric(3L),
-      future.seed = TRUE
-    )
+    if (progress && interactive()) {
+      result_mat <- progressr::with_progress({
+        p <- progressr::progressor(steps = total_combinations)
+        future.apply::future_vapply(
+          seq_len(total_combinations),
+          function(i) { result <- process_window(i); p(); result },
+          numeric(3L),
+          future.seed = TRUE
+        )
+      })
+    } else {
+      result_mat <- future.apply::future_vapply(
+        seq_len(total_combinations),
+        process_window,
+        numeric(3L),
+        future.seed = TRUE
+      )
+    }
   } else {
     if (progress && interactive()) {
       pb <- progress::progress_bar$new(
