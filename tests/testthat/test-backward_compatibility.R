@@ -650,9 +650,6 @@ test_that("old_slidingwin with cohort matches run_slidingwin with cohort", {
 
 test_that("old_slidingwin, run_slidingwin, and slidingwin all agree (absolute, lin)", {
 
-  skip_if(!exists("slidingwin", mode = "function", inherits = TRUE),
-          "slidingwin (CRAN climwin) not available")
-
   Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
   Mass    <- read.csv(system.file("Mass.csv",        package = "climwin"))
 
