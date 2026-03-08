@@ -17,11 +17,11 @@
 #'                         climate_data = Climate, 
 #'                         bio_data = Mass,
 #'                         basemodel = lm(Mass ~ climate, data = bio_data))
-#' plot_slidingwin(results)
+#' plot_delta(results)
 #'
 #' @export
 #' @import ggplot2
-plot_delta <- function(dataset) {
+plot_delta <- function(dataset, smooth = FALSE) {
   
   dataset <- dataset@dataset
   
@@ -31,17 +31,17 @@ plot_delta <- function(dataset) {
   
   # Create the heatmap
   p <- ggplot(dataset, aes(x = Start_Day, y = End_Day, z = Delta_AIC)) +
-    geom_tile(aes(fill = Delta_AIC)) +
+    geom_raster(aes(fill = Delta_AIC), interpolate = smooth) +
     geom_abline(slope = 1, intercept = 0, linewidth = 0.5) +
     labs(title = expression(paste(Delta, "AICc (compared to null model)")),
          y = "Window open", x = "Window close") +
     coord_cartesian(expand = FALSE) + 
     scale_fill_gradientn(colours = c("red", "yellow", "blue")) +
-    theme_climwin() +
+    # theme_climwin() +
+    theme_classic() + 
     theme(legend.position = c(0.85, 0.325),
           legend.title = element_blank(),
-          legend.text.position = "left",
-          legend.text = element_text(size = rel(3)))
+          legend.text.position = "left")
   
   return(p)
   
