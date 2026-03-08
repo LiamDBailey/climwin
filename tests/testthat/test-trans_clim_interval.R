@@ -5,7 +5,10 @@ make_weekly_clim <- function() {
     seq.Date(as.Date("2020-01-01"), by = "day", length.out = 28),
     "%d/%m/%Y"
   )
-  data.frame(Date = dates, Temp = rep(1:4, each = 7))
+  data.frame(Date = dates, Temp = c(0, 0, 0, 1, 2, 2, 2,
+                                    1, 1, 1, 2, 3, 3, 3,
+                                    2, 2, 2, 3, 4, 4, 4,
+                                    3, 3, 3, 4, 5, 5, 5))
 }
 
 # Each month has different temp
@@ -15,9 +18,11 @@ make_monthly_clim <- function() {
   feb <- seq.Date(as.Date("2020-02-01"), by = "day", length.out = 10)
   data.frame(
     Date = format(c(jan, feb), "%d/%m/%Y"),
-    Temp = c(rep(1, 10), rep(2, 10)),
+    Temp = c(0, 0, 0, 0, 0, 2, 2, 2, 2, 2,
+             1, 1, 1, 1, 1, 3, 3, 3, 3, 3),
     ## We add two climate vars. Rain is ignored when just calling Temp
-    Rain = c(rep(3, 10), rep(6, 10))
+    Rain = c(2, 2, 2, 2, 2, 4, 4, 4, 4, 4,
+             5, 5, 5, 5, 5, 7, 7, 7, 7, 7)
   )
 }
 
