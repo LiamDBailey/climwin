@@ -18,6 +18,8 @@
 #' @param binary Logical. If \code{TRUE}, retained values are set to 1.
 #'   If \code{FALSE} (default), retained values keep their original
 #'   \code{xvar} value.
+#' @param .name Character string. Name of the output column added to
+#'   \code{climate_data}. Defaults to \code{"threshold"}.
 #'
 #' @details
 #' The threshold rules are applied as follows:
@@ -30,8 +32,8 @@
 #'     (i.e. \eqn{lower < x < upper}) are retained; all others become 0.}
 #' }
 #'
-#' @return The original \code{climate_data} with an additional column
-#'   \code{threshold} containing the thresholded values.
+#' @return The original \code{climate_data} with an additional column named
+#'   \code{.name} containing the thresholded values.
 #'
 #' @examples
 #' Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
@@ -51,13 +53,15 @@
 #'
 #' @export
 append_clim_threshold <- function(climate_data,
-                                   xvar = "Temp",
-                                   upper = NULL,
-                                   lower = NULL,
-                                   binary = FALSE) {
+                                  xvar = "Temp",
+                                  upper = NULL,
+                                  lower = NULL,
+                                  binary = FALSE,
+                                  .name = "threshold") {
 
   ### ARGUMENT CHECKS ####
-  validate_arg("climate_data", climate_data, required = TRUE, type = "data.frame",
+  validate_arg("climate_data", climate_data, required = TRUE,
+               type = "data.frame",
                additional_checks = function(x) {
                  if (nrow(x) == 0) stop("must contain at least 1 row")
                  if (!xvar %in% names(x))
@@ -116,6 +120,6 @@ append_clim_threshold <- function(climate_data,
     }
   }
 
-  climate_data$threshold <- threshold
+  climate_data[[.name]] <- threshold
   return(climate_data)
 }
