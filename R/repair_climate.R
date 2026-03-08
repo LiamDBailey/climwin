@@ -86,15 +86,14 @@ repair_climate <- function(climate_data, cdate, xvar, method = imputeTS::na_inte
     }
     
     # Combine original data with missing rows
-    all_data <- dplyr::bind_rows(climate_data, missing_rows)
+    all_data <- dplyr::bind_rows(climate_data_converted, missing_rows)
     
     # Sort by date
     all_data <- all_data[order(all_data[[cdate]]), ]
     
   } else {
     # No missing dates, just ensure proper format
-    all_data <- climate_data
-    all_data[[cdate]] <- format(converted_dates, format = "%d/%m/%Y")
+    all_data <- climate_data_converted
   }
   
   ### REPAIR MISSING VALUES ####
