@@ -43,14 +43,12 @@ repair_climate <- function(climate_data, cdate, xvar, method = imputeTS::na_inte
     stop(sprintf("Columns not found in climate_data: %s", paste(missing_cols, collapse = ", ")))
   }
   
-  # Validate cdate column is character in DD/MM/YYYY format
-  climate_dates <- climate_data[[cdate]]
-  if (!is.character(climate_dates)) {
-    stop(sprintf("Column '%s' in climate_data must be a character in format 'DD/MM/YYYY'", cdate))
-  }
+  # Convert cdate to be a Date object. This is needed because we have to create date sequences and set differences
+  climate_data_converted <- climate_data
+  climate_data_converted[[cdate]] <- as.Date(climate_data_converted[[cdate]], format = "%d/%m/%Y")
+  converted_dates <- climate_data_converted[[cdate]]
   
-  # Convert to Date objects for processing
-  converted_dates <- as.Date(climate_dates, format = "%d/%m/%Y")
+  # If converting to date throws all NAs, then it wasn't correct format!
   if (all(is.na(converted_dates))) {
     stop(sprintf("Column '%s' in climate_data must be in format 'DD/MM/YYYY'", cdate))
   }
@@ -78,7 +76,7 @@ repair_climate <- function(climate_data, cdate, xvar, method = imputeTS::na_inte
     
     # Create rows for missing dates with NA values
     missing_rows <- data.frame(
-      Date = format(missing_dates, format = "%d/%m/%Y"),
+      Date = missing_dates,
       stringsAsFactors = FALSE
     )
     
@@ -90,14 +88,8 @@ repair_climate <- function(climate_data, cdate, xvar, method = imputeTS::na_inte
     # Combine original data with missing rows
     all_data <- dplyr::bind_rows(climate_data, missing_rows)
     
-    # Convert dates back to Date objects for proper sorting
-    all_data[[cdate]] <- as.Date(all_data[[cdate]], format = "%d/%m/%Y")
-    
     # Sort by date
     all_data <- all_data[order(all_data[[cdate]]), ]
-    
-    # Convert dates back to DD/MM/YYYY format
-    all_data[[cdate]] <- format(all_data[[cdate]], format = "%d/%m/%Y")
     
   } else {
     # No missing dates, just ensure proper format
