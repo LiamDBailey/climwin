@@ -1,8 +1,8 @@
-test_that("cdate column must be character in DD/MM/YYYY format", {
+test_that("cdate column fails with different date format DD/MM/YYYY format", {
   
   ## Currently don't accept date format (could change in future)
   climate_data <- data.frame(
-    Date = as.Date(c("01/01/1979", "02/01/1979", "03/01/1979", "04/01/1979", "05/01/1979"), format = "%d/%m/%Y"),
+    Date = c("1979/01/01", "1979/02/01", "1979/03/01", "1979/04/01", "1979/05/01"),
     Temp = c(10, 15, 20, 10, 12)
   )
   
@@ -18,7 +18,7 @@ test_that("cdate column must be character in DD/MM/YYYY format", {
       bio_data = bio_data,
       range = 0:2
     ),
-    "Column 'Date' in climate_data must be a character in format 'DD/MM/YYYY'"
+    "Column 'Date' in climate_data must be in format 'DD/MM/YYYY'"
   )
   
   # If character string, only accept dd/mm/yyyy (could change in future)

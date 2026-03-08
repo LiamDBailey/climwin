@@ -218,6 +218,7 @@ run_slidingwin <- function(range,
 
   if (parallel) {
     if (progress && interactive()) {
+      message("Initiating parallel processing...")
       result_mat <- progressr::with_progress({
         p <- progressr::progressor(steps = total_combinations)
         future.apply::future_vapply(
