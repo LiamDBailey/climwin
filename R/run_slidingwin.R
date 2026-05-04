@@ -135,7 +135,8 @@ run_slidingwin <- function(range,
                            cinterval = "day",
                            parallel = FALSE,
                            progress = TRUE,
-                           .basemodelIsCall = FALSE) {
+                           .basemodelIsCall = FALSE,
+                           .processed_data = NULL) {
   
   ### ARGUMENT CHECKS ####
   # Ensure future and furrr are loaded if parallel is TRUE
@@ -155,25 +156,42 @@ run_slidingwin <- function(range,
   validate_arg("fn", fn, required = FALSE, type = "function")
   
   ### PROCESS DATA ####
-  processed_data <- process_data(
-    climate_data = climate_data,
-    bio_data = bio_data,
-    range = range,
-    cdate = cdate,
-    bdate = bdate,
-    xvar = xvar,
-    spatial = spatial,
-    type = type,
-    refday = refday,
-    cohort = cohort,
-    cinterval = cinterval
-  )
-  
-  # Extract processed data
-  bio_data        <- processed_data$bio_data
-  bio_int_ranges  <- processed_data$bio_int_ranges
-  bio_data_row    <- processed_data$bio_data_row
-  bio_xvar_ranges <- processed_data$bio_xvar_ranges
+  if (!is.null(.processed_data)) {
+    # Reuse bio-side data from a pre-computed process_data call (e.g. run_randwin).
+    # Only bio_xvar_ranges needs rebuilding from the new (shuffled) climate values.
+    bio_data       <- .processed_data$bio_data
+    bio_int_ranges <- .processed_data$bio_int_ranges
+    bio_data_row   <- .processed_data$bio_data_row
+
+    spatial_col_internal <- .processed_data$spatial_col
+    if (!spatial_col_internal %in% names(climate_data)) {
+      climate_data[[spatial_col_internal]] <- names(bio_int_ranges)[1L]
+    }
+
+    climate_data_list <- split(climate_data[[xvar]], climate_data[[spatial_col_internal]])
+    bio_xvar_ranges <- do.call(cbind, lapply(names(bio_int_ranges), function(site) {
+      idx <- bio_int_ranges[[site]]
+      matrix(climate_data_list[[site]][idx], nrow = nrow(idx), ncol = ncol(idx))
+    }))
+  } else {
+    processed_data <- process_data(
+      climate_data = climate_data,
+      bio_data = bio_data,
+      range = range,
+      cdate = cdate,
+      bdate = bdate,
+      xvar = xvar,
+      spatial = spatial,
+      type = type,
+      refday = refday,
+      cohort = cohort,
+      cinterval = cinterval
+    )
+    bio_data        <- processed_data$bio_data
+    bio_int_ranges  <- processed_data$bio_int_ranges
+    bio_data_row    <- processed_data$bio_data_row
+    bio_xvar_ranges <- processed_data$bio_xvar_ranges
+  }
 
   # Pre-compute row ordering once (spatial joins may reorder columns)
   row_order <- order(bio_data_row)
