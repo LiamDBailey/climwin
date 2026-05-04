@@ -4,10 +4,15 @@ author: "Liam D. Bailey and Martijn van de Pol"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-%\VignetteIndexEntry{climwin}
-%\VignetteEngine{knitr::rmarkdown}
-%\VignetteEncoding{UTF-8}
+  %\VignetteIndexEntry{climwin}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
+
+```{r}
+devtools::load_all()
+```
+
 
 The newest release of `climwin` is built to ensure maximum backwards compatibility with older versions of the package (<= v1.2.33). This vignette describes some common tasks in climwin and shows how they can be carried out using the new syntax.
 
@@ -55,7 +60,7 @@ new_output <- run_slidingwin(xvar = "Temp",
                              cdate = "Date",
                              bdate = "Date", 
                              bio_data = Mass,
-                             basemodel = lm(Mass ~ climate, data = bio_data),
+                             baseline = lm(Mass ~ climate, data = bio_data),
                              range = 0:100,
                              type = "absolute", refday = "20/05/2020",
                              fn = mean, cinterval = "day",
@@ -69,8 +74,17 @@ plotdelta(old_output[[1]]$Dataset)
 ```
 
 ```{r}
+head(old_output[[1]]$Dataset, 10)
+```
+
+```{r}
 plot_delta(new_output)
 ```
+
+```{r}
+head(getDataset(new_output), 10)
+```
+
 
 ************************************
 
@@ -98,7 +112,7 @@ new_output <- run_slidingwin(range = 0:150, type = "absolute", refday = "20/05/2
                              xvar = "Temp", fn = mean,
                              cinterval = "day",
                              bio_data = Mass,
-                             basemodel = lm(Mass ~ poly(climate, 3), data = bio_data))
+                             baseline = lm(Mass ~ poly(climate, 3), data = bio_data))
 ```
 
 ```{r}
@@ -108,7 +122,6 @@ plotdelta(old_output[[1]]$Dataset)
 ```{r}
 head(old_output[[1]]$Dataset, 10)
 ```
-
 
 ```{r}
 plot_delta(new_output)
@@ -152,7 +165,7 @@ new_output <- run_slidingwin(range = 0:70, type = "absolute", refday = "20/05/20
                              xvar = "Temp", fn = mean,
                              cinterval = "week",
                              bio_data = Mass,
-                             basemodel = lm(Mass ~ climate, data = bio_data))
+                             baseline = lm(Mass ~ climate, data = bio_data))
 ```
 
 ```{r}
@@ -214,7 +227,7 @@ new_output <- run_slidingwin(range = 0:12, type = "absolute", refday = "20/05/20
                              xvar = "threshold", fn = sum,
                              cinterval = "month",
                              bio_data = Mass,
-                             basemodel = lm(Mass ~ climate, data = bio_data))
+                             baseline = lm(Mass ~ climate, data = bio_data))
 ```
 
 ```{r}
@@ -284,7 +297,7 @@ run_slidingwin(range = 0:150, type = "absolute", refday = "20/05/2020",
                xvar = "Temp", fn = mean,
                cinterval = "day",
                bio_data = Mass,
-               basemodel = lm(Mass ~ climate, data = bio_data))
+               baseline = lm(Mass ~ climate, data = bio_data))
 ```
 
 ```{r}
@@ -297,7 +310,7 @@ new_output <- run_slidingwin(range = 0:150, type = "absolute", refday = "20/05/2
                              xvar = "Temp", fn = mean,
                              cinterval = "day",
                              bio_data = Mass,
-                             basemodel = lm(Mass ~ climate, data = bio_data))
+                             baseline = lm(Mass ~ climate, data = bio_data))
 ```
 
 ```{r}
