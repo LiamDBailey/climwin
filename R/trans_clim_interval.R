@@ -41,7 +41,7 @@
 #'   columns with aggregated values.
 #'
 #' @examples
-#' Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+#' data("MassClimate")
 #'
 #' # Aggregate to monthly means
 #' Climate_monthly <- trans_clim_interval(Climate, cinterval = "month")

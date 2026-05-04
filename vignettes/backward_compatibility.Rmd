@@ -40,8 +40,8 @@ A standard sliding window analysis in the old `slidingwin` function can be trans
 **'climate' variable in baseline model**
   
 ```{r}
-Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
-MassClimate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+data("Mass")
+data("MassClimate")
 ```
 
 **Old syntax**
@@ -84,8 +84,8 @@ plot_delta(new_output)
 ### Quadratic or cubic effect of climate
 
 ```{r}
-Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
-MassClimate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+data("Mass")
+data("MassClimate")
 ```
 
 **Old syntax**
@@ -129,8 +129,8 @@ plot_delta(new_output)
 ## Monthly or weekly data
 
 ```{r}
-Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
-MassClimate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+data("Mass")
+data("MassClimate")
 ```
 
 **Old syntax**
@@ -176,8 +176,8 @@ plot_delta(new_output)
 ## Thresholds & growing degree days
 
 ```{r}
-Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
-MassClimate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+data("Mass")
+data("MassClimate")
 ```
 
 **Old syntax**
@@ -231,8 +231,8 @@ plot_delta(new_output)
 ## Incomplete climate data
 
 ```{r}
-Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
-MassClimate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+data("Mass")
+data("MassClimate")
 MassClimate_gaps <- MassClimate |> 
   mutate(Date = lubridate::dmy(Date)) |> 
   ## Remove every record in 1st of the month!

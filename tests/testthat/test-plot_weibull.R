@@ -1,11 +1,11 @@
 test_that("plot_weibull returns a ggplot object", {
   # Use actual run_weightwin output with small range for fast testing
-  Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
-  Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
+  data("MassClimate")
+  data("Mass")
   
   results <- run_weightwin(range = 0:2, 
                           bio_data = Mass,
-                          climate_data = Climate,
+                          climate_data = MassClimate,
                           cdate = "Date", bdate = "Date",
                           xvar = "Temp",
                           basemodel = lm(Mass ~ climate, data = bio_data),
@@ -18,12 +18,12 @@ test_that("plot_weibull returns a ggplot object", {
 
 test_that("plot_weibull can take inputs from run_weightwin", {
   # Use actual run_weightwin output with small range for fast testing
-  Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
-  Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
+  data("MassClimate")
+  data("Mass")
   
   results <- run_weightwin(range = 0:2, 
                           bio_data = Mass,
-                          climate_data = Climate,
+                          climate_data = MassClimate,
                           cdate = "Date", bdate = "Date",
                           xvar = "Temp",
                           basemodel = lm(Mass ~ climate, data = bio_data),
@@ -40,13 +40,13 @@ test_that("plot_weibull can take inputs from run_weightwin", {
 
 test_that("plot_weibull works with different parameter values", {
   # Use actual run_weightwin output with small range for fast testing
-  Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
-  Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
+  data("MassClimate")
+  data("Mass")
   
   # Test with different initial parameters
   results1 <- run_weightwin(range = 0:2, 
                            bio_data = Mass,
-                           climate_data = Climate,
+                           climate_data = MassClimate,
                            cdate = "Date", bdate = "Date",
                            xvar = "Temp",
                            basemodel = lm(Mass ~ climate, data = bio_data),
@@ -54,7 +54,7 @@ test_that("plot_weibull works with different parameter values", {
   
   results2 <- run_weightwin(range = 0:2, 
                            bio_data = Mass,
-                           climate_data = Climate,
+                           climate_data = MassClimate,
                            cdate = "Date", bdate = "Date",
                            xvar = "Temp",
                            basemodel = lm(Mass ~ climate, data = bio_data),

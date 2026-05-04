@@ -1,10 +1,10 @@
 test_that("plot_slidingwin returns a patchwork object with multiple plots", {
   # Use actual run_slidingwin output with small range for fast testing
-  Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
-  Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
+  data("MassClimate")
+  data("Mass")
   
   results <- run_slidingwin(range = 0:2, 
-                           climate_data = Climate, 
+                           climate_data = MassClimate, 
                            bio_data = Mass,
                            basemodel = lm(Mass ~ climate, data = bio_data))
   
@@ -19,11 +19,11 @@ test_that("plot_slidingwin returns a patchwork object with multiple plots", {
 
 test_that("plot_slidingwin can handle different plot combinations", {
   # Use actual run_slidingwin output with small range for fast testing
-  Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
-  Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
+  data("MassClimate")
+  data("Mass")
   
   results <- run_slidingwin(range = 0:2, 
-                           climate_data = Climate, 
+                           climate_data = MassClimate, 
                            bio_data = Mass,
                            basemodel = lm(Mass ~ climate, data = bio_data))
   
@@ -40,11 +40,11 @@ test_that("plot_slidingwin can handle different plot combinations", {
 
 test_that("plot_slidingwin validates plot types correctly", {
   # Use actual run_slidingwin output with small range for fast testing
-  Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
-  Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
+  data("MassClimate")
+  data("Mass")
   
   results <- run_slidingwin(range = 0:2, 
-                           climate_data = Climate, 
+                           climate_data = MassClimate, 
                            bio_data = Mass,
                            basemodel = lm(Mass ~ climate, data = bio_data))
   

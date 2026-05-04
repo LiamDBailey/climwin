@@ -21,10 +21,10 @@ for all climate windows that fall within a specified cumulative weight threshold
 }
 \examples{
 # Example usage:
-Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
-Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
+data("MassClimate")
+data("Mass")
 results <- run_slidingwin(range = 0:100, 
-                        climate_data = Climate, 
+                        climate_data = MassClimate, 
                         bio_data = Mass,
                         basemodel = lm(Mass ~ climate, data = bio_data))
 plot_window(results, cw1 = 0.95)

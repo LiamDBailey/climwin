@@ -28,10 +28,10 @@ Allows us to have generic print and plot methods.
 }
 \examples{
 ## Create a climwin object from `run_weightwin`
-Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
-Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
+data("MassClimate")
+data("Mass")
 results <- run_slidingwin(range = 0:2, 
-                        climate_data = Climate, 
+                        climate_data = MassClimate, 
                         bio_data = Mass,
                         basemodel = lm(Mass ~ climate, data = bio_data))
 

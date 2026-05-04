@@ -1,11 +1,11 @@
 test_that("plot_weightwin returns a patchwork object with multiple plots", {
   # Use actual run_weightwin output with small range for fast testing
-  Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
-  Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
+  data("MassClimate")
+  data("Mass")
   
   results <- run_weightwin(range = 0:2, 
                           bio_data = Mass,
-                          climate_data = Climate,
+                          climate_data = MassClimate,
                           cdate = "Date", bdate = "Date",
                           xvar = "Temp",
                           basemodel = lm(Mass ~ climate, data = bio_data),
@@ -22,12 +22,12 @@ test_that("plot_weightwin returns a patchwork object with multiple plots", {
 
 test_that("plot_weightwin can handle different plot combinations", {
   # Use actual run_weightwin output with small range for fast testing
-  Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
-  Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
+  data("MassClimate")
+  data("Mass")
   
   results <- run_weightwin(range = 0:2, 
                           bio_data = Mass,
-                          climate_data = Climate,
+                          climate_data = MassClimate,
                           cdate = "Date", bdate = "Date",
                           xvar = "Temp",
                           basemodel = lm(Mass ~ climate, data = bio_data),
@@ -46,12 +46,12 @@ test_that("plot_weightwin can handle different plot combinations", {
 
 test_that("plot_weightwin validates plot types correctly", {
   # Use actual run_weightwin output with small range for fast testing
-  Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
-  Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
+  data("MassClimate")
+  data("Mass")
   
   results <- run_weightwin(range = 0:2, 
                           bio_data = Mass,
-                          climate_data = Climate,
+                          climate_data = MassClimate,
                           cdate = "Date", bdate = "Date",
                           xvar = "Temp",
                           basemodel = lm(Mass ~ climate, data = bio_data),
@@ -66,12 +66,12 @@ test_that("plot_weightwin validates plot types correctly", {
 
 test_that("plot_weightwin can take inputs from run_weightwin", {
   # Use actual run_weightwin output with small range for fast testing
-  Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
-  Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
+  data("MassClimate")
+  data("Mass")
   
   results <- run_weightwin(range = 0:2, 
                           bio_data = Mass,
-                          climate_data = Climate,
+                          climate_data = MassClimate,
                           cdate = "Date", bdate = "Date",
                           xvar = "Temp",
                           basemodel = lm(Mass ~ climate, data = bio_data),

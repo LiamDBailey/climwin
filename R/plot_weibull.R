@@ -11,11 +11,11 @@
 #'
 #' @examples
 #' # Example usage:
-#' Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
-#' Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
+#' data("MassClimate")
+#' data("Mass")
 #' results <- run_weightwin(range = 0:100, 
 #'                         bio_data = Mass,
-#'                         climate_data = Climate,
+#'                         climate_data = MassClimate,
 #'                         cdate = "Date", bdate = "Date",
 #'                         xvar = "Temp",
 #'                         basemodel = lm(Mass ~ climate, data = bio_data),

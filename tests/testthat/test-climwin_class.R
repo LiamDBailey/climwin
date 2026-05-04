@@ -1,10 +1,10 @@
 test_that("get* methods from climwin work as expected...", {
   
   ## Create a climwin object from `run_slidingwin`
-  Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
-  Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
+  data("MassClimate")
+  data("Mass")
   results <- run_slidingwin(range = 0:2, 
-                         climate_data = Climate, 
+                         climate_data = MassClimate, 
                          bio_data = Mass,
                          basemodel = lm(Mass ~ climate, data = bio_data))
   
@@ -18,10 +18,10 @@ test_that("get* methods from climwin work as expected...", {
 test_that("Generic plot method should return patchwork...", {
   
   ## Create a climwin object from `run_slidingwin`
-  Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
-  Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
+  data("MassClimate")
+  data("Mass")
   results <- run_slidingwin(range = 0:2, 
-                            climate_data = Climate, 
+                            climate_data = MassClimate, 
                             bio_data = Mass,
                             basemodel = lm(Mass ~ climate, data = bio_data))
   

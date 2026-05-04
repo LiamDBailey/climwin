@@ -475,6 +475,10 @@ slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
                        upper = NA, lower = NA, binary = FALSE, centre = list(NULL, "both"),
                        spatial = NULL, cohort = NULL){
   
+  if (!require("reshape", quietly = TRUE)){
+    stop("Install package 'reshape' to run old code.")
+  }
+  
   ### Implementing scientific notation can cause problems because years
   ### are converted to characters in scientific notation (e.g. 2000 = "2e+3")
   ### Check options and convert scipen TEMPORARILY if needed.

@@ -60,7 +60,7 @@ Week boundaries are determined from the earliest date in
 later, and so on.
 }
 \examples{
-Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+data("MassClimate")
 
 # Aggregate to monthly means
 Climate_monthly <- trans_clim_interval(Climate, cinterval = "month")

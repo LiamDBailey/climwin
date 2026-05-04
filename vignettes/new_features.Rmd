@@ -14,15 +14,15 @@ vignette: >
 ## Performance
 
 ```{r}
-bench <- read.csv(system.file("bench_results.csv", package = "climwin"))
+data("bench_results")
 ```
 
 ```{r}
 ggplot() +
-  geom_line(data = bench,
+  geom_line(data = bench_results,
             aes(x = window_size, y = median, colour = expression),
             linewidth = 1) +
-  geom_point(data = bench,
+  geom_point(data = bench_results,
             aes(x = window_size, y = median, colour = expression),
             shape = 21) +
   theme_classic()
@@ -34,8 +34,8 @@ ggplot() +
 ## Non-linear (quadratic or cubic) climate effects
 
 ```{r}
-Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
-MassClimate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+data("Mass")
+data("MassClimate")
 ```
 
 **Old syntax**
@@ -79,8 +79,8 @@ plot_delta(new_output)
 ## Monthly or weekly data
 
 ```{r}
-Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
-MassClimate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+data("Mass")
+data("MassClimate")
 ```
 
 **Old syntax**
@@ -126,8 +126,8 @@ plot_delta(new_output)
 ## Thresholds & growing degree days
 
 ```{r}
-Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
-MassClimate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+data("Mass")
+data("MassClimate")
 ```
 
 **Old syntax**
@@ -181,8 +181,8 @@ plot_delta(new_output)
 ## Incomplete climate data
 
 ```{r}
-Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
-MassClimate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+data("Mass")
+data("MassClimate")
 MassClimate_gaps <- MassClimate |> 
   mutate(Date = lubridate::dmy(Date)) |> 
   ## Remove every record in 1st of the month!

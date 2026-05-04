@@ -50,10 +50,10 @@ by evaluating \code{dfun} on a normalised [0, 1] domain that spans
 \code{range}, then applying the resulting weights.
 }
 \examples{
-Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
-Mass    <- read.csv(system.file("Mass.csv",        package = "climwin"))
+data("MassClimate")
+data("Mass")
 
-out <- fit_weights(range = 0:100, bio_data = Mass, climate_data = Climate,
+out <- fit_weights(range = 0:100, bio_data = Mass, climate_data = MassClimate,
                    cdate = "Date", bdate = "Date", xvar = "Temp",
                    dfun = dweibull, par = c(2, 0.5))
 

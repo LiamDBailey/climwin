@@ -36,10 +36,10 @@
 #'
 #' @examples
 #' # Example usage:
-#' Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
-#' Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
+#' data("MassClimate")
+#' data("Mass")
 #' results <- run_slidingwin(range = 0:2, 
-#'                         climate_data = Climate, 
+#'                         climate_data = MassClimate, 
 #'                         bio_data = Mass,
 #'                         basemodel = lm(Mass ~ climate, data = bio_data))
 #'                         
@@ -70,8 +70,8 @@
 #'
 #'# Load data.
 #'
-#' OffspringClimate <- read.csv(system.file("OffspringClimate.csv", package = "climwin"))
-#' Offspring <- read.csv(system.file("Offspring.csv", package = "climwin"))
+#' data("OffspringClimate")
+#' data("Offspring")
 #'
 #'# Test both linear and quadratic functions with climate variable temperature
 #'
@@ -94,8 +94,8 @@
 #'  
 #'# Load data.
 #'  
-#' Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
-#' Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
+#' data("MassClimate")
+#' data("Mass")
 #'  
 #'# Test an absolute window, starting 20 May (refday = c(20, 5))
 #'# Test for climate windows between 100 and 0 days ago (range = c(100, 0))
@@ -105,7 +105,7 @@
 #'  
 #'MassWin <- run_slidingwin(
 #'                      range = 0:100,
-#'                      climate_data = Climate, bio_data = Mass,
+#'                      climate_data = MassClimate, bio_data = Mass,
 #'                      basemodel = lm(Mass ~ climate, data = bio_data),
 #'                      xvar = "Temp",
 #'                      cdate = "Date", bdate = "Date", 

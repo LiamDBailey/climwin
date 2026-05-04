@@ -111,11 +111,11 @@ The following arguments are passed to \code{\link{run_weightwin}} when
 }
 
 \examples{
-Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
-Mass    <- read.csv(system.file("Mass.csv",        package = "climwin"))
+data("MassClimate")
+data("Mass")
 null_results <- run_randwin(repeats = 100,
                             range = 0:50,
-                            climate_data = Climate,
+                            climate_data = MassClimate,
                             bio_data = Mass,
                             basemodel = lm(Mass ~ climate, data = bio_data))
 

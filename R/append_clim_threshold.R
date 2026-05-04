@@ -36,19 +36,19 @@
 #'   \code{.name} containing the thresholded values.
 #'
 #' @examples
-#' Climate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
+#' data("MassClimate")
 #'
 #' # Continuous: keep temperatures >= 10, zero out the rest
-#' Climate_upper <- append_clim_threshold(Climate, upper = 10, binary = FALSE)
+#' Climate_upper <- append_clim_threshold(MassClimate, upper = 10, binary = FALSE)
 #'
 #' # Binary indicator: 1 where temperature >= 10, else 0
-#' Climate_bin <- append_clim_threshold(Climate, upper = 10, binary = TRUE)
+#' Climate_bin <- append_clim_threshold(MassClimate, upper = 10, binary = TRUE)
 #'
 #' # Keep only temperatures strictly below 5
-#' Climate_lower <- append_clim_threshold(Climate, lower = 5, binary = FALSE)
+#' Climate_lower <- append_clim_threshold(MassClimate, lower = 5, binary = FALSE)
 #'
 #' # Keep temperatures strictly between 5 and 15
-#' Climate_range <- append_clim_threshold(Climate, lower = 5, upper = 15,
+#' Climate_range <- append_clim_threshold(MassClimate, lower = 5, upper = 15,
 #'                                        binary = FALSE)
 #'
 #' @export
