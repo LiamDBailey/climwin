@@ -64,6 +64,8 @@
 #'                             basemodel = lm(Mass ~ climate, data = bio_data))
 #'
 #' @importFrom progress progress_bar
+#' @importFrom future.apply future_lapply
+#' @importFrom progressr progressor with_progress
 #' @export
 run_randwin <- function(repeats,
                         range,
@@ -127,61 +129,124 @@ run_randwin <- function(repeats,
                    stop(sprintf("must contain columns '%s' and '%s'", cdate, xvar))
                })
 
-  window_type <- match.arg(window_type, choices = c("slidingwin", "weightwin"))
-
-  # Initialize progress bar
-  if (progress && interactive()) {
-    pb_rand <- progress::progress_bar$new(
-      format = "Randomization [:bar] :current/:total (:percent) :elapsed",
-      total  = repeats,
-      clear  = FALSE,
-      width  = 60
-    )
+  if (parallel) {
+    if (!requireNamespace("future", quietly = TRUE))
+      stop("Package 'future' is required.")
+    if (!requireNamespace("future.apply", quietly = TRUE))
+      stop("Package 'future.apply' is required.")
+    future::plan(future::multisession)
   }
+
+  window_type <- match.arg(window_type, choices = c("slidingwin", "weightwin"))
 
   basemodel <- substitute(basemodel)
 
-  # Run randomization iterations
-  rand_results <- purrr::map(1:repeats, .f = function(i) {
+  # Pre-compute the bio-side of process_data once for the slidingwin path.
+  # Only bio_xvar_ranges changes between iterations (shuffled climate values);
+  # all date indices and bio data are constant.
+  base_processed <- if (window_type == "slidingwin") {
+    process_data(
+      climate_data = climate_data,
+      bio_data     = bio_data,
+      range        = range,
+      cdate        = cdate,
+      bdate        = bdate,
+      xvar         = xvar,
+      type         = type,
+      refday       = refday,
+      cinterval    = cinterval
+    )
+  } else {
+    NULL
+  }
 
-    # Shuffle the climate variable
-    climate_rand         <- climate_data
-    climate_rand[[xvar]] <- sample(climate_data[[xvar]])
+  # For the slidingwin parallel path, pre-compute objects that are constant
+  # across iterations so workers only receive pre-computed base R objects.
+  range_combinations <- if (window_type == "slidingwin") {
+    rc <- expand.grid(start_days = range, end_days = range)
+    rc[rc$end_days >= rc$start_days, ]
+  } else {
+    NULL
+  }
+
+  # Capture package functions so parallel workers can find them when the
+  # weightwin path is used (run_weightwin calls package internals).
+  .run_weightwin <- run_weightwin
+
+  # Core per-iteration function — returns one best-window data.frame row.
+  # The slidingwin path uses only base R to stay portable across worker
+  # processes regardless of how the package was loaded.
+  run_one <- function(i) {
+    clim_shuffled <- sample(climate_data[[xvar]])
 
     if (window_type == "slidingwin") {
+      # Rebuild bio_xvar_ranges from shuffled climate values only.
+      # Use 'bio_data' as the local name so eval(basemodel) resolves it
+      # correctly (the model call contains data = bio_data).
+      bio_data       <- base_processed$bio_data
+      bio_int_ranges <- base_processed$bio_int_ranges
+      bio_data_row   <- base_processed$bio_data_row
+      spatial_col    <- base_processed$spatial_col
 
-      sw_result <- run_slidingwin(
-        range            = range,
-        climate_data     = climate_rand,
-        bio_data         = bio_data,
-        basemodel        = basemodel,
-        cdate            = cdate,
-        bdate            = bdate,
-        xvar             = xvar,
-        fn               = fn,
-        type             = type,
-        refday           = refday,
-        cinterval        = cinterval,
-        parallel         = parallel,
-        progress         = FALSE,
-        .basemodelIsCall = TRUE
-      )
-
-      sw_result <- getDataset(sw_result)
-
-      if (nrow(sw_result) > 0) {
-        best_window           <- sw_result[1, , drop = FALSE]
-        best_window$Iteration <- i
+      # Mirror run_slidingwin fast path: split shuffled values by spatial group
+      clim_spatial <- if (spatial_col %in% names(climate_data)) {
+        climate_data[[spatial_col]]
       } else {
-        stop("Missing data")
+        rep(names(bio_int_ranges)[1L], length(clim_shuffled))
+      }
+      clim_rand_list  <- split(clim_shuffled, clim_spatial)
+      bio_xvar_ranges <- do.call(cbind, lapply(names(bio_int_ranges), function(site) {
+        idx <- bio_int_ranges[[site]]
+        matrix(clim_rand_list[[site]][idx], nrow = nrow(idx), ncol = ncol(idx))
+      }))
+
+      row_order   <- order(bio_data_row)
+      use_cumsum  <- identical(fn, mean) || identical(fn, sum)
+      xvar_cumsum <- if (use_cumsum) rbind(0, apply(bio_xvar_ranges, 2L, cumsum))
+
+      n_windows  <- nrow(range_combinations)
+      result_mat <- matrix(NA_real_, nrow = 3L, ncol = n_windows)
+      for (j in seq_len(n_windows)) {
+        s <- range_combinations$start_days[j] + 1L
+        e <- range_combinations$end_days[j]   + 1L
+        if (use_cumsum) {
+          col_sums <- xvar_cumsum[e + 1L, ] - xvar_cumsum[s, ]
+          bio_data$climate <- if (identical(fn, mean)) {
+            (col_sums / (e - s + 1L))[row_order]
+          } else {
+            col_sums[row_order]
+          }
+        } else {
+          bio_data$climate <- apply(
+            bio_xvar_ranges, 2L, function(x) fn(x[s:e])
+          )[row_order]
+        }
+        result_mat[, j] <- c(
+          s - 1L, e - 1L,
+          tryCatch(AIC(eval(basemodel)), error = function(e) NA_real_)
+        )
       }
 
-      result_row <- best_window
-
+      valid       <- !is.na(result_mat[3L, ])
+      best_j      <- if (any(valid)) which.min(result_mat[3L, ]) else NA_integer_
+      mod_weights <- rep(NA_real_, n_windows)
+      if (any(valid)) {
+        delta   <- result_mat[3L, ] - min(result_mat[3L, valid])
+        aw      <- exp(-0.5 * delta[valid])
+        mod_weights[valid] <- aw / sum(aw)
+      }
+      data.frame(
+        Iteration = i,
+        Start_Day = as.integer(result_mat[1L, best_j]),
+        End_Day   = as.integer(result_mat[2L, best_j]),
+        AIC       = result_mat[3L, best_j],
+        ModWeight = mod_weights[best_j]
+      )
     } else {
-
-      ww_result <- run_weightwin(
-        n                = 1,
+      climate_rand         <- climate_data
+      climate_rand[[xvar]] <- clim_shuffled
+      ww_result <- .run_weightwin(
+        n                = 1L,
         range            = range,
         bio_data         = bio_data,
         climate_data     = climate_rand,
@@ -203,19 +268,43 @@ run_randwin <- function(repeats,
         cinterval        = cinterval,
         .basemodelIsCall = TRUE
       )
-
-      best_row            <- ww_result@weightwin_summary[1, , drop = FALSE]
-      best_row$Iteration  <- i
-
-      result_row <- best_row
-
+      best_row           <- ww_result@weightwin_summary[1L, , drop = FALSE]
+      best_row$Iteration <- i
+      best_row
     }
+  }
 
-    if (progress && interactive()) pb_rand$tick()
-
-    return(result_row)
-
-  })
+  # Run iterations — parallel across repeats, or sequential with a progress bar
+  if (parallel) {
+    if (progress && interactive()) {
+      rand_results <- progressr::with_progress({
+        p <- progressr::progressor(steps = repeats)
+        future.apply::future_lapply(seq_len(repeats), function(i) {
+          result <- run_one(i)
+          p()
+          result
+        }, future.seed = TRUE)
+      })
+    } else {
+      rand_results <- future.apply::future_lapply(
+        seq_len(repeats), run_one, future.seed = TRUE
+      )
+    }
+  } else {
+    if (progress && interactive()) {
+      pb_rand <- progress::progress_bar$new(
+        format = "Randomization [:bar] :current/:total (:percent) :elapsed",
+        total  = repeats,
+        clear  = FALSE,
+        width  = 60
+      )
+    }
+    rand_results <- vector("list", repeats)
+    for (i in seq_len(repeats)) {
+      rand_results[[i]] <- run_one(i)
+      if (progress && interactive()) pb_rand$tick()
+    }
+  }
 
   # Combine all results
   final_results <- dplyr::bind_rows(rand_results)
