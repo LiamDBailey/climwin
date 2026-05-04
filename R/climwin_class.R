@@ -19,6 +19,7 @@
 #' ## Using 'plot' is the same as 'plot_slidingwin'
 #' plot(results, y = "Mass")
 #' 
+#' @export
 #' @import S7
 climwin <- S7::new_class("climwin", properties = list(
   dataset = class_data.frame,
@@ -44,16 +45,19 @@ S7::method(plot, climwin) <- function(x, ...) {
   plot_slidingwin(x, ...)
 }
 
+#' @export
 getDataset <- new_generic("getDataset", "x")
 S7::method(getDataset, climwin) <- function(x, ...) {
   x@dataset
 }
 
+#' @export
 getBestModel <- new_generic("getBestModel", "x")
 S7::method(getBestModel, climwin) <- function(x, ...) {
   x@bestModel$model
 }
 
+#' @export
 getBestModelData <- new_generic("getBestModelData", "x")
 S7::method(getBestModelData, climwin) <- function(x, ...) {
   x@bestModel$data
@@ -80,6 +84,7 @@ S7::method(getBestModelData, climwin) <- function(x, ...) {
 #' ## Using 'plot' is the same as 'plot_slidingwin'
 #' plot(results, y = "Mass")
 #' 
+#' @export
 #' @import S7
 climwin_weightwin <- S7::new_class("climwin_weightwin", properties = list(
   weightwin_summary = class_data.frame,
@@ -116,6 +121,7 @@ S7::method(getBestModelData, climwin_weightwin) <- function(x, n) {
   return(output[[n]]$bestModel$data)
 }
 
+#' @export
 getWeights <- new_generic("getWeights", "x")
 S7::method(getWeights, climwin_weightwin) <- function(x, n) {
   output <- x@weightwin_output

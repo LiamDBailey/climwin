@@ -81,8 +81,8 @@ validate_arg <- function(arg_name, arg_value, required = TRUE, type = NULL, addi
 #' # Validate multiple data frames
 #' validate_args(
 #'   args = list(
-#'     climate_data = climate_data,
-#'     bio_data = bio_data
+#'     climate_data = MassClimate,
+#'     bio_data = Mass
 #'   ),
 #'   required = TRUE,
 #'   type = "data.frame",

@@ -28,13 +28,6 @@ of each climate window and a null model.
 \description{
 Create a colour plot of model deltaAICc values.
 }
-\examples{
-# Plot deltaAICc estimates for climate windows in the Mass dataset
-
-data(MassOutput)
-
-plotdelta(dataset = MassOutput)
-}
 \author{
 Liam D. Bailey and Martijn van de Pol
 }

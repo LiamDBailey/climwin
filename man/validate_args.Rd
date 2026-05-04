@@ -28,8 +28,8 @@ multiple arguments need the same validation checks (e.g., multiple data frames).
 # Validate multiple data frames
 validate_args(
   args = list(
-    climate_data = climate_data,
-    bio_data = bio_data
+    climate_data = MassClimate,
+    bio_data = Mass
   ),
   required = TRUE,
   type = "data.frame",

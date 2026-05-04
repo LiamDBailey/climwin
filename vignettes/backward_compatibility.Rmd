@@ -4,56 +4,49 @@ author: "Liam D. Bailey and Martijn van de Pol"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{climwin}
+%\VignetteIndexEntry{climwin}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
----
+  ---
   
-The newest release of `climwin` is built to ensure maximum backwards compatibility with older versions of the package (<= v1.2.33). This vignette describes some common tasks in climwin and shows how they can be carried out using the new syntax.
+  The newest release of `climwin` is built to ensure maximum backwards compatibility with older versions of the package (<= v1.2.33). This vignette describes some common tasks in climwin and shows how they can be carried out using the new syntax.
   
-*PLEASE NOTE:* The current version of `climwin` includes the old code base for full backwards compatibility if needed; however, the outputs will not be fully compatible with new utility functions like plotting. These old functions are included to demonstrate backwards compatibility. We cannot guarantee that this old code base will be maintained in the future and encourage you to convert any code to use the new syntax.
+  *PLEASE NOTE:* The current version of `climwin` includes the old code base for full backwards compatibility if needed; however, the outputs will not be fully compatible with new utility functions like plotting. These old functions are included to demonstrate backwards compatibility. We cannot guarantee that this old code base will be maintained in the future and encourage you to convert any code to use the new syntax.
   
-************************************
-
-## General changes
-
-### Tidy function naming
-
-Where possible, function names now follow the [tidy design principles](https://design.tidyverse.org/function-names.html). Functions are always prefixed with a verb, and functions that start with the same verb should do similar things. For example, `plot_*` functions are all used to plot data while `run_*` functions are all used to run new analyses.
-
-### Modular pre/post processing steps
-
-In the previous `climwin` code base, functions included a lot of data processing and checks to allow for a single general use function (e.g. fill gaps in climate data, extract standard model statistics). This made the package harder to maintain and debug. It could also create annoying problems for users who would be forced to repeat whole analyses when separate processing steps failed. The new code base tries to isolate these tasks into stand-alone functions. We hope this more 'modular' code base is easier to maintain and work with.
+  ************************************
   
-## Sliding window analysis
-
-### Key differences
-
-A standard sliding window analysis in the old `slidingwin` function can be transplanted almost exactly in the newer `run_slidingwin` with a few exceptions:
-
-- Remove `func` argument. Model structure is now defined explicitly in `baseline` using the dummy variable 'climate'. A user can recreate a linear, quadratic, or cubic climatic effect in the model structure (e.g. `Mass ~ climate` or `Mass ~ poly(climate, 2)`), but can now also include more complex or sophisticated effects of climate, such as climate as a random effect.
-
-- Remove `cmissing` argument. Following the general goal to create modular pre/post-processing steps, climate gap filling should now be done *before* running sliding window analysis using function `repair_climate`.
-
-### Linear effect of climate
-
-**'climate' variable in baseline model**
+  ## General changes
   
-```{r}
-data("Mass")
-data("MassClimate")
-```
-
-**Old syntax**
-```{r}
+  ### Tidy function naming
+  
+  Where possible, function names now follow the [tidy design principles](https://design.tidyverse.org/function-names.html). Functions are always prefixed with a verb, and functions that start with the same verb should do similar things. For example, `plot_*` functions are all used to plot data while `run_*` functions are all used to run new analyses.
+  
+  ### Modular pre/post processing steps
+  
+  In the previous `climwin` code base, functions included a lot of data processing and checks to allow for a single general use function (e.g. fill gaps in climate data, extract standard model statistics). This made the package harder to maintain and debug. It could also create annoying problems for users who would be forced to repeat whole analyses when separate processing steps failed. The new code base tries to isolate these tasks into stand-alone functions. We hope this more 'modular' code base is easier to maintain and work with.
+  
+  ## Sliding window analysis
+  
+  ### Key differences
+  
+  A standard sliding window analysis in the old `slidingwin` function can be transplanted almost exactly in the newer `run_slidingwin` with a few exceptions:
+  
+  - Remove `func` argument. Model structure is now defined explicitly in `baseline` using the dummy variable 'climate'. A user can recreate a linear, quadratic, or cubic climatic effect in the model structure (e.g. `Mass ~ climate` or `Mass ~ poly(climate, 2)`), but can now also include more complex or sophisticated effects of climate, such as climate as a random effect.
+  
+  - Remove `cmissing` argument. Following the general goal to create modular pre/post-processing steps, climate gap filling should now be done *before* running sliding window analysis using function `repair_climate`.
+  
+  ### Basic example
+  
+  **Old syntax**
+  ```{r}
 old_output <- slidingwin(xvar = list(Temp = MassClimate$Temp),
-                         cdate = MassClimate$Date, 
-                         bdate = Mass$Date, 
-                         baseline = lm(Mass ~ 1, data = Mass),
-                         range = c(100, 0), 
-                         type = "absolute", refday = c(20, 5),
-                         stat = "mean", 
-                         func = c("lin"), cmissing = FALSE, cinterval = "day")
+cdate = MassClimate$Date, 
+bdate = Mass$Date, 
+baseline = lm(Mass ~ 1, data = Mass),
+range = c(100, 0), 
+type = "absolute", refday = c(20, 5),
+stat = "mean", 
+func = c("lin"), cmissing = FALSE, cinterval = "day")
 ```
 
 **New syntax**
@@ -81,17 +74,35 @@ plot_delta(new_output)
 
 ************************************
 
-### Quadratic or cubic effect of climate
+### More complex example (missing data and cubic climate effect)
+
+Remove some climate data for this example
 
 ```{r}
-data("Mass")
-data("MassClimate")
+MassClimate_missing <- MassClimate[!MassClimate$Date %in% c("1/05/1979", "1/04/1979", "1/03/1979"), ]
 ```
 
 **Old syntax**
+
+Without `cmissing` method, this will fail.
+
+```{r, error=TRUE}
+slidingwin(xvar = list(Temp = MassClimate_missing$Temp),
+           cdate = MassClimate_missing$Date, 
+           bdate = Mass$Date, 
+           baseline = lm(Mass ~ 1, data = Mass),
+           range = c(150, 0), 
+           type = "absolute", refday = c(20, 5),
+           stat = "mean",
+           func = c("cub"),
+           ## Expect this to fail
+           cmissing = FALSE,
+           cinterval = "day")
+```
+
 ```{r}
-old_output <- slidingwin(xvar = list(Temp = MassClimate$Temp),
-                         cdate = MassClimate$Date, 
+old_output <- slidingwin(xvar = list(Temp = MassClimate_missing$Temp),
+                         cdate = MassClimate_missing$Date, 
                          bdate = Mass$Date, 
                          baseline = lm(Mass ~ 1, data = Mass),
                          range = c(150, 0), 
@@ -105,11 +116,16 @@ old_output <- slidingwin(xvar = list(Temp = MassClimate$Temp),
 
 **New syntax**
 
-Specify any model structure manually.
+We need to replace missing data in a pre-processing step.
+
+```{r}
+## Default method is the same as method1 in old syntax
+MassClimate_repaired <- repair_climate(MassClimate_missing, cdate = "Date", xvar = "Temp")
+```
 
 ```{r}
 new_output <- run_slidingwin(range = 0:150, type = "absolute", refday = "20/05/2020",
-                             climate_data = MassClimate,
+                             climate_data = MassClimate_repaired,
                              xvar = "Temp", fn = mean,
                              cinterval = "day",
                              bio_data = Mass,
@@ -121,7 +137,16 @@ plotdelta(old_output[[1]]$Dataset)
 ```
 
 ```{r}
+head(old_output[[1]]$Dataset, 10)
+```
+
+
+```{r}
 plot_delta(new_output)
+```
+
+```{r}
+head(getDataset(new_output), 10)
 ```
 
 ************************************

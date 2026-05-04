@@ -161,62 +161,6 @@ correlates most strongly with a biological variable. Uses weibull or
 Generalised Extreme Value (GEV) distribution. See references for a full 
 description.
 }
-\examples{
-
-#Simple test example
-#Create data from a subset of our test dataset
-biol_data <- Mass[1:5, ]
-data(MassClimate)
-
-
-weight <- weightwin(xvar = list(Temp = MassClimate$Temp), 
-                   cdate = MassClimate$Date, 
-                   bdate = biol_data$Date, 
-                   baseline = glm(Mass ~ 1, data = biol_data), 
-                   range = c(100, 0), func = "lin", 
-                   type = "relative", weightfunc = "W", cinterval = "day", 
-                   par = c(2.26, 8.45, 0), control = list(ndeps = c(0.01, 0.01, 0.01)), 
-                   method = "L-BFGS-B")
-                   
-
-\dontrun{
-
-# Full working example
- 
-# Test for a weighted average over a fixed climate window 
-# using datasets 'Offspring' and 'OffspringClimate'
- 
-# N.B. THIS EXAMPLE MAY TAKE A MOMENT TO CONVERGE ON THE BEST MODEL.
- 
-# Load data
- 
-data(Offspring)
-data(OffspringClimate)
- 
-# Test for climate windows between 365 and 0 days ago (range = c(365, 0))
-# Fit a quadratic term for the mean weighted climate (func="quad")
-# in a Poisson regression (offspring number ranges 0-3)
-# Test a variable window (type = "absolute")
-# Test at the resolution of days (cinterval="day")
-# Uses a Weibull weight function (weightfunc="week")
- 
-weight <- weightwin(xvar = list(Temp = OffspringClimate$Temperature), 
-                   cdate = OffspringClimate$Date, 
-                   bdate = Offspring$Date, 
-                   baseline = glm(Offspring ~ 1, family = poisson, data = Offspring), 
-                   range = c(365, 0), func = "quad", 
-                   type = "relative", weightfunc = "W", cinterval = "day", 
-                   par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)), 
-                   method = "L-BFGS-B") 
- 
-# View output
- 
-head(weight[[3]])
-summary(weight[[1]])
-head(weight[[2]])
- }
-
-}
 \references{
 van de Pol & Cockburn 2011 Am Nat 177(5):698-707 (doi: 
  10.1086/659101) "Identifying the critical climatic time window that affects 

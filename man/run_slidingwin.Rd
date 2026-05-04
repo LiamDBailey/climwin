@@ -78,8 +78,6 @@ to compute climate summaries for each window.
 }
 \examples{
 # Example usage:
-data("MassClimate")
-data("Mass")
 results <- run_slidingwin(range = 0:2, 
                         climate_data = MassClimate, 
                         bio_data = Mass,
@@ -90,9 +88,9 @@ dataset_results <- getDataset(results)
 best_model <- getBestModel(results)
                         
 Mass$site <- sample(c("A", "B"), size = nrow(Mass), replace = TRUE)
-Climate1 <- Climate
+Climate1 <- MassClimate
 Climate1$site <- "A"
-Climate2 <- Climate
+Climate2 <- MassClimate
 Climate2$site <- "B"
 Climate_site <- rbind(Climate1, Climate2)
 results_spatial <- run_slidingwin(range = 0:2, 
@@ -111,9 +109,6 @@ results_spatial <- run_slidingwin(range = 0:2,
 # and "OffspringClimate".
 
 # Load data.
-
-data("OffspringClimate")
-data("Offspring")
 
 # Test both linear and quadratic functions with climate variable temperature
 
@@ -135,9 +130,6 @@ OffspringWin <- run_slidingwin(
 # using datasets 'Mass' and 'MassClimate'.
  
 # Load data.
- 
-data("MassClimate")
-data("Mass")
  
 # Test an absolute window, starting 20 May (refday = c(20, 5))
 # Test for climate windows between 100 and 0 days ago (range = c(100, 0))

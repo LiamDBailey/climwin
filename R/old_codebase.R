@@ -105,99 +105,6 @@
 #'@importFrom nlme varIdent
 #'@importFrom nlme varExp  
 #'@importFrom nlme lme.formula
-#'@examples
-#'
-#'#Simple test example
-#'#Create data from a subset of our test dataset
-#'#Just use two years
-#' biol_data <- Mass[1:2, ]
-#' clim_data <- MassClimate[grep(pattern = "1979|1986", x = MassClimate$Date), ]
-#' 
-#' output <- old_slidingwin(xvar = list(Temp = clim_data$Temp),
-#'                      cdate = clim_data$Date, 
-#'                      bdate = biol_data$Date, 
-#'                      baseline = lm(Mass ~ 1, data = biol_data),
-#'                      range = c(1, 0), 
-#'                      type = "relative", stat = "mean", 
-#'                      func = c("lin"), cmissing = FALSE, cinterval = "day")
-#'
-#'\dontrun{
-#'
-#'# Full working examples
-#'
-#'##EXAMPLE 1## 
-#'  
-#'# Test both a linear and quadratic variable climate window using datasets "Offspring"
-#'# and "OffspringClimate".
-#'
-#'# Load data.
-#'
-#'data(Offspring) 
-#'data(OffspringClimate)
-#'
-#'# Test both linear and quadratic functions with climate variable temperature
-#'
-#'OffspringWin <- slidingwin(xvar = list(Temp = OffspringClimate$Temperature), 
-#'                           cdate = OffspringClimate$Date, 
-#'                           bdate = Offspring$Date, 
-#'                           baseline = glm(Offspring ~ 1, data = Offspring, family = poisson),
-#'                           range = c(150, 0), 
-#'                           type = "relative", stat = "mean", 
-#'                           func = c("lin", "quad"), cmissing = FALSE, cinterval = "day")
-#'
-#'# Examine tested combinations
-#'  
-#'OffspringWin$combos
-#'      
-#'# View output for func = "lin"
-#'  
-#'head(OffspringWin[[1]]$Dataset) 
-#'summary(OffspringWin[[1]]$BestModel)
-#'  
-#'# View output for func = "quad"
-#'  
-#'head(OffspringWin[[2]]$Dataset)
-#'summary(OffspringWin[[2]]$BestModel)
-#'  
-#'##EXAMPLE 2##
-#'  
-#'# Test for an absolute climate window with both 'mean' and 'max' aggregate statistics
-#'# using datasets 'Mass' and 'MassClimate'.
-#'  
-#'# Load data.
-#'  
-#'data(Mass)
-#'data(MassClimate)
-#'  
-#'# Test an absolute window, starting 20 May (refday = c(20, 5))
-#'# Test for climate windows between 100 and 0 days ago (range = c(100, 0))
-#'# Test both mean and max aggregate statistics (stat = c("mean", "max"))
-#'# Fit a linear term (func = "lin")
-#'# Test at the resolution of days (cinterval = "day")
-#'  
-#'MassWin <- slidingwin(xvar = list(Temp = MassClimate$Temp), cdate = MassClimate$Date, 
-#'                      bdate = Mass$Date, baseline = lm(Mass ~ 1, data = Mass),
-#'                      range = c(100, 0),
-#'                      stat = c("mean", "max"), func = "lin",
-#'                      type = "absolute", refday = c(20, 5),
-#'                      cmissing = FALSE, cinterval = "day")
-#'                        
-#'# Examine tested combinations
-#'  
-#'MassWin$combos                      
-#'  
-#'# View output for mean temperature
-#'  
-#'head(MassWin[[1]]$Dataset)
-#'summary(MassWin[[1]]$BestModel)
-#'  
-#'# View output for max temperature
-#'  
-#'head(MassWin[[2]]$Dataset)
-#'summary(MassWin[[2]]$BestModel)
-#'  
-#'}
-#'  
 #'@export
 
 old_slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
@@ -3665,60 +3572,6 @@ theme_climwin <- function(base_size = 12, base_family = "",
 #'  from each iteration of weightwin.
 #'  }
 #'@author Martijn van de Pol and Liam D. Bailey
-#'@examples
-#'
-#'#Simple test example
-#'#Create data from a subset of our test dataset
-#'biol_data <- Mass[1:5, ]
-#'data(MassClimate)
-#'
-#'
-#'weight <- weightwin(xvar = list(Temp = MassClimate$Temp), 
-#'                    cdate = MassClimate$Date, 
-#'                    bdate = biol_data$Date, 
-#'                    baseline = glm(Mass ~ 1, data = biol_data), 
-#'                    range = c(100, 0), func = "lin", 
-#'                    type = "relative", weightfunc = "W", cinterval = "day", 
-#'                    par = c(2.26, 8.45, 0), control = list(ndeps = c(0.01, 0.01, 0.01)), 
-#'                    method = "L-BFGS-B")
-#'                    
-#'
-#'\dontrun{
-#'
-#'# Full working example
-#'  
-#'# Test for a weighted average over a fixed climate window 
-#'# using datasets 'Offspring' and 'OffspringClimate'
-#'  
-#'# N.B. THIS EXAMPLE MAY TAKE A MOMENT TO CONVERGE ON THE BEST MODEL.
-#'  
-#'# Load data
-#'  
-#'data(Offspring)
-#'data(OffspringClimate)
-#'  
-#'# Test for climate windows between 365 and 0 days ago (range = c(365, 0))
-#'# Fit a quadratic term for the mean weighted climate (func="quad")
-#'# in a Poisson regression (offspring number ranges 0-3)
-#'# Test a variable window (type = "absolute")
-#'# Test at the resolution of days (cinterval="day")
-#'# Uses a Weibull weight function (weightfunc="week")
-#'  
-#'weight <- weightwin(xvar = list(Temp = OffspringClimate$Temperature), 
-#'                    cdate = OffspringClimate$Date, 
-#'                    bdate = Offspring$Date, 
-#'                    baseline = glm(Offspring ~ 1, family = poisson, data = Offspring), 
-#'                    range = c(365, 0), func = "quad", 
-#'                    type = "relative", weightfunc = "W", cinterval = "day", 
-#'                    par = c(3, 0.2, 0), control = list(ndeps = c(0.01, 0.01, 0.01)), 
-#'                    method = "L-BFGS-B") 
-#'  
-#'# View output
-#'  
-#'head(weight[[3]])
-#'summary(weight[[1]])
-#'head(weight[[2]])
-#'  }
 #'
 #'@importFrom evd dgev
 #'@import numDeriv
@@ -3869,6 +3722,36 @@ old_weightwin <- function(n = 1, xvar, cdate, bdate, baseline, range, k = 0,
   )
 }
 
+#' Old weightwin syntax with new internals.
+#'
+#' @param n 
+#' @param xvar 
+#' @param cdate 
+#' @param bdate 
+#' @param baseline 
+#' @param range 
+#' @param k 
+#' @param func 
+#' @param type 
+#' @param refday 
+#' @param nrandom 
+#' @param centre 
+#' @param weightfunc 
+#' @param cinterval 
+#' @param cmissing 
+#' @param cohort 
+#' @param spatial 
+#' @param par 
+#' @param control 
+#' @param method 
+#' @param cutoff.day 
+#' @param cutoff.month 
+#' @param furthest 
+#' @param closest 
+#' @param grad 
+#'
+#' @returns
+#' @export
 weightwin <- function(n = 1, xvar, cdate, bdate, baseline, range, k = 0,
                       func = "lin", type, refday, nrandom = 0, centre = NULL,
                       weightfunc = "W", cinterval = "day", cmissing = FALSE, cohort = NULL, spatial = NULL,
@@ -4000,12 +3883,6 @@ weightwin <- function(n = 1, xvar, cdate, bdate, baseline, range, k = 0,
 #' values indicate stronger models). DeltaAICc is the difference between AICc
 #' of each climate window and a null model.
 #'@author Liam D. Bailey and Martijn van de Pol
-#'@examples
-#'# Plot deltaAICc estimates for climate windows in the Mass dataset
-#' 
-#'data(MassOutput)
-#' 
-#'plotdelta(dataset = MassOutput)
 #'@import ggplot2
 #'@importFrom grDevices colorRampPalette
 #'@export

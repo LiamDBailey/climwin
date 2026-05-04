@@ -63,10 +63,10 @@ later, and so on.
 data("MassClimate")
 
 # Aggregate to monthly means
-Climate_monthly <- trans_clim_interval(Climate, cinterval = "month")
+Climate_monthly <- trans_clim_interval(MassClimate, cinterval = "month")
 
 # Aggregate Temp by weekly mean and apply a threshold afterwards
-Climate_weekly <- trans_clim_interval(Climate, cinterval = "week")
+Climate_weekly <- trans_clim_interval(MassClimate, cinterval = "week")
 Climate_thresh <- append_clim_threshold(Climate_weekly, upper = 10)
 
 }
