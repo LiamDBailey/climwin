@@ -297,6 +297,7 @@ process_data <- function(climate_data,
     bio_int_ranges = bio_int_ranges,
     bio_data_row = bio_data_row,
     bio_xvar_ranges = bio_xvar_ranges,
-    max_possible_range = max_possible_range
+    max_possible_range = max_possible_range,
+    spatial_col = spatial
   ))
 } 
