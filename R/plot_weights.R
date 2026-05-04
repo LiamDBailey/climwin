@@ -17,7 +17,7 @@
 #' results <- run_slidingwin(range = 0:100, 
 #'                         climate_data = MassClimate, 
 #'                         bio_data = Mass,
-#'                         basemodel = lm(Mass ~ climate, data = bio_data))
+#'                         baseline = lm(Mass ~ climate, data = bio_data))
 #' plot_weights(results, cw1 = 0.95)
 #'
 #' @importFrom ggplot2 ggplot aes geom_tile scale_fill_gradient labs theme_minimal scale_y_reverse

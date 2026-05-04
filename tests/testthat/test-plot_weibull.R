@@ -8,7 +8,7 @@ test_that("plot_weibull returns a ggplot object", {
                           climate_data = MassClimate,
                           cdate = "Date", bdate = "Date",
                           xvar = "Temp",
-                          basemodel = lm(Mass ~ climate, data = bio_data),
+                          baseline = lm(Mass ~ climate, data = bio_data),
                           par = c(1.25, 0.5))
   
   # Test that the function returns a ggplot object
@@ -26,7 +26,7 @@ test_that("plot_weibull can take inputs from run_weightwin", {
                           climate_data = MassClimate,
                           cdate = "Date", bdate = "Date",
                           xvar = "Temp",
-                          basemodel = lm(Mass ~ climate, data = bio_data),
+                          baseline = lm(Mass ~ climate, data = bio_data),
                           par = c(1.25, 0.5))
   
   # Test that the function works with actual run_weightwin output
@@ -49,7 +49,7 @@ test_that("plot_weibull works with different parameter values", {
                            climate_data = MassClimate,
                            cdate = "Date", bdate = "Date",
                            xvar = "Temp",
-                           basemodel = lm(Mass ~ climate, data = bio_data),
+                           baseline = lm(Mass ~ climate, data = bio_data),
                            par = c(2.0, 1.0))
   
   results2 <- run_weightwin(range = 0:2, 
@@ -57,7 +57,7 @@ test_that("plot_weibull works with different parameter values", {
                            climate_data = MassClimate,
                            cdate = "Date", bdate = "Date",
                            xvar = "Temp",
-                           basemodel = lm(Mass ~ climate, data = bio_data),
+                           baseline = lm(Mass ~ climate, data = bio_data),
                            par = c(0.5, 0.8))
   
   # Both should return ggplot objects

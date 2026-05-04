@@ -6,7 +6,7 @@ test_that("plot_slidingwin can take inputs from run_slidingwin", {
   results <- run_slidingwin(range = 0:2, 
                            climate_data = MassClimate, 
                            bio_data = Mass,
-                           basemodel = lm(Mass ~ climate, data = bio_data))
+                           baseline = lm(Mass ~ climate, data = bio_data))
   
   # Test that the function works with actual run_slidingwin output
   result <- plot_delta(results)

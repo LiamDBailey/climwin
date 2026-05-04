@@ -6,7 +6,7 @@ test_that("plot_best returns a ggplot object", {
   results <- run_slidingwin(range = 0:2, 
                            climate_data = MassClimate, 
                            bio_data = Mass,
-                           basemodel = lm(Mass ~ climate, data = bio_data))
+                           baseline = lm(Mass ~ climate, data = bio_data))
   
   # Test that the function returns a ggplot object
   result <- plot_best(results)

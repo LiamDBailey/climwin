@@ -5,7 +5,7 @@ test_that("MassWin results can be recreated", {
                             refday = "20/05/2025",
                             climate_data = MassClimate, 
                             bio_data = Mass,
-                            basemodel = lm(Mass ~ climate, data = bio_data))
+                            baseline = lm(Mass ~ climate, data = bio_data))
   
   # Access the dataset and best model
   ## Compare top models
@@ -46,7 +46,7 @@ test_that("Masswin with interaction", {
                             refday = "20/05/2025",
                             climate_data = MassClimate, 
                             bio_data = Mass,
-                            basemodel = lm(Mass ~ climate*Age, data = bio_data))
+                            baseline = lm(Mass ~ climate*Age, data = bio_data))
   
   ## Compare model coefficients
   ## TODO: Compare full outputs
@@ -108,7 +108,7 @@ test_that("Test cohort works", {
                             climate_data = MassClimate, 
                             bio_data = CohortMass,
                             cohort = "cohort",
-                            basemodel = lm(Mass ~ climate, data = bio_data))
+                            baseline = lm(Mass ~ climate, data = bio_data))
   
   results_old <- slidingwin(xvar = list(Temp = MassClimate$Temp),
                             cdate = MassClimate$Date,
@@ -142,7 +142,7 @@ test_that("Weightwin has backwards compatibility", {
   set.seed(12)
   new_result <- run_weightwin(range = 0:150,
                               bio_data = Mass, climate_data = MassClimate,
-                              basemodel = lm(Mass ~ climate, data = bio_data),
+                              baseline = lm(Mass ~ climate, data = bio_data),
                               type = "absolute", 
                               refday = "20/05/2025", 
                               par = c(3, 0.2),
@@ -187,7 +187,7 @@ test_that("slidingwin and run_slidingwin give same results with cinterval = 'mon
     range        = 0:6,
     climate_data = Climate_monthly,
     bio_data     = Mass,
-    basemodel    = lm(Mass ~ climate, data = bio_data),
+    baseline = lm(Mass ~ climate, data = bio_data),
     cinterval    = "month",
     type         = "absolute",
     refday       = "20/05/2025"
@@ -240,7 +240,7 @@ test_that("slidingwin and run_slidingwin give same results with cinterval = 'wee
     range        = 0:24,
     climate_data = Climate_weekly,
     bio_data     = Mass,
-    basemodel    = lm(Mass ~ climate, data = bio_data),
+    baseline = lm(Mass ~ climate, data = bio_data),
     cinterval    = "week",
     type         = "absolute",
     refday       = "20/05/2025"
@@ -283,7 +283,7 @@ test_that("trans_clim_interval -> run_slidingwin pipeline produces valid output"
     range        = 0:6,
     climate_data = Climate_monthly,
     bio_data     = Mass,
-    basemodel    = lm(Mass ~ climate, data = bio_data),
+    baseline = lm(Mass ~ climate, data = bio_data),
     cinterval    = "month",
     type         = "absolute",
     refday       = "20/05/2025"
@@ -308,7 +308,7 @@ test_that("trans_clim_interval -> run_slidingwin pipeline produces valid output"
     range        = 0:4,
     climate_data = Climate_weekly,
     bio_data     = Mass,
-    basemodel    = lm(Mass ~ climate, data = bio_data),
+    baseline = lm(Mass ~ climate, data = bio_data),
     cinterval    = "week",
     type         = "absolute",
     refday       = "20/05/2025"
@@ -325,7 +325,7 @@ test_that("trans_clim_interval -> run_slidingwin pipeline produces valid output"
       range        = 0:6,
       climate_data = MassClimate,
       bio_data     = Mass,
-      basemodel    = lm(Mass ~ climate, data = bio_data),
+      baseline = lm(Mass ~ climate, data = bio_data),
       cinterval    = "month",
       type         = "absolute",
       refday       = "20/05/2025"
@@ -355,7 +355,7 @@ test_that("old_slidingwin and run_slidingwin produce same results (absolute, lin
     range        = 0:10,
     climate_data = MassClimate,
     bio_data     = Mass,
-    basemodel    = lm(Mass ~ climate, data = bio_data),
+    baseline = lm(Mass ~ climate, data = bio_data),
     fn           = mean,
     type         = "absolute",
     refday       = "20/05/2000"
@@ -395,7 +395,7 @@ test_that("old_slidingwin and run_slidingwin produce same results (relative, lin
     range        = 0:10,
     climate_data = MassClimate,
     bio_data     = Mass,
-    basemodel    = lm(Mass ~ climate, data = bio_data),
+    baseline = lm(Mass ~ climate, data = bio_data),
     fn           = mean,
     type         = "relative"
   )
@@ -435,7 +435,7 @@ test_that("old_slidingwin and run_slidingwin produce same results (func = 'quad'
     range        = 0:10,
     climate_data = MassClimate,
     bio_data     = Mass,
-    basemodel    = lm(Mass ~ poly(climate, 2), data = bio_data),
+    baseline = lm(Mass ~ poly(climate, 2), data = bio_data),
     fn           = mean,
     type         = "absolute",
     refday       = "20/05/2000"
@@ -480,7 +480,7 @@ test_that("old_slidingwin and run_slidingwin produce same results (cinterval = '
     range        = 0:6,
     climate_data = Climate_monthly,
     bio_data     = Mass,
-    basemodel    = lm(Mass ~ climate, data = bio_data),
+    baseline = lm(Mass ~ climate, data = bio_data),
     fn           = mean,
     type         = "absolute",
     refday       = "20/05/2000",
@@ -524,7 +524,7 @@ test_that("old_slidingwin and run_slidingwin produce same results (cinterval = '
     range        = 0:8,
     climate_data = Climate_weekly,
     bio_data     = Mass,
-    basemodel    = lm(Mass ~ climate, data = bio_data),
+    baseline = lm(Mass ~ climate, data = bio_data),
     fn           = mean,
     type         = "absolute",
     refday       = "20/05/2000",
@@ -597,7 +597,7 @@ test_that("old_slidingwin with cohort matches run_slidingwin with cohort", {
     range        = 0:30,
     climate_data = MassClimate,
     bio_data     = CohortMass,
-    basemodel    = lm(Mass ~ climate, data = bio_data),
+    baseline = lm(Mass ~ climate, data = bio_data),
     fn           = mean,
     type         = "absolute",
     refday       = "01/11/2000",
@@ -636,7 +636,7 @@ test_that("old_slidingwin, run_slidingwin, and slidingwin all agree (absolute, l
     range        = 0:20,
     climate_data = MassClimate,
     bio_data     = Mass,
-    basemodel    = lm(Mass ~ climate, data = bio_data),
+    baseline = lm(Mass ~ climate, data = bio_data),
     fn           = mean,
     type         = "absolute",
     refday       = "20/05/2000"
@@ -725,7 +725,7 @@ test_that("old_weightwin and run_weightwin produce identical results (Weibull, a
     range        = 0:150,
     bio_data     = Mass,
     climate_data = MassClimate,
-    basemodel    = lm(Mass ~ climate, data = bio_data),
+    baseline = lm(Mass ~ climate, data = bio_data),
     type         = "absolute",
     refday       = "20/05/2000",
     par          = c(3, 0.2),
@@ -764,7 +764,7 @@ test_that("old_weightwin and run_weightwin produce identical results (Weibull, r
     range        = 0:100,
     bio_data     = Mass,
     climate_data = MassClimate,
-    basemodel    = lm(Mass ~ climate, data = bio_data),
+    baseline = lm(Mass ~ climate, data = bio_data),
     type         = "relative",
     par          = c(2, 0.5),
     xvar         = "Temp",
@@ -803,7 +803,7 @@ test_that("old_weightwin and run_weightwin produce identical results (Weibull, c
     range        = 0:12,
     bio_data     = Mass,
     climate_data = Climate_monthly,
-    basemodel    = lm(Mass ~ climate, data = bio_data),
+    baseline = lm(Mass ~ climate, data = bio_data),
     type         = "absolute",
     refday       = "20/05/2000",
     par          = c(2, 0.5),
@@ -842,7 +842,7 @@ test_that("old_weightwin, run_weightwin, and weightwin (CRAN) are comparable (We
     range        = 0:150,
     bio_data     = Mass,
     climate_data = MassClimate,
-    basemodel    = lm(Mass ~ climate, data = bio_data),
+    baseline = lm(Mass ~ climate, data = bio_data),
     type         = "absolute",
     refday       = "20/05/2025",
     par          = c(3, 0.2),

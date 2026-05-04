@@ -258,7 +258,7 @@ old_slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
       range            = new_range,
       climate_data     = climate_df,
       bio_data         = bio_df,
-      basemodel        = model_call,
+      baseline         = model_call,
       cdate            = "Date",
       bdate            = "Date",
       xvar             = active_xvar,
@@ -269,7 +269,7 @@ old_slidingwin <- function(exclude = NA, xvar, cdate, bdate, baseline,
       cohort           = cohort_col,
       cinterval        = cinterval,
       progress         = FALSE,
-      .basemodelIsCall = TRUE
+      .baselineIsCall  = TRUE
     )
 
     combined[[combo]] <- result
@@ -618,10 +618,14 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     #If you have specified an upper or lower value for which a threshold should be applied and you are not working at a daily scale...
     if((!is.na(upper) || !is.na(lower)) && (cinterval == "week" || cinterval == "month")){
       
-      #Determine whether the user wants to: 1. apply the threshold at the daily level BEFORE estimating monthly/weekly mean (i.e. daily data is binary but monthly/weekly is not)
-      #                                     2. apply the threshold AFTER applying monthly/weekly mean (i.e. daily data is non-binary, monthly/weekly is)
-      thresholdQ <- readline("You specified a climate threshold using upper and/or lower and are working at a weekly or monthly scale. 
+      if (!interactive()){
+        thresholdQ <- "Y"
+      } else {
+        #Determine whether the user wants to: 1. apply the threshold at the daily level BEFORE estimating monthly/weekly mean (i.e. daily data is binary but monthly/weekly is not)
+        #                                     2. apply the threshold AFTER applying monthly/weekly mean (i.e. daily data is non-binary, monthly/weekly is)
+        thresholdQ <- readline("You specified a climate threshold using upper and/or lower and are working at a weekly or monthly scale. 
                            Do you want to apply this threshold before calculating weekly/monthly means (i.e. calculate thresholds for each day)? Y/N")
+      }
       
       #Convert to upper case for logical conditions
       thresholdQ <- toupper(thresholdQ)
@@ -3706,7 +3710,7 @@ old_weightwin <- function(n = 1, xvar, cdate, bdate, baseline, range, k = 0,
     range            = new_range,
     bio_data         = bio_df,
     climate_data     = climate_df,
-    basemodel        = model_call,
+    baseline         = model_call,
     cdate            = "Date",
     bdate            = "Date",
     xvar             = xvar_name,
@@ -3718,7 +3722,7 @@ old_weightwin <- function(n = 1, xvar, cdate, bdate, baseline, range, k = 0,
     control          = control,
     plot_every       = NULL,
     cinterval        = cinterval,
-    .basemodelIsCall = TRUE
+    .baselineIsCall  = TRUE
   )
 }
 

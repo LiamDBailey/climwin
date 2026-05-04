@@ -20,7 +20,7 @@
 #'                         climate_data = MassClimate,
 #'                         cdate = "Date", bdate = "Date",
 #'                         xvar = "Temp",
-#'                         basemodel = lm(Mass ~ climate, data = bio_data),
+#'                         baseline = lm(Mass ~ climate, data = bio_data),
 #'                         par = c(1.25, 0.5))
 #' 
 #' # Create combined plot with all plots (default)

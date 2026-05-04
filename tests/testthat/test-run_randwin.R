@@ -17,7 +17,7 @@ test_that("run_randwin works with valid input", {
                         range = 0:1,
                         climate_data = climate_data,
                         bio_data = bio_data,
-                        basemodel = lm(Mass ~ climate, data = bio_data))
+                        baseline = lm(Mass ~ climate, data = bio_data))
   
   # Check structure
   expect_true(is.data.frame(result))
@@ -47,7 +47,7 @@ test_that("run_randwin validates arguments correctly", {
     run_randwin(range = 0:1, 
                 climate_data = climate_data,
                 bio_data = bio_data,
-                basemodel = lm(Mass ~ climate, data = bio_data)),
+                baseline = lm(Mass ~ climate, data = bio_data)),
     "'repeats' is required"
   )
   
@@ -57,7 +57,7 @@ test_that("run_randwin validates arguments correctly", {
                 range = 0:1, 
                 climate_data = climate_data,
                 bio_data = bio_data,
-                basemodel = lm(Mass ~ climate, data = bio_data)),
+                baseline = lm(Mass ~ climate, data = bio_data)),
     "'repeats': must be a positive integer"
   )
   
@@ -66,7 +66,7 @@ test_that("run_randwin validates arguments correctly", {
     run_randwin(repeats = 2,
                 climate_data = climate_data,
                 bio_data = bio_data,
-                basemodel = lm(Mass ~ climate, data = bio_data)),
+                baseline = lm(Mass ~ climate, data = bio_data)),
     "'range' is required"
   )
 })
@@ -84,7 +84,7 @@ test_that("run_randwin errors on invalid window_type", {
   expect_error(
     run_randwin(repeats = 1, range = 0:1,
                 climate_data = climate_data, bio_data = bio_data,
-                basemodel = lm(Mass ~ climate, data = bio_data),
+                baseline = lm(Mass ~ climate, data = bio_data),
                 window_type = "invalid"),
     "should be one of"
   )
@@ -115,7 +115,7 @@ test_that("run_randwin ('weightwin') returns a data frame with one row per repea
     range        = 0:4,
     climate_data = d$climate_data,
     bio_data     = d$bio_data,
-    basemodel    = lm(Mass ~ climate, data = bio_data),
+    baseline = lm(Mass ~ climate, data = bio_data),
     window_type  = "weightwin",
     par          = c(1.25, 0.5),
     progress     = FALSE
@@ -134,7 +134,7 @@ test_that("run_randwin ('weightwin') summary columns match weightfunc par labels
   result_W <- run_randwin(
     repeats = 2, range = 0:4,
     climate_data = d$climate_data, bio_data = d$bio_data,
-    basemodel = lm(Mass ~ climate, data = bio_data),
+    baseline = lm(Mass ~ climate, data = bio_data),
     window_type = "weightwin", weightfunc = "W", par = c(1.25, 0.5),
     progress = FALSE
   )
@@ -144,7 +144,7 @@ test_that("run_randwin ('weightwin') summary columns match weightfunc par labels
   result_F <- run_randwin(
     repeats = 2, range = 0:4,
     climate_data = d$climate_data, bio_data = d$bio_data,
-    basemodel = lm(Mass ~ climate, data = bio_data),
+    baseline = lm(Mass ~ climate, data = bio_data),
     window_type = "weightwin", weightfunc = "F", par = c(0.5, 2),
     progress = FALSE
   )
@@ -174,14 +174,14 @@ test_that("run_randwin randomizes climate data correctly", {
                         range = 0:1,
                         climate_data = climate_data,
                         bio_data = bio_data,
-                        basemodel = lm(Mass ~ climate, data = bio_data))
+                        baseline = lm(Mass ~ climate, data = bio_data))
   
   set.seed(456)
   result2 <- run_randwin(repeats = 5,
                         range = 0:1,
                         climate_data = climate_data,
                         bio_data = bio_data,
-                        basemodel = lm(Mass ~ climate, data = bio_data))
+                        baseline = lm(Mass ~ climate, data = bio_data))
   
   # Check that we get results
   expect_equal(nrow(result1), 5)

@@ -16,7 +16,7 @@ test_that("run_slidingwin works with valid input", {
   result <- run_slidingwin(range = 0:2,
                            climate_data = climate_data,
                            bio_data = bio_data,
-                           basemodel = lm(Mass ~ climate, data = bio_data))
+                           baseline = lm(Mass ~ climate, data = bio_data))
   
   # Check structure
   expect_true(inherits(result, "S7_object"))
@@ -45,11 +45,11 @@ test_that("run_slidingwin fails if we try to go back too far", {
   expect_error(run_slidingwin(range = 0:20,
                            climate_data = climate_data,
                            bio_data = bio_data,
-                           basemodel = lm(Mass ~ climate, data = bio_data)),
+                           baseline = lm(Mass ~ climate, data = bio_data)),
                "'range' covers time periods not included in climate data. Consider adding more climate data or reducing range.")
 })
 
-test_that("run_slidingwin works with different basemodel structures", {
+test_that("run_slidingwin works with different baseline structures", {
   # Create sample data
   climate_data <- data.frame(
     Date = c("01/01/1979", "02/01/1979", "03/01/1979", "04/01/1979", "05/01/1979"),
@@ -66,7 +66,7 @@ test_that("run_slidingwin works with different basemodel structures", {
   result1 <- run_slidingwin(range = 0:2,
                             climate_data = climate_data,
                             bio_data = bio_data,
-                            basemodel = lm(Mass ~ climate, data = bio_data))
+                            baseline = lm(Mass ~ climate, data = bio_data))
   expect_true(inherits(result1, "S7_object"))
   expect_true(inherits(result1@dataset, "data.frame"))
   expect_true(inherits(result1@bestModel, "list"))
@@ -77,7 +77,7 @@ test_that("run_slidingwin works with different basemodel structures", {
   result2 <- run_slidingwin(range = 0:2,
                             climate_data = climate_data,
                             bio_data = bio_data,
-                            basemodel = lm(Mass ~ climate + Age, data = bio_data))
+                            baseline = lm(Mass ~ climate + Age, data = bio_data))
   expect_true(inherits(result2, "S7_object"))
   expect_true(inherits(result2@dataset, "data.frame"))
   expect_true(inherits(result2@bestModel, "list"))
@@ -88,7 +88,7 @@ test_that("run_slidingwin works with different basemodel structures", {
   result3 <- run_slidingwin(range = 0:2,
                             climate_data = climate_data,
                             bio_data = bio_data,
-                            basemodel = lm(Mass ~ climate * Age, data = bio_data))
+                            baseline = lm(Mass ~ climate * Age, data = bio_data))
   expect_true(inherits(result3, "S7_object"))
   expect_true(inherits(result3@dataset, "data.frame"))
   expect_true(inherits(result3@bestModel, "list"))
@@ -116,7 +116,7 @@ test_that("run_slidingwin works with log(climate)", {
   result <- run_slidingwin(range = 0:2,
                            climate_data = climate_data,
                            bio_data = bio_data,
-                           basemodel = lm(Mass ~ log(climate), data = bio_data))
+                           baseline = lm(Mass ~ log(climate), data = bio_data))
   
   # Check structure
   expect_true(inherits(result, "S7_object"))
@@ -144,14 +144,14 @@ test_that("run_slidingwin gives identical results with parallel = TRUE and FALSE
   result_parallel <- run_slidingwin(range = 0:2,
                                     climate_data = climate_data,
                                     bio_data = bio_data,
-                                    basemodel = lm(Mass ~ climate, data = bio_data),
+                                    baseline = lm(Mass ~ climate, data = bio_data),
                                     parallel = TRUE)
   
   # Run with parallel = FALSE
   result_sequential <- run_slidingwin(range = 0:2,
                                       climate_data = climate_data,
                                       bio_data = bio_data,
-                                      basemodel = lm(Mass ~ climate, data = bio_data),
+                                      baseline = lm(Mass ~ climate, data = bio_data),
                                       parallel = FALSE)
   
   # Compare results - compare the dataset components
@@ -163,7 +163,7 @@ test_that("run_slidingwin gives identical results with parallel = TRUE and FALSE
 
 test_that("results and results_spatial are identical as shown in example", {
   
-  # Create bio_data with climate column for the basemodel
+  # Create bio_data with climate column for the baseline
   bio_data <- Mass
   bio_data$climate <- 0  # Initialize climate column
   
@@ -171,7 +171,7 @@ test_that("results and results_spatial are identical as shown in example", {
   results <- run_slidingwin(range = 0:2, 
                             climate_data = MassClimate, 
                             bio_data = bio_data,
-                            basemodel = lm(Mass ~ climate, data = bio_data))
+                            baseline = lm(Mass ~ climate, data = bio_data))
   
   # Create spatial version as shown in example
   Mass$site <- sample(c("A", "B"), size = nrow(Mass), replace = TRUE)
@@ -188,7 +188,7 @@ test_that("results and results_spatial are identical as shown in example", {
   results_spatial <- run_slidingwin(range = 0:2, 
                                     climate_data = Climate_site, 
                                     bio_data = bio_data,
-                                    basemodel = lm(Mass ~ climate, data = bio_data),
+                                    baseline = lm(Mass ~ climate, data = bio_data),
                                     spatial = "site")
   
   # Results should be identical (same AIC values and structure)
@@ -217,7 +217,7 @@ test_that("run_slidingwin fails when spatial column doesn't exist in climate_dat
     run_slidingwin(range = 0:1,
                    climate_data = climate_data,
                    bio_data = bio_data,
-                   basemodel = lm(Mass ~ climate, data = bio_data),
+                   baseline = lm(Mass ~ climate, data = bio_data),
                    spatial = "site"),
     "'climate_data': must contain column 'site'"
   )
@@ -243,7 +243,7 @@ test_that("run_slidingwin fails when spatial column doesn't exist in bio_data", 
     run_slidingwin(range = 0:1,
                    climate_data = climate_data,
                    bio_data = bio_data,
-                   basemodel = lm(Mass ~ climate, data = bio_data),
+                   baseline = lm(Mass ~ climate, data = bio_data),
                    spatial = "site"),
     "'bio_data': must contain column 'site'"
   )
@@ -267,7 +267,7 @@ test_that("run_slidingwin fails when spatial column doesn't exist in both climat
     run_slidingwin(range = 0:1,
                    climate_data = climate_data,
                    bio_data = bio_data,
-                   basemodel = lm(Mass ~ climate, data = bio_data),
+                   baseline = lm(Mass ~ climate, data = bio_data),
                    spatial = "nonexistent_column"),
     "'climate_data': must contain column 'nonexistent_column'"
   )

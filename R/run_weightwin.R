@@ -16,7 +16,7 @@
 #'   each date in \code{bio_data} (e.g. \code{0:100}).
 #' @param bio_data A data frame containing biological data with a date column.
 #' @param climate_data A data frame containing climate data.
-#' @param basemodel An \code{lm} call used as the model template
+#' @param baseline An \code{lm} call used as the model template
 #'   (e.g. \code{lm(Mass ~ climate, data = bio_data)}).
 #' @param cdate Character string — date column in \code{climate_data}.
 #'   Defaults to \code{"Date"}.
@@ -65,7 +65,7 @@
 #'                          climate_data = MassClimate,
 #'                          cdate = "Date", bdate = "Date",
 #'                          xvar = "Temp",
-#'                          basemodel = lm(Mass ~ climate, data = bio_data),
+#'                          baseline = lm(Mass ~ climate, data = bio_data),
 #'                          par = c(1.25, 0.5))
 #'
 #' @export
@@ -73,7 +73,7 @@ run_weightwin <- function(n = 1,
                           range,
                           bio_data,
                           climate_data,
-                          basemodel,
+                          baseline,
                           cdate = "Date",
                           bdate = "Date",
                           xvar,
@@ -89,11 +89,10 @@ run_weightwin <- function(n = 1,
                           par_min = NULL,
                           par_max = NULL,
                           cinterval = "day",
-                          .basemodelIsCall = FALSE) {
+                          .baselineIsCall = FALSE) {
 
-  # Validate basemodel
-  validate_arg("basemodel", basemodel, required = TRUE)
-  if (!isTRUE(.basemodelIsCall)) basemodel <- substitute(basemodel)
+  validate_arg("baseline", baseline, required = TRUE)
+  if (!isTRUE(.baselineIsCall)) baseline <- substitute(baseline)
 
   # Resolve weightfunc to a density function + metadata
   if (is.function(weightfunc)) {
@@ -163,8 +162,8 @@ run_weightwin <- function(n = 1,
 
       bio_data <- fitted_output$bio_data
 
-      # Fit the basemodel with the weighted climate data
-      model <- eval(basemodel)
+      # Fit the baseline model with the weighted climate data
+      model <- eval(baseline)
 
       outputAIC <- AIC(model)
 
@@ -236,7 +235,7 @@ run_weightwin <- function(n = 1,
     )
 
     bio_data   <- optimal_data$bio_data
-    best_model <- eval(basemodel)
+    best_model <- eval(baseline)
 
     if (!is.null(plot_every)) {
       par(mfrow = mfrow_dims)

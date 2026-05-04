@@ -9,7 +9,7 @@
 #' results <- run_slidingwin(range = 0:2, 
 #'                         climate_data = MassClimate, 
 #'                         bio_data = Mass,
-#'                         basemodel = lm(Mass ~ climate, data = bio_data))
+#'                         baseline = lm(Mass ~ climate, data = bio_data))
 #'
 #' ## Use methods to extract dataset and bestmodel
 #' getDataset(results)
@@ -74,7 +74,7 @@ S7::method(getBestModelData, climwin) <- function(x, ...) {
 #' results <- run_slidingwin(range = 0:2, 
 #'                         climate_data = MassClimate, 
 #'                         bio_data = Mass,
-#'                         basemodel = lm(Mass ~ climate, data = bio_data))
+#'                         baseline = lm(Mass ~ climate, data = bio_data))
 #'
 #' ## Same method names exist, but behave differently internally
 #' getDataset(results)

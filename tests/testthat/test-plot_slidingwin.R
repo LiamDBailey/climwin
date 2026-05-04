@@ -6,7 +6,7 @@ test_that("plot_slidingwin returns a patchwork object with multiple plots", {
   results <- run_slidingwin(range = 0:2, 
                            climate_data = MassClimate, 
                            bio_data = Mass,
-                           basemodel = lm(Mass ~ climate, data = bio_data))
+                           baseline = lm(Mass ~ climate, data = bio_data))
   
   # Test that the function returns a patchwork object with multiple plots
   result <- plot_slidingwin(results, plots = c('delta', 'weights'))
@@ -25,7 +25,7 @@ test_that("plot_slidingwin can handle different plot combinations", {
   results <- run_slidingwin(range = 0:2, 
                            climate_data = MassClimate, 
                            bio_data = Mass,
-                           basemodel = lm(Mass ~ climate, data = bio_data))
+                           baseline = lm(Mass ~ climate, data = bio_data))
   
   # Test different plot combinations
   result1 <- plot_slidingwin(results, plots = c('weights', 'windows'))
@@ -46,7 +46,7 @@ test_that("plot_slidingwin validates plot types correctly", {
   results <- run_slidingwin(range = 0:2, 
                            climate_data = MassClimate, 
                            bio_data = Mass,
-                           basemodel = lm(Mass ~ climate, data = bio_data))
+                           baseline = lm(Mass ~ climate, data = bio_data))
   
   # Test invalid plot type
   expect_error(

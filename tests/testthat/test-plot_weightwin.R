@@ -8,7 +8,7 @@ test_that("plot_weightwin returns a patchwork object with multiple plots", {
                           climate_data = MassClimate,
                           cdate = "Date", bdate = "Date",
                           xvar = "Temp",
-                          basemodel = lm(Mass ~ climate, data = bio_data),
+                          baseline = lm(Mass ~ climate, data = bio_data),
                           par = c(1.25, 0.5))
   
   # Test that the function returns a patchwork object with multiple plots
@@ -30,7 +30,7 @@ test_that("plot_weightwin can handle different plot combinations", {
                           climate_data = MassClimate,
                           cdate = "Date", bdate = "Date",
                           xvar = "Temp",
-                          basemodel = lm(Mass ~ climate, data = bio_data),
+                          baseline = lm(Mass ~ climate, data = bio_data),
                           par = c(1.25, 0.5))
   
   # Test different plot combinations
@@ -54,7 +54,7 @@ test_that("plot_weightwin validates plot types correctly", {
                           climate_data = MassClimate,
                           cdate = "Date", bdate = "Date",
                           xvar = "Temp",
-                          basemodel = lm(Mass ~ climate, data = bio_data),
+                          baseline = lm(Mass ~ climate, data = bio_data),
                           par = c(1.25, 0.5))
   
   # Test invalid plot type
@@ -74,7 +74,7 @@ test_that("plot_weightwin can take inputs from run_weightwin", {
                           climate_data = MassClimate,
                           cdate = "Date", bdate = "Date",
                           xvar = "Temp",
-                          basemodel = lm(Mass ~ climate, data = bio_data),
+                          baseline = lm(Mass ~ climate, data = bio_data),
                           par = c(1.25, 0.5))
   
   # Test that the function works with actual run_weightwin output

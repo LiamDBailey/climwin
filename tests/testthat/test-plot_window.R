@@ -6,7 +6,7 @@ test_that("plot_window takes output from run_slidingwin", {
   results <- run_slidingwin(range = 0:2, 
                            climate_data = MassClimate, 
                            bio_data = Mass,
-                           basemodel = lm(Mass ~ climate, data = bio_data))
+                           baseline = lm(Mass ~ climate, data = bio_data))
   
   # Test that the function works with actual run_slidingwin output
   result <- plot_window(results)
@@ -21,7 +21,7 @@ test_that("plot_window can take different values of cw1", {
   results <- run_slidingwin(range = 0:2, 
                             climate_data = MassClimate, 
                             bio_data = Mass,
-                            basemodel = lm(Mass ~ climate, data = bio_data))
+                            baseline = lm(Mass ~ climate, data = bio_data))
   
   # Test with different cw1 values
   result1 <- plot_window(results, cw1 = 0.5)

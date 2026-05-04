@@ -16,7 +16,7 @@
 #' results <- run_slidingwin(range = 0:100, 
 #'                         climate_data = MassClimate, 
 #'                         bio_data = Mass,
-#'                         basemodel = lm(Mass ~ climate, data = bio_data))
+#'                         baseline = lm(Mass ~ climate, data = bio_data))
 #' plot_window(results, cw1 = 0.95)
 #'
 #' @export

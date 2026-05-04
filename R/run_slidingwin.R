@@ -9,7 +9,7 @@
 #'              For example, 0 represents the date itself, while 100 represents 100 days before that date.
 #' @param climate_data A data frame containing climate data. Required.
 #' @param bio_data A data frame containing biological data with a date column. Required.
-#' @param basemodel An lm model object that will be updated for each climate window (e.g., lm(Mass ~ climate, data = bio_data)). Required.
+#' @param baseline An lm model object that will be updated for each climate window (e.g., lm(Mass ~ climate, data = bio_data)). Required.
 #' @param cdate Character string specifying the name of the date column in climate_data. Defaults to "Date".
 #' @param bdate Character string specifying the name of the date column in bio_data. Defaults to "Date".
 #' @param xvar Character string specifying the name of the climate variable column in climate_data. Defaults to "Temp".
@@ -24,7 +24,7 @@
 #'   \code{\link{trans_clim_interval}} first.
 #' @param parallel Logical. If TRUE, parallel processing is used. Default is FALSE.
 #' @param progress Logical. If TRUE, shows a progress bar. Default is TRUE.
-#' @param .basemodelIsCall Logical. Internal parameter used to handle basemodel substitution. Default is FALSE.
+#' @param .baselineIsCall Logical. Internal parameter used to handle baseline substitution. Default is FALSE.
 #'
 #' @return A list containing:
 #'         - dataset: A data frame containing:
@@ -39,7 +39,7 @@
 #' results <- run_slidingwin(range = 0:2, 
 #'                         climate_data = MassClimate, 
 #'                         bio_data = Mass,
-#'                         basemodel = lm(Mass ~ climate, data = bio_data))
+#'                         baseline = lm(Mass ~ climate, data = bio_data))
 #'                         
 #' # Access the dataset and best model
 #' dataset_results <- getDataset(results)
@@ -54,7 +54,7 @@
 #' results_spatial <- run_slidingwin(range = 0:2, 
 #'                         climate_data = Climate_site, 
 #'                         bio_data = Mass,
-#'                         basemodel = lm(Mass ~ climate, data = bio_data),
+#'                         baseline = lm(Mass ~ climate, data = bio_data),
 #'                         spatial = "site")
 #'                         
 #'\dontrun{
@@ -74,7 +74,7 @@
 #'                           range = 0:150,
 #'                           climate_data = OffspringClimate,
 #'                           bio_data = Offspring,
-#'                           basemodel = glm(Offspring ~ climate, data = bio_data, family = "poisson"),
+#'                           baseline = glm(Offspring ~ climate, data = bio_data, family = "poisson"),
 #'                           xvar = "Temperature", 
 #'                           cdate = "Date", 
 #'                           bdate = "Date", 
@@ -98,7 +98,7 @@
 #'MassWin <- run_slidingwin(
 #'                      range = 0:100,
 #'                      climate_data = MassClimate, bio_data = Mass,
-#'                      basemodel = lm(Mass ~ climate, data = bio_data),
+#'                      baseline = lm(Mass ~ climate, data = bio_data),
 #'                      xvar = "Temp",
 #'                      cdate = "Date", bdate = "Date", 
 #'                      type = "absolute", refday = "20/05/2025"
@@ -115,7 +115,7 @@
 run_slidingwin <- function(range,
                            climate_data,
                            bio_data,
-                           basemodel,
+                           baseline,
                            cdate = "Date",
                            bdate = "Date",
                            xvar = "Temp",
@@ -127,9 +127,9 @@ run_slidingwin <- function(range,
                            cinterval = "day",
                            parallel = FALSE,
                            progress = TRUE,
-                           .basemodelIsCall = FALSE,
+                           .baselineIsCall = FALSE,
                            .processed_data = NULL) {
-  
+
   ### ARGUMENT CHECKS ####
   # Ensure future and furrr are loaded if parallel is TRUE
   if (parallel) {
@@ -137,14 +137,12 @@ run_slidingwin <- function(range,
     if (!requireNamespace("future.apply", quietly = TRUE)) stop("Package 'future.apply' is required.")
     future::plan(future::multisession)
   }
-  
-  ## It's possible that basemodel is already a substitute
-  ## with model lm()
-  if (!.basemodelIsCall){
-    basemodel <- substitute(basemodel) 
+
+  if (!.baselineIsCall) {
+    baseline <- substitute(baseline)
   }
-  
-  validate_arg("basemodel", basemodel, required = TRUE)
+
+  validate_arg("baseline", baseline, required = TRUE)
   validate_arg("fn", fn, required = FALSE, type = "function")
   
   ### PROCESS DATA ####
@@ -219,7 +217,7 @@ run_slidingwin <- function(range,
 
     bio_data$climate <- summary_data_unordered[row_order]
 
-    aic_val <- tryCatch(AIC(eval(basemodel)), error = function(e) NA_real_)
+    aic_val <- tryCatch(AIC(eval(baseline)), error = function(e) NA_real_)
 
     c(start_days - 1L, end_days - 1L, aic_val)
   }
@@ -303,7 +301,7 @@ run_slidingwin <- function(range,
 
     bio_data$climate <- best_climate_summary[row_order]
 
-    best_model <- tryCatch(eval(basemodel), error = function(e) NULL)
+    best_model <- tryCatch(eval(baseline), error = function(e) NULL)
   }
 
   # Return climwin S7 object

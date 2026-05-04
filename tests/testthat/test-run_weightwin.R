@@ -23,7 +23,7 @@ test_that("run_weightwin ('W') returns a valid output", {
     bio_data   = d$bio_data,
     climate_data = d$climate_data,
     cdate = "Date", bdate = "Date", xvar = "Temp",
-    basemodel  = lm(Mass ~ climate, data = bio_data),
+    baseline = lm(Mass ~ climate, data = bio_data),
     par        = c(1.25, 0.5),
     plot_every = NULL
   )
@@ -55,7 +55,7 @@ test_that("run_weightwin errors on invalid weightfunc", {
       bio_data   = d$bio_data,
       climate_data = d$climate_data,
       cdate = "Date", bdate = "Date", xvar = "Temp",
-      basemodel  = lm(Mass ~ climate, data = bio_data),
+      baseline = lm(Mass ~ climate, data = bio_data),
       weightfunc   = "X",
       par        = c(1, 3),
       plot_every = NULL
@@ -72,7 +72,7 @@ test_that("run_weightwin ('W') errors when lower >= upper", {
       bio_data   = d$bio_data,
       climate_data = d$climate_data,
       cdate = "Date", bdate = "Date", xvar = "Temp",
-      basemodel  = lm(Mass ~ climate, data = bio_data),
+      baseline = lm(Mass ~ climate, data = bio_data),
       par        = c(1, 0.5),
       lower      = c(5, 0.1),
       upper      = c(2, 1000),   # upper[1] < lower[1]
@@ -92,7 +92,7 @@ test_that("run_weightwin with n > 1 uses lower/upper as default par_min/par_max"
       bio_data   = d$bio_data,
       climate_data = d$climate_data,
       cdate = "Date", bdate = "Date", xvar = "Temp",
-      basemodel  = lm(Mass ~ climate, data = bio_data),
+      baseline = lm(Mass ~ climate, data = bio_data),
       par        = c(1.25, 0.5),
       plot_every = NULL
     )
@@ -109,7 +109,7 @@ test_that("run_weightwin with n > 1 ('W') returns one output per iteration", {
     bio_data   = d$bio_data,
     climate_data = d$climate_data,
     cdate = "Date", bdate = "Date", xvar = "Temp",
-    basemodel  = lm(Mass ~ climate, data = bio_data),
+    baseline = lm(Mass ~ climate, data = bio_data),
     par        = c(1.25, 0.5),
     par_min    = c(0.1, 0.1),
     par_max    = c(5, 10),
@@ -133,7 +133,7 @@ test_that("run_weightwin stores weightfunc in each output element", {
       bio_data   = d$bio_data,
       climate_data = d$climate_data,
       cdate = "Date", bdate = "Date", xvar = "Temp",
-      basemodel  = lm(Mass ~ climate, data = bio_data),
+      baseline = lm(Mass ~ climate, data = bio_data),
       weightfunc = wf,
       par        = c(0.5, 0.5),
       plot_every = NULL
@@ -151,7 +151,7 @@ test_that("run_weightwin ('G') returns a valid climwin_weightwin object", {
     bio_data   = d$bio_data,
     climate_data = d$climate_data,
     cdate = "Date", bdate = "Date", xvar = "Temp",
-    basemodel  = lm(Mass ~ climate, data = bio_data),
+    baseline = lm(Mass ~ climate, data = bio_data),
     weightfunc = "G",
     par        = c(0.5, 0.5),
     plot_every = NULL
@@ -176,7 +176,7 @@ test_that("run_weightwin ('F') returns a valid climwin_weightwin object", {
     bio_data   = d$bio_data,
     climate_data = d$climate_data,
     cdate = "Date", bdate = "Date", xvar = "Temp",
-    basemodel  = lm(Mass ~ climate, data = bio_data),
+    baseline = lm(Mass ~ climate, data = bio_data),
     weightfunc = "F",
     par        = c(0.5, 2),   # scale, shape (loc fixed at 0)
     plot_every = NULL
@@ -203,7 +203,7 @@ test_that("run_weightwin accepts a custom density function for weightfunc", {
     bio_data   = d$bio_data,
     climate_data = d$climate_data,
     cdate = "Date", bdate = "Date", xvar = "Temp",
-    basemodel  = lm(Mass ~ climate, data = bio_data),
+    baseline = lm(Mass ~ climate, data = bio_data),
     weightfunc = exp_dfun,
     par        = c(2),
     lower      = c(0.1),
@@ -227,7 +227,7 @@ test_that("run_weightwin errors when custom weightfunc given without lower/upper
       bio_data   = d$bio_data,
       climate_data = d$climate_data,
       cdate = "Date", bdate = "Date", xvar = "Temp",
-      basemodel  = lm(Mass ~ climate, data = bio_data),
+      baseline = lm(Mass ~ climate, data = bio_data),
       weightfunc = exp_dfun,
       par        = c(2),
       plot_every = NULL

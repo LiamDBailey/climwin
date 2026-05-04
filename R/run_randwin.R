@@ -11,7 +11,7 @@
 #' @param climate_data A data frame containing climate data. Required.
 #' @param bio_data A data frame containing biological data with a date column.
 #'   Required.
-#' @param basemodel An lm model object used as the model template. Required.
+#' @param baseline An lm model object used as the model template. Required.
 #' @param cdate Character string — date column in climate_data.
 #'   Defaults to \code{"Date"}.
 #' @param bdate Character string — date column in bio_data.
@@ -61,7 +61,7 @@
 #'                             range = 0:50,
 #'                             climate_data = MassClimate,
 #'                             bio_data = Mass,
-#'                             basemodel = lm(Mass ~ climate, data = bio_data))
+#'                             baseline = lm(Mass ~ climate, data = bio_data))
 #'
 #' @importFrom progress progress_bar
 #' @importFrom future.apply future_lapply
@@ -71,7 +71,7 @@ run_randwin <- function(repeats,
                         range,
                         climate_data,
                         bio_data,
-                        basemodel,
+                        baseline,
                         cdate = "Date",
                         bdate = "Date",
                         xvar = "Temp",
@@ -107,7 +107,7 @@ run_randwin <- function(repeats,
   validate_arg("bio_data", bio_data, required = TRUE, type = "data.frame",
                additional_checks = function(x) if (nrow(x) == 0) stop("must contain at least 1 row"))
 
-  validate_arg("basemodel", basemodel, required = TRUE)
+  validate_arg("baseline", baseline, required = TRUE)
 
   validate_arg("fn", fn, required = FALSE, type = "function")
 
@@ -139,7 +139,7 @@ run_randwin <- function(repeats,
 
   window_type <- match.arg(window_type, choices = c("slidingwin", "weightwin"))
 
-  basemodel <- substitute(basemodel)
+  baseline <- substitute(baseline)
 
   # Pre-compute the bio-side of process_data once for the slidingwin path.
   # Only bio_xvar_ranges changes between iterations (shuffled climate values);
@@ -181,7 +181,7 @@ run_randwin <- function(repeats,
 
     if (window_type == "slidingwin") {
       # Rebuild bio_xvar_ranges from shuffled climate values only.
-      # Use 'bio_data' as the local name so eval(basemodel) resolves it
+      # Use 'bio_data' as the local name so eval(baseline) resolves it
       # correctly (the model call contains data = bio_data).
       bio_data       <- base_processed$bio_data
       bio_int_ranges <- base_processed$bio_int_ranges
@@ -223,7 +223,7 @@ run_randwin <- function(repeats,
         }
         result_mat[, j] <- c(
           s - 1L, e - 1L,
-          tryCatch(AIC(eval(basemodel)), error = function(e) NA_real_)
+          tryCatch(AIC(eval(baseline)), error = function(e) NA_real_)
         )
       }
 
@@ -250,7 +250,7 @@ run_randwin <- function(repeats,
         range            = range,
         bio_data         = bio_data,
         climate_data     = climate_rand,
-        basemodel        = basemodel,
+        baseline         = baseline,
         cdate            = cdate,
         bdate            = bdate,
         xvar             = xvar,
@@ -266,7 +266,7 @@ run_randwin <- function(repeats,
         par_min          = par_min,
         par_max          = par_max,
         cinterval        = cinterval,
-        .basemodelIsCall = TRUE
+        .baselineIsCall  = TRUE
       )
       best_row           <- ww_result@weightwin_summary[1L, , drop = FALSE]
       best_row$Iteration <- i
