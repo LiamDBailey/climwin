@@ -1,5 +1,5 @@
 ---
-title: "Backward compatibility"
+title: "New features climwin v2.0"
 author: "Liam D. Bailey and Martijn van de Pol"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
@@ -9,79 +9,29 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
   
-The newest release of `climwin` is built to ensure maximum backwards compatibility with older versions of the package (<= v1.2.33). This vignette describes some common tasks in climwin and shows how they can be carried out using the new syntax.
-  
-*PLEASE NOTE:* The current version of `climwin` includes the old code base for full backwards compatibility if needed; however, the outputs will not be fully compatible with new utility functions like plotting. These old functions are included to demonstrate backwards compatibility. We cannot guarantee that this old code base will be maintained in the future and encourage you to convert any code to use the new syntax.
-  
 ************************************
-
-## General changes
-
-### Tidy function naming
-
-Where possible, function names now follow the [tidy design principles](https://design.tidyverse.org/function-names.html). Functions are always prefixed with a verb, and functions that start with the same verb should do similar things. For example, `plot_*` functions are all used to plot data while `run_*` functions are all used to run new analyses.
-
-### Modular pre/post processing steps
-
-In the previous `climwin` code base, functions included a lot of data processing and checks to allow for a single general use function (e.g. fill gaps in climate data, extract standard model statistics). This made the package harder to maintain and debug. It could also create annoying problems for users who would be forced to repeat whole analyses when separate processing steps failed. The new code base tries to isolate these tasks into stand-alone functions. We hope this more 'modular' code base is easier to maintain and work with.
   
-## Sliding window analysis
-
-### Key differences
-
-A standard sliding window analysis in the old `slidingwin` function can be transplanted almost exactly in the newer `run_slidingwin` with a few exceptions:
-
-- Remove `func` argument. Model structure is now defined explicitly in `baseline` using the dummy variable 'climate'. A user can recreate a linear, quadratic, or cubic climatic effect in the model structure (e.g. `Mass ~ climate` or `Mass ~ poly(climate, 2)`), but can now also include more complex or sophisticated effects of climate, such as climate as a random effect.
-
-- Remove `cmissing` argument. Following the general goal to create modular pre/post-processing steps, climate gap filling should now be done *before* running sliding window analysis using function `repair_climate`.
-
-### Linear effect of climate
-
-**'climate' variable in baseline model**
-  
-```{r}
-Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
-MassClimate <- read.csv(system.file("MassClimate.csv", package = "climwin"))
-```
-
-**Old syntax**
-```{r}
-old_output <- slidingwin(xvar = list(Temp = MassClimate$Temp),
-                         cdate = MassClimate$Date, 
-                         bdate = Mass$Date, 
-                         baseline = lm(Mass ~ 1, data = Mass),
-                         range = c(100, 0), 
-                         type = "absolute", refday = c(20, 5),
-                         stat = "mean", 
-                         func = c("lin"), cmissing = FALSE, cinterval = "day")
-```
-
-**New syntax**
-```{r}
-new_output <- run_slidingwin(xvar = "Temp",
-                             cdate = "Date",
-                             bdate = "Date", 
-                             bio_data = Mass,
-                             basemodel = lm(Mass ~ climate, data = bio_data),
-                             range = 0:100,
-                             type = "absolute", refday = "20/05/2020",
-                             fn = mean, cinterval = "day",
-                             climate_data = MassClimate)
-```
-
-**Comparison**
+## Performance
 
 ```{r}
-plotdelta(old_output[[1]]$Dataset)
+bench <- read.csv(system.file("bench_results.csv", package = "climwin"))
 ```
 
 ```{r}
-plot_delta(new_output)
+ggplot() +
+  geom_line(data = bench,
+            aes(x = window_size, y = median, colour = expression),
+            linewidth = 1) +
+  geom_point(data = bench,
+            aes(x = window_size, y = median, colour = expression),
+            shape = 21) +
+  theme_classic()
 ```
+
 
 ************************************
 
-### Quadratic or cubic effect of climate
+## Non-linear (quadratic or cubic) climate effects
 
 ```{r}
 Mass <- read.csv(system.file("Mass.csv", package = "climwin"))
