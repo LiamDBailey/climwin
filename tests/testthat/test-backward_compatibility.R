@@ -500,3 +500,87 @@ test_that("slidingwin with cohort matches run_slidingwin with cohort", {
   )
 
 })
+
+test_that("slidingwin with cohort matches run_slidingwin with spatial", {
+  
+  SpatialMass  <- structure(list(
+    spatial = c("A", "B", "B", "A", "A", "C", "A",
+               "B", "C", "A", "B", "A", "C", "B", "A", "C", "A", "B", "B", "C",
+               "C", "B", "A", "C", "B", "B", "B", "A", "A", "A", "B", "C", "A",
+               "A", "A", "A", "C", "A", "A", "B", "A", "C", "B", "A", "B", "A",
+               "A", "C", "B", "A"),
+    Mass   = c(176.843601781875, 172.880460973829, 182.086433228105, 198.850618330762, 
+               182.318412763998, 182.965796571225, 185.653926506639, 192.957959370688, 
+               189.993534265086, 177.386552784592, 199.234757721424, 182.234403314069, 
+               171.76975668408, 166.383618060499, 165.687956744805, 190.0810687989, 
+               174.191056266427, 190.557349296287, 172.551521426067, 188.590860068798, 
+               184.330359091982, 175.347451530397, 172.631480572745, 198.13282109797, 
+               191.503812531009, 188.071142779663, 166.303223604336, 192.622599694878, 
+               181.672233575955, 195.111878905445, 164.953681370243, 169.710744498298, 
+               188.73653544113, 170.485389977694, 162.211447935551, 195.113692963496, 
+               175.153982611373, 164.071253743023, 186.938088489696, 166.175886951387, 
+               166.570855602622, 174.657636629418, 183.013783944771, 179.805648103356, 
+               190.709954351187, 174.869315316901, 172.445917548612, 173.74863602221, 
+               179.319053888321, 193.6422133632),
+    Date   = c("01/11/1984", "01/2/1986", "01/2/1986", "01/12/1984",
+               "01/2/1985", "01/11/1986", "01/11/1984", "01/11/1985",
+               "01/2/1987", "01/11/1984", "01/2/1986", "01/12/1984",
+               "01/12/1986", "01/12/1985", "01/12/1984", "01/1/1987",
+               "01/1/1985", "01/1/1986", "01/11/1985", "01/1/1987",
+               "01/11/1986", "01/11/1985", "01/2/1985", "01/2/1987",
+               "01/1/1986", "01/12/1985", "01/1/1986", "01/11/1984",
+               "01/11/1984", "01/11/1984", "01/1/1986", "01/1/1987",
+               "01/1/1985", "01/11/1984", "01/1/1985", "01/1/1985",
+               "01/11/1986", "01/11/1984", "01/1/1985", "01/2/1986",
+               "01/1/1985", "01/12/1986", "01/12/1985", "01/1/1985",
+               "01/11/1985", "01/2/1985", "01/2/1985", "01/1/1987",
+               "01/12/1985", "01/12/1984")),
+    class = c("tbl_df", "tbl", "data.frame"), row.names = c(NA, -50L))
+  
+  MassClimateSpatial <- bind_rows(MassClimate |> mutate(spatial = "A"),
+                                  MassClimate |> mutate(spatial = "B")) |> 
+    bind_rows(MassClimate |> mutate(spatial = "C"))
+  
+  results_old_api <- slidingwin(
+    xvar     = list(Temp = MassClimateSpatial$Temp),
+    cdate    = MassClimateSpatial$Date,
+    bdate    = SpatialMass$Date,
+    baseline = lm(Mass ~ 1, data = SpatialMass),
+    range    = c(30, 0),
+    type     = "absolute",
+    refday   = c(1, 11),
+    stat     = "mean",
+    func     = "lin",
+    spatial   = list(SpatialMass$spatial, MassClimateSpatial$spatial)
+  )
+  
+  results_new_api <- run_slidingwin(
+    range        = c(0, 30),
+    climate_data = MassClimateSpatial,
+    bio_data     = SpatialMass,
+    baseline = lm(Mass ~ climate, data = bio_data),
+    fn           = mean,
+    type         = "absolute",
+    refday       = "01/11/2000",
+    spatial       = "spatial"
+  )
+  
+  old_ds <- results_old_api[[1]]$Dataset |>
+    select(Start_Day = WindowClose, End_Day = WindowOpen, ModWeight) |>
+    mutate(across(everything(), as.numeric)) |> 
+    tibble::remove_rownames()
+  
+  new_ds <- getDataset(results_new_api) |>
+    select(Start_Day, End_Day, ModWeight) |>
+    mutate(across(everything(), as.numeric)) |> 
+    tibble::remove_rownames()
+  
+  expect_equal(old_ds |> slice(1:20),
+               new_ds |> slice(1:20), tolerance = 1e-4)
+  expect_equal(
+    as.numeric(coef(results_old_api[[1]]$BestModel)),
+    as.numeric(coef(getBestModel(results_new_api))),
+    tolerance = 1e-4
+  )
+  
+})
