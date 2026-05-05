@@ -3,7 +3,7 @@ test_that("plot_weights takes output from run_slidingwin", {
   data("MassClimate")
   data("Mass")
   
-  results <- run_slidingwin(range = 0:2, 
+  results <- run_slidingwin(range = c(0, 2), 
                            climate_data = MassClimate, 
                            bio_data = Mass,
                            baseline = lm(Mass ~ climate, data = bio_data))
@@ -19,7 +19,7 @@ test_that("plot_weights can take different values of cw1", {
   data("MassClimate")
   data("Mass")
   
-  results <- run_slidingwin(range = 0:2, 
+  results <- run_slidingwin(range = c(0, 2), 
                             climate_data = MassClimate, 
                             bio_data = Mass,
                             baseline = lm(Mass ~ climate, data = bio_data))

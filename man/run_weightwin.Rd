@@ -9,7 +9,7 @@ run_weightwin(
   range,
   bio_data,
   climate_data,
-  basemodel,
+  baseline,
   cdate = "Date",
   bdate = "Date",
   xvar,
@@ -25,7 +25,7 @@ run_weightwin(
   par_min = NULL,
   par_max = NULL,
   cinterval = "day",
-  .basemodelIsCall = FALSE
+  .baselineIsCall = FALSE
 )
 }
 \arguments{
@@ -33,14 +33,14 @@ run_weightwin(
 uses \code{par}; subsequent runs draw starting parameters uniformly from
 [\code{par_min}, \code{par_max}].}
 
-\item{range}{A numeric vector specifying the time steps to look back from
-each date in \code{bio_data} (e.g. \code{0:100}).}
+\item{range}{A two-element numeric vector \code{c(lower, upper)} specifying
+the day range to search (e.g. \code{c(0, 100)}).}
 
 \item{bio_data}{A data frame containing biological data with a date column.}
 
 \item{climate_data}{A data frame containing climate data.}
 
-\item{basemodel}{An \code{lm} call used as the model template
+\item{baseline}{An \code{lm} call used as the model template
 (e.g. \code{lm(Mass ~ climate, data = bio_data)}).}
 
 \item{cdate}{Character string — date column in \code{climate_data}.
@@ -111,12 +111,12 @@ function directly — it must accept \code{(x, par1, par2, ...)} where
 data("MassClimate")
 data("Mass")
 
-results <- run_weightwin(range = 0:100,
+results <- run_weightwin(range = c(0, 100),
                          bio_data = Mass,
                          climate_data = MassClimate,
                          cdate = "Date", bdate = "Date",
                          xvar = "Temp",
-                         basemodel = lm(Mass ~ climate, data = bio_data),
+                         baseline = lm(Mass ~ climate, data = bio_data),
                          par = c(1.25, 0.5))
 
 }

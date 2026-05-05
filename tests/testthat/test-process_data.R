@@ -16,7 +16,7 @@ test_that("cdate column fails with different date format DD/MM/YYYY format", {
     process_data(
       climate_data = climate_data,
       bio_data = bio_data,
-      range = 0:2
+      range = c(0, 2)
     ),
     "Column 'Date' in climate_data must be in format 'DD/MM/YYYY'"
   )
@@ -30,7 +30,7 @@ test_that("cdate column fails with different date format DD/MM/YYYY format", {
     process_data(
       climate_data = climate_data,
       bio_data = bio_data,
-      range = 0:2
+      range = c(0, 2)
     ),
     "Column 'Date' in climate_data must be in format 'DD/MM/YYYY'"
   )
@@ -52,7 +52,7 @@ test_that("Date series must be continuous with no missing days", {
     process_data(
       climate_data = climate_data,
       bio_data = bio_data,
-      range = 0:2
+      range = c(0, 2)
     ),
     "Climate data has missing dates: 1979-01-03. The date series must be continuous from 1979-01-01 to 1979-01-05."
   )
@@ -73,7 +73,7 @@ test_that("xvar column has no missing data (NA or Inf)", {
     process_data(
       climate_data = climate_data,
       bio_data = bio_data,
-      range = 0:2
+      range = c(0, 2)
     ),
     "Column 'Temp' in climate_data contains 1 missing or infinite values out of 5 total values. All climate data must be complete."
   )
@@ -87,7 +87,7 @@ test_that("xvar column has no missing data (NA or Inf)", {
     process_data(
       climate_data = climate_data,
       bio_data = bio_data,
-      range = 0:2
+      range = c(0, 2)
     ),
     "Column 'Temp' in climate_data contains 1 missing or infinite values out of 5 total values. All climate data must be complete."
   )
@@ -110,7 +110,7 @@ test_that("All climate data completeness checks work together", {
     result <- process_data(
       climate_data = climate_data,
       bio_data = bio_data,
-      range = 0:2
+      range = c(0, 2)
     )
   )
   

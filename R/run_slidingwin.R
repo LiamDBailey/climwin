@@ -5,8 +5,8 @@
 #' that will be updated for each climate window. It internally calls calc_windows
 #' to compute climate summaries for each window.
 #'
-#' @param range A numeric vector specifying the number of days to look back from each date in bio_data.
-#'              For example, 0 represents the date itself, while 100 represents 100 days before that date.
+#' @param range A two-element numeric vector \code{c(lower, upper)} specifying the day range to search.
+#'   For example, \code{c(0, 100)} tests all windows from 0 to 100 days before each biological date.
 #' @param climate_data A data frame containing climate data. Required.
 #' @param bio_data A data frame containing biological data with a date column. Required.
 #' @param baseline An lm model object that will be updated for each climate window (e.g., lm(Mass ~ climate, data = bio_data)). Required.
@@ -36,7 +36,7 @@
 #'
 #' @examples
 #' # Example usage:
-#' results <- run_slidingwin(range = 0:2, 
+#' results <- run_slidingwin(range = c(0, 2), 
 #'                         climate_data = MassClimate, 
 #'                         bio_data = Mass,
 #'                         baseline = lm(Mass ~ climate, data = bio_data))
@@ -51,7 +51,7 @@
 #' Climate2 <- MassClimate
 #' Climate2$site <- "B"
 #' Climate_site <- rbind(Climate1, Climate2)
-#' results_spatial <- run_slidingwin(range = 0:2, 
+#' results_spatial <- run_slidingwin(range = c(0, 2), 
 #'                         climate_data = Climate_site, 
 #'                         bio_data = Mass,
 #'                         baseline = lm(Mass ~ climate, data = bio_data),
@@ -71,7 +71,7 @@
 #'# Test both linear and quadratic functions with climate variable temperature
 #'
 #'OffspringWin <- run_slidingwin(
-#'                           range = 0:150,
+#'                           range = c(0, 150),
 #'                           climate_data = OffspringClimate,
 #'                           bio_data = Offspring,
 #'                           baseline = glm(Offspring ~ climate, data = bio_data, family = "poisson"),
@@ -90,13 +90,13 @@
 #'# Load data.
 #'  
 #'# Test an absolute window, starting 20 May (refday = c(20, 5))
-#'# Test for climate windows between 100 and 0 days ago (range = c(100, 0))
+#'# Test for climate windows between 0 and 100 days ago (range = c(0, 100))
 #'# Test both mean and max aggregate statistics (stat = c("mean", "max"))
 #'# Fit a linear term (func = "lin")
 #'# Test at the resolution of days (cinterval = "day")
 #'  
 #'MassWin <- run_slidingwin(
-#'                      range = 0:100,
+#'                      range = c(0, 100),
 #'                      climate_data = MassClimate, bio_data = Mass,
 #'                      baseline = lm(Mass ~ climate, data = bio_data),
 #'                      xvar = "Temp",
@@ -142,6 +142,9 @@ run_slidingwin <- function(range,
     baseline <- substitute(baseline)
   }
 
+  validate_range(range)
+  range_seq <- seq.int(range[1], range[2])
+
   validate_arg("baseline", baseline, required = TRUE)
   validate_arg("fn", fn, required = FALSE, type = "function")
   
@@ -167,7 +170,7 @@ run_slidingwin <- function(range,
     processed_data <- process_data(
       climate_data = climate_data,
       bio_data = bio_data,
-      range = range,
+      range = range_seq,
       cdate = cdate,
       bdate = bdate,
       xvar = xvar,
@@ -194,7 +197,7 @@ run_slidingwin <- function(range,
   }
 
   # Generate all valid range combinations
-  range_combinations <- expand.grid(start_days = range, end_days = range)
+  range_combinations <- expand.grid(start_days = range_seq, end_days = range_seq)
   range_combinations <- range_combinations[range_combinations$end_days >= range_combinations$start_days, ]
 
   # Returns c(Start_Day, End_Day, AIC) for window combination i
@@ -308,7 +311,7 @@ run_slidingwin <- function(range,
   output <- climwin(
     dataset   = results,
     bestModel = list(model = best_model, data = bio_data),
-    range     = range(range)
+    range     = range
   )
   return(output)
 }

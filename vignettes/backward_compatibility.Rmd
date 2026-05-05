@@ -61,7 +61,7 @@ new_output <- run_slidingwin(xvar = "Temp",
                              bdate = "Date", 
                              bio_data = Mass,
                              baseline = lm(Mass ~ climate, data = bio_data),
-                             range = 0:100,
+                             range = c(0, 100),
                              type = "absolute", refday = "20/05/2020",
                              fn = mean, cinterval = "day",
                              climate_data = MassClimate)
@@ -107,7 +107,7 @@ old_output <- slidingwin(xvar = list(Temp = MassClimate$Temp),
 **New syntax**
 
 ```{r}
-new_output <- run_slidingwin(range = 0:150, type = "absolute", refday = "20/05/2020",
+new_output <- run_slidingwin(range = c(0, 150), type = "absolute", refday = "20/05/2020",
                              climate_data = MassClimate,
                              xvar = "Temp", fn = mean,
                              cinterval = "day",
@@ -160,7 +160,7 @@ MassClimate_week <- trans_clim_interval(MassClimate, xvar = "Temp", cdate = "Dat
 ```
 
 ```{r}
-new_output <- run_slidingwin(range = 0:70, type = "absolute", refday = "20/05/2020",
+new_output <- run_slidingwin(range = c(0, 70), type = "absolute", refday = "20/05/2020",
                              climate_data = MassClimate_week,
                              xvar = "Temp", fn = mean,
                              cinterval = "week",
@@ -221,7 +221,7 @@ MassClimate_mo
 ```
 
 ```{r}
-new_output <- run_slidingwin(range = 0:12, type = "absolute", refday = "20/05/2020",
+new_output <- run_slidingwin(range = c(0, 12), type = "absolute", refday = "20/05/2020",
                              climate_data = MassClimate_mo,
                              ## Sum growing degree days across multiple months
                              xvar = "threshold", fn = sum,
@@ -292,7 +292,7 @@ old_output <- slidingwin(xvar = list(Temp = MassClimate_gaps$Temp),
 In the new syntax, missing climate data should be fixed in a pre-processing step.
 
 ```{r, error=TRUE}
-run_slidingwin(range = 0:150, type = "absolute", refday = "20/05/2020",
+run_slidingwin(range = c(0, 150), type = "absolute", refday = "20/05/2020",
                climate_data = MassClimate_gaps,
                xvar = "Temp", fn = mean,
                cinterval = "day",
@@ -305,7 +305,7 @@ MassClimate_fixed <- repair_climate(MassClimate_gaps, cdate = "Date", xvar = "Te
 ```
 
 ```{r}
-new_output <- run_slidingwin(range = 0:150, type = "absolute", refday = "20/05/2020",
+new_output <- run_slidingwin(range = c(0, 150), type = "absolute", refday = "20/05/2020",
                              climate_data = MassClimate_fixed,
                              xvar = "Temp", fn = mean,
                              cinterval = "day",

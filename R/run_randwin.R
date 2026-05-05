@@ -6,8 +6,8 @@
 #' distribution for comparison with observed results.
 #'
 #' @param repeats Integer. Number of randomization iterations to perform.
-#' @param range A numeric vector specifying the number of days to look back
-#'   from each date in bio_data.
+#' @param range A two-element numeric vector \code{c(lower, upper)} specifying
+#'   the day range to search (e.g. \code{c(0, 50)}).
 #' @param climate_data A data frame containing climate data. Required.
 #' @param bio_data A data frame containing biological data with a date column.
 #'   Required.
@@ -58,7 +58,7 @@
 #' data("MassClimate")
 #' data("Mass")
 #' null_results <- run_randwin(repeats = 100,
-#'                             range = 0:50,
+#'                             range = c(0, 50),
 #'                             climate_data = MassClimate,
 #'                             bio_data = Mass,
 #'                             baseline = lm(Mass ~ climate, data = bio_data))
@@ -99,7 +99,8 @@ run_randwin <- function(repeats,
                  function(x) if (x < 1) stop("must be a positive integer")
                ))
 
-  validate_arg("range", range, required = TRUE)
+  validate_range(range)
+  range_seq <- seq.int(range[1], range[2])
 
   validate_arg("climate_data", climate_data, required = TRUE, type = "data.frame",
                additional_checks = function(x) if (nrow(x) == 0) stop("must contain at least 1 row"))
@@ -148,7 +149,7 @@ run_randwin <- function(repeats,
     process_data(
       climate_data = climate_data,
       bio_data     = bio_data,
-      range        = range,
+      range        = range_seq,
       cdate        = cdate,
       bdate        = bdate,
       xvar         = xvar,
@@ -163,7 +164,7 @@ run_randwin <- function(repeats,
   # For the slidingwin parallel path, pre-compute objects that are constant
   # across iterations so workers only receive pre-computed base R objects.
   range_combinations <- if (window_type == "slidingwin") {
-    rc <- expand.grid(start_days = range, end_days = range)
+    rc <- expand.grid(start_days = range_seq, end_days = range_seq)
     rc[rc$end_days >= rc$start_days, ]
   } else {
     NULL

@@ -3,7 +3,7 @@ test_that("plot_weightwin returns a patchwork object with multiple plots", {
   data("MassClimate")
   data("Mass")
   
-  results <- run_weightwin(range = 0:2, 
+  results <- run_weightwin(range = c(0, 2), 
                           bio_data = Mass,
                           climate_data = MassClimate,
                           cdate = "Date", bdate = "Date",
@@ -25,7 +25,7 @@ test_that("plot_weightwin can handle different plot combinations", {
   data("MassClimate")
   data("Mass")
   
-  results <- run_weightwin(range = 0:2, 
+  results <- run_weightwin(range = c(0, 2), 
                           bio_data = Mass,
                           climate_data = MassClimate,
                           cdate = "Date", bdate = "Date",
@@ -49,7 +49,7 @@ test_that("plot_weightwin validates plot types correctly", {
   data("MassClimate")
   data("Mass")
   
-  results <- run_weightwin(range = 0:2, 
+  results <- run_weightwin(range = c(0, 2), 
                           bio_data = Mass,
                           climate_data = MassClimate,
                           cdate = "Date", bdate = "Date",
@@ -69,7 +69,7 @@ test_that("plot_weightwin can take inputs from run_weightwin", {
   data("MassClimate")
   data("Mass")
   
-  results <- run_weightwin(range = 0:2, 
+  results <- run_weightwin(range = c(0, 2), 
                           bio_data = Mass,
                           climate_data = MassClimate,
                           cdate = "Date", bdate = "Date",

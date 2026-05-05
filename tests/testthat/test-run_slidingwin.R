@@ -13,7 +13,7 @@ test_that("run_slidingwin works with valid input", {
   )
   
   # Test function
-  result <- run_slidingwin(range = 0:2,
+  result <- run_slidingwin(range = c(0, 2),
                            climate_data = climate_data,
                            bio_data = bio_data,
                            baseline = lm(Mass ~ climate, data = bio_data))
@@ -42,7 +42,7 @@ test_that("run_slidingwin fails if we try to go back too far", {
   )
   
   # Test function
-  expect_error(run_slidingwin(range = 0:20,
+  expect_error(run_slidingwin(range = c(0, 20),
                            climate_data = climate_data,
                            bio_data = bio_data,
                            baseline = lm(Mass ~ climate, data = bio_data)),
@@ -63,7 +63,7 @@ test_that("run_slidingwin works with different baseline structures", {
     Age = c(1, 2, 3)
   )
   
-  result1 <- run_slidingwin(range = 0:2,
+  result1 <- run_slidingwin(range = c(0, 2),
                             climate_data = climate_data,
                             bio_data = bio_data,
                             baseline = lm(Mass ~ climate, data = bio_data))
@@ -74,7 +74,7 @@ test_that("run_slidingwin works with different baseline structures", {
   expect_true(inherits(result1@bestModel$model, "lm"))
   expect_equal(nrow(result1@dataset), 6)
   
-  result2 <- run_slidingwin(range = 0:2,
+  result2 <- run_slidingwin(range = c(0, 2),
                             climate_data = climate_data,
                             bio_data = bio_data,
                             baseline = lm(Mass ~ climate + Age, data = bio_data))
@@ -85,7 +85,7 @@ test_that("run_slidingwin works with different baseline structures", {
   expect_true(inherits(result2@bestModel$model, "lm"))
   expect_equal(nrow(result2@dataset), 6)
   
-  result3 <- run_slidingwin(range = 0:2,
+  result3 <- run_slidingwin(range = c(0, 2),
                             climate_data = climate_data,
                             bio_data = bio_data,
                             baseline = lm(Mass ~ climate * Age, data = bio_data))
@@ -113,7 +113,7 @@ test_that("run_slidingwin works with log(climate)", {
   )
   
   # Test function
-  result <- run_slidingwin(range = 0:2,
+  result <- run_slidingwin(range = c(0, 2),
                            climate_data = climate_data,
                            bio_data = bio_data,
                            baseline = lm(Mass ~ log(climate), data = bio_data))
@@ -141,14 +141,14 @@ test_that("run_slidingwin gives identical results with parallel = TRUE and FALSE
     Age = c(1, 2, 3)
   )
   # Run with parallel = TRUE
-  result_parallel <- run_slidingwin(range = 0:2,
+  result_parallel <- run_slidingwin(range = c(0, 2),
                                     climate_data = climate_data,
                                     bio_data = bio_data,
                                     baseline = lm(Mass ~ climate, data = bio_data),
                                     parallel = TRUE)
   
   # Run with parallel = FALSE
-  result_sequential <- run_slidingwin(range = 0:2,
+  result_sequential <- run_slidingwin(range = c(0, 2),
                                       climate_data = climate_data,
                                       bio_data = bio_data,
                                       baseline = lm(Mass ~ climate, data = bio_data),
@@ -168,7 +168,7 @@ test_that("results and results_spatial are identical as shown in example", {
   bio_data$climate <- 0  # Initialize climate column
   
   # Run standard analysis (without spatial)
-  results <- run_slidingwin(range = 0:2, 
+  results <- run_slidingwin(range = c(0, 2), 
                             climate_data = MassClimate, 
                             bio_data = bio_data,
                             baseline = lm(Mass ~ climate, data = bio_data))
@@ -185,7 +185,7 @@ test_that("results and results_spatial are identical as shown in example", {
   bio_data$site <- Mass$site
   
   # Run spatial analysis
-  results_spatial <- run_slidingwin(range = 0:2, 
+  results_spatial <- run_slidingwin(range = c(0, 2), 
                                     climate_data = Climate_site, 
                                     bio_data = bio_data,
                                     baseline = lm(Mass ~ climate, data = bio_data),
@@ -214,7 +214,7 @@ test_that("run_slidingwin fails when spatial column doesn't exist in climate_dat
   
   # Should fail because climate_data doesn't have 'site' column
   expect_error(
-    run_slidingwin(range = 0:1,
+    run_slidingwin(range = c(0, 1),
                    climate_data = climate_data,
                    bio_data = bio_data,
                    baseline = lm(Mass ~ climate, data = bio_data),
@@ -240,7 +240,7 @@ test_that("run_slidingwin fails when spatial column doesn't exist in bio_data", 
   
   # Should fail because bio_data doesn't have 'site' column
   expect_error(
-    run_slidingwin(range = 0:1,
+    run_slidingwin(range = c(0, 1),
                    climate_data = climate_data,
                    bio_data = bio_data,
                    baseline = lm(Mass ~ climate, data = bio_data),
@@ -264,7 +264,7 @@ test_that("run_slidingwin fails when spatial column doesn't exist in both climat
   
   # Should fail because neither dataset has 'nonexistent_column' column
   expect_error(
-    run_slidingwin(range = 0:1,
+    run_slidingwin(range = c(0, 1),
                    climate_data = climate_data,
                    bio_data = bio_data,
                    baseline = lm(Mass ~ climate, data = bio_data),

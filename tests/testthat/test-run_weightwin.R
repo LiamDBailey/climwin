@@ -19,7 +19,7 @@ make_test_data <- function() {
 test_that("run_weightwin ('W') returns a valid output", {
   d <- make_test_data()
   result <- run_weightwin(
-    range      = 0:4,
+    range      = c(0, 4),
     bio_data   = d$bio_data,
     climate_data = d$climate_data,
     cdate = "Date", bdate = "Date", xvar = "Temp",
@@ -42,7 +42,7 @@ test_that("run_weightwin ('W') returns a valid output", {
 
   ## Weights as expected
   weights <- result@weightwin_output[[1]]$weights$weights
-  expect_length(weights, 5)           # length(0:4)
+  expect_length(weights, 5)           # length(c(0, 4))
   expect_equal(sum(weights), 1, tolerance = 1e-10)
   expect_true(all(weights >= 0))
 })
@@ -51,7 +51,7 @@ test_that("run_weightwin errors on invalid weightfunc", {
   d <- make_test_data()
   expect_error(
     run_weightwin(
-      range      = 0:4,
+      range      = c(0, 4),
       bio_data   = d$bio_data,
       climate_data = d$climate_data,
       cdate = "Date", bdate = "Date", xvar = "Temp",
@@ -68,7 +68,7 @@ test_that("run_weightwin ('W') errors when lower >= upper", {
   d <- make_test_data()
   expect_error(
     run_weightwin(
-      range      = 0:4,
+      range      = c(0, 4),
       bio_data   = d$bio_data,
       climate_data = d$climate_data,
       cdate = "Date", bdate = "Date", xvar = "Temp",
@@ -88,7 +88,7 @@ test_that("run_weightwin with n > 1 uses lower/upper as default par_min/par_max"
   expect_no_error(
     run_weightwin(
       n          = 2,
-      range      = 0:4,
+      range      = c(0, 4),
       bio_data   = d$bio_data,
       climate_data = d$climate_data,
       cdate = "Date", bdate = "Date", xvar = "Temp",
@@ -105,7 +105,7 @@ test_that("run_weightwin with n > 1 ('W') returns one output per iteration", {
   d <- make_test_data()
   result <- run_weightwin(
     n          = 2,
-    range      = 0:4,
+    range      = c(0, 4),
     bio_data   = d$bio_data,
     climate_data = d$climate_data,
     cdate = "Date", bdate = "Date", xvar = "Temp",
@@ -129,7 +129,7 @@ test_that("run_weightwin stores weightfunc in each output element", {
   d <- make_test_data()
   for (wf in c("W", "G")) {
     result <- run_weightwin(
-      range      = 0:4,
+      range      = c(0, 4),
       bio_data   = d$bio_data,
       climate_data = d$climate_data,
       cdate = "Date", bdate = "Date", xvar = "Temp",
@@ -147,7 +147,7 @@ test_that("run_weightwin stores weightfunc in each output element", {
 test_that("run_weightwin ('G') returns a valid climwin_weightwin object", {
   d <- make_test_data()
   result <- run_weightwin(
-    range      = 0:4,
+    range      = c(0, 4),
     bio_data   = d$bio_data,
     climate_data = d$climate_data,
     cdate = "Date", bdate = "Date", xvar = "Temp",
@@ -172,7 +172,7 @@ test_that("run_weightwin ('G') returns a valid climwin_weightwin object", {
 test_that("run_weightwin ('F') returns a valid climwin_weightwin object", {
   d <- make_test_data()
   result <- run_weightwin(
-    range      = 0:4,
+    range      = c(0, 4),
     bio_data   = d$bio_data,
     climate_data = d$climate_data,
     cdate = "Date", bdate = "Date", xvar = "Temp",
@@ -199,7 +199,7 @@ test_that("run_weightwin accepts a custom density function for weightfunc", {
   # Use exponential density as a custom weight function
   exp_dfun <- function(x, rate) dexp(x, rate = rate)
   result <- run_weightwin(
-    range      = 0:4,
+    range      = c(0, 4),
     bio_data   = d$bio_data,
     climate_data = d$climate_data,
     cdate = "Date", bdate = "Date", xvar = "Temp",
@@ -223,7 +223,7 @@ test_that("run_weightwin errors when custom weightfunc given without lower/upper
   exp_dfun <- function(x, rate) dexp(x, rate = rate)
   expect_error(
     run_weightwin(
-      range      = 0:4,
+      range      = c(0, 4),
       bio_data   = d$bio_data,
       climate_data = d$climate_data,
       cdate = "Date", bdate = "Date", xvar = "Temp",

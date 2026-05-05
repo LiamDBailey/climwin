@@ -30,10 +30,10 @@ Allows us to have generic print and plot methods.
 ## Create a climwin object from `run_slidingwin`
 data("MassClimate")
 data("Mass")
-results <- run_slidingwin(range = 0:2, 
+results <- run_slidingwin(range = c(0, 2), 
                         climate_data = MassClimate, 
                         bio_data = Mass,
-                        basemodel = lm(Mass ~ climate, data = bio_data))
+                        baseline = lm(Mass ~ climate, data = bio_data))
 
 ## Use methods to extract dataset and bestmodel
 getDataset(results)

@@ -1,7 +1,7 @@
 test_that("MassWin results can be recreated", {
   
   # Example usage:
-  results <- run_slidingwin(range = 0:150, type = "absolute", fn = mean,
+  results <- run_slidingwin(range = c(0, 150), type = "absolute", fn = mean,
                             refday = "20/05/2025",
                             climate_data = MassClimate, 
                             bio_data = Mass,
@@ -42,7 +42,7 @@ test_that("MassWin results can be recreated", {
 
 test_that("Masswin with interaction", {
   
-  results <- run_slidingwin(range = 0:150, type = "absolute", fn = mean,
+  results <- run_slidingwin(range = c(0, 150), type = "absolute", fn = mean,
                             refday = "20/05/2025",
                             climate_data = MassClimate, 
                             bio_data = Mass,
@@ -103,7 +103,7 @@ test_that("Test cohort works", {
                           class = c("tbl_df", "tbl", "data.frame"), row.names = c(NA, -100L))
   
   ## Without cohort
-  results <- run_slidingwin(range = 0:100, type = "absolute", fn = mean,
+  results <- run_slidingwin(range = c(0, 100), type = "absolute", fn = mean,
                             refday = "01/11/2025",
                             climate_data = MassClimate, 
                             bio_data = CohortMass,
@@ -140,7 +140,7 @@ test_that("Weightwin has backwards compatibility", {
   # Example usage:
   
   set.seed(12)
-  new_result <- run_weightwin(range = 0:150,
+  new_result <- run_weightwin(range = c(0, 150),
                               bio_data = Mass, climate_data = MassClimate,
                               baseline = lm(Mass ~ climate, data = bio_data),
                               type = "absolute", 
@@ -184,7 +184,7 @@ test_that("slidingwin and run_slidingwin give same results with cinterval = 'mon
   # New implementation: pre-aggregate then run
   Climate_monthly <- trans_clim_interval(MassClimate, cinterval = "month")
   results_new <- run_slidingwin(
-    range        = 0:6,
+    range        = c(0, 6),
     climate_data = Climate_monthly,
     bio_data     = Mass,
     baseline = lm(Mass ~ climate, data = bio_data),
@@ -237,7 +237,7 @@ test_that("slidingwin and run_slidingwin give same results with cinterval = 'wee
   # New implementation: pre-aggregate then run
   Climate_weekly <- trans_clim_interval(MassClimate, cinterval = "week")
   results_new <- run_slidingwin(
-    range        = 0:24,
+    range        = c(0, 24),
     climate_data = Climate_weekly,
     bio_data     = Mass,
     baseline = lm(Mass ~ climate, data = bio_data),
@@ -280,7 +280,7 @@ test_that("trans_clim_interval -> run_slidingwin pipeline produces valid output"
                rep(1L, nrow(Climate_monthly)))
 
   results_monthly <- run_slidingwin(
-    range        = 0:6,
+    range        = c(0, 6),
     climate_data = Climate_monthly,
     bio_data     = Mass,
     baseline = lm(Mass ~ climate, data = bio_data),
@@ -305,7 +305,7 @@ test_that("trans_clim_interval -> run_slidingwin pipeline produces valid output"
   expect_true(all(date_diffs == 7L))
 
   results_weekly <- run_slidingwin(
-    range        = 0:4,
+    range        = c(0, 4),
     climate_data = Climate_weekly,
     bio_data     = Mass,
     baseline = lm(Mass ~ climate, data = bio_data),
@@ -322,7 +322,7 @@ test_that("trans_clim_interval -> run_slidingwin pipeline produces valid output"
   ## ── error: daily data passed with cinterval = "month" ─────────────────────
   expect_error(
     run_slidingwin(
-      range        = 0:6,
+      range        = c(0, 6),
       climate_data = MassClimate,
       bio_data     = Mass,
       baseline = lm(Mass ~ climate, data = bio_data),
@@ -335,11 +335,11 @@ test_that("trans_clim_interval -> run_slidingwin pipeline produces valid output"
 
 })
 
-# ── old_slidingwin backward-compatibility tests ────────────────────────────────
+# ── slidingwin backward-compatibility tests ────────────────────────────────
 
-test_that("old_slidingwin and run_slidingwin produce same results (absolute, lin)", {
+test_that("slidingwin and run_slidingwin produce same results (absolute, lin)", {
 
-  results_old_api <- old_slidingwin(
+  results_old_api <- slidingwin(
     xvar     = list(Temp = MassClimate$Temp),
     cdate    = MassClimate$Date,
     bdate    = Mass$Date,
@@ -352,7 +352,7 @@ test_that("old_slidingwin and run_slidingwin produce same results (absolute, lin
   )
 
   results_new_api <- run_slidingwin(
-    range        = 0:10,
+    range        = c(0, 10),
     climate_data = MassClimate,
     bio_data     = Mass,
     baseline = lm(Mass ~ climate, data = bio_data),
@@ -361,26 +361,28 @@ test_that("old_slidingwin and run_slidingwin produce same results (absolute, lin
     refday       = "20/05/2000"
   )
 
-  old_ds <- getDataset(results_old_api) |>
-    select(Start_Day, End_Day, ModWeight) |>
-    mutate(across(everything(), as.numeric))
-
+  old_ds <- results_old_api[[1]]$Dataset |>
+    select(Start_Day = WindowClose, End_Day = WindowOpen, ModWeight) |>
+    mutate(across(everything(), as.numeric)) |> 
+    tibble::remove_rownames()
+  
   new_ds <- getDataset(results_new_api) |>
     select(Start_Day, End_Day, ModWeight) |>
-    mutate(across(everything(), as.numeric))
-
+    mutate(across(everything(), as.numeric)) |> 
+    tibble::remove_rownames()
+  
   expect_equal(old_ds, new_ds, tolerance = 1e-4)
   expect_equal(
-    as.numeric(coef(getBestModel(results_old_api))),
+    as.numeric(coef(results_old_api[[1]]$BestModel)),
     as.numeric(coef(getBestModel(results_new_api))),
     tolerance = 1e-4
   )
 
 })
 
-test_that("old_slidingwin and run_slidingwin produce same results (relative, lin)", {
+test_that("slidingwin and run_slidingwin produce same results (relative, lin)", {
 
-  results_old_api <- old_slidingwin(
+  results_old_api <- slidingwin(
     xvar     = list(Temp = MassClimate$Temp),
     cdate    = MassClimate$Date,
     bdate    = Mass$Date,
@@ -392,7 +394,7 @@ test_that("old_slidingwin and run_slidingwin produce same results (relative, lin
   )
 
   results_new_api <- run_slidingwin(
-    range        = 0:10,
+    range        = c(0, 10),
     climate_data = MassClimate,
     bio_data     = Mass,
     baseline = lm(Mass ~ climate, data = bio_data),
@@ -400,157 +402,26 @@ test_that("old_slidingwin and run_slidingwin produce same results (relative, lin
     type         = "relative"
   )
 
-  old_ds <- getDataset(results_old_api) |>
-    select(Start_Day, End_Day, ModWeight) |>
-    mutate(across(everything(), as.numeric))
+  old_ds <- results_old_api[[1]]$Dataset |>
+    select(Start_Day = WindowClose, End_Day = WindowOpen, ModWeight) |>
+    mutate(across(everything(), as.numeric)) |> 
+    tibble::remove_rownames()
 
   new_ds <- getDataset(results_new_api) |>
     select(Start_Day, End_Day, ModWeight) |>
-    mutate(across(everything(), as.numeric))
+    mutate(across(everything(), as.numeric)) |> 
+    tibble::remove_rownames()
 
   expect_equal(old_ds, new_ds, tolerance = 1e-4)
   expect_equal(
-    as.numeric(coef(getBestModel(results_old_api))),
+    as.numeric(coef(results_old_api[[1]]$BestModel)),
     as.numeric(coef(getBestModel(results_new_api))),
     tolerance = 1e-4
   )
 
 })
 
-test_that("old_slidingwin and run_slidingwin produce same results (func = 'quad')", {
-
-  results_old_api <- old_slidingwin(
-    xvar     = list(Temp = MassClimate$Temp),
-    cdate    = MassClimate$Date,
-    bdate    = Mass$Date,
-    baseline = lm(Mass ~ 1, data = Mass),
-    range    = c(10, 0),
-    type     = "absolute",
-    refday   = c(20, 5),
-    stat     = "mean",
-    func     = "quad"
-  )
-
-  results_new_api <- run_slidingwin(
-    range        = 0:10,
-    climate_data = MassClimate,
-    bio_data     = Mass,
-    baseline = lm(Mass ~ poly(climate, 2), data = bio_data),
-    fn           = mean,
-    type         = "absolute",
-    refday       = "20/05/2000"
-  )
-
-  old_ds <- getDataset(results_old_api) |>
-    select(Start_Day, End_Day) |>
-    slice(1:3) |>
-    mutate(across(everything(), as.integer))
-
-  new_ds <- getDataset(results_new_api) |>
-    select(Start_Day, End_Day) |>
-    slice(1:3) |>
-    mutate(across(everything(), as.integer))
-
-  expect_equal(old_ds, new_ds)
-  expect_equal(
-    as.numeric(coef(getBestModel(results_old_api))),
-    as.numeric(coef(getBestModel(results_new_api))),
-    tolerance = 1e-4
-  )
-
-})
-
-test_that("old_slidingwin and run_slidingwin produce same results (cinterval = 'month')", {
-
-  results_old_api <- old_slidingwin(
-    xvar      = list(Temp = MassClimate$Temp),
-    cdate     = MassClimate$Date,
-    bdate     = Mass$Date,
-    baseline  = lm(Mass ~ 1, data = Mass),
-    range     = c(6, 0),
-    type      = "absolute",
-    refday    = c(20, 5),
-    stat      = "mean",
-    func      = "lin",
-    cinterval = "month"
-  )
-
-  Climate_monthly <- trans_clim_interval(MassClimate, cinterval = "month")
-  results_new_api <- run_slidingwin(
-    range        = 0:6,
-    climate_data = Climate_monthly,
-    bio_data     = Mass,
-    baseline = lm(Mass ~ climate, data = bio_data),
-    fn           = mean,
-    type         = "absolute",
-    refday       = "20/05/2000",
-    cinterval    = "month"
-  )
-
-  old_ds <- getDataset(results_old_api) |>
-    select(Start_Day, End_Day, ModWeight) |>
-    mutate(across(everything(), as.numeric))
-
-  new_ds <- getDataset(results_new_api) |>
-    select(Start_Day, End_Day, ModWeight) |>
-    mutate(across(everything(), as.numeric))
-
-  expect_equal(old_ds, new_ds, tolerance = 1e-4)
-  expect_equal(
-    as.numeric(coef(getBestModel(results_old_api))),
-    as.numeric(coef(getBestModel(results_new_api))),
-    tolerance = 1e-4
-  )
-
-})
-
-test_that("old_slidingwin and run_slidingwin produce same results (cinterval = 'week')", {
-
-  results_old_api <- old_slidingwin(
-    xvar      = list(Temp = MassClimate$Temp),
-    cdate     = MassClimate$Date,
-    bdate     = Mass$Date,
-    baseline  = lm(Mass ~ 1, data = Mass),
-    range     = c(8, 0),
-    type      = "absolute",
-    refday    = c(20, 5),
-    stat      = "mean",
-    func      = "lin",
-    cinterval = "week"
-  )
-
-  Climate_weekly <- trans_clim_interval(MassClimate, cinterval = "week")
-  results_new_api <- run_slidingwin(
-    range        = 0:8,
-    climate_data = Climate_weekly,
-    bio_data     = Mass,
-    baseline = lm(Mass ~ climate, data = bio_data),
-    fn           = mean,
-    type         = "absolute",
-    refday       = "20/05/2000",
-    cinterval    = "week"
-  )
-
-  old_ds <- getDataset(results_old_api) |>
-    select(Start_Day, End_Day) |>
-    slice(1:3) |>
-    mutate(across(everything(), as.integer))
-
-  new_ds <- getDataset(results_new_api) |>
-    select(Start_Day, End_Day) |>
-    slice(1:3) |>
-    mutate(across(everything(), as.integer))
-
-  expect_equal(old_ds, new_ds)
-  expect_equal(
-    as.numeric(coef(getBestModel(results_old_api))),
-    as.numeric(coef(getBestModel(results_new_api))),
-    tolerance = 1e-4
-  )
-
-})
-
-test_that("old_slidingwin with cohort matches run_slidingwin with cohort", {
+test_that("slidingwin with cohort matches run_slidingwin with cohort", {
 
   CohortMass  <- structure(list(
     cohort = c("A", "B", "B", "A", "A", "C", "A",
@@ -558,13 +429,19 @@ test_that("old_slidingwin with cohort matches run_slidingwin with cohort", {
                "C", "B", "A", "C", "B", "B", "B", "A", "A", "A", "B", "C", "A",
                "A", "A", "A", "C", "A", "A", "B", "A", "C", "B", "A", "B", "A",
                "A", "C", "B", "A"),
-    Mass   = c(188.74, 204.75, 185.73, 181.94, 191.54, 163.92,
-               179.38, 193, 162.06, 185.76, 208.11, 195.81, 167.08, 198.37,
-               187.96, 154.94, 187, 188.6, 198.15, 162.71, 155.67, 197.74,
-               182.07, 160.78, 199.35, 201.27, 191.07, 186.31, 195.18, 178.46,
-               196.12, 162.95, 195.84, 188.96, 186.94, 187.32, 169.5, 187.05,
-               187.04, 205.75, 190.67, 165.59, 194.12, 180.25, 190.28, 187.67,
-               179.8, 163.29, 196.43, 190.29),
+    Mass   = c(176.843601781875, 172.880460973829, 182.086433228105, 198.850618330762, 
+               182.318412763998, 182.965796571225, 185.653926506639, 192.957959370688, 
+               189.993534265086, 177.386552784592, 199.234757721424, 182.234403314069, 
+               171.76975668408, 166.383618060499, 165.687956744805, 190.0810687989, 
+               174.191056266427, 190.557349296287, 172.551521426067, 188.590860068798, 
+               184.330359091982, 175.347451530397, 172.631480572745, 198.13282109797, 
+               191.503812531009, 188.071142779663, 166.303223604336, 192.622599694878, 
+               181.672233575955, 195.111878905445, 164.953681370243, 169.710744498298, 
+               188.73653544113, 170.485389977694, 162.211447935551, 195.113692963496, 
+               175.153982611373, 164.071253743023, 186.938088489696, 166.175886951387, 
+               166.570855602622, 174.657636629418, 183.013783944771, 179.805648103356, 
+               190.709954351187, 174.869315316901, 172.445917548612, 173.74863602221, 
+               179.319053888321, 193.6422133632),
     Date   = c("01/11/1984", "01/2/1986", "01/2/1986", "01/12/1984",
                "01/2/1985", "01/11/1986", "01/11/1984", "01/11/1985",
                "01/2/1987", "01/11/1984", "01/2/1986", "01/12/1984",
@@ -580,7 +457,7 @@ test_that("old_slidingwin with cohort matches run_slidingwin with cohort", {
                "01/12/1985", "01/12/1984")),
     class = c("tbl_df", "tbl", "data.frame"), row.names = c(NA, -50L))
 
-  results_old_api <- old_slidingwin(
+  results_old_api <- slidingwin(
     xvar     = list(Temp = MassClimate$Temp),
     cdate    = MassClimate$Date,
     bdate    = CohortMass$Date,
@@ -594,7 +471,7 @@ test_that("old_slidingwin with cohort matches run_slidingwin with cohort", {
   )
 
   results_new_api <- run_slidingwin(
-    range        = 0:30,
+    range        = c(0, 30),
     climate_data = MassClimate,
     bio_data     = CohortMass,
     baseline = lm(Mass ~ climate, data = bio_data),
@@ -604,450 +481,22 @@ test_that("old_slidingwin with cohort matches run_slidingwin with cohort", {
     cohort       = "cohort"
   )
 
-  old_ds <- getDataset(results_old_api) |>
-    select(Start_Day, End_Day, ModWeight) |>
-    mutate(across(everything(), as.numeric)) |>
-    dplyr::filter(ModWeight > 0)
-
-  new_ds <- getDataset(results_new_api) |>
-    select(Start_Day, End_Day, ModWeight) |>
-    mutate(across(everything(), as.numeric)) |>
-    dplyr::filter(ModWeight > 0)
-
-  expect_equal(old_ds, new_ds, tolerance = 1e-4)
-
-})
-
-test_that("old_slidingwin, run_slidingwin, and slidingwin all agree (absolute, lin)", {
-
-  results_old_api <- old_slidingwin(
-    xvar     = list(Temp = MassClimate$Temp),
-    cdate    = MassClimate$Date,
-    bdate    = Mass$Date,
-    baseline = lm(Mass ~ 1, data = Mass),
-    range    = c(20, 0),
-    type     = "absolute",
-    refday   = c(20, 5),
-    stat     = "mean",
-    func     = "lin"
-  )
-
-  results_new_api <- run_slidingwin(
-    range        = 0:20,
-    climate_data = MassClimate,
-    bio_data     = Mass,
-    baseline = lm(Mass ~ climate, data = bio_data),
-    fn           = mean,
-    type         = "absolute",
-    refday       = "20/05/2000"
-  )
-
-  results_cran <- slidingwin(
-    xvar     = list(Temp = MassClimate$Temp),
-    cdate    = MassClimate$Date,
-    bdate    = Mass$Date,
-    baseline = lm(Mass ~ 1, data = Mass),
-    range    = c(20, 0),
-    type     = "absolute",
-    refday   = c(20, 5),
-    stat     = "mean",
-    func     = "lin"
-  )
-
-  ## old_slidingwin == run_slidingwin
-  old_ds <- getDataset(results_old_api) |>
-    select(Start_Day, End_Day, ModWeight) |>
-    mutate(across(everything(), as.numeric))
-
-  new_ds <- getDataset(results_new_api) |>
-    select(Start_Day, End_Day, ModWeight) |>
-    mutate(across(everything(), as.numeric))
-
-  expect_equal(old_ds, new_ds, tolerance = 1e-4)
-
-  ## old_slidingwin == slidingwin (CRAN)
-  cran_ds <- results_cran[[1]]$Dataset |>
+  old_ds <- results_old_api[[1]]$Dataset |>
     select(Start_Day = WindowClose, End_Day = WindowOpen, ModWeight) |>
-    mutate(across(everything(), as.numeric)) |>
-    dplyr::filter(ModWeight > 0)
-
-  old_ds_filtered <- old_ds |> dplyr::filter(ModWeight > 0)
-
-  expect_equal(old_ds_filtered, cran_ds, tolerance = 0.001)
-
-})
-
-test_that("old_slidingwin with multiple func values returns a list", {
-
-  result <- old_slidingwin(
-    xvar     = list(Temp = MassClimate$Temp),
-    cdate    = MassClimate$Date,
-    bdate    = Mass$Date,
-    baseline = lm(Mass ~ 1, data = Mass),
-    range    = c(5, 0),
-    type     = "absolute",
-    refday   = c(20, 5),
-    stat     = "mean",
-    func     = c("lin", "quad")
-  )
-
-  expect_type(result, "list")
-  expect_length(result, 2L)
-  expect_true(is.data.frame(getDataset(result[[1]])))
-  expect_true(is.data.frame(getDataset(result[[2]])))
-
-  ## Linear best model: 2 coefficients; quadratic: 3 coefficients
-  expect_equal(length(coef(getBestModel(result[[1]]))), 2L)
-  expect_equal(length(coef(getBestModel(result[[2]]))), 3L)
-
-})
-
-# ── old_weightwin backward-compatibility tests ─────────────────────────────────
-
-test_that("old_weightwin and run_weightwin produce identical results (Weibull, absolute)", {
-
-  set.seed(42)
-  result_old <- old_weightwin(
-    xvar       = list(Temp = MassClimate$Temp),
-    cdate      = MassClimate$Date,
-    bdate      = Mass$Date,
-    baseline   = lm(Mass ~ 1, data = Mass),
-    range      = c(150, 0),
-    func       = "lin",
-    type       = "absolute",
-    refday     = c(20, 5),
-    weightfunc = "W",
-    par        = c(3, 0.2, 0)   # 3-param old-style; truncated to c(3, 0.2) internally
-  )
-
-  set.seed(42)
-  result_new <- run_weightwin(
-    range        = 0:150,
-    bio_data     = Mass,
-    climate_data = MassClimate,
-    baseline = lm(Mass ~ climate, data = bio_data),
-    type         = "absolute",
-    refday       = "20/05/2000",
-    par          = c(3, 0.2),
-    xvar         = "Temp",
-    cdate        = "Date",
-    bdate        = "Date"
-  )
-
-  ## old_weightwin delegates directly to run_weightwin, so results must be exact
-  expect_equal(getWeights(result_old), getWeights(result_new))
+    mutate(across(everything(), as.numeric)) |> 
+    tibble::remove_rownames()
+  
+  new_ds <- getDataset(results_new_api) |>
+    select(Start_Day, End_Day, ModWeight) |>
+    mutate(across(everything(), as.numeric)) |> 
+    tibble::remove_rownames()
+  
+  expect_equal(old_ds |> slice(1:20),
+               new_ds |> slice(1:20), tolerance = 1e-4)
   expect_equal(
-    as.numeric(coef(getBestModel(result_old))),
-    as.numeric(coef(getBestModel(result_new)))
+    as.numeric(coef(results_old_api[[1]]$BestModel)),
+    as.numeric(coef(getBestModel(results_new_api))),
+    tolerance = 1e-4
   )
-  expect_equal(result_old@weightwin_summary, result_new@weightwin_summary)
-
-})
-
-test_that("old_weightwin and run_weightwin produce identical results (Weibull, relative)", {
-
-  set.seed(7)
-  result_old <- old_weightwin(
-    xvar       = list(Temp = MassClimate$Temp),
-    cdate      = MassClimate$Date,
-    bdate      = Mass$Date,
-    baseline   = lm(Mass ~ 1, data = Mass),
-    range      = c(100, 0),
-    func       = "lin",
-    type       = "relative",
-    weightfunc = "W",
-    par        = c(2, 0.5, 0)
-  )
-
-  set.seed(7)
-  result_new <- run_weightwin(
-    range        = 0:100,
-    bio_data     = Mass,
-    climate_data = MassClimate,
-    baseline = lm(Mass ~ climate, data = bio_data),
-    type         = "relative",
-    par          = c(2, 0.5),
-    xvar         = "Temp",
-    cdate        = "Date",
-    bdate        = "Date"
-  )
-
-  expect_equal(getWeights(result_old), getWeights(result_new))
-  expect_equal(
-    as.numeric(coef(getBestModel(result_old))),
-    as.numeric(coef(getBestModel(result_new)))
-  )
-
-})
-
-test_that("old_weightwin and run_weightwin produce identical results (Weibull, cinterval = 'month')", {
-
-  set.seed(5)
-  result_old <- old_weightwin(
-    xvar       = list(Temp = MassClimate$Temp),
-    cdate      = MassClimate$Date,
-    bdate      = Mass$Date,
-    baseline   = lm(Mass ~ 1, data = Mass),
-    range      = c(12, 0),
-    func       = "lin",
-    type       = "absolute",
-    refday     = c(20, 5),
-    weightfunc = "W",
-    cinterval  = "month",
-    par        = c(2, 0.5, 0)
-  )
-
-  Climate_monthly <- trans_clim_interval(MassClimate, cinterval = "month")
-  set.seed(5)
-  result_new <- run_weightwin(
-    range        = 0:12,
-    bio_data     = Mass,
-    climate_data = Climate_monthly,
-    baseline = lm(Mass ~ climate, data = bio_data),
-    type         = "absolute",
-    refday       = "20/05/2000",
-    par          = c(2, 0.5),
-    xvar         = "Temp",
-    cdate        = "Date",
-    bdate        = "Date",
-    cinterval    = "month"
-  )
-
-  expect_equal(getWeights(result_old), getWeights(result_new))
-  expect_equal(
-    as.numeric(coef(getBestModel(result_old))),
-    as.numeric(coef(getBestModel(result_new)))
-  )
-
-})
-
-test_that("old_weightwin, run_weightwin, and weightwin (CRAN) are comparable (Weibull, absolute)", {
-
-  set.seed(12)
-  result_old_api <- old_weightwin(
-    xvar       = list(Temp = MassClimate$Temp),
-    cdate      = MassClimate$Date,
-    bdate      = Mass$Date,
-    baseline   = lm(Mass ~ 1, data = Mass),
-    range      = c(150, 0),
-    func       = "lin",
-    type       = "absolute",
-    refday     = c(20, 5),
-    weightfunc = "W",
-    par        = c(3, 0.2, 0)
-  )
-
-  set.seed(12)
-  result_new_api <- run_weightwin(
-    range        = 0:150,
-    bio_data     = Mass,
-    climate_data = MassClimate,
-    baseline = lm(Mass ~ climate, data = bio_data),
-    type         = "absolute",
-    refday       = "20/05/2025",
-    par          = c(3, 0.2),
-    xvar         = "Temp",
-    cdate        = "Date",
-    bdate        = "Date"
-  )
-
-  ## old_weightwin == run_weightwin (exact, same seed)
-  expect_equal(getWeights(result_old_api), getWeights(result_new_api))
-
-  ## old_weightwin ~~ weightwin (CRAN): qualitatively similar weights.
-  ## weightwin has a known data-scoping issue in test environments (re-evaluating
-  ## lm(Mass ~ 1, data = Mass) in a frame where Mass is not visible); skip the
-  ## CRAN comparison if it cannot run.
-  set.seed(12)
-  result_cran <- tryCatch(
-    suppressMessages(weightwin(
-      xvar       = list(Temp = MassClimate$Temp),
-      cdate      = MassClimate$Date,
-      bdate      = Mass$Date,
-      baseline   = lm(Mass ~ 1, data = Mass),
-      range      = c(150, 0),
-      func       = "lin",
-      type       = "absolute",
-      refday     = c(20, 5),
-      weightfunc = "W",
-      cinterval  = "day",
-      par        = c(3, 0.2, 0)
-    )),
-    error = function(e) NULL
-  )
-
-  if (!is.null(result_cran)) {
-    diff <- sum(abs(getWeights(result_old_api) - result_cran$Weights))
-    expect_true(diff < 0.5)
-  } else {
-    skip("weightwin (old) could not run due to data-scoping limitation")
-  }
-
-})
-
-# ── cmissing tests: old_slidingwin ───────────────────────────────────────────
-
-test_that("old_slidingwin: cmissing = FALSE errors when xvar has NAs", {
-
-  MassClimate$Temp[c(50, 100, 200)] <- NA
-
-  expect_error(
-    old_slidingwin(
-      xvar     = list(Temp = MassClimate$Temp),
-      cdate    = MassClimate$Date,
-      bdate    = Mass$Date,
-      baseline = lm(Mass ~ 1, data = Mass),
-      range    = c(10, 0),
-      type     = "absolute",
-      refday   = c(20, 5),
-      cmissing = FALSE
-    ),
-    regexp = "Missing values found in 'Temp'"
-  )
-
-})
-
-test_that("old_slidingwin: invalid cmissing value errors", {
-
-  data("MassClimate")
-  data("Mass")
-
-  expect_error(
-    old_slidingwin(
-      xvar     = list(Temp = MassClimate$Temp),
-      cdate    = MassClimate$Date,
-      bdate    = Mass$Date,
-      baseline = lm(Mass ~ 1, data = Mass),
-      range    = c(10, 0),
-      type     = "relative",
-      cmissing = "bad_value"
-    ),
-    regexp = "'cmissing' must be FALSE, 'method1', or 'method2'"
-  )
-
-})
-
-test_that("old_slidingwin: cmissing = 'method1' imputes NAs and returns a result", {
-
-  MassClimate$Temp[c(50, 100, 200)] <- NA
-
-  result <- old_slidingwin(
-    xvar     = list(Temp = MassClimate$Temp),
-    cdate    = MassClimate$Date,
-    bdate    = Mass$Date,
-    baseline = lm(Mass ~ 1, data = Mass),
-    range    = c(10, 0),
-    type     = "absolute",
-    refday   = c(20, 5),
-    cmissing = "method1"
-  )
-
-  expect_true(is.data.frame(getDataset(result)))
-  expect_false(anyNA(getDataset(result)))
-
-})
-
-test_that("old_slidingwin: cmissing = 'method2' imputes NAs using day-month means", {
-
-  MassClimate$Temp[c(50, 100, 200)] <- NA
-
-  result <- old_slidingwin(
-    xvar     = list(Temp = MassClimate$Temp),
-    cdate    = MassClimate$Date,
-    bdate    = Mass$Date,
-    baseline = lm(Mass ~ 1, data = Mass),
-    range    = c(10, 0),
-    type     = "absolute",
-    refday   = c(20, 5),
-    cmissing = "method2"
-  )
-
-  expect_true(is.data.frame(getDataset(result)))
-  expect_false(anyNA(getDataset(result)))
-
-})
-
-# ── cmissing tests: old_weightwin ────────────────────────────────────────────
-
-test_that("old_weightwin: cmissing = FALSE errors when xvar has NAs", {
-
-  MassClimate$Temp[c(50, 100, 200)] <- NA
-
-  expect_error(
-    old_weightwin(
-      xvar     = list(Temp = MassClimate$Temp),
-      cdate    = MassClimate$Date,
-      bdate    = Mass$Date,
-      baseline = lm(Mass ~ 1, data = Mass),
-      range    = c(10, 0),
-      type     = "absolute",
-      refday   = c(20, 5),
-      cmissing = FALSE,
-      par      = c(3, 0.2, 0)
-    ),
-    regexp = "Missing values found in 'Temp'"
-  )
-
-})
-
-test_that("old_weightwin: invalid cmissing value errors", {
-
-  expect_error(
-    old_weightwin(
-      xvar     = list(Temp = MassClimate$Temp),
-      cdate    = MassClimate$Date,
-      bdate    = Mass$Date,
-      baseline = lm(Mass ~ 1, data = Mass),
-      range    = c(10, 0),
-      type     = "relative",
-      cmissing = "method3",
-      par      = c(3, 0.2, 0)
-    ),
-    regexp = "'cmissing' must be FALSE, 'method1', or 'method2'"
-  )
-
-})
-
-test_that("old_weightwin: cmissing = 'method1' imputes NAs and returns a result", {
-
-  MassClimate$Temp[c(50, 100, 200)] <- NA
-
-  set.seed(42)
-  result <- old_weightwin(
-    xvar     = list(Temp = MassClimate$Temp),
-    cdate    = MassClimate$Date,
-    bdate    = Mass$Date,
-    baseline = lm(Mass ~ 1, data = Mass),
-    range    = c(10, 0),
-    type     = "absolute",
-    refday   = c(20, 5),
-    cmissing = "method1",
-    par      = c(3, 0.2, 0)
-  )
-
-  expect_true(is.data.frame(getDataset(result)))
-  expect_true(length(getWeights(result)) > 0)
-
-})
-
-test_that("old_weightwin: cmissing = 'method2' imputes NAs using day-month means", {
-
-  MassClimate$Temp[c(50, 100, 200)] <- NA
-
-  set.seed(42)
-  result <- old_weightwin(
-    xvar     = list(Temp = MassClimate$Temp),
-    cdate    = MassClimate$Date,
-    bdate    = Mass$Date,
-    baseline = lm(Mass ~ 1, data = Mass),
-    range    = c(10, 0),
-    type     = "absolute",
-    refday   = c(20, 5),
-    cmissing = "method2",
-    par      = c(3, 0.2, 0)
-  )
-
-  expect_true(is.data.frame(getDataset(result)))
-  expect_true(length(getWeights(result)) > 0)
 
 })

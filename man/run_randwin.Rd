@@ -9,7 +9,7 @@ run_randwin(
   range,
   climate_data,
   bio_data,
-  basemodel,
+  baseline,
   cdate = "Date",
   bdate = "Date",
   xvar = "Temp",
@@ -33,15 +33,15 @@ run_randwin(
 \arguments{
 \item{repeats}{Integer. Number of randomization iterations to perform.}
 
-\item{range}{A numeric vector specifying the number of days to look back
-from each date in bio_data.}
+\item{range}{A two-element numeric vector \code{c(lower, upper)} specifying
+the day range to search (e.g. \code{c(0, 50)}).}
 
 \item{climate_data}{A data frame containing climate data. Required.}
 
 \item{bio_data}{A data frame containing biological data with a date column.
 Required.}
 
-\item{basemodel}{An lm model object used as the model template. Required.}
+\item{baseline}{An lm model object used as the model template. Required.}
 
 \item{cdate}{Character string — date column in climate_data.
 Defaults to \code{"Date"}.}
@@ -114,9 +114,9 @@ The following arguments are passed to \code{\link{run_weightwin}} when
 data("MassClimate")
 data("Mass")
 null_results <- run_randwin(repeats = 100,
-                            range = 0:50,
+                            range = c(0, 50),
                             climate_data = MassClimate,
                             bio_data = Mass,
-                            basemodel = lm(Mass ~ climate, data = bio_data))
+                            baseline = lm(Mass ~ climate, data = bio_data))
 
 }

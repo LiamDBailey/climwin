@@ -12,8 +12,8 @@
 #' @param n Integer. Number of independent optimisation runs. The first run
 #'   uses \code{par}; subsequent runs draw starting parameters uniformly from
 #'   [\code{par_min}, \code{par_max}].
-#' @param range A numeric vector specifying the time steps to look back from
-#'   each date in \code{bio_data} (e.g. \code{0:100}).
+#' @param range A two-element numeric vector \code{c(lower, upper)} specifying
+#'   the day range to search (e.g. \code{c(0, 100)}).
 #' @param bio_data A data frame containing biological data with a date column.
 #' @param climate_data A data frame containing climate data.
 #' @param baseline An \code{lm} call used as the model template
@@ -60,7 +60,7 @@
 #' data("MassClimate")
 #' data("Mass")
 #'
-#' results <- run_weightwin(range = 0:100,
+#' results <- run_weightwin(range = c(0, 100),
 #'                          bio_data = Mass,
 #'                          climate_data = MassClimate,
 #'                          cdate = "Date", bdate = "Date",
@@ -90,6 +90,9 @@ run_weightwin <- function(n = 1,
                           par_max = NULL,
                           cinterval = "day",
                           .baselineIsCall = FALSE) {
+
+  validate_range(range)
+  range_seq <- seq.int(range[1], range[2])
 
   validate_arg("baseline", baseline, required = TRUE)
   if (!isTRUE(.baselineIsCall)) baseline <- substitute(baseline)

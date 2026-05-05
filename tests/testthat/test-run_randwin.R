@@ -14,7 +14,7 @@ test_that("run_randwin works with valid input", {
   
   # Test function with small number of repeats
   result <- run_randwin(repeats = 2,
-                        range = 0:1,
+                        range = c(0, 1),
                         climate_data = climate_data,
                         bio_data = bio_data,
                         baseline = lm(Mass ~ climate, data = bio_data))
@@ -44,7 +44,7 @@ test_that("run_randwin validates arguments correctly", {
   
   # Test missing repeats
   expect_error(
-    run_randwin(range = 0:1, 
+    run_randwin(range = c(0, 1), 
                 climate_data = climate_data,
                 bio_data = bio_data,
                 baseline = lm(Mass ~ climate, data = bio_data)),
@@ -54,7 +54,7 @@ test_that("run_randwin validates arguments correctly", {
   # Test invalid repeats
   expect_error(
     run_randwin(repeats = -1,
-                range = 0:1, 
+                range = c(0, 1), 
                 climate_data = climate_data,
                 bio_data = bio_data,
                 baseline = lm(Mass ~ climate, data = bio_data)),
@@ -82,7 +82,7 @@ test_that("run_randwin errors on invalid window_type", {
     climate = 0
   )
   expect_error(
-    run_randwin(repeats = 1, range = 0:1,
+    run_randwin(repeats = 1, range = c(0, 1),
                 climate_data = climate_data, bio_data = bio_data,
                 baseline = lm(Mass ~ climate, data = bio_data),
                 window_type = "invalid"),
@@ -112,7 +112,7 @@ test_that("run_randwin ('weightwin') returns a data frame with one row per repea
   d <- make_randwin_data()
   result <- run_randwin(
     repeats      = 3,
-    range        = 0:4,
+    range        = c(0, 4),
     climate_data = d$climate_data,
     bio_data     = d$bio_data,
     baseline = lm(Mass ~ climate, data = bio_data),
@@ -132,7 +132,7 @@ test_that("run_randwin ('weightwin') summary columns match weightfunc par labels
   d <- make_randwin_data()
 
   result_W <- run_randwin(
-    repeats = 2, range = 0:4,
+    repeats = 2, range = c(0, 4),
     climate_data = d$climate_data, bio_data = d$bio_data,
     baseline = lm(Mass ~ climate, data = bio_data),
     window_type = "weightwin", weightfunc = "W", par = c(1.25, 0.5),
@@ -142,7 +142,7 @@ test_that("run_randwin ('weightwin') summary columns match weightfunc par labels
                     "end_shape",   "end_scale") %in% names(result_W)))
 
   result_F <- run_randwin(
-    repeats = 2, range = 0:4,
+    repeats = 2, range = c(0, 4),
     climate_data = d$climate_data, bio_data = d$bio_data,
     baseline = lm(Mass ~ climate, data = bio_data),
     window_type = "weightwin", weightfunc = "F", par = c(0.5, 2),
@@ -171,14 +171,14 @@ test_that("run_randwin randomizes climate data correctly", {
   # we should get some variation if randomization is working)
   set.seed(123)
   result1 <- run_randwin(repeats = 5,
-                        range = 0:1,
+                        range = c(0, 1),
                         climate_data = climate_data,
                         bio_data = bio_data,
                         baseline = lm(Mass ~ climate, data = bio_data))
   
   set.seed(456)
   result2 <- run_randwin(repeats = 5,
-                        range = 0:1,
+                        range = c(0, 1),
                         climate_data = climate_data,
                         bio_data = bio_data,
                         baseline = lm(Mass ~ climate, data = bio_data))

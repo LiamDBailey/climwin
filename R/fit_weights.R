@@ -4,7 +4,8 @@
 #' by evaluating \code{dfun} on a normalised [0, 1] domain that spans
 #' \code{range}, then applying the resulting weights.
 #'
-#' @param range A numeric vector specifying the time steps to consider.
+#' @param range A two-element numeric vector \code{c(lower, upper)} specifying
+#'   the day range to consider (e.g. \code{c(0, 100)}).
 #' @param bio_data A data frame containing biological data with a date column.
 #' @param climate_data A data frame containing climate data.
 #' @param cdate Character string specifying the date column in climate_data.
@@ -26,7 +27,7 @@
 #' data("MassClimate")
 #' data("Mass")
 #'
-#' out <- fit_weights(range = 0:100, bio_data = Mass, climate_data = MassClimate,
+#' out <- fit_weights(range = c(0, 100), bio_data = Mass, climate_data = MassClimate,
 #'                    cdate = "Date", bdate = "Date", xvar = "Temp",
 #'                    dfun = dweibull, par = c(2, 0.5))
 #'
@@ -41,10 +42,13 @@ fit_weights <- function(range,
                         par,
                         cinterval = "day") {
 
+  validate_range(range)
+  range_seq <- seq.int(range[1], range[2])
+
   processed_data <- process_data(
     climate_data = climate_data,
     bio_data     = bio_data,
-    range        = range,
+    range        = range_seq,
     cdate        = cdate,
     bdate        = bdate,
     xvar         = xvar,
@@ -58,7 +62,7 @@ fit_weights <- function(range,
   bio_data        <- processed_data$bio_data
   bio_xvar_ranges <- processed_data$bio_xvar_ranges
 
-  x       <- seq(0, 1, length.out = length(range))
+  x       <- seq(0, 1, length.out = length(range_seq))
   weights <- do.call(dfun, c(list(x), as.list(par)))
   weights[is.na(weights) | is.infinite(weights)] <- 0
   if (sum(weights) == 0) weights <- weights + 1

@@ -8,7 +8,7 @@ run_slidingwin(
   range,
   climate_data,
   bio_data,
-  basemodel,
+  baseline,
   cdate = "Date",
   bdate = "Date",
   xvar = "Temp",
@@ -20,19 +20,19 @@ run_slidingwin(
   cinterval = "day",
   parallel = FALSE,
   progress = TRUE,
-  .basemodelIsCall = FALSE,
+  .baselineIsCall = FALSE,
   .processed_data = NULL
 )
 }
 \arguments{
-\item{range}{A numeric vector specifying the number of days to look back from each date in bio_data.
-For example, 0 represents the date itself, while 100 represents 100 days before that date.}
+\item{range}{A two-element numeric vector \code{c(lower, upper)} specifying the day range to search.
+For example, \code{c(0, 100)} tests all windows from 0 to 100 days before each biological date.}
 
 \item{climate_data}{A data frame containing climate data. Required.}
 
 \item{bio_data}{A data frame containing biological data with a date column. Required.}
 
-\item{basemodel}{An lm model object that will be updated for each climate window (e.g., lm(Mass ~ climate, data = bio_data)). Required.}
+\item{baseline}{An lm model object that will be updated for each climate window (e.g., lm(Mass ~ climate, data = bio_data)). Required.}
 
 \item{cdate}{Character string specifying the name of the date column in climate_data. Defaults to "Date".}
 
@@ -59,7 +59,7 @@ For example, 0 represents the date itself, while 100 represents 100 days before 
 
 \item{progress}{Logical. If TRUE, shows a progress bar. Default is TRUE.}
 
-\item{.basemodelIsCall}{Logical. Internal parameter used to handle basemodel substitution. Default is FALSE.}
+\item{.baselineIsCall}{Logical. Internal parameter used to handle baseline substitution. Default is FALSE.}
 }
 \value{
 A list containing:
@@ -78,10 +78,10 @@ to compute climate summaries for each window.
 }
 \examples{
 # Example usage:
-results <- run_slidingwin(range = 0:2, 
+results <- run_slidingwin(range = c(0, 2), 
                         climate_data = MassClimate, 
                         bio_data = Mass,
-                        basemodel = lm(Mass ~ climate, data = bio_data))
+                        baseline = lm(Mass ~ climate, data = bio_data))
                         
 # Access the dataset and best model
 dataset_results <- getDataset(results)
@@ -93,10 +93,10 @@ Climate1$site <- "A"
 Climate2 <- MassClimate
 Climate2$site <- "B"
 Climate_site <- rbind(Climate1, Climate2)
-results_spatial <- run_slidingwin(range = 0:2, 
+results_spatial <- run_slidingwin(range = c(0, 2), 
                         climate_data = Climate_site, 
                         bio_data = Mass,
-                        basemodel = lm(Mass ~ climate, data = bio_data),
+                        baseline = lm(Mass ~ climate, data = bio_data),
                         spatial = "site")
                         
 \dontrun{
@@ -113,10 +113,10 @@ results_spatial <- run_slidingwin(range = 0:2,
 # Test both linear and quadratic functions with climate variable temperature
 
 OffspringWin <- run_slidingwin(
-                          range = 0:150,
+                          range = c(0, 150),
                           climate_data = OffspringClimate,
                           bio_data = Offspring,
-                          basemodel = glm(Offspring ~ climate, data = bio_data, family = "poisson"),
+                          baseline = glm(Offspring ~ climate, data = bio_data, family = "poisson"),
                           xvar = "Temperature", 
                           cdate = "Date", 
                           bdate = "Date", 
@@ -132,15 +132,15 @@ OffspringWin <- run_slidingwin(
 # Load data.
  
 # Test an absolute window, starting 20 May (refday = c(20, 5))
-# Test for climate windows between 100 and 0 days ago (range = c(100, 0))
+# Test for climate windows between 0 and 100 days ago (range = c(0, 100))
 # Test both mean and max aggregate statistics (stat = c("mean", "max"))
 # Fit a linear term (func = "lin")
 # Test at the resolution of days (cinterval = "day")
  
 MassWin <- run_slidingwin(
-                     range = 0:100,
+                     range = c(0, 100),
                      climate_data = MassClimate, bio_data = Mass,
-                     basemodel = lm(Mass ~ climate, data = bio_data),
+                     baseline = lm(Mass ~ climate, data = bio_data),
                      xvar = "Temp",
                      cdate = "Date", bdate = "Date", 
                      type = "absolute", refday = "20/05/2025"

@@ -10,233 +10,27 @@ vignette: >
 ---
   
 ************************************
+
+```{r}
+devtools::load_all()
+```
   
 ## Performance
 
-```{r}
-data("bench_results")
-```
+We hope that one noticable difference of climwin v2.0 will be an improvement in performance.
 
 ```{r}
-ggplot() +
-  geom_line(data = bench_results,
-            aes(x = window_size, y = median, colour = expression),
+ggplot2::ggplot() +
+  ggplot2::geom_line(data = bench_results,
+            ggplot2::aes(x = max_range, y = median, colour = expression),
             linewidth = 1) +
-  geom_point(data = bench_results,
-            aes(x = window_size, y = median, colour = expression),
+  ggplot2::geom_point(data = bench_results,
+            ggplot2::aes(x = max_range, y = median, colour = expression),
             shape = 21) +
-  theme_classic()
+  ggplot2::theme_classic()
 ```
 
+## Parallel processing
 
-************************************
-
-## Non-linear (quadratic or cubic) climate effects
-
-```{r}
-data("Mass")
-data("MassClimate")
-```
-
-**Old syntax**
-```{r}
-old_output <- slidingwin(xvar = list(Temp = MassClimate$Temp),
-                         cdate = MassClimate$Date, 
-                         bdate = Mass$Date, 
-                         baseline = lm(Mass ~ 1, data = Mass),
-                         range = c(150, 0), 
-                         type = "absolute", refday = c(20, 5),
-                         stat = "mean",
-                         func = c("cub"),
-                         ## Need to specify cmissing method
-                         cmissing = "method1",
-                         cinterval = "day")
-```
-
-**New syntax**
-
-Specify any model structure manually.
-
-```{r}
-new_output <- run_slidingwin(range = 0:150, type = "absolute", refday = "20/05/2020",
-                             climate_data = MassClimate,
-                             xvar = "Temp", fn = mean,
-                             cinterval = "day",
-                             bio_data = Mass,
-                             basemodel = lm(Mass ~ poly(climate, 3), data = bio_data))
-```
-
-```{r}
-plotdelta(old_output[[1]]$Dataset)
-```
-
-```{r}
-plot_delta(new_output)
-```
-
-************************************
-
-## Monthly or weekly data
-
-```{r}
-data("Mass")
-data("MassClimate")
-```
-
-**Old syntax**
-```{r}
-old_output <- slidingwin(xvar = list(Temp = MassClimate$Temp),
-                         cdate = MassClimate$Date, 
-                         bdate = Mass$Date, 
-                         baseline = lm(Mass ~ 1, data = Mass),
-                         range = c(70, 0), 
-                         type = "absolute", refday = c(20, 5),
-                         stat = "mean",
-                         func = c("lin"), cmissing = FALSE,
-                         cinterval = "week")
-```
-
-**New syntax**
-
-In the new syntax we separate out data preparation and window fitting into separate functions. This has several benefits a) easier to spot mistakes & debug. You can inspect the input data before running windows b) customisable. Infinite number of ways to process data before windows, c) easier to maintain code (`run_slidingwin`) is now much leaner.
-
-```{r}
-MassClimate_week <- trans_clim_interval(MassClimate, xvar = "Temp", cdate = "Date", aggfunc = mean, cinterval = "week")
-```
-
-```{r}
-new_output <- run_slidingwin(range = 0:70, type = "absolute", refday = "20/05/2020",
-                             climate_data = MassClimate_week,
-                             xvar = "Temp", fn = mean,
-                             cinterval = "week",
-                             bio_data = Mass,
-                             basemodel = lm(Mass ~ climate, data = bio_data))
-```
-
-```{r}
-plotdelta(old_output[[1]]$Dataset)
-```
-
-```{r}
-plot_delta(new_output)
-```
-
-************************************
-
-## Thresholds & growing degree days
-
-```{r}
-data("Mass")
-data("MassClimate")
-```
-
-**Old syntax**
-```{r}
-old_output <- slidingwin(xvar = list(Temp = MassClimate$Temp),
-                         cdate = MassClimate$Date, 
-                         bdate = Mass$Date, 
-                         baseline = lm(Mass ~ 1, data = Mass),
-                         range = c(12, 0), 
-                         type = "absolute", refday = c(20, 5),
-                         stat = "sum",
-                         func = c("lin"), cmissing = FALSE,
-                         cinterval = "month", upper = 10, binary = TRUE)
-```
-
-**New syntax**
-
-In the new syntax we separate out data preparation and window fitting into separate functions. This has several benefits a) easier to spot mistakes & debug. You can inspect the input data before running windows b) customisable. Infinite number of ways to process data before windows, c) easier to maintain code (`run_slidingwin`) is now much leaner.
-
-```{r}
-## Convert to months (NOTE: If you want to apply threshold to data BEFORE taking monthly summary, just reverse the order!!)
-MassClimate_mo <- trans_clim_interval(MassClimate, xvar = "Temp", cdate = "Date", aggfunc = mean, cinterval = "month")
-MassClimate_mo
-```
-
-```{r}
-## Create a new binary column
-MassClimate_mo_binary <- append_clim_threshold(MassClimate_mo, xvar = "Temp", upper = 10, binary = TRUE)
-MassClimate_mo_binary
-```
-
-```{r}
-new_output <- run_slidingwin(range = 0:12, type = "absolute", refday = "20/05/2020",
-                             climate_data = MassClimate_mo_binary,
-                             xvar = "threshold", fn = sum,
-                             cinterval = "month",
-                             bio_data = Mass,
-                             basemodel = lm(Mass ~ climate, data = bio_data))
-```
-
-```{r}
-plotdelta(old_output[[1]]$Dataset)
-```
-
-```{r}
-plot_delta(new_output)
-```
-
-************************************
-
-## Incomplete climate data
-
-```{r}
-data("Mass")
-data("MassClimate")
-MassClimate_gaps <- MassClimate |> 
-  mutate(Date = lubridate::dmy(Date)) |> 
-  ## Remove every record in 1st of the month!
-  dplyr::filter(lubridate::day(Date) != 1)
-```
-
-**Old syntax**
-```{r}
-## This fails
-# old_output <- slidingwin(xvar = list(Temp = MassClimate_gaps$Temp),
-#                          cdate = MassClimate_gaps$Date, 
-#                          bdate = Mass$Date, 
-#                          baseline = lm(Mass ~ 1, data = Mass),
-#                          range = c(150, 0), 
-#                          type = "absolute", refday = c(20, 5),
-#                          stat = "mean",
-#                          func = c("lin"), cmissing = FALSE,
-#                          cinterval = "day")
-
-old_output <- slidingwin(xvar = list(Temp = MassClimate_gaps$Temp),
-                         cdate = MassClimate_gaps$Date, 
-                         bdate = Mass$Date, 
-                         baseline = lm(Mass ~ 1, data = Mass),
-                         range = c(150, 0), 
-                         type = "absolute", refday = c(20, 5),
-                         stat = "mean",
-                         func = c("lin"),
-                         ## Need to specify cmissing method
-                         cmissing = "method1",
-                         cinterval = "day")
-```
-
-**New syntax**
-
-Fix gaps *BEFORE*
-
-```{r}
-MassClimate_fixed <- repair_climate(MassClimate_gaps, cdate = "Date", xvar = "Temp")
-```
-
-```{r}
-new_output <- run_slidingwin(range = 0:150, type = "absolute", refday = "20/05/2020",
-                             climate_data = MassClimate_fixed,
-                             xvar = "Temp", fn = mean,
-                             cinterval = "day",
-                             bio_data = Mass,
-                             basemodel = lm(Mass ~ climate, data = bio_data))
-```
-
-```{r}
-plotdelta(old_output[[1]]$Dataset)
-```
-
-```{r}
-plot_delta(new_output)
-```
+## S7 object output
 

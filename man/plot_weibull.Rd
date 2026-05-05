@@ -22,12 +22,12 @@ weight values on the y-axis.
 # Example usage:
 data("MassClimate")
 data("Mass")
-results <- run_weightwin(range = 0:100, 
+results <- run_weightwin(range = c(0, 100), 
                         bio_data = Mass,
                         climate_data = MassClimate,
                         cdate = "Date", bdate = "Date",
                         xvar = "Temp",
-                        basemodel = lm(Mass ~ climate, data = bio_data),
+                        baseline = lm(Mass ~ climate, data = bio_data),
                         par = c(1.25, 0.5))
 plot_weibull(results)
 

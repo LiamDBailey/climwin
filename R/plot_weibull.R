@@ -13,7 +13,7 @@
 #' # Example usage:
 #' data("MassClimate")
 #' data("Mass")
-#' results <- run_weightwin(range = 0:100, 
+#' results <- run_weightwin(range = c(0, 100), 
 #'                         bio_data = Mass,
 #'                         climate_data = MassClimate,
 #'                         cdate = "Date", bdate = "Date",

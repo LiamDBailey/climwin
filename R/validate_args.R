@@ -100,6 +100,19 @@ validate_arg <- function(arg_name, arg_value, required = TRUE, type = NULL, addi
 #' )
 #'
 #' @export
+validate_range <- function(range) {
+  validate_arg("range", range, required = TRUE, type = "numeric",
+    additional_checks = list(
+      function(x) if (length(x) != 2L)          stop("must be a two-element vector c(lower, upper)"),
+      function(x) if (any(is.na(x)))             stop("must not contain NA values"),
+      function(x) if (any(x < 0))                stop("values must be non-negative"),
+      function(x) if (!all(x == floor(x)))        stop("values must be whole numbers"),
+      function(x) if (x[1] > x[2])               stop("lower bound must be <= upper bound")
+    )
+  )
+}
+
+#' @export
 validate_args <- function(args, required = TRUE, type = NULL, additional_checks = NULL) {
   # Validate args is a named list
   if (!is.list(args) || is.null(names(args)) || any(names(args) == "")) {

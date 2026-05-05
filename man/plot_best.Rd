@@ -27,10 +27,10 @@ The plot includes the data points and the fitted regression line.
 # Example usage:
 data("MassClimate")
 data("Mass")
-results <- run_slidingwin(range = 0:100, 
+results <- run_slidingwin(range = c(0, 100), 
                         climate_data = MassClimate, 
                         bio_data = Mass,
-                        basemodel = lm(Mass ~ climate, data = bio_data))
+                        baseline = lm(Mass ~ climate, data = bio_data))
 plot_best(results)
 
 }

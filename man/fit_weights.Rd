@@ -17,7 +17,8 @@ fit_weights(
 )
 }
 \arguments{
-\item{range}{A numeric vector specifying the time steps to consider.}
+\item{range}{A two-element numeric vector \code{c(lower, upper)} specifying
+the day range to consider (e.g. \code{c(0, 100)}).}
 
 \item{bio_data}{A data frame containing biological data with a date column.}
 
@@ -53,7 +54,7 @@ by evaluating \code{dfun} on a normalised [0, 1] domain that spans
 data("MassClimate")
 data("Mass")
 
-out <- fit_weights(range = 0:100, bio_data = Mass, climate_data = MassClimate,
+out <- fit_weights(range = c(0, 100), bio_data = Mass, climate_data = MassClimate,
                    cdate = "Date", bdate = "Date", xvar = "Temp",
                    dfun = dweibull, par = c(2, 0.5))
 
