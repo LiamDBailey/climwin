@@ -3025,10 +3025,10 @@ weibull3 <- function(x, shape,scale,location){
 
 ##################################################################################
 
-gaussian <- function(x, scale, location){
-  
+gaussian_cdf <- function(x, scale, location){
+
   pnorm(q = x, mean = location, sd = scale)
-  
+
 }
 
 #################################################################################
