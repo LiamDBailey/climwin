@@ -48,6 +48,10 @@
 #'   \code{list(maxit = 100)}.
 #' @param par_min Lower bounds for random starting parameters.
 #' @param par_max Upper bounds for random starting parameters.
+#' @param AIC_fn A function used to compute AIC from a fitted model.
+#' Must return a single numeric value. Defaults to \code{AIC}.
+#' Pass a custom function when using model classes that do not support the
+#' standard \code{AIC} generic behaviour (e.g. spaMM).
 #'
 #' @return A data frame with one row per randomization iteration. For
 #'   \code{"slidingwin"}, columns include \code{Iteration}, \code{Start_Day},
@@ -91,7 +95,8 @@ run_randwin <- function(repeats,
                         upper = NULL,
                         control = list(maxit = 100),
                         par_min = NULL,
-                        par_max = NULL) {
+                        par_max = NULL,
+                        AIC_fn  = AIC) {
 
   ### ARGUMENT CHECKS ####
   validate_arg("repeats", repeats, required = TRUE, type = "numeric",
@@ -225,7 +230,7 @@ run_randwin <- function(repeats,
         }
         result_mat[, j] <- c(
           s - 1L, e - 1L,
-          tryCatch(AIC(eval(baseline)), error = function(e) NA_real_)
+          tryCatch(AIC_fn(eval(baseline)), error = function(e) NA_real_)
         )
       }
 
@@ -268,6 +273,7 @@ run_randwin <- function(repeats,
         par_min          = par_min,
         par_max          = par_max,
         cinterval        = cinterval,
+        AIC_fn           = AIC_fn,
         .baselineIsCall  = TRUE
       )
       best_row           <- ww_result@weightwin_summary[1L, , drop = FALSE]

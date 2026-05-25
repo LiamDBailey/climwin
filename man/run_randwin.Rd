@@ -27,7 +27,8 @@ run_randwin(
   upper = NULL,
   control = list(maxit = 100),
   par_min = NULL,
-  par_max = NULL
+  par_max = NULL,
+  AIC_fn = AIC
 )
 }
 \arguments{
@@ -90,6 +91,11 @@ Defaults to \code{"W"}.}
 \item{par_min}{Lower bounds for random starting parameters.}
 
 \item{par_max}{Upper bounds for random starting parameters.}
+
+\item{AIC_fn}{A function used to compute AIC from a fitted model.
+Must return a single numeric value. Defaults to \code{AIC}.
+Pass a custom function when using model classes that do not support the
+standard \code{AIC} generic behaviour (e.g. spaMM).}
 }
 \value{
 A data frame with one row per randomization iteration. For
