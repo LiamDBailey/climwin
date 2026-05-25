@@ -35,12 +35,25 @@
 #'   \code{function(x, par1, par2, ...)}. When a function is supplied,
 #'   \code{lower} and \code{upper} must be provided explicitly and
 #'   \code{par_labels} defaults to \code{"par1"}, \code{"par2"}, …
-#' @param method Optimisation method: \code{"L-BFGS-B"} (default) or
-#'   \code{"Nelder-Mead"}.  \code{"L-BFGS-B"} applies bounded quasi-Newton
-#'   optimisation directly.  \code{"Nelder-Mead"} logit-transforms each
-#'   parameter to an unconstrained real line (so the bounds are always
-#'   respected) and then applies gradient-free simplex optimisation — this can
-#'   converge more reliably on noisy or flat AIC landscapes.
+#' @param method Optimisation method.  One of:
+#'   \describe{
+#'     \item{\code{"L-BFGS-B"} (default)}{Bounded quasi-Newton with numerical
+#'       gradients.  Best for smooth AIC landscapes.  No extra packages
+#'       required.}
+#'     \item{\code{"nmkb"}}{Nelder-Mead simplex with native box constraints
+#'       (from \pkg{dfoptim} via \pkg{optimx}).  Gradient-free; bounds are
+#'       enforced geometrically.  Better than logit-reparameterised Nelder-Mead
+#'       when the optimum lies near a bound.  Requires \pkg{optimx} and
+#'       \pkg{dfoptim}.}
+#'     \item{\code{"hjkb"}}{Hooke-Jeeves pattern search with native box
+#'       constraints (from \pkg{dfoptim} via \pkg{optimx}).  Gradient-free;
+#'       useful when \code{"nmkb"} stalls on ridges or flat regions.  Requires
+#'       \pkg{optimx} and \pkg{dfoptim}.}
+#'     \item{\code{"ensemble"}}{Runs \code{"L-BFGS-B"}, \code{"nmkb"}, and
+#'       \code{"hjkb"} from the same starting point and returns the result with
+#'       the lowest AIC.  Most robust option; requires \pkg{optimx} and
+#'       \pkg{dfoptim}.}
+#'   }
 #' @param lower Lower bounds for the parameters. Set automatically for
 #'   built-in \code{weightfunc} values when \code{NULL} (default).
 #' @param upper Upper bounds for the parameters. Set automatically for
@@ -52,20 +65,23 @@
 #'   Defaults to \code{list(maxit = 100)}.  Additional settings are filled in
 #'   automatically if not supplied by the user:
 #'   \describe{
-#'     \item{L-BFGS-B only — \code{ndeps}}{Finite-difference step for gradient
-#'       estimation, set to 0.1 \% of each parameter's range so gradient
-#'       estimates are well-conditioned across parameters with different
-#'       scales.}
-#'     \item{L-BFGS-B only — \code{factr}}{Convergence threshold
+#'     \item{L-BFGS-B and ensemble — \code{ndeps}}{Finite-difference step for
+#'       gradient estimation, set to 0.1 \% of each parameter's range so
+#'       gradient estimates are well-conditioned across parameters with
+#'       different scales.}
+#'     \item{L-BFGS-B and ensemble — \code{factr}}{Convergence threshold
 #'       (\code{1e9}, ≈ 0.0001 AIC-unit improvement).  The R built-in default
 #'       (\code{1e7}) is too strict for AIC landscapes and causes oscillation
 #'       near the minimum.}
-#'     \item{L-BFGS-B only — \code{pgtol}}{Projected-gradient convergence
-#'       tolerance (\code{1e-4}); complements \code{factr}.}
-#'     \item{Nelder-Mead only — \code{reltol}}{Relative convergence tolerance
-#'       on function values (\code{1e-5}).  The R default
-#'       (\code{sqrt(.Machine$double.eps)} ≈ \code{1.5e-8}) is unnecessarily
-#'       tight for AIC.}
+#'     \item{L-BFGS-B and ensemble — \code{pgtol}}{Projected-gradient
+#'       convergence tolerance (\code{1e-4}); complements \code{factr}.}
+#'     \item{nmkb and hjkb — \code{tol}}{Convergence tolerance on function
+#'       values.  Uses the \pkg{dfoptim} default when not supplied.}
+#'     \item{nmkb and hjkb — \code{maxfeval}}{Maximum function evaluations.
+#'       Uses the \pkg{dfoptim} default when not supplied.  If omitted and
+#'       \code{maxit} is set, \code{maxit} is translated to \code{maxfeval}
+#'       automatically.  Other keys (e.g. \code{factr}, \code{ndeps}) are
+#'       silently ignored for these methods.}
 #'   }
 #' @param plot_every Integer or \code{NULL}. Plot diagnostics every
 #'   \code{plot_every} objective evaluations, and always after convergence.
@@ -136,7 +152,8 @@ run_weightwin <- function(n = 1,
   validate_arg("baseline", baseline, required = TRUE)
   if (!isTRUE(.baselineIsCall)) baseline <- substitute(baseline)
 
-  method <- match.arg(method, choices = c("L-BFGS-B", "Nelder-Mead"))
+  method <- match.arg(method,
+                      choices = c("L-BFGS-B", "nmkb", "hjkb", "ensemble"))
 
   # Resolve weightfunc to a density function + metadata
   if (is.function(weightfunc)) {
@@ -209,34 +226,38 @@ run_weightwin <- function(n = 1,
   if (any(par_min >= par_max))
     stop("par_min must be less than par_max for each parameter")
 
-  # Logit-space helpers for Nelder-Mead.
-  #
-  # Nelder-Mead cannot enforce box constraints, so each bounded parameter is
-  # mapped to an unconstrained real via the logit of its rescaled value.
-  # Clipping to (lower + ε, upper − ε) prevents ±Inf at the boundaries.
-  #
-  #   to_logit  : p ∈ (lower, upper) → q ∈ (−∞, +∞)
-  #   from_logit: q ∈ (−∞, +∞)      → p ∈ (lower, upper)
-  eps        <- (upper - lower) * 1e-8
-  to_logit   <- function(p) {
-    p <- pmax(lower + eps, pmin(upper - eps, p))
-    log((p - lower) / (upper - p))
+  # Check that optional packages are available for non-default methods
+  if (method %in% c("nmkb", "hjkb", "ensemble")) {
+    if (!requireNamespace("optimx",  quietly = TRUE))
+      stop("Package 'optimx' is required for method = '", method,
+           "'. Install it with: install.packages('optimx')")
+    if (!requireNamespace("dfoptim", quietly = TRUE))
+      stop("Package 'dfoptim' is required for method = '", method,
+           "'. Install it with: install.packages('dfoptim')")
   }
-  from_logit <- function(q) lower + (upper - lower) * stats::plogis(q)
 
   # Method-specific control defaults
-  if (method == "L-BFGS-B") {
+  if (method %in% c("L-BFGS-B", "ensemble")) {
     # ndeps  — finite-difference step, 0.1 % of each parameter's range
-    # factr  — stop when AIC improvement < ~0.0001 units (R default is 100x tighter)
+    # factr  — stop when AIC improvement < ~0.0001 units (R default 100x tighter)
     # pgtol  — projected-gradient complementary stopping rule
-    if (is.null(control$ndeps)) control$ndeps <- pmax((upper - lower) * 1e-3, 1e-6)
+    if (is.null(control$ndeps))
+      control$ndeps <- pmax((upper - lower) * 1e-3, 1e-6)
     if (is.null(control$factr)) control$factr <- 1e9
     if (is.null(control$pgtol)) control$pgtol <- 1e-4
-  } else {
-    # reltol — relative tolerance on function values; R default (~1.5e-8) is
-    #          far tighter than needed for AIC comparisons
-    if (is.null(control$reltol)) control$reltol <- 1e-5
   }
+
+  # Build a clean control list for dfoptim-based methods (nmkb, hjkb).
+  # dfoptim only understands: tol, maxfeval, restarts.max (nmkb),
+  # trace (nmkb), target (hjkb), info (hjkb).
+  # Passing L-BFGS-B keys (ndeps, factr, pgtol) or optimx keys (itnmax,
+  # dowarn) triggers spurious "unknown names in control" warnings.
+  dfoptim_ok      <- c("tol", "maxfeval", "restarts.max", "trace",
+                        "target", "info")
+  dfoptim_control <- control[intersect(names(control), dfoptim_ok)]
+  # Translate maxit → maxfeval so user-supplied iteration limits still apply
+  if (is.null(dfoptim_control$maxfeval) && !is.null(control$maxit))
+    dfoptim_control$maxfeval <- as.integer(control$maxit)
 
   # Objective function to minimize (AIC).
   # Always receives parameters in the original bounded space.
@@ -292,28 +313,23 @@ run_weightwin <- function(n = 1,
     })
   }
 
-  # Nelder-Mead wrapper: receives logit-space parameters, back-transforms to
-  # bounded space, then delegates to objective_function.
-  objective_logit <- function(q, fn_env) {
-    objective_function(from_logit(q), fn_env)
-  }
-
   summary_output <- data.frame()
   output <- list()
 
   for (i in 1:n) {
 
     if (i > 1) {
-      for (j in 1:length(par)) {
+      for (j in seq_along(par)) {
         par[j] <- runif(n = 1, min = par_min[j], max = par_max[j])
       }
     }
 
     plot_save <- c(setNames(lapply(par, identity), par_labels), list(AIC = NA))
-    iter <- 0L
+    iter <- 0L  # nolint: object_usage_linter — read/written via fn_env$iter
 
-    # Run optimisation in the appropriate space
+    # Run optimisation
     if (method == "L-BFGS-B") {
+      # Base R optim — fine-tuned L-BFGS-B with parameter-scaled ndeps
       optim_result <- optim(
         par     = par,
         fn      = objective_function,
@@ -324,16 +340,62 @@ run_weightwin <- function(n = 1,
         upper   = upper
       )
       optimal_par <- optim_result$par
-    } else {
-      # Nelder-Mead: optimise in logit space; bounds enforced by the transform
-      optim_result <- optim(
-        par     = to_logit(par),
-        fn      = objective_logit,
-        method  = "Nelder-Mead",
-        control = control,
+
+    } else if (method %in% c("nmkb", "hjkb")) {
+      # Gradient-free bounded optimisation via dfoptim (through optimx).
+      # Uses dfoptim_control — stripped of L-BFGS-B keys to avoid warnings.
+      res <- optimx::optimx(
+        par     = par,
+        fn      = function(p, fn_env) objective_function(p, fn_env),
+        lower   = lower,
+        upper   = upper,
+        method  = method,
+        control = dfoptim_control,
         fn_env  = environment()
       )
-      optimal_par <- from_logit(optim_result$par)
+      optimal_par <- as.numeric(res[which.min(res$value), seq_along(par)])
+
+    } else {
+      # ensemble: run each constituent method independently with its own
+      # appropriate control list, then return the parameters with lowest AIC.
+      # L-BFGS-B uses the fine-tuned base-R control; dfoptim methods get the
+      # clean dfoptim_control so neither contaminates the other.
+      lbfgsb_res <- optim(
+        par     = par,
+        fn      = objective_function,
+        method  = "L-BFGS-B",
+        control = control,
+        fn_env  = environment(),
+        lower   = lower,
+        upper   = upper
+      )
+      nmkb_res <- optimx::optimx(
+        par     = par,
+        fn      = function(p, fn_env) objective_function(p, fn_env),
+        lower   = lower,
+        upper   = upper,
+        method  = "nmkb",
+        control = dfoptim_control,
+        fn_env  = environment()
+      )
+      hjkb_res <- optimx::optimx(
+        par     = par,
+        fn      = function(p, fn_env) objective_function(p, fn_env),
+        lower   = lower,
+        upper   = upper,
+        method  = "hjkb",
+        control = dfoptim_control,
+        fn_env  = environment()
+      )
+      all_pars <- list(
+        lbfgsb_res$par,
+        as.numeric(nmkb_res[1L, seq_along(par)]),
+        as.numeric(hjkb_res[1L, seq_along(par)])
+      )
+      all_vals <- c(lbfgsb_res$value,
+                    nmkb_res$value[[1L]],
+                    hjkb_res$value[[1L]])
+      optimal_par <- all_pars[[which.min(all_vals)]]
     }
 
     # Get the optimal weighted climate data
@@ -369,7 +431,7 @@ run_weightwin <- function(n = 1,
                      list(list(
                        dataset    = as.data.frame(plot_save)[-1, ] |>
                                       ## Track optim step for plotting
-                                      mutate(step = 1:n()) |>
+                                      mutate(step = seq_len(n())) |>
                                       arrange(desc(AIC)),
                        bestModel  = list(model = best_model,
                                          data  = optimal_data$bio_data),
