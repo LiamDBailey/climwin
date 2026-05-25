@@ -40,7 +40,8 @@
 #' @param weightfunc Weighting function — see \code{\link{run_weightwin}}.
 #'   Defaults to \code{"W"}.
 #' @param par Initial distribution parameters — see \code{\link{run_weightwin}}.
-#' @param method Optimisation method. Defaults to \code{"L-BFGS-B"}.
+#' @param method Optimisation method: \code{"L-BFGS-B"} (default) or
+#'   \code{"Nelder-Mead"} — see \code{\link{run_weightwin}}.
 #' @param lower Lower bounds. Set automatically when \code{NULL}.
 #' @param upper Upper bounds. Set automatically when \code{NULL}.
 #' @param control \code{optim} control list. Defaults to
