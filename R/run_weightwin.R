@@ -35,14 +35,38 @@
 #'   \code{function(x, par1, par2, ...)}. When a function is supplied,
 #'   \code{lower} and \code{upper} must be provided explicitly and
 #'   \code{par_labels} defaults to \code{"par1"}, \code{"par2"}, …
-#' @param method Optimisation method passed to \code{optim}.
-#'   Defaults to \code{"L-BFGS-B"}.
+#' @param method Optimisation method: \code{"L-BFGS-B"} (default) or
+#'   \code{"Nelder-Mead"}.  \code{"L-BFGS-B"} applies bounded quasi-Newton
+#'   optimisation directly.  \code{"Nelder-Mead"} logit-transforms each
+#'   parameter to an unconstrained real line (so the bounds are always
+#'   respected) and then applies gradient-free simplex optimisation — this can
+#'   converge more reliably on noisy or flat AIC landscapes.
 #' @param lower Lower bounds for the parameters. Set automatically for
 #'   built-in \code{weightfunc} values when \code{NULL} (default).
 #' @param upper Upper bounds for the parameters. Set automatically for
 #'   built-in \code{weightfunc} values when \code{NULL} (default).
-#' @param control List of control parameters passed to \code{optim}.
-#'   Defaults to \code{list(maxit = 100)}.
+#'   For \code{"W"} the default scale upper bound is 10: values above this
+#'   give near-zero Weibull density across the \code{[0, 1]} domain and only
+#'   slow the optimiser down.
+#' @param control A named list of control parameters passed to \code{optim}.
+#'   Defaults to \code{list(maxit = 100)}.  Additional settings are filled in
+#'   automatically if not supplied by the user:
+#'   \describe{
+#'     \item{L-BFGS-B only — \code{ndeps}}{Finite-difference step for gradient
+#'       estimation, set to 0.1 \% of each parameter's range so gradient
+#'       estimates are well-conditioned across parameters with different
+#'       scales.}
+#'     \item{L-BFGS-B only — \code{factr}}{Convergence threshold
+#'       (\code{1e9}, ≈ 0.0001 AIC-unit improvement).  The R built-in default
+#'       (\code{1e7}) is too strict for AIC landscapes and causes oscillation
+#'       near the minimum.}
+#'     \item{L-BFGS-B only — \code{pgtol}}{Projected-gradient convergence
+#'       tolerance (\code{1e-4}); complements \code{factr}.}
+#'     \item{Nelder-Mead only — \code{reltol}}{Relative convergence tolerance
+#'       on function values (\code{1e-5}).  The R default
+#'       (\code{sqrt(.Machine$double.eps)} ≈ \code{1.5e-8}) is unnecessarily
+#'       tight for AIC.}
+#'   }
 #' @param plot_every Integer or \code{NULL}. Plot diagnostics every
 #'   \code{plot_every} objective evaluations, and always after convergence.
 #'   Pass \code{NULL} to suppress all plots.
@@ -53,6 +77,18 @@
 #' @param cinterval Character string specifying the temporal resolution: \code{"day"} (default),
 #'   \code{"week"}, or \code{"month"}. When \code{"month"} or \code{"week"},
 #'   \code{climate_data} must be pre-aggregated with \code{\link{trans_clim_interval}}.
+#' @param show_best Logical. When \code{TRUE} (default) an additional panel is
+#'   included in each diagnostic plot showing observed data (points) and the
+#'   predicted climate effect (line) from the current best model.  Set to
+#'   \code{FALSE} if rendering the scatter plot slows optimisation too much.
+#' @param AIC_fn Function used to calculate AIC of windows.
+#' Function must return a single numeric value that can be minimsied to find the best window.
+#' Default AIC should work for most model structures, but some models (e.g. `spaMM` package) will require
+#' custom functions.
+#' @param .predict_args A named list of extra arguments forwarded to
+#'   \code{\link[stats]{predict}} when drawing the predicted line in the
+#'   scatter panel.  Useful for mixed models where you may want to pass
+#'   e.g. \code{list(re.form = NA)} to obtain population-level predictions.
 #'
 #' @return A \code{climwin_weightwin} S7 object.
 #'
@@ -89,6 +125,9 @@ run_weightwin <- function(n = 1,
                           par_min = NULL,
                           par_max = NULL,
                           cinterval = "day",
+                          show_best = TRUE,
+                          AIC_fn = AIC,
+                          .predict_args = list(),
                           .baselineIsCall = FALSE) {
 
   validate_range(range)
@@ -96,6 +135,8 @@ run_weightwin <- function(n = 1,
 
   validate_arg("baseline", baseline, required = TRUE)
   if (!isTRUE(.baselineIsCall)) baseline <- substitute(baseline)
+
+  method <- match.arg(method, choices = c("L-BFGS-B", "Nelder-Mead"))
 
   # Resolve weightfunc to a density function + metadata
   if (is.function(weightfunc)) {
@@ -111,7 +152,7 @@ run_weightwin <- function(n = 1,
     if (weightfunc == "W") {
       dfun <- dweibull
       if (is.null(lower)) lower <- c(0.1, 0.1)
-      if (is.null(upper)) upper <- c(10, 1000)
+      if (is.null(upper)) upper <- c(10, 10)   # scale > 10 gives near-zero density on [0,1]
       par_labels <- c("shape", "scale")
     } else if (weightfunc == "G") {
       dfun <- function(x, loc, scale) evd::dgumbel(x, loc = loc, scale = scale)
@@ -131,8 +172,30 @@ run_weightwin <- function(n = 1,
     }
   }
 
-  n_par      <- length(par_labels)
-  mfrow_dims <- if (n_par >= 3) c(2, 3) else c(2, 2)
+  n_par        <- length(par_labels)
+  n_diag_plots <- 2L + n_par + if (isTRUE(show_best)) 1L else 0L
+  mfrow_dims   <- if (n_diag_plots <= 4L) c(2L, 2L) else c(2L, 3L)
+
+  # Local helper: scatter of observed response vs weighted climate + predicted line
+  draw_scatter <- function(model, bio_data_inner) {
+    mf        <- model.frame(model)
+    y_obs     <- mf[[1L]]
+    x_obs     <- bio_data_inner$climate
+    clim_grid <- seq(min(x_obs, na.rm = TRUE), max(x_obs, na.rm = TRUE),
+                     length.out = 100L)
+    nd        <- as.data.frame(lapply(mf[-1L], function(col) {
+      if (is.numeric(col)) rep(mean(col, na.rm = TRUE), 100L)
+      else                 rep(levels(factor(col))[[1L]],  100L)
+    }))
+    nd[["climate"]] <- clim_grid
+    pred_line <- tryCatch(
+      do.call(predict, c(list(model, newdata = nd), .predict_args)),
+      error = function(e) NULL
+    )
+    plot(x_obs, y_obs, pch = 16L, col = "grey50",
+         xlab = "climate", ylab = names(mf)[1L])
+    if (!is.null(pred_line)) lines(clim_grid, pred_line)
+  }
 
   # Ensure lower < upper for each parameter
   if (any(lower >= upper)) stop("lower bounds must be less than upper bounds")
@@ -146,7 +209,37 @@ run_weightwin <- function(n = 1,
   if (any(par_min >= par_max))
     stop("par_min must be less than par_max for each parameter")
 
-  # Objective function to minimize (AIC)
+  # Logit-space helpers for Nelder-Mead.
+  #
+  # Nelder-Mead cannot enforce box constraints, so each bounded parameter is
+  # mapped to an unconstrained real via the logit of its rescaled value.
+  # Clipping to (lower + ε, upper − ε) prevents ±Inf at the boundaries.
+  #
+  #   to_logit  : p ∈ (lower, upper) → q ∈ (−∞, +∞)
+  #   from_logit: q ∈ (−∞, +∞)      → p ∈ (lower, upper)
+  eps        <- (upper - lower) * 1e-8
+  to_logit   <- function(p) {
+    p <- pmax(lower + eps, pmin(upper - eps, p))
+    log((p - lower) / (upper - p))
+  }
+  from_logit <- function(q) lower + (upper - lower) * stats::plogis(q)
+
+  # Method-specific control defaults
+  if (method == "L-BFGS-B") {
+    # ndeps  — finite-difference step, 0.1 % of each parameter's range
+    # factr  — stop when AIC improvement < ~0.0001 units (R default is 100x tighter)
+    # pgtol  — projected-gradient complementary stopping rule
+    if (is.null(control$ndeps)) control$ndeps <- pmax((upper - lower) * 1e-3, 1e-6)
+    if (is.null(control$factr)) control$factr <- 1e9
+    if (is.null(control$pgtol)) control$pgtol <- 1e-4
+  } else {
+    # reltol — relative tolerance on function values; R default (~1.5e-8) is
+    #          far tighter than needed for AIC comparisons
+    if (is.null(control$reltol)) control$reltol <- 1e-5
+  }
+
+  # Objective function to minimize (AIC).
+  # Always receives parameters in the original bounded space.
   objective_function <- function(params, fn_env) {
     tryCatch({
 
@@ -168,7 +261,7 @@ run_weightwin <- function(n = 1,
       # Fit the baseline model with the weighted climate data
       model <- eval(baseline)
 
-      outputAIC <- AIC(model)
+      outputAIC <- AIC_fn(model)
 
       save_list <- c(setNames(as.list(params), par_labels), list(AIC = outputAIC))
 
@@ -180,7 +273,7 @@ run_weightwin <- function(n = 1,
       fn_env$last_weights <- fitted_output$weights
 
       if (!is.null(plot_every) && fn_env$iter %% plot_every == 0L) {
-        par(mfrow = mfrow_dims)
+        graphics::par(mfrow = mfrow_dims)
         plot(fn_env$last_weights, type = "l",
              ylab = "weight", xlab = "time step (e.g days)")
         plot(fn_env$plot_save[[n_par + 1]], type = "l",
@@ -189,6 +282,7 @@ run_weightwin <- function(n = 1,
           plot(fn_env$plot_save[[j]], type = "l",
                ylab = par_labels[j], xlab = "convergence step")
         }
+        if (isTRUE(show_best)) draw_scatter(model, bio_data)
       }
 
       outputAIC
@@ -196,6 +290,12 @@ run_weightwin <- function(n = 1,
     }, error = function(e) {
       return(1e6)
     })
+  }
+
+  # Nelder-Mead wrapper: receives logit-space parameters, back-transforms to
+  # bounded space, then delegates to objective_function.
+  objective_logit <- function(q, fn_env) {
+    objective_function(from_logit(q), fn_env)
   }
 
   summary_output <- data.frame()
@@ -212,19 +312,31 @@ run_weightwin <- function(n = 1,
     plot_save <- c(setNames(lapply(par, identity), par_labels), list(AIC = NA))
     iter <- 0L
 
-    # Run optimization
-    optim_result <- optim(
-      par     = par,
-      fn      = objective_function,
-      method  = method,
-      control = control,
-      fn_env  = environment(),
-      lower   = lower,
-      upper   = upper
-    )
+    # Run optimisation in the appropriate space
+    if (method == "L-BFGS-B") {
+      optim_result <- optim(
+        par     = par,
+        fn      = objective_function,
+        method  = "L-BFGS-B",
+        control = control,
+        fn_env  = environment(),
+        lower   = lower,
+        upper   = upper
+      )
+      optimal_par <- optim_result$par
+    } else {
+      # Nelder-Mead: optimise in logit space; bounds enforced by the transform
+      optim_result <- optim(
+        par     = to_logit(par),
+        fn      = objective_logit,
+        method  = "Nelder-Mead",
+        control = control,
+        fn_env  = environment()
+      )
+      optimal_par <- from_logit(optim_result$par)
+    }
 
     # Get the optimal weighted climate data
-    optimal_par  <- optim_result$par
     optimal_data <- fit_weights(
       range        = range,
       bio_data     = bio_data,
@@ -241,7 +353,7 @@ run_weightwin <- function(n = 1,
     best_model <- eval(baseline)
 
     if (!is.null(plot_every)) {
-      par(mfrow = mfrow_dims)
+      graphics::par(mfrow = mfrow_dims)
       plot(optimal_data$weights, type = "l",
            ylab = "weight", xlab = "time step (e.g days)")
       plot(plot_save[[n_par + 1]], type = "l",
@@ -250,6 +362,7 @@ run_weightwin <- function(n = 1,
         plot(plot_save[[j]], type = "l",
              ylab = par_labels[j], xlab = "convergence step")
       }
+      if (isTRUE(show_best)) draw_scatter(best_model, bio_data)
     }
 
     output <- append(output,
@@ -266,9 +379,9 @@ run_weightwin <- function(n = 1,
                      )))
 
     row_data <- c(
-      setNames(as.list(par),              paste0("start_", par_labels)),
-      setNames(as.list(optim_result$par), paste0("end_",   par_labels)),
-      list(AIC = AIC(best_model))
+      setNames(as.list(par),         paste0("start_", par_labels)),
+      setNames(as.list(optimal_par), paste0("end_",   par_labels)),
+      list(AIC = AIC_fn(best_model))
     )
     summary_output <- bind_rows(summary_output, as.data.frame(row_data))
 
