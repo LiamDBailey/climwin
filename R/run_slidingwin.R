@@ -24,7 +24,12 @@
 #'   \code{\link{trans_clim_interval}} first.
 #' @param parallel Logical. If TRUE, parallel processing is used. Default is FALSE.
 #' @param progress Logical. If TRUE, shows a progress bar. Default is TRUE.
+#' @param AIC_fn Function used to calculate AIC of windows.
+#' Function must return a single numeric value that can be minimsied to find the best window.
+#' Default AIC should work for most model structures, but some models (e.g. `spaMM` package) will require
+#' custom functions.
 #' @param .baselineIsCall Logical. Internal parameter used to handle baseline substitution. Default is FALSE.
+#' @param .processed_data Logical. Internal parameter used to handle pre-processed data.
 #'
 #' @return A list containing:
 #'         - dataset: A data frame containing:
@@ -127,6 +132,7 @@ run_slidingwin <- function(range,
                            cinterval = "day",
                            parallel = FALSE,
                            progress = TRUE,
+                           AIC_fn = AIC,
                            .baselineIsCall = FALSE,
                            .processed_data = NULL) {
 
@@ -220,7 +226,7 @@ run_slidingwin <- function(range,
 
     bio_data$climate <- summary_data_unordered[row_order]
 
-    aic_val <- tryCatch(AIC(eval(baseline)), error = function(e) NA_real_)
+    aic_val <- tryCatch(AIC_fn(eval(baseline)), error = function(e) NA_real_)
 
     c(start_days - 1L, end_days - 1L, aic_val)
   }
