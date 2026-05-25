@@ -25,6 +25,9 @@ run_weightwin(
   par_min = NULL,
   par_max = NULL,
   cinterval = "day",
+  show_best = TRUE,
+  AIC_fn = AIC,
+  .predict_args = list(),
   .baselineIsCall = FALSE
 )
 }
@@ -67,17 +70,41 @@ on \code{weightfunc}: 2 for \code{"W"} and \code{"G"}, 2 for \code{"F"}
 \code{lower} and \code{upper} must be provided explicitly and
 \code{par_labels} defaults to \code{"par1"}, \code{"par2"}, …}
 
-\item{method}{Optimisation method passed to \code{optim}.
-Defaults to \code{"L-BFGS-B"}.}
+\item{method}{Optimisation method: \code{"L-BFGS-B"} (default) or
+\code{"Nelder-Mead"}.  \code{"L-BFGS-B"} applies bounded quasi-Newton
+optimisation directly.  \code{"Nelder-Mead"} logit-transforms each
+parameter to an unconstrained real line (so the bounds are always
+respected) and then applies gradient-free simplex optimisation — this can
+converge more reliably on noisy or flat AIC landscapes.}
 
 \item{lower}{Lower bounds for the parameters. Set automatically for
 built-in \code{weightfunc} values when \code{NULL} (default).}
 
 \item{upper}{Upper bounds for the parameters. Set automatically for
-built-in \code{weightfunc} values when \code{NULL} (default).}
+built-in \code{weightfunc} values when \code{NULL} (default).
+For \code{"W"} the default scale upper bound is 10: values above this
+give near-zero Weibull density across the \code{[0, 1]} domain and only
+slow the optimiser down.}
 
-\item{control}{List of control parameters passed to \code{optim}.
-Defaults to \code{list(maxit = 100)}.}
+\item{control}{A named list of control parameters passed to \code{optim}.
+Defaults to \code{list(maxit = 100)}.  Additional settings are filled in
+automatically if not supplied by the user:
+\describe{
+  \item{L-BFGS-B only — \code{ndeps}}{Finite-difference step for gradient
+    estimation, set to 0.1 \% of each parameter's range so gradient
+    estimates are well-conditioned across parameters with different
+    scales.}
+  \item{L-BFGS-B only — \code{factr}}{Convergence threshold
+    (\code{1e9}, ≈ 0.0001 AIC-unit improvement).  The R built-in default
+    (\code{1e7}) is too strict for AIC landscapes and causes oscillation
+    near the minimum.}
+  \item{L-BFGS-B only — \code{pgtol}}{Projected-gradient convergence
+    tolerance (\code{1e-4}); complements \code{factr}.}
+  \item{Nelder-Mead only — \code{reltol}}{Relative convergence tolerance
+    on function values (\code{1e-5}).  The R default
+    (\code{sqrt(.Machine$double.eps)} ≈ \code{1.5e-8}) is unnecessarily
+    tight for AIC.}
+}}
 
 \item{plot_every}{Integer or \code{NULL}. Plot diagnostics every
 \code{plot_every} objective evaluations, and always after convergence.
@@ -92,6 +119,21 @@ when \code{n > 1}. Defaults to \code{upper}.}
 \item{cinterval}{Character string specifying the temporal resolution: \code{"day"} (default),
 \code{"week"}, or \code{"month"}. When \code{"month"} or \code{"week"},
 \code{climate_data} must be pre-aggregated with \code{\link{trans_clim_interval}}.}
+
+\item{show_best}{Logical. When \code{TRUE} (default) an additional panel is
+included in each diagnostic plot showing observed data (points) and the
+predicted climate effect (line) from the current best model.  Set to
+\code{FALSE} if rendering the scatter plot slows optimisation too much.}
+
+\item{AIC_fn}{Function used to calculate AIC of windows.
+Function must return a single numeric value that can be minimsied to find the best window.
+Default AIC should work for most model structures, but some models (e.g. `spaMM` package) will require
+custom functions.}
+
+\item{.predict_args}{A named list of extra arguments forwarded to
+\code{\link[stats]{predict}} when drawing the predicted line in the
+scatter panel.  Useful for mixed models where you may want to pass
+e.g. \code{list(re.form = NA)} to obtain population-level predictions.}
 }
 \value{
 A \code{climwin_weightwin} S7 object.

@@ -77,7 +77,8 @@ Defaults to \code{"W"}.}
 
 \item{par}{Initial distribution parameters — see \code{\link{run_weightwin}}.}
 
-\item{method}{Optimisation method. Defaults to \code{"L-BFGS-B"}.}
+\item{method}{Optimisation method: \code{"L-BFGS-B"} (default) or
+\code{"Nelder-Mead"} — see \code{\link{run_weightwin}}.}
 
 \item{lower}{Lower bounds. Set automatically when \code{NULL}.}
 

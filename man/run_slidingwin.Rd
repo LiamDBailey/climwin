@@ -20,6 +20,7 @@ run_slidingwin(
   cinterval = "day",
   parallel = FALSE,
   progress = TRUE,
+  AIC_fn = AIC,
   .baselineIsCall = FALSE,
   .processed_data = NULL
 )
@@ -59,7 +60,14 @@ For example, \code{c(0, 100)} tests all windows from 0 to 100 days before each b
 
 \item{progress}{Logical. If TRUE, shows a progress bar. Default is TRUE.}
 
+\item{AIC_fn}{Function used to calculate AIC of windows.
+Function must return a single numeric value that can be minimsied to find the best window.
+Default AIC should work for most model structures, but some models (e.g. `spaMM` package) will require
+custom functions.}
+
 \item{.baselineIsCall}{Logical. Internal parameter used to handle baseline substitution. Default is FALSE.}
+
+\item{.processed_data}{Logical. Internal parameter used to handle pre-processed data.}
 }
 \value{
 A list containing:
