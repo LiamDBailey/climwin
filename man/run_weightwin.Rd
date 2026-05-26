@@ -70,12 +70,25 @@ on \code{weightfunc}: 2 for \code{"W"} and \code{"G"}, 2 for \code{"F"}
 \code{lower} and \code{upper} must be provided explicitly and
 \code{par_labels} defaults to \code{"par1"}, \code{"par2"}, …}
 
-\item{method}{Optimisation method: \code{"L-BFGS-B"} (default) or
-\code{"Nelder-Mead"}.  \code{"L-BFGS-B"} applies bounded quasi-Newton
-optimisation directly.  \code{"Nelder-Mead"} logit-transforms each
-parameter to an unconstrained real line (so the bounds are always
-respected) and then applies gradient-free simplex optimisation — this can
-converge more reliably on noisy or flat AIC landscapes.}
+\item{method}{Optimisation method.  One of:
+\describe{
+  \item{\code{"L-BFGS-B"} (default)}{Bounded quasi-Newton with numerical
+    gradients.  Best for smooth AIC landscapes.  No extra packages
+    required.}
+  \item{\code{"nmkb"}}{Nelder-Mead simplex with native box constraints
+    (from \pkg{dfoptim} via \pkg{optimx}).  Gradient-free; bounds are
+    enforced geometrically.  Better than logit-reparameterised Nelder-Mead
+    when the optimum lies near a bound.  Requires \pkg{optimx} and
+    \pkg{dfoptim}.}
+  \item{\code{"hjkb"}}{Hooke-Jeeves pattern search with native box
+    constraints (from \pkg{dfoptim} via \pkg{optimx}).  Gradient-free;
+    useful when \code{"nmkb"} stalls on ridges or flat regions.  Requires
+    \pkg{optimx} and \pkg{dfoptim}.}
+  \item{\code{"ensemble"}}{Runs \code{"L-BFGS-B"}, \code{"nmkb"}, and
+    \code{"hjkb"} from the same starting point and returns the result with
+    the lowest AIC.  Most robust option; requires \pkg{optimx} and
+    \pkg{dfoptim}.}
+}}
 
 \item{lower}{Lower bounds for the parameters. Set automatically for
 built-in \code{weightfunc} values when \code{NULL} (default).}
@@ -90,20 +103,23 @@ slow the optimiser down.}
 Defaults to \code{list(maxit = 100)}.  Additional settings are filled in
 automatically if not supplied by the user:
 \describe{
-  \item{L-BFGS-B only — \code{ndeps}}{Finite-difference step for gradient
-    estimation, set to 0.1 \% of each parameter's range so gradient
-    estimates are well-conditioned across parameters with different
-    scales.}
-  \item{L-BFGS-B only — \code{factr}}{Convergence threshold
+  \item{L-BFGS-B and ensemble — \code{ndeps}}{Finite-difference step for
+    gradient estimation, set to 0.1 \% of each parameter's range so
+    gradient estimates are well-conditioned across parameters with
+    different scales.}
+  \item{L-BFGS-B and ensemble — \code{factr}}{Convergence threshold
     (\code{1e9}, ≈ 0.0001 AIC-unit improvement).  The R built-in default
     (\code{1e7}) is too strict for AIC landscapes and causes oscillation
     near the minimum.}
-  \item{L-BFGS-B only — \code{pgtol}}{Projected-gradient convergence
-    tolerance (\code{1e-4}); complements \code{factr}.}
-  \item{Nelder-Mead only — \code{reltol}}{Relative convergence tolerance
-    on function values (\code{1e-5}).  The R default
-    (\code{sqrt(.Machine$double.eps)} ≈ \code{1.5e-8}) is unnecessarily
-    tight for AIC.}
+  \item{L-BFGS-B and ensemble — \code{pgtol}}{Projected-gradient
+    convergence tolerance (\code{1e-4}); complements \code{factr}.}
+  \item{nmkb and hjkb — \code{tol}}{Convergence tolerance on function
+    values.  Uses the \pkg{dfoptim} default when not supplied.}
+  \item{nmkb and hjkb — \code{maxfeval}}{Maximum function evaluations.
+    Uses the \pkg{dfoptim} default when not supplied.  If omitted and
+    \code{maxit} is set, \code{maxit} is translated to \code{maxfeval}
+    automatically.  Other keys (e.g. \code{factr}, \code{ndeps}) are
+    silently ignored for these methods.}
 }}
 
 \item{plot_every}{Integer or \code{NULL}. Plot diagnostics every

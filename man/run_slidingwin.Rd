@@ -9,6 +9,7 @@ run_slidingwin(
   climate_data,
   bio_data,
   baseline,
+  exclude = NULL,
   cdate = "Date",
   bdate = "Date",
   xvar = "Temp",
@@ -34,6 +35,14 @@ For example, \code{c(0, 100)} tests all windows from 0 to 100 days before each b
 \item{bio_data}{A data frame containing biological data with a date column. Required.}
 
 \item{baseline}{An lm model object that will be updated for each climate window (e.g., lm(Mass ~ climate, data = bio_data)). Required.}
+
+\item{exclude}{A two-element numeric vector \code{c(duration_limit, distance_limit)} that removes
+biologically implausible windows.  A window is excluded when its duration (in units of
+\code{cinterval}) is at most \code{duration_limit} \emph{and} its near edge
+(\code{End_Day}) is at least \code{distance_limit} time-steps back — i.e. the entire
+window lies beyond the distance threshold.  For example, \code{exclude = c(7, 14)}
+removes all windows shorter than 8 days whose near edge is 14 or more days before the
+biological record.  Pass \code{NULL} (default) to disable.}
 
 \item{cdate}{Character string specifying the name of the date column in climate_data. Defaults to "Date".}
 

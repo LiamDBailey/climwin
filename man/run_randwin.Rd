@@ -10,6 +10,7 @@ run_randwin(
   climate_data,
   bio_data,
   baseline,
+  exclude = NULL,
   cdate = "Date",
   bdate = "Date",
   xvar = "Temp",
@@ -43,6 +44,12 @@ the day range to search (e.g. \code{c(0, 50)}).}
 Required.}
 
 \item{baseline}{An lm model object used as the model template. Required.}
+
+\item{exclude}{A two-element numeric vector \code{c(duration_limit,
+distance_limit)} passed to the slidingwin path.  A window is excluded when
+its duration is at most \code{duration_limit} \emph{and} its near edge is
+at least \code{distance_limit} time-steps back.  Pass \code{NULL}
+(default) to disable.  Ignored when \code{window_type = "weightwin"}.}
 
 \item{cdate}{Character string — date column in climate_data.
 Defaults to \code{"Date"}.}
