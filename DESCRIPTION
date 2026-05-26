@@ -37,7 +37,8 @@ Imports:
     patchwork,
     S7,
     imputeTS,
-    evd
+    evd,
+    lubridate
 Suggests:
     optimx,
     dfoptim

@@ -220,6 +220,8 @@ test_that("slidingwin and run_slidingwin give same results with cinterval = 'mon
 
 test_that("slidingwin and run_slidingwin give same results with cinterval = 'week'", {
   
+  testthat::skip_if_not(require("reshape", quietly = TRUE))
+  
   # Old implementation: range = c(furthest, closest) in months
   results_old <- slidingwin(
     xvar      = list(Temp = MassClimate$Temp),
