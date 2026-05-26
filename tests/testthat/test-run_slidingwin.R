@@ -414,3 +414,226 @@ test_that("exclude errors when all windows are removed", {
     "has removed all candidate windows"
   )
 })
+
+# coef_fn parameter -----------------------------------------------------------
+# Note: baseline must always be passed as an inline call (e.g. lm(...)), not a
+# pre-computed variable, so that substitute() captures the full expression and
+# eval() re-fits the model with updated climate data each window.
+
+test_that("coef_fn = NULL gives identical output to omitting coef_fn", {
+  climate_data <- data.frame(
+    Date = c("01/01/1979", "02/01/1979", "03/01/1979", "04/01/1979", "05/01/1979"),
+    Temp = c(10, 15, 20, 10, 12)
+  )
+  bio_data <- data.frame(
+    Date = c("03/01/1979", "03/01/1979", "05/01/1979"),
+    Mass = c(100, 110, 120)
+  )
+
+  res_default <- run_slidingwin(range = c(0, 2), climate_data = climate_data,
+                                bio_data = bio_data,
+                                baseline = lm(Mass ~ climate, data = bio_data),
+                                progress = FALSE)
+  res_null    <- run_slidingwin(range = c(0, 2), climate_data = climate_data,
+                                bio_data = bio_data,
+                                baseline = lm(Mass ~ climate, data = bio_data),
+                                coef_fn = NULL, progress = FALSE)
+
+  expect_equal(getDataset(res_default), getDataset(res_null))
+})
+
+test_that("coef_fn returning unnamed numeric(1) adds a column named 'coef'", {
+  climate_data <- data.frame(
+    Date = c("01/01/1979", "02/01/1979", "03/01/1979", "04/01/1979", "05/01/1979"),
+    Temp = c(10, 15, 20, 10, 12)
+  )
+  bio_data <- data.frame(
+    Date = c("03/01/1979", "03/01/1979", "05/01/1979"),
+    Mass = c(100, 110, 120)
+  )
+
+  res <- run_slidingwin(range = c(0, 2), climate_data = climate_data,
+                        bio_data = bio_data,
+                        baseline = lm(Mass ~ climate, data = bio_data),
+                        coef_fn = function(m) coef(m)[["climate"]],
+                        progress = FALSE)
+
+  ds <- getDataset(res)
+  expect_true("coef" %in% names(ds))
+  expect_true(is.numeric(ds$coef))
+  expect_equal(nrow(ds), 6L)
+})
+
+test_that("coef_fn returning named numeric(1) uses that name as column name", {
+  climate_data <- data.frame(
+    Date = c("01/01/1979", "02/01/1979", "03/01/1979", "04/01/1979", "05/01/1979"),
+    Temp = c(10, 15, 20, 10, 12)
+  )
+  bio_data <- data.frame(
+    Date = c("03/01/1979", "03/01/1979", "05/01/1979"),
+    Mass = c(100, 110, 120)
+  )
+
+  res <- run_slidingwin(range = c(0, 2), climate_data = climate_data,
+                        bio_data = bio_data,
+                        baseline = lm(Mass ~ climate, data = bio_data),
+                        coef_fn = function(m) c(beta = coef(m)[["climate"]]),
+                        progress = FALSE)
+
+  ds <- getDataset(res)
+  expect_true("beta" %in% names(ds))
+  expect_false("coef" %in% names(ds))
+})
+
+test_that("coef_fn returning a named numeric vector of length > 1 appends all columns", {
+  climate_data <- data.frame(
+    Date = c("01/01/1979", "02/01/1979", "03/01/1979", "04/01/1979", "05/01/1979"),
+    Temp = c(10, 15, 20, 10, 12)
+  )
+  bio_data <- data.frame(
+    Date = c("03/01/1979", "03/01/1979", "05/01/1979"),
+    Mass = c(100, 110, 120)
+  )
+
+  res <- run_slidingwin(
+    range        = c(0, 2),
+    climate_data = climate_data,
+    bio_data     = bio_data,
+    baseline     = lm(Mass ~ climate, data = bio_data),
+    coef_fn      = function(m) {
+      s <- summary(m)$coefficients
+      c(beta = s["climate", "Estimate"], beta_se = s["climate", "Std. Error"])
+    },
+    progress = FALSE
+  )
+
+  ds <- getDataset(res)
+  expect_true(all(c("beta", "beta_se") %in% names(ds)))
+  expect_true(is.numeric(ds$beta))
+  expect_true(is.numeric(ds$beta_se))
+  expect_equal(nrow(ds), 6L)
+})
+
+test_that("coef_fn values match manual extraction for best window", {
+  climate_data <- data.frame(
+    Date = c("01/01/1979", "02/01/1979", "03/01/1979", "04/01/1979", "05/01/1979"),
+    Temp = c(10, 15, 20, 10, 12)
+  )
+  bio_data <- data.frame(
+    Date = c("03/01/1979", "03/01/1979", "05/01/1979"),
+    Mass = c(100, 110, 120)
+  )
+
+  res <- run_slidingwin(range = c(0, 2), climate_data = climate_data,
+                        bio_data = bio_data,
+                        baseline = lm(Mass ~ climate, data = bio_data),
+                        coef_fn = function(m) coef(m)[["climate"]],
+                        progress = FALSE)
+
+  ds <- getDataset(res)
+  # Row 1 is the best window (sorted by AIC); its stored coef must match
+  # the coefficient from the best model refitted at the end of run_slidingwin.
+  expect_equal(ds$coef[1L], coef(getBestModel(res))[["climate"]], tolerance = 1e-8)
+})
+
+test_that("coef_fn errors on some windows produce NA rows, not a crash", {
+  climate_data <- data.frame(
+    Date = c("01/01/1979", "02/01/1979", "03/01/1979", "04/01/1979", "05/01/1979"),
+    Temp = c(10, 15, 20, 10, 12)
+  )
+  bio_data <- data.frame(
+    Date = c("03/01/1979", "03/01/1979", "05/01/1979"),
+    Mass = c(100, 110, 120)
+  )
+
+  # Succeeds on the first call, errors on all subsequent calls.
+  # This lets first_coef be determined from window 1, then NA fills the rest.
+  n_calls <- 0L
+  mixed_coef_fn <- function(m) {
+    n_calls <<- n_calls + 1L
+    if (n_calls > 1L) stop("deliberate error")
+    coef(m)[["climate"]]
+  }
+
+  res <- run_slidingwin(range = c(0, 2), climate_data = climate_data,
+                        bio_data = bio_data,
+                        baseline = lm(Mass ~ climate, data = bio_data),
+                        coef_fn = mixed_coef_fn, progress = FALSE)
+
+  ds <- getDataset(res)
+  expect_true("coef" %in% names(ds))
+  expect_equal(nrow(ds), 6L)
+  # First successful call produced a real value; the rest are NA
+  expect_true(any(is.na(ds$coef)))
+  expect_true(any(!is.na(ds$coef)))
+})
+
+test_that("coef_fn with non-numeric return type gives informative error", {
+  climate_data <- data.frame(
+    Date = c("01/01/1979", "02/01/1979", "03/01/1979", "04/01/1979", "05/01/1979"),
+    Temp = c(10, 15, 20, 10, 12)
+  )
+  bio_data <- data.frame(
+    Date = c("03/01/1979", "03/01/1979", "05/01/1979"),
+    Mass = c(100, 110, 120)
+  )
+
+  # list is not a numeric vector
+  expect_error(
+    run_slidingwin(range = c(0, 2), climate_data = climate_data,
+                   bio_data = bio_data,
+                   baseline = lm(Mass ~ climate, data = bio_data),
+                   coef_fn  = function(m) list(x = 1),
+                   progress = FALSE),
+    "must return a named numeric vector"
+  )
+
+  # data.frame is no longer accepted
+  expect_error(
+    run_slidingwin(range = c(0, 2), climate_data = climate_data,
+                   bio_data = bio_data,
+                   baseline = lm(Mass ~ climate, data = bio_data),
+                   coef_fn  = function(m) data.frame(x = 1),
+                   progress = FALSE),
+    "must return a named numeric vector"
+  )
+})
+
+test_that("coef_fn with unnamed vector of length > 1 gives informative error", {
+  climate_data <- data.frame(
+    Date = c("01/01/1979", "02/01/1979", "03/01/1979", "04/01/1979", "05/01/1979"),
+    Temp = c(10, 15, 20, 10, 12)
+  )
+  bio_data <- data.frame(
+    Date = c("03/01/1979", "03/01/1979", "05/01/1979"),
+    Mass = c(100, 110, 120)
+  )
+
+  expect_error(
+    run_slidingwin(range = c(0, 2), climate_data = climate_data,
+                   bio_data = bio_data,
+                   baseline = lm(Mass ~ climate, data = bio_data),
+                   coef_fn  = function(m) c(1.0, 2.0),  # unnamed, length 2
+                   progress = FALSE),
+    "unnamed numeric vector"
+  )
+})
+
+test_that("coef_fn rejects non-function values", {
+  climate_data <- data.frame(
+    Date = c("01/01/1979", "02/01/1979", "03/01/1979", "04/01/1979", "05/01/1979"),
+    Temp = c(10, 15, 20, 10, 12)
+  )
+  bio_data <- data.frame(
+    Date = c("03/01/1979", "03/01/1979", "05/01/1979"),
+    Mass = c(100, 110, 120)
+  )
+
+  expect_error(
+    run_slidingwin(range = c(0, 2), climate_data = climate_data,
+                   bio_data = bio_data,
+                   baseline = lm(Mass ~ climate, data = bio_data),
+                   coef_fn  = "not_a_function", progress = FALSE),
+    "coef_fn"
+  )
+})

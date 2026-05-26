@@ -35,6 +35,13 @@
 #' Function must return a single numeric value that can be minimsied to find the best window.
 #' Default AIC should work for most model structures, but some models (e.g. `spaMM` package) will require
 #' custom functions.
+#' @param coef_fn Optional function applied to each fitted window model immediately after
+#'   \code{AIC_fn}; the model is then discarded. Must return a named numeric vector of
+#'   any length — each element becomes a column in \code{dataset} using its name.
+#'   A single unnamed value is permitted and stored under the column name \code{"coef"};
+#'   unnamed vectors of length > 1 are an error. Errors within \code{coef_fn} for a
+#'   given window produce \code{NA} for that window rather than stopping the analysis.
+#'   Defaults to \code{NULL} (no extra columns).
 #' @param .baselineIsCall Logical. Internal parameter used to handle baseline substitution. Default is FALSE.
 #' @param .processed_data Logical. Internal parameter used to handle pre-processed data.
 #'
@@ -118,7 +125,7 @@
 #'  
 #'}
 #'
-#' @importFrom future.apply future_vapply
+#' @importFrom future.apply future_lapply
 #' @importFrom future plan
 #' @importFrom future multisession
 #' @importFrom progress progress_bar
@@ -141,6 +148,7 @@ run_slidingwin <- function(range,
                            parallel = FALSE,
                            progress = TRUE,
                            AIC_fn = AIC,
+                           coef_fn = NULL,
                            .baselineIsCall = FALSE,
                            .processed_data = NULL) {
 
@@ -161,6 +169,8 @@ run_slidingwin <- function(range,
 
   validate_arg("baseline", baseline, required = TRUE)
   validate_arg("fn", fn, required = FALSE, type = "function")
+  if (!is.null(coef_fn))
+    validate_arg("coef_fn", coef_fn, required = FALSE, type = "function")
 
   if (!is.null(exclude)) {
     validate_arg("exclude", exclude, required = FALSE, type = "numeric",
@@ -242,12 +252,12 @@ run_slidingwin <- function(range,
            "Relax exclude[1] (duration_limit) or exclude[2] (distance_limit).")
   }
 
-  # Returns c(Start_Day, End_Day, AIC) for window combination i
+  # Fits the model for window combination i, extracts AIC (and coef if requested),
+  # then discards the model. Always returns a named list.
   process_window <- function(i) {
     start_days <- range_combinations$start_days[i] + 1L
     end_days   <- range_combinations$end_days[i]   + 1L
 
-    # Aggregate climate across the window for each bio record
     if (use_cumsum) {
       col_sums <- xvar_cumsum[end_days + 1L, ] - xvar_cumsum[start_days, ]
       summary_data_unordered <- if (identical(fn, mean)) {
@@ -259,12 +269,16 @@ run_slidingwin <- function(range,
       summary_data_unordered <- apply(bio_xvar_ranges, MARGIN = 2L,
                                       FUN = \(x) fn(x[start_days:end_days]))
     }
-
     bio_data$climate <- summary_data_unordered[row_order]
 
-    aic_val <- tryCatch(AIC_fn(eval(baseline)), error = function(e) NA_real_)
+    m        <- tryCatch(eval(baseline), error = function(e) NULL)
+    aic_val  <- if (!is.null(m)) tryCatch(AIC_fn(m),  error = function(e) NA_real_) else NA_real_
+    coef_val <- if (!is.null(coef_fn) && !is.null(m))
+                  tryCatch(coef_fn(m), error = function(e) NULL)
+                else NULL
 
-    c(start_days - 1L, end_days - 1L, aic_val)
+    list(start = start_days - 1L, end = end_days - 1L,
+         aic   = aic_val,         coef = coef_val)
   }
 
   total_combinations <- nrow(range_combinations)
@@ -272,20 +286,18 @@ run_slidingwin <- function(range,
   if (parallel) {
     if (progress && interactive()) {
       message("Initiating parallel processing...")
-      result_mat <- progressr::with_progress({
+      result_list <- progressr::with_progress({
         p <- progressr::progressor(steps = total_combinations)
-        future.apply::future_vapply(
+        future.apply::future_lapply(
           seq_len(total_combinations),
           function(i) { result <- process_window(i); p(); result },
-          numeric(3L),
           future.seed = TRUE
         )
       })
     } else {
-      result_mat <- future.apply::future_vapply(
+      result_list <- future.apply::future_lapply(
         seq_len(total_combinations),
         process_window,
-        numeric(3L),
         future.seed = TRUE
       )
     }
@@ -298,18 +310,52 @@ run_slidingwin <- function(range,
         width  = 60
       )
     }
-    result_mat <- matrix(NA_real_, nrow = 3L, ncol = total_combinations)
+    result_list <- vector("list", total_combinations)
     for (i in seq_len(total_combinations)) {
-      result_mat[, i] <- process_window(i)
+      result_list[[i]] <- process_window(i)
       if (progress && interactive()) pb$tick()
     }
   }
 
   results <- data.frame(
-    Start_Day = as.integer(result_mat[1L, ]),
-    End_Day   = as.integer(result_mat[2L, ]),
-    AIC       = result_mat[3L, ]
+    Start_Day = as.integer(vapply(result_list, `[[`, integer(1L), "start")),
+    End_Day   = as.integer(vapply(result_list, `[[`, integer(1L), "end")),
+    AIC       = vapply(result_list, `[[`, numeric(1L), "aic")
   )
+
+  if (!is.null(coef_fn)) {
+    # Determine output shape from the first successful coef result
+    first_coef <- NULL
+    for (r in result_list) {
+      if (!is.null(r$coef)) { first_coef <- r$coef; break }
+    }
+
+    if (!is.null(first_coef)) {
+      if (!is.numeric(first_coef)) {
+        stop("`coef_fn` must return a named numeric vector; got: ",
+             class(first_coef)[1L])
+      }
+
+      n   <- length(first_coef)
+      nms <- names(first_coef)
+
+      if (is.null(nms) || any(!nzchar(nms))) {
+        if (n == 1L) {
+          nms <- "coef"
+        } else {
+          stop("`coef_fn` returned an unnamed numeric vector of length ", n,
+               ". Provide names (e.g. c(beta = ..., se = ...)) so that ",
+               "column names can be determined.")
+        }
+      }
+
+      coef_mat <- do.call(rbind, lapply(result_list, function(x) {
+        if (is.null(x$coef)) rep(NA_real_, n) else x$coef
+      }))
+      colnames(coef_mat) <- nms
+      results <- cbind(results, as.data.frame(coef_mat))
+    }
+  }
 
   # Calculate model weights
   # Formula: (exp(-0.5 * deltaAIC)) / sum(exp(-0.5 * deltaAIC))
