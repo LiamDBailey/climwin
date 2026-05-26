@@ -20,6 +20,11 @@
 #'   Defaults to \code{"Temp"}.
 #' @param fn A function for summarising climate data (slidingwin only).
 #'   Defaults to \code{mean}.
+#' @param exclude A two-element numeric vector \code{c(duration_limit,
+#'   distance_limit)} passed to the slidingwin path.  A window is excluded when
+#'   its duration is at most \code{duration_limit} \emph{and} its near edge is
+#'   at least \code{distance_limit} time-steps back.  Pass \code{NULL}
+#'   (default) to disable.  Ignored when \code{window_type = "weightwin"}.
 #' @param type \code{"relative"} (default) or \code{"absolute"}.
 #' @param refday Reference date (\code{"DD/MM/YYYY"}) when
 #'   \code{type = "absolute"}.
@@ -77,6 +82,7 @@ run_randwin <- function(repeats,
                         climate_data,
                         bio_data,
                         baseline,
+                        exclude = NULL,
                         cdate = "Date",
                         bdate = "Date",
                         xvar = "Temp",
@@ -107,6 +113,18 @@ run_randwin <- function(repeats,
 
   validate_range(range)
   range_seq <- seq.int(range[1], range[2])
+
+  if (!is.null(exclude)) {
+    validate_arg("exclude", exclude, required = FALSE, type = "numeric",
+                 additional_checks = list(
+                   function(x) if (length(x) != 2L)
+                     stop("must be a two-element vector c(duration_limit, distance_limit)"),
+                   function(x) if (any(x <= 0))
+                     stop("both values must be positive"),
+                   function(x) if (x[2] > range[2])
+                     stop("distance_limit exceeds the maximum range")
+                 ))
+  }
 
   validate_arg("climate_data", climate_data, required = TRUE, type = "data.frame",
                additional_checks = function(x) if (nrow(x) == 0) stop("must contain at least 1 row"))
@@ -171,7 +189,20 @@ run_randwin <- function(repeats,
   # across iterations so workers only receive pre-computed base R objects.
   range_combinations <- if (window_type == "slidingwin") {
     rc <- expand.grid(start_days = range_seq, end_days = range_seq)
-    rc[rc$end_days >= rc$start_days, ]
+    rc <- rc[rc$end_days >= rc$start_days, ]
+
+    # Apply exclude filter — same logic as run_slidingwin
+    if (!is.null(exclude)) {
+      win_dur     <- rc$start_days - rc$end_days + 1L
+      is_excluded <- rc$end_days >= exclude[2] & win_dur <= exclude[1]
+      rc          <- rc[!is_excluded, ]
+
+      if (nrow(rc) == 0L)
+        stop("'exclude' has removed all candidate windows. ",
+             "Relax exclude[1] (duration_limit) or exclude[2] (distance_limit).")
+    }
+
+    rc
   } else {
     NULL
   }

@@ -7,6 +7,13 @@
 #'
 #' @param range A two-element numeric vector \code{c(lower, upper)} specifying the day range to search.
 #'   For example, \code{c(0, 100)} tests all windows from 0 to 100 days before each biological date.
+#' @param exclude A two-element numeric vector \code{c(duration_limit, distance_limit)} that removes
+#'   biologically implausible windows.  A window is excluded when its duration (in units of
+#'   \code{cinterval}) is at most \code{duration_limit} \emph{and} its near edge
+#'   (\code{End_Day}) is at least \code{distance_limit} time-steps back — i.e. the entire
+#'   window lies beyond the distance threshold.  For example, \code{exclude = c(7, 14)}
+#'   removes all windows shorter than 8 days whose near edge is 14 or more days before the
+#'   biological record.  Pass \code{NULL} (default) to disable.
 #' @param climate_data A data frame containing climate data. Required.
 #' @param bio_data A data frame containing biological data with a date column. Required.
 #' @param baseline An lm model object that will be updated for each climate window (e.g., lm(Mass ~ climate, data = bio_data)). Required.
@@ -121,6 +128,7 @@ run_slidingwin <- function(range,
                            climate_data,
                            bio_data,
                            baseline,
+                           exclude = NULL,
                            cdate = "Date",
                            bdate = "Date",
                            xvar = "Temp",
@@ -153,6 +161,18 @@ run_slidingwin <- function(range,
 
   validate_arg("baseline", baseline, required = TRUE)
   validate_arg("fn", fn, required = FALSE, type = "function")
+
+  if (!is.null(exclude)) {
+    validate_arg("exclude", exclude, required = FALSE, type = "numeric",
+                 additional_checks = list(
+                   function(x) if (length(x) != 2L)
+                     stop("must be a two-element vector c(duration_limit, distance_limit)"),
+                   function(x) if (any(x <= 0))
+                     stop("both values must be positive"),
+                   function(x) if (x[2] > range[2])
+                     stop("distance_limit exceeds the maximum range")
+                 ))
+  }
   
   ### PROCESS DATA ####
   if (!is.null(.processed_data)) {
@@ -204,7 +224,23 @@ run_slidingwin <- function(range,
 
   # Generate all valid range combinations
   range_combinations <- expand.grid(start_days = range_seq, end_days = range_seq)
-  range_combinations <- range_combinations[range_combinations$end_days >= range_combinations$start_days, ]
+  range_combinations <- range_combinations[
+    range_combinations$end_days >= range_combinations$start_days, ]
+
+  # Drop biologically implausible windows: short duration AND far from present.
+  # A window is excluded when its near edge (end_days) is >= distance_limit AND
+  # its duration is <= duration_limit.  Checking only end_days is sufficient
+  # because start_days >= end_days, so if end_days >= distance_limit then the
+  # entire window lies beyond that threshold.
+  if (!is.null(exclude)) {
+    win_dur     <- range_combinations$start_days - range_combinations$end_days + 1L
+    is_excluded <- range_combinations$end_days >= exclude[2] & win_dur <= exclude[1]
+    range_combinations <- range_combinations[!is_excluded, ]
+
+    if (nrow(range_combinations) == 0L)
+      stop("'exclude' has removed all candidate windows. ",
+           "Relax exclude[1] (duration_limit) or exclude[2] (distance_limit).")
+  }
 
   # Returns c(Start_Day, End_Day, AIC) for window combination i
   process_window <- function(i) {
