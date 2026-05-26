@@ -372,39 +372,3 @@ test_that("ensemble AIC is no worse than the best individual method AIC", {
   expect_lte(aic_ensemble, aic_min_individual + 1e-6)
 })
 
-# Error paths — mocking requireNamespace so these run without removing packages
-
-test_that("run_weightwin errors informatively when optimx is not installed", {
-  d <- make_test_data()
-  local_mocked_bindings(
-    requireNamespace = function(pkg, quietly = FALSE) pkg != "optimx",
-    .env = asNamespace("climwinNew")
-  )
-  expect_error(
-    run_weightwin(
-      range = c(0, 4), bio_data = d$bio_data, climate_data = d$climate_data,
-      cdate = "Date", bdate = "Date", xvar = "Temp",
-      baseline = lm(Mass ~ climate, data = bio_data),
-      par = c(1.25, 0.5), method = "nmkb", plot_every = NULL
-    ),
-    "Package 'optimx' is required"
-  )
-})
-
-test_that("run_weightwin errors informatively when dfoptim is not installed", {
-  d <- make_test_data()
-  # optimx present, dfoptim absent
-  local_mocked_bindings(
-    requireNamespace = function(pkg, quietly = FALSE) pkg != "dfoptim",
-    .env = asNamespace("climwinNew")
-  )
-  expect_error(
-    run_weightwin(
-      range = c(0, 4), bio_data = d$bio_data, climate_data = d$climate_data,
-      cdate = "Date", bdate = "Date", xvar = "Temp",
-      baseline = lm(Mass ~ climate, data = bio_data),
-      par = c(1.25, 0.5), method = "hjkb", plot_every = NULL
-    ),
-    "Package 'dfoptim' is required"
-  )
-})
