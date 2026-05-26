@@ -637,3 +637,132 @@ test_that("coef_fn rejects non-function values", {
     "coef_fn"
   )
 })
+
+# k-fold cross-validation -------------------------------------------------------
+# Helper data: 10 bio records give enough obs for k = 2/3 splits.
+make_cv_data <- function() {
+  list(
+    climate_data = data.frame(
+      Date = format(seq(as.Date("01/01/1979", "%d/%m/%Y"),
+                        by = "day", length.out = 20), "%d/%m/%Y"),
+      Temp = as.numeric(seq(5, 24))
+    ),
+    bio_data = data.frame(
+      Date = format(seq(as.Date("11/01/1979", "%d/%m/%Y"),
+                        by = "day", length.out = 10), "%d/%m/%Y"),
+      Mass = as.numeric(seq(100, 109))
+    )
+  )
+}
+
+test_that("k = 0 produces no CV_score column", {
+  d <- make_cv_data()
+  res <- run_slidingwin(range = c(0, 3), climate_data = d$climate_data,
+                        bio_data = d$bio_data,
+                        baseline = lm(Mass ~ climate, data = bio_data),
+                        k = 0, progress = FALSE)
+  expect_false("CV_score" %in% names(getDataset(res)))
+})
+
+test_that("k = 2 adds a numeric CV_score column", {
+  d <- make_cv_data()
+  set.seed(1)
+  res <- run_slidingwin(range = c(0, 3), climate_data = d$climate_data,
+                        bio_data = d$bio_data,
+                        baseline = lm(Mass ~ climate, data = bio_data),
+                        k = 2, progress = FALSE)
+  ds <- getDataset(res)
+  expect_true("CV_score" %in% names(ds))
+  expect_true(is.numeric(ds$CV_score))
+  expect_equal(nrow(ds), 10L)  # (0+1+2+3) choose 2 with repeats = 10 windows
+})
+
+test_that("CV_score values differ across windows", {
+  d <- make_cv_data()
+  set.seed(42)
+  res <- run_slidingwin(range = c(0, 3), climate_data = d$climate_data,
+                        bio_data = d$bio_data,
+                        baseline = lm(Mass ~ climate, data = bio_data),
+                        k = 2, progress = FALSE)
+  expect_gt(var(getDataset(res)$CV_score, na.rm = TRUE), 0)
+})
+
+test_that("k = 0 and k = 2 produce identical AIC values", {
+  d <- make_cv_data()
+  res0 <- run_slidingwin(range = c(0, 3), climate_data = d$climate_data,
+                         bio_data = d$bio_data,
+                         baseline = lm(Mass ~ climate, data = bio_data),
+                         k = 0, progress = FALSE)
+  set.seed(1)
+  res2 <- run_slidingwin(range = c(0, 3), climate_data = d$climate_data,
+                         bio_data = d$bio_data,
+                         baseline = lm(Mass ~ climate, data = bio_data),
+                         k = 2, progress = FALSE)
+  expect_equal(getDataset(res0)$AIC, getDataset(res2)$AIC, tolerance = 1e-10)
+})
+
+test_that("k = 1 throws an error", {
+  d <- make_cv_data()
+  expect_error(
+    run_slidingwin(range = c(0, 2), climate_data = d$climate_data,
+                   bio_data = d$bio_data,
+                   baseline = lm(Mass ~ climate, data = bio_data),
+                   k = 1, progress = FALSE),
+    "must be 0.*or.*>= 2"
+  )
+})
+
+test_that("k > nrow(bio_data) throws an error", {
+  d <- make_cv_data()
+  expect_error(
+    run_slidingwin(range = c(0, 2), climate_data = d$climate_data,
+                   bio_data = d$bio_data,
+                   baseline = lm(Mass ~ climate, data = bio_data),
+                   k = 999, progress = FALSE),
+    "cannot exceed number of observations"
+  )
+})
+
+test_that("custom predict_fn is used during CV", {
+  d <- make_cv_data()
+  calls <- 0L
+  spy_predict <- function(m, newdata) {
+    calls <<- calls + 1L
+    predict(m, newdata = newdata)
+  }
+  set.seed(1)
+  run_slidingwin(range = c(0, 2), climate_data = d$climate_data,
+                 bio_data = d$bio_data,
+                 baseline = lm(Mass ~ climate, data = bio_data),
+                 k = 2, predict_fn = spy_predict, progress = FALSE)
+  # 6 windows × 2 folds = 12 predict calls
+  expect_equal(calls, 12L)
+})
+
+test_that("predict_fn rejects non-function values", {
+  d <- make_cv_data()
+  expect_error(
+    run_slidingwin(range = c(0, 2), climate_data = d$climate_data,
+                   bio_data = d$bio_data,
+                   baseline = lm(Mass ~ climate, data = bio_data),
+                   predict_fn = "not_a_function", progress = FALSE),
+    "predict_fn"
+  )
+})
+
+test_that("parallel = TRUE with k = 2 produces same CV_score as serial", {
+  d <- make_cv_data()
+  set.seed(7)
+  res_serial <- run_slidingwin(range = c(0, 3), climate_data = d$climate_data,
+                               bio_data = d$bio_data,
+                               baseline = lm(Mass ~ climate, data = bio_data),
+                               k = 2, parallel = FALSE, progress = FALSE)
+  set.seed(7)
+  res_parallel <- run_slidingwin(range = c(0, 3), climate_data = d$climate_data,
+                                 bio_data = d$bio_data,
+                                 baseline = lm(Mass ~ climate, data = bio_data),
+                                 k = 2, parallel = TRUE, progress = FALSE)
+  expect_equal(getDataset(res_serial)$CV_score,
+               getDataset(res_parallel)$CV_score,
+               tolerance = 1e-10)
+})

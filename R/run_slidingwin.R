@@ -42,6 +42,17 @@
 #'   unnamed vectors of length > 1 are an error. Errors within \code{coef_fn} for a
 #'   given window produce \code{NA} for that window rather than stopping the analysis.
 #'   Defaults to \code{NULL} (no extra columns).
+#' @param k Integer. Number of folds for k-fold cross-validation. Must be \code{0}
+#'   (disabled, default) or \code{>= 2}. When enabled, a \code{CV_score} column
+#'   (mean out-of-sample MSE across folds) is appended to \code{dataset}. Fold
+#'   assignments are sampled once before the window loop so all windows are evaluated
+#'   on identical splits. Note: each window fits \code{k} additional models, so
+#'   runtime scales with \code{k}.
+#' @param predict_fn Function used to generate out-of-sample predictions during
+#'   cross-validation. Must accept a fitted model as its first argument and a
+#'   \code{newdata} argument. Defaults to \code{predict}. Supply a custom function
+#'   for model classes that require specific arguments (e.g.
+#'   \code{function(m, newdata) predict(m, newdata, type = "response")}).
 #' @param .baselineIsCall Logical. Internal parameter used to handle baseline substitution. Default is FALSE.
 #' @param .processed_data Logical. Internal parameter used to handle pre-processed data.
 #'
@@ -149,6 +160,8 @@ run_slidingwin <- function(range,
                            progress = TRUE,
                            AIC_fn = AIC,
                            coef_fn = NULL,
+                           k = 0L,
+                           predict_fn = predict,
                            .baselineIsCall = FALSE,
                            .processed_data = NULL) {
 
@@ -167,8 +180,9 @@ run_slidingwin <- function(range,
   validate_range(range)
   range_seq <- seq.int(range[1], range[2])
 
-  validate_arg("baseline", baseline, required = TRUE)
-  validate_arg("fn", fn, required = FALSE, type = "function")
+  validate_arg("baseline",   baseline,   required = TRUE)
+  validate_arg("fn",         fn,         required = FALSE, type = "function")
+  validate_arg("predict_fn", predict_fn, required = FALSE, type = "function")
   if (!is.null(coef_fn))
     validate_arg("coef_fn", coef_fn, required = FALSE, type = "function")
 
@@ -222,6 +236,23 @@ run_slidingwin <- function(range,
     bio_xvar_ranges <- processed_data$bio_xvar_ranges
   }
 
+  # Validate k now that bio_data has its final row count
+  validate_arg("k", k, required = FALSE, type = c("numeric", "integer"),
+    additional_checks = list(
+      function(x) if (length(x) != 1L)    stop("must be a single value"),
+      function(x) if (x != floor(x))      stop("must be a whole number"),
+      function(x) if (x < 0L)             stop("must be 0 (disabled) or >= 2"),
+      function(x) if (x == 1L)            stop("must be 0 (disabled) or >= 2"),
+      function(x) if (x > nrow(bio_data)) stop("cannot exceed number of observations")
+    )
+  )
+  k <- as.integer(k)
+
+  # Pre-compute fold assignments once so all windows share identical splits
+  if (k >= 2L) {
+    fold_ids <- sample(rep(seq_len(k), length.out = nrow(bio_data)))
+  }
+
   # Pre-compute row ordering once (spatial joins may reorder columns)
   row_order <- order(bio_data_row)
 
@@ -253,7 +284,7 @@ run_slidingwin <- function(range,
   }
 
   # Fits the model for window combination i, extracts AIC (and coef if requested),
-  # then discards the model. Always returns a named list.
+  # optionally runs k-fold CV, then discards the model. Always returns a named list.
   process_window <- function(i) {
     start_days <- range_combinations$start_days[i] + 1L
     end_days   <- range_combinations$end_days[i]   + 1L
@@ -271,14 +302,31 @@ run_slidingwin <- function(range,
     }
     bio_data$climate <- summary_data_unordered[row_order]
 
-    m        <- tryCatch(eval(baseline), error = function(e) NULL)
-    aic_val  <- if (!is.null(m)) tryCatch(AIC_fn(m),  error = function(e) NA_real_) else NA_real_
-    coef_val <- if (!is.null(coef_fn) && !is.null(m))
+    m       <- eval(baseline)
+    aic_val <- tryCatch(AIC_fn(m), error = function(e) NA_real_)
+    coef_val <- if (!is.null(coef_fn))
                   tryCatch(coef_fn(m), error = function(e) NULL)
                 else NULL
 
+    cv_score <- if (k >= 2L) {
+      response_name <- as.character(formula(m)[[2]])
+      fold_losses <- vapply(seq_len(k), function(j) {
+        train_data <- bio_data[fold_ids != j, ]
+        test_data  <- bio_data[fold_ids == j, ]
+        bio_data   <- train_data                  # rebind local copy for eval(baseline)
+        m_train    <- eval(baseline)
+        preds      <- tryCatch(
+          predict_fn(m_train, newdata = test_data),
+          error = function(e) NULL
+        )
+        if (is.null(preds)) return(NA_real_)
+        mean((preds - test_data[[response_name]])^2, na.rm = TRUE)
+      }, numeric(1L))
+      mean(fold_losses, na.rm = TRUE)
+    } else NULL
+
     list(start = start_days - 1L, end = end_days - 1L,
-         aic   = aic_val,         coef = coef_val)
+         aic   = aic_val,         coef = coef_val, cv_score = cv_score)
   }
 
   total_combinations <- nrow(range_combinations)
@@ -322,6 +370,10 @@ run_slidingwin <- function(range,
     End_Day   = as.integer(vapply(result_list, `[[`, integer(1L), "end")),
     AIC       = vapply(result_list, `[[`, numeric(1L), "aic")
   )
+
+  if (k >= 2L) {
+    results$CV_score <- vapply(result_list, `[[`, numeric(1L), "cv_score")
+  }
 
   if (!is.null(coef_fn)) {
     # Determine output shape from the first successful coef result
