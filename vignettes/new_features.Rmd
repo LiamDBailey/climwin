@@ -1,0 +1,36 @@
+---
+title: "New features climwin v2.0"
+author: "Liam D. Bailey and Martijn van de Pol"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{climwin}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+  
+************************************
+
+```{r}
+devtools::load_all()
+```
+  
+## Performance
+
+We hope that one noticable difference of climwin v2.0 will be an improvement in performance.
+
+```{r}
+ggplot2::ggplot() +
+  ggplot2::geom_line(data = bench_results,
+            ggplot2::aes(x = max_range, y = median, colour = expression),
+            linewidth = 1) +
+  ggplot2::geom_point(data = bench_results,
+            ggplot2::aes(x = max_range, y = median, colour = expression),
+            shape = 21) +
+  ggplot2::theme_classic()
+```
+
+## Parallel processing
+
+## S7 object output
+

@@ -1,0 +1,48 @@
+#' Plot Delta AIC Heatmap
+#'
+#' This function creates a heatmap visualization of sliding window analysis results.
+#' The plot shows Delta AIC values as a color gradient with End_Day on the x-axis and 
+#' Start_Day on the y-axis, using geom_tile for the visualization.
+#'
+#' @param dataset Output from run_slidingwin (either a data frame or a list with 'dataset' item) containing columns:
+#'                Start_Day, End_Day, and AIC
+#'
+#' @return A ggplot object showing the heatmap of AIC values
+#'
+#' @examples
+#' # Example usage:
+#' data("MassClimate")
+#' data("Mass")
+#' results <- run_slidingwin(range = c(0, 100), 
+#'                         climate_data = MassClimate, 
+#'                         bio_data = Mass,
+#'                         baseline = lm(Mass ~ climate, data = bio_data))
+#' plot_delta(results)
+#'
+#' @export
+#' @import ggplot2
+plot_delta <- function(dataset, smooth = FALSE) {
+  
+  dataset <- dataset@dataset
+  
+  # Calculate Delta AIC relative to null model (highest AIC)
+  max_aic <- max(dataset$AIC, na.rm = TRUE)
+  dataset$Delta_AIC <- dataset$AIC - max_aic
+  
+  # Create the heatmap
+  p <- ggplot(dataset, aes(x = Start_Day, y = End_Day, z = Delta_AIC)) +
+    geom_raster(aes(fill = Delta_AIC), interpolate = smooth) +
+    geom_abline(slope = 1, intercept = 0, linewidth = 0.5) +
+    labs(title = expression(paste(Delta, "AICc (compared to null model)")),
+         y = "Window open", x = "Window close") +
+    coord_cartesian(expand = FALSE) + 
+    scale_fill_gradientn(colours = c("red", "yellow", "blue")) +
+    # theme_climwin() +
+    theme_classic() + 
+    theme(legend.position = c(0.85, 0.325),
+          legend.title = element_blank(),
+          legend.text.position = "left")
+  
+  return(p)
+  
+} 

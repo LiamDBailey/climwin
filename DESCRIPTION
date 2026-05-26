@@ -1,7 +1,7 @@
 Package: climwin
 Type: Package
 Title: Climate Window Analysis
-Version: 1.2.33
+Version: 2.0
 Authors@R: c(person(given = c("Liam", "D."), family = "Bailey",
                         role = c("aut", "cre"),
                         email = "liam.bailey@liamdbailey.com"),
@@ -16,26 +16,28 @@ Description: Contains functions to detect and visualise periods of climate
     sensitivity (climate windows) for a given biological response. 
     Please see van de Pol et al. (2016) <doi:10.1111/2041-210X.12590> 
     and Bailey and van de Pol (2016) <doi:10.1371/journal.pone.0167980> for details.
-Depends: R (>= 3.5.0)
-Imports:
-    ggplot2 (>= 3.5.2),
-    gridExtra,
-    Matrix,
-    evd,
-    lubridate,
-    lme4,
-    MuMIn,
-    reshape,
-    numDeriv,
-    RcppRoll,
-    nlme
-Suggests:
-    testthat,
-    knitr,
-    rmarkdown
 License: GPL-2
 Repository: CRAN
 LazyData: True
 VignetteBuilder: knitr
-RoxygenNote: 7.3.2
 Encoding: UTF-8
+Config/roxygen2/version: 8.0.0
+Depends: 
+    R (>= 3.5)
+Imports:
+    future,
+    future.apply,
+    furrr,
+    purrr,
+    dplyr,
+    progress,
+    progressr,
+    ggplot2,
+    rlang,
+    patchwork,
+    S7,
+    imputeTS,
+    evd
+Suggests:
+    optimx,
+    dfoptim

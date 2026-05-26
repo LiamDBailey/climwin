@@ -1,4 +1,22 @@
-# climwin 1.2.33
+# climwin v2.0
+
+Major update to the code to improve performance and long-term maintenance. All changes described here. For more detail on backwards compatibility, see vignettes.
+
+## Major changes
+
+### Syntax
+
+- All function names u
+
+### Outputs
+
+## Minor changes
+
+## Technical changes
+
+------------------------
+
+# climwin v1.2.33
 
 Hot fix to ensure compatibility with development version of R on Linux.
 
@@ -14,7 +32,9 @@ Slight change to internal tests to pass all CRAN checks.
 
 - Remove use of 'size' argument in ggplot2 line objects, now using 'linewidth'.
 
-# climwin 1.2.32
+------------------------
+
+# climwin v1.2.32
 
 Minor updates to ensure compatibility with ggplot v4.0.0
 
@@ -31,7 +51,9 @@ None
 
 - Remove use of 'size' argument in ggplot2 line objects, now using 'linewidth'.
 
-# climwin 1.2.31
+------------------------
+
+# climwin v1.2.31
 
 Minor updates to ensure compatibility with R v4.5.0
 
@@ -48,7 +70,9 @@ None
 
 - Remove use of .. notation in `ggplot2` code. `climwin` now has dependency on `ggplot2` v3.4.0 or greater.
 
-# climwin 1.2.3
+------------------------
+
+# climwin v1.2.3
 
 climwin v1.2.3 includes mostly minor internal changes to make `climwin` compatible with upcoming R v4.0.0
 
@@ -65,7 +89,9 @@ None
 - Remove dependency on `plyr`, which was an artefact of old code.
 - Ensure that code is compatible with changes to stringsAsFactors default in v4.0.0
 
-# climwin 1.2.2
+------------------------
+
+# climwin v1.2.2
 
 climwin v1.2.2 includes a number of important bug fixes that may
 affect ongoing analyses.
@@ -86,8 +112,9 @@ When using `cinterval = "month"`, it is possible to identify one best window wit
 
 `slidingwin()` allows users to provide weights in the baseline model. However, when these weights are uniform at 1, this led to an error in the way `slidingwin()` updates the baseline model during the window fitting process. The method for dealing with weights has been changed and this bug has been removed.
 
+------------------------
 
-# climwin 1.2.1
+# climwin v1.2.1
 
 climwin v1.2.1 is now fully compatible with R v3.6.0. To report errors and bugs or ask questions please visit the `climwin` [google group](https://groups.google.com/forum/?utm_medium=email&utm_source=footer#!forum/climwin-r-group).
 
@@ -111,7 +138,9 @@ With v3.0 of ggplot2 some slight compatibility changes were introduced when crea
 
 Previous versions of `climwin` used the `print()` function to write text in the console. This is now done using `message()` and `warning()`, which allows users to suppress information if desired (e.g. with `suppressMessages()`).
 
-# climwin 1.2.0
+------------------------
+
+# climwin v1.2.0
 
 Our newest version includes a number of important tweaks and bug fixes, as well as an updated help vignette. To report errors and bugs or ask questions please visit the `climwin` [google group](https://groups.google.com/forum/?utm_medium=email&utm_source=footer#!forum/climwin-r-group).
 
@@ -161,7 +190,7 @@ Fixed a bug where the 'slope' statistic was calculated with the wrong sign.
 
 ------------------------
 
-# climwin 1.1.0
+# climwin v1.1.0
 
 Our newest version adds a number of useful features to `climwin` as well as a few bug fixes. In addition, we have now created a `climwin` [google group](https://groups.google.com/forum/?utm_medium=email&utm_source=footer#!forum/climwin-r-group) for users to ask questions about the package. Please report any errors or bugs on this forum.
 
@@ -193,7 +222,7 @@ The original design of `climwin` required users to provide their climate data at
 
 ------------------------
 
-# climwin 1.0.0
+# climwin v1.0.0
 
 ## Major changes
 
@@ -252,19 +281,19 @@ Parameter changes:
 
 ------------------------
 
-# climwin 0.1.2
+# climwin v0.1.2
 
 Fixed bug which caused convergence issues using cross-validation.
 
 ------------------------
 
-# climwin 0.1.1
+# climwin v0.1.1
 
 Fixed serious bug causing an error in 'plotwin' and 'plotall'. Naming mismatch in the 'closest' column in climatewin$Dataset. Column name changes from Closest to closest.
 
 ------------------------
 
-# climwin 0.1.0
+# climwin v0.1.0
 
 Our newest release aims to speed up the functions and provide greater versatility to users. In addition, we have produced a vignette providing a detailed introduction on how to use the climwin package. See `vignette("climwin")` for more.
 
@@ -290,6 +319,6 @@ We have made some changes to the names and levels or parameters that should be c
 
 ------------------------
 
-# climwin 0.0.1
+# climwin v0.0.1
 
 * Initial package release. Forthcoming changes will be noted.
