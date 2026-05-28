@@ -102,7 +102,7 @@ benchmark_climwin <- function(){
                                                bio_data = Mass,
                                                baseline = lm(Mass ~ climate, data = bio_data),
                                                range = 0:max_range,
-                                               type = "absolute", refday = "20/05/2020",
+                                               type = "absolute", refday = c(20, 5),
                                                fn = mean, cinterval = "day",
                                                climate_data = MassClimate), check = FALSE) |> 
       select(expression:total_time) |> 
@@ -188,7 +188,7 @@ benchmark_randwin <- function(){
                                                bio_data = Mass,
                                                baseline = lm(Mass ~ climate, data = bio_data),
                                                range = 0:100,
-                                               type = "absolute", refday = "20/05/2020",
+                                               type = "absolute", refday = c(20, 5),
                                                fn = mean, cinterval = "day",
                                                climate_data = MassClimate),
                           parallel = run_randwin(repeats = repeats, xvar = "Temp",
@@ -197,7 +197,7 @@ benchmark_randwin <- function(){
                                                     bio_data = Mass,
                                                     baseline = lm(Mass ~ climate, data = bio_data),
                                                     range = 0:100,
-                                                    type = "absolute", refday = "20/05/2020",
+                                                    type = "absolute", refday = c(20, 5),
                                                     fn = mean, cinterval = "day",
                                                     climate_data = MassClimate, parallel = TRUE),
                           check = FALSE) |> 

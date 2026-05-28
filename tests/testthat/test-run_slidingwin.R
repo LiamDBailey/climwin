@@ -420,7 +420,7 @@ test_that("exclude errors when all windows are removed", {
 # pre-computed variable, so that substitute() captures the full expression and
 # eval() re-fits the model with updated climate data each window.
 
-test_that("coef_fn = NULL gives identical output to omitting coef_fn", {
+test_that("default coef_fn = coef adds coefficient columns", {
   climate_data <- data.frame(
     Date = c("01/01/1979", "02/01/1979", "03/01/1979", "04/01/1979", "05/01/1979"),
     Temp = c(10, 15, 20, 10, 12)
@@ -434,12 +434,28 @@ test_that("coef_fn = NULL gives identical output to omitting coef_fn", {
                                 bio_data = bio_data,
                                 baseline = lm(Mass ~ climate, data = bio_data),
                                 progress = FALSE)
-  res_null    <- run_slidingwin(range = c(0, 2), climate_data = climate_data,
-                                bio_data = bio_data,
-                                baseline = lm(Mass ~ climate, data = bio_data),
-                                coef_fn = NULL, progress = FALSE)
+  ds <- getDataset(res_default)
+  expect_true("(Intercept)" %in% names(ds))
+  expect_true("climate" %in% names(ds))
+  expect_true(is.numeric(ds[["(Intercept)"]]))
+})
 
-  expect_equal(getDataset(res_default), getDataset(res_null))
+test_that("coef_fn = NULL suppresses coefficient columns", {
+  climate_data <- data.frame(
+    Date = c("01/01/1979", "02/01/1979", "03/01/1979", "04/01/1979", "05/01/1979"),
+    Temp = c(10, 15, 20, 10, 12)
+  )
+  bio_data <- data.frame(
+    Date = c("03/01/1979", "03/01/1979", "05/01/1979"),
+    Mass = c(100, 110, 120)
+  )
+
+  res_null <- run_slidingwin(range = c(0, 2), climate_data = climate_data,
+                             bio_data = bio_data,
+                             baseline = lm(Mass ~ climate, data = bio_data),
+                             coef_fn = NULL, progress = FALSE)
+  ds <- getDataset(res_null)
+  expect_equal(names(ds), c("Start_Day", "End_Day", "AIC", "ModWeight"))
 })
 
 test_that("coef_fn returning unnamed numeric(1) adds a column named 'coef'", {

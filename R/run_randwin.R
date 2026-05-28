@@ -26,8 +26,9 @@
 #'   at least \code{distance_limit} time-steps back.  Pass \code{NULL}
 #'   (default) to disable.  Ignored when \code{window_type = "weightwin"}.
 #' @param type \code{"relative"} (default) or \code{"absolute"}.
-#' @param refday Reference date (\code{"DD/MM/YYYY"}) when
-#'   \code{type = "absolute"}.
+#' @param refday A two-element numeric vector \code{c(day, month)} specifying
+#'   the reference day and month when \code{type = "absolute"}
+#'   (e.g. \code{c(20, 5)} for 20th May).
 #' @param parallel Logical. Use parallel processing (slidingwin only).
 #'   Default \code{FALSE}.
 #' @param progress Logical. Show a progress bar. Default \code{TRUE}.
@@ -141,11 +142,13 @@ run_randwin <- function(repeats,
                  stop("must be either 'relative' or 'absolute'"))
 
   if (type == "absolute") {
-    validate_arg("refday", refday, required = TRUE, type = "character",
-                 additional_checks = function(x) {
-                   refday_date <- as.Date(x, format = "%d/%m/%Y")
-                   if (is.na(refday_date)) stop("must be in format 'DD/MM/YYYY'")
-                 })
+    validate_arg("refday", refday, required = TRUE, type = "numeric",
+                 additional_checks = list(
+                   function(x) if (length(x) != 2L) stop("must be a two-element vector c(day, month)"),
+                   function(x) if (any(x != floor(x))) stop("values must be whole numbers"),
+                   function(x) if (x[1] < 1 || x[1] > 31) stop("day must be between 1 and 31"),
+                   function(x) if (x[2] < 1 || x[2] > 12) stop("month must be between 1 and 12")
+                 ))
   }
 
   validate_arg("climate_data", climate_data, required = FALSE,

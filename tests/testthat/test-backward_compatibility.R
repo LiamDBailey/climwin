@@ -2,16 +2,16 @@ test_that("MassWin results can be recreated", {
   
   # Example usage:
   results <- run_slidingwin(range = c(0, 150), type = "absolute", fn = mean,
-                            refday = "20/05/2025",
-                            climate_data = MassClimate, 
+                            refday = c(20, 5),
+                            climate_data = MassClimate,
                             bio_data = Mass,
                             baseline = lm(Mass ~ climate, data = bio_data))
   
   # Access the dataset and best model
   ## Compare top models
   ## TODO: Compare full dataset
-  new_results <- getDataset(results) |> 
-    select(-AIC) |> 
+  new_results <- getDataset(results) |>
+    select(Start_Day, End_Day, ModWeight) |>
     slice(1:6)
   old_results <- data.frame(Start_Day = c(15, 14, 15, 14, 13, 13),
                             End_Day = c(72, 72, 73, 73, 72, 73),
@@ -43,8 +43,8 @@ test_that("MassWin results can be recreated", {
 test_that("Masswin with interaction", {
   
   results <- run_slidingwin(range = c(0, 150), type = "absolute", fn = mean,
-                            refday = "20/05/2025",
-                            climate_data = MassClimate, 
+                            refday = c(20, 5),
+                            climate_data = MassClimate,
                             bio_data = Mass,
                             baseline = lm(Mass ~ climate*Age, data = bio_data))
   
@@ -104,8 +104,8 @@ test_that("Test cohort works", {
   
   ## Without cohort
   results <- run_slidingwin(range = c(0, 100), type = "absolute", fn = mean,
-                            refday = "01/11/2025",
-                            climate_data = MassClimate, 
+                            refday = c(1, 11),
+                            climate_data = MassClimate,
                             bio_data = CohortMass,
                             cohort = "cohort",
                             baseline = lm(Mass ~ climate, data = bio_data))
@@ -143,8 +143,8 @@ test_that("Weightwin has backwards compatibility", {
   new_result <- run_weightwin(range = c(0, 150),
                               bio_data = Mass, climate_data = MassClimate,
                               baseline = lm(Mass ~ climate, data = bio_data),
-                              type = "absolute", 
-                              refday = "20/05/2025", 
+                              type = "absolute",
+                              refday = c(20, 5),
                               par = c(3, 0.2),
                               xvar = "Temp", cdate = "Date", bdate = "Date")
   
@@ -190,7 +190,7 @@ test_that("slidingwin and run_slidingwin give same results with cinterval = 'mon
     baseline = lm(Mass ~ climate, data = bio_data),
     cinterval    = "month",
     type         = "absolute",
-    refday       = "20/05/2025"
+    refday       = c(20, 5)
   )
 
   ## Compare window dataset (filter negligible weights to avoid AIC vs AICc rounding differences)
@@ -245,7 +245,7 @@ test_that("slidingwin and run_slidingwin give same results with cinterval = 'wee
     baseline = lm(Mass ~ climate, data = bio_data),
     cinterval    = "week",
     type         = "absolute",
-    refday       = "20/05/2025"
+    refday       = c(20, 5)
   )
   
   ## Compare window dataset (filter negligible weights to avoid AIC vs AICc rounding differences)
@@ -288,7 +288,7 @@ test_that("trans_clim_interval -> run_slidingwin pipeline produces valid output"
     baseline = lm(Mass ~ climate, data = bio_data),
     cinterval    = "month",
     type         = "absolute",
-    refday       = "20/05/2025"
+    refday       = c(20, 5)
   )
 
   ds_monthly <- getDataset(results_monthly)
@@ -313,7 +313,7 @@ test_that("trans_clim_interval -> run_slidingwin pipeline produces valid output"
     baseline = lm(Mass ~ climate, data = bio_data),
     cinterval    = "week",
     type         = "absolute",
-    refday       = "20/05/2025"
+    refday       = c(20, 5)
   )
 
   ds_weekly <- getDataset(results_weekly)
@@ -330,7 +330,7 @@ test_that("trans_clim_interval -> run_slidingwin pipeline produces valid output"
       baseline = lm(Mass ~ climate, data = bio_data),
       cinterval    = "month",
       type         = "absolute",
-      refday       = "20/05/2025"
+      refday       = c(20, 5)
     ),
     "trans_clim_interval"
   )
@@ -360,17 +360,17 @@ test_that("slidingwin and run_slidingwin produce same results (absolute, lin)", 
     baseline = lm(Mass ~ climate, data = bio_data),
     fn           = mean,
     type         = "absolute",
-    refday       = "20/05/2000"
+    refday       = c(20, 5)
   )
 
   old_ds <- results_old_api[[1]]$Dataset |>
     select(Start_Day = WindowClose, End_Day = WindowOpen, ModWeight) |>
-    mutate(across(everything(), as.numeric)) |> 
+    mutate(across(everything(), as.numeric)) |>
     tibble::remove_rownames()
-  
+
   new_ds <- getDataset(results_new_api) |>
     select(Start_Day, End_Day, ModWeight) |>
-    mutate(across(everything(), as.numeric)) |> 
+    mutate(across(everything(), as.numeric)) |>
     tibble::remove_rownames()
   
   expect_equal(old_ds, new_ds, tolerance = 1e-4)
@@ -479,7 +479,7 @@ test_that("slidingwin with cohort matches run_slidingwin with cohort", {
     baseline = lm(Mass ~ climate, data = bio_data),
     fn           = mean,
     type         = "absolute",
-    refday       = "01/11/2000",
+    refday       = c(1, 11),
     cohort       = "cohort"
   )
 
@@ -563,7 +563,7 @@ test_that("slidingwin with cohort matches run_slidingwin with spatial", {
     baseline = lm(Mass ~ climate, data = bio_data),
     fn           = mean,
     type         = "absolute",
-    refday       = "01/11/2000",
+    refday       = c(1, 11),
     spatial       = "spatial"
   )
   

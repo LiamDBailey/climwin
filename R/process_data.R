@@ -61,11 +61,13 @@ process_data <- function(climate_data,
 
   # Validate refday parameter if type is absolute
   if (type == "absolute") {
-    validate_arg("refday", refday, required = TRUE, type = "character",
-                additional_checks = function(x) {
-                  refday_date <- as.Date(x, format = "%d/%m/%Y")
-                  if(is.na(refday_date)) stop("must be in format 'DD/MM/YYYY'")
-                })
+    validate_arg("refday", refday, required = TRUE, type = "numeric",
+                additional_checks = list(
+                  function(x) if (length(x) != 2L) stop("must be a two-element vector c(day, month)"),
+                  function(x) if (any(x != floor(x))) stop("values must be whole numbers"),
+                  function(x) if (x[1] < 1 || x[1] > 31) stop("day must be between 1 and 31"),
+                  function(x) if (x[2] < 1 || x[2] > 12) stop("month must be between 1 and 12")
+                ))
   }
   
   # Validate column names in climate_data
@@ -222,10 +224,9 @@ process_data <- function(climate_data,
       sep = "/"
     ), format = "%d/%m/%Y")
   } else {
-    refday_parts_as_date <- as.Date(refday, format = "%d/%m/%Y")
     effective_bio_dates <- as.Date(paste(
-      lubridate::day(refday_parts_as_date),
-      lubridate::month(refday_parts_as_date),
+      refday[1],
+      refday[2],
       years,
       sep = "/"
     ), format = "%d/%m/%Y")

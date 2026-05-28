@@ -28,8 +28,9 @@
 #'   on \code{weightfunc}: 2 for \code{"W"} and \code{"G"}, 2 for \code{"F"}
 #'   (scale, shape), or however many your custom function expects.
 #' @param type \code{"relative"} (default) or \code{"absolute"}.
-#' @param refday Reference date (\code{"DD/MM/YYYY"}) used when
-#'   \code{type = "absolute"}.
+#' @param refday A two-element numeric vector \code{c(day, month)} specifying
+#'   the reference day and month when \code{type = "absolute"}
+#'   (e.g. \code{c(20, 5)} for 20th May).
 #' @param weightfunc Either a character string (\code{"W"}, \code{"G"},
 #'   \code{"F"}) or a density function with signature
 #'   \code{function(x, par1, par2, ...)}. When a function is supplied,

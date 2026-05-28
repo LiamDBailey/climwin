@@ -22,7 +22,7 @@
 #' @param xvar Character string specifying the name of the climate variable column in climate_data. Defaults to "Temp".
 #' @param fn A function to use for summarizing the climate data. Defaults to mean().
 #' @param type Character string specifying the type of date range calculation. Must be either "relative" (default) or "absolute".
-#' @param refday Character string in format "DD/MM/YYYY" specifying the reference date to use when type is "absolute".
+#' @param refday A two-element numeric vector \code{c(day, month)} specifying the reference day and month to use when \code{type = "absolute"} (e.g. \code{c(20, 5)} for 20th May).
 #' @param spatial Character string specifying the name of the spatial grouping column in both climate_data and bio_data. Defaults to NULL.
 #' @param cohort Character string specifying the name of the cohort column in bio_data. When type is "relative", each row will use the earliest year of all records in the same cohort. Defaults to NULL.
 #' @param cinterval Character string specifying the temporal resolution: \code{"day"} (default),
@@ -35,13 +35,14 @@
 #' Function must return a single numeric value that can be minimsied to find the best window.
 #' Default AIC should work for most model structures, but some models (e.g. `spaMM` package) will require
 #' custom functions.
-#' @param coef_fn Optional function applied to each fitted window model immediately after
+#' @param coef_fn Function applied to each fitted window model immediately after
 #'   \code{AIC_fn}; the model is then discarded. Must return a named numeric vector of
 #'   any length — each element becomes a column in \code{dataset} using its name.
 #'   A single unnamed value is permitted and stored under the column name \code{"coef"};
 #'   unnamed vectors of length > 1 are an error. Errors within \code{coef_fn} for a
 #'   given window produce \code{NA} for that window rather than stopping the analysis.
-#'   Defaults to \code{NULL} (no extra columns).
+#'   Defaults to \code{coef} (extracts all model coefficients). Pass \code{NULL} to
+#'   suppress coefficient extraction.
 #' @param k Integer. Number of folds for k-fold cross-validation. Must be \code{0}
 #'   (disabled, default) or \code{>= 2}. When enabled, a \code{CV_score} column
 #'   (mean out-of-sample MSE across folds) is appended to \code{dataset}. Fold
@@ -136,7 +137,7 @@
 #'                      baseline = lm(Mass ~ climate, data = bio_data),
 #'                      xvar = "Temp",
 #'                      cdate = "Date", bdate = "Date", 
-#'                      type = "absolute", refday = "20/05/2025"
+#'                      type = "absolute", refday = c(20, 5)
 #'                      )
 #'  
 #'}
@@ -164,7 +165,7 @@ run_slidingwin <- function(range,
                            parallel = FALSE,
                            progress = TRUE,
                            AIC_fn = AIC,
-                           coef_fn = NULL,
+                           coef_fn = coef,
                            k = 0L,
                            predict_fn = predict,
                            CV_func = function(predicted, observed) mean((predicted - observed)^2, na.rm = TRUE),
