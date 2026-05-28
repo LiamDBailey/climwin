@@ -512,3 +512,41 @@ test_that("predict_fn rejects non-function values", {
   )
 })
 
+test_that("custom CV_func changes CV_score value", {
+  d <- make_cv_data_ww()
+  set.seed(1)
+  res_mse <- run_weightwin(
+    range = c(0, 4), bio_data = d$bio_data, climate_data = d$climate_data,
+    cdate = "Date", bdate = "Date", xvar = "Temp",
+    baseline = lm(Mass ~ climate, data = bio_data),
+    par = c(1.25, 0.5), k = 2, plot_every = NULL
+  )
+  set.seed(1)
+  res_mae <- run_weightwin(
+    range = c(0, 4), bio_data = d$bio_data, climate_data = d$climate_data,
+    cdate = "Date", bdate = "Date", xvar = "Temp",
+    baseline = lm(Mass ~ climate, data = bio_data),
+    par      = c(1.25, 0.5),
+    k        = 2,
+    CV_func  = function(predicted, observed) mean(abs(predicted - observed)),
+    plot_every = NULL
+  )
+  expect_false(identical(res_mse@weightwin_summary$CV_score,
+                         res_mae@weightwin_summary$CV_score))
+})
+
+test_that("CV_func rejects non-function values", {
+  d <- make_cv_data_ww()
+  expect_error(
+    run_weightwin(
+      range = c(0, 4), bio_data = d$bio_data, climate_data = d$climate_data,
+      cdate = "Date", bdate = "Date", xvar = "Temp",
+      baseline = lm(Mass ~ climate, data = bio_data),
+      par      = c(1.25, 0.5),
+      CV_func  = "not_a_function",
+      plot_every = NULL
+    ),
+    "CV_func"
+  )
+})
+

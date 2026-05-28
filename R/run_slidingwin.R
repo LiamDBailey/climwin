@@ -53,6 +53,11 @@
 #'   \code{newdata} argument. Defaults to \code{predict}. Supply a custom function
 #'   for model classes that require specific arguments (e.g.
 #'   \code{function(m, newdata) predict(m, newdata, type = "response")}).
+#' @param CV_func Function used to score each fold during cross-validation.
+#'   Must accept two numeric vectors \code{(predicted, observed)} and return a
+#'   single numeric value (lower = better). Defaults to mean squared error:
+#'   \code{function(predicted, observed) mean((predicted - observed)^2, na.rm = TRUE)}.
+#'   The per-fold scores are averaged to produce \code{CV_score}.
 #' @param .baselineIsCall Logical. Internal parameter used to handle baseline substitution. Default is FALSE.
 #' @param .processed_data Logical. Internal parameter used to handle pre-processed data.
 #'
@@ -162,6 +167,7 @@ run_slidingwin <- function(range,
                            coef_fn = NULL,
                            k = 0L,
                            predict_fn = predict,
+                           CV_func = function(predicted, observed) mean((predicted - observed)^2, na.rm = TRUE),
                            .baselineIsCall = FALSE,
                            .processed_data = NULL) {
 
@@ -183,6 +189,7 @@ run_slidingwin <- function(range,
   validate_arg("baseline",   baseline,   required = TRUE)
   validate_arg("fn",         fn,         required = FALSE, type = "function")
   validate_arg("predict_fn", predict_fn, required = FALSE, type = "function")
+  validate_arg("CV_func",    CV_func,    required = FALSE, type = "function")
   if (!is.null(coef_fn))
     validate_arg("coef_fn", coef_fn, required = FALSE, type = "function")
 
@@ -320,7 +327,7 @@ run_slidingwin <- function(range,
           error = function(e) NULL
         )
         if (is.null(preds)) return(NA_real_)
-        mean((preds - test_data[[response_name]])^2, na.rm = TRUE)
+        CV_func(preds, test_data[[response_name]])
       }, numeric(1L))
       mean(fold_losses, na.rm = TRUE)
     } else NULL

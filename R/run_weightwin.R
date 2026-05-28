@@ -111,6 +111,11 @@
 #'   to \code{\link[stats]{predict}}. Supply a wrapper (e.g.
 #'   \code{function(m, newdata) predict(m, newdata, re.form = NA)}) for mixed
 #'   models that need extra arguments.
+#' @param CV_func Function used to score each fold during cross-validation.
+#'   Must accept two numeric vectors \code{(predicted, observed)} and return a
+#'   single numeric value (lower = better). Defaults to mean squared error:
+#'   \code{function(predicted, observed) mean((predicted - observed)^2, na.rm = TRUE)}.
+#'   The per-fold scores are averaged to produce \code{CV_score}.
 #' @param .predict_args A named list of extra arguments forwarded to
 #'   \code{\link[stats]{predict}} when drawing the predicted line in the
 #'   scatter panel.  Useful for mixed models where you may want to pass
@@ -155,6 +160,7 @@ run_weightwin <- function(n = 1,
                           AIC_fn = AIC,
                           k = 0L,
                           predict_fn = predict,
+                          CV_func = function(predicted, observed) mean((predicted - observed)^2, na.rm = TRUE),
                           .predict_args = list(),
                           .baselineIsCall = FALSE) {
 
@@ -176,6 +182,7 @@ run_weightwin <- function(n = 1,
   k <- as.integer(k)
 
   validate_arg("predict_fn", predict_fn, required = FALSE, type = "function")
+  validate_arg("CV_func",    CV_func,    required = FALSE, type = "function")
 
   if (k >= 2L) {
     fold_ids <- sample(rep(seq_len(k), length.out = nrow(bio_data)))
@@ -454,7 +461,7 @@ run_weightwin <- function(n = 1,
         preds      <- tryCatch(predict_fn(m_train, newdata = test_data),
                                error = function(e) NULL)
         if (is.null(preds)) return(NA_real_)
-        mean((preds - test_data[[response_name]])^2, na.rm = TRUE)
+        CV_func(preds, test_data[[response_name]])
       }, numeric(1L))
       mean(fold_losses, na.rm = TRUE)
     } else NULL

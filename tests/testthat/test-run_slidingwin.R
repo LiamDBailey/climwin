@@ -766,3 +766,32 @@ test_that("parallel = TRUE with k = 2 produces same CV_score as serial", {
                getDataset(res_parallel)$CV_score,
                tolerance = 1e-10)
 })
+
+test_that("custom CV_func changes CV_score values", {
+  d <- make_cv_data()
+  set.seed(42)
+  res_mse <- run_slidingwin(range = c(0, 2), climate_data = d$climate_data,
+                            bio_data = d$bio_data,
+                            baseline = lm(Mass ~ climate, data = bio_data),
+                            k = 2, progress = FALSE)
+  set.seed(42)
+  res_mae <- run_slidingwin(range = c(0, 2), climate_data = d$climate_data,
+                            bio_data = d$bio_data,
+                            baseline = lm(Mass ~ climate, data = bio_data),
+                            k = 2,
+                            CV_func = function(predicted, observed) mean(abs(predicted - observed)),
+                            progress = FALSE)
+  expect_false(identical(getDataset(res_mse)$CV_score,
+                         getDataset(res_mae)$CV_score))
+})
+
+test_that("CV_func rejects non-function values", {
+  d <- make_cv_data()
+  expect_error(
+    run_slidingwin(range = c(0, 2), climate_data = d$climate_data,
+                   bio_data = d$bio_data,
+                   baseline = lm(Mass ~ climate, data = bio_data),
+                   k = 2, CV_func = "not_a_function", progress = FALSE),
+    "CV_func"
+  )
+})
