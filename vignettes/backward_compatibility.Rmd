@@ -84,6 +84,8 @@ new_output <- run_slidingwin(xvar = "Temp",
 plot_delta(new_output)
 ```
 
+- New `get*` functions can be used to extract information from the output of all sliding window analyses.
+
 ```{r}
 head(getDataset(new_output), 10)
 ```
@@ -91,11 +93,11 @@ head(getDataset(new_output), 10)
 
 ************************************
 
-### Cubic climate effect
+### Non-linear climate effect (cubic climate)
 
 **Old syntax**
 ```{r}
-old_output <- slidingwin(xvar = list(Temp = MassClimate$Temp),
+old_output_cubic <- slidingwin(xvar = list(Temp = MassClimate$Temp),
                          cdate = MassClimate$Date, 
                          bdate = Mass$Date, 
                          baseline = lm(Mass ~ 1, data = Mass),
@@ -107,10 +109,18 @@ old_output <- slidingwin(xvar = list(Temp = MassClimate$Temp),
                          cinterval = "day")
 ```
 
+```{r}
+plotdelta(old_output_cubic[[1]]$Dataset)
+```
+
+```{r}
+head(old_output_cubic[[1]]$Dataset, 10)
+```
+
 **New syntax**
 
 ```{r}
-new_output <- run_slidingwin(range = c(0, 150), type = "absolute", refday = c(20, 5),
+new_output_cubic <- run_slidingwin(range = c(0, 150), type = "absolute", refday = c(20, 5),
                              climate_data = MassClimate,
                              xvar = "Temp", fn = mean,
                              cinterval = "day",
@@ -119,19 +129,11 @@ new_output <- run_slidingwin(range = c(0, 150), type = "absolute", refday = c(20
 ```
 
 ```{r}
-plotdelta(old_output[[1]]$Dataset)
+plot_delta(new_output_cubic)
 ```
 
 ```{r}
-head(old_output[[1]]$Dataset, 10)
-```
-
-```{r}
-plot_delta(new_output)
-```
-
-```{r}
-head(getDataset(new_output), 10)
+head(getDataset(new_output_cubic), 10)
 ```
 
 ************************************
@@ -142,7 +144,7 @@ In the old syntax, conversion to weekly or monthly data is done internally.
 
 **Old syntax**
 ```{r}
-old_output <- slidingwin(xvar = list(Temp = MassClimate$Temp),
+old_output_week <- slidingwin(xvar = list(Temp = MassClimate$Temp),
                          cdate = MassClimate$Date, 
                          bdate = Mass$Date, 
                          baseline = lm(Mass ~ 1, data = Mass),
@@ -151,6 +153,14 @@ old_output <- slidingwin(xvar = list(Temp = MassClimate$Temp),
                          stat = "mean",
                          func = c("lin"), cmissing = FALSE,
                          cinterval = "week")
+```
+
+```{r}
+plotdelta(old_output_week[[1]]$Dataset)
+```
+
+```{r}
+head(old_output_week[[1]]$Dataset, 10)
 ```
 
 **New syntax**
@@ -163,7 +173,7 @@ MassClimate_week <- trans_clim_interval(MassClimate, xvar = "Temp", cdate = "Dat
 ```
 
 ```{r}
-new_output <- run_slidingwin(range = c(0, 70), type = "absolute", refday = c(20, 5),
+new_output_week <- run_slidingwin(range = c(0, 70), type = "absolute", refday = c(20, 5),
                              climate_data = MassClimate_week,
                              xvar = "Temp", fn = mean,
                              cinterval = "week",
@@ -172,27 +182,18 @@ new_output <- run_slidingwin(range = c(0, 70), type = "absolute", refday = c(20,
 ```
 
 ```{r}
-plotdelta(old_output[[1]]$Dataset)
+plot_delta(new_output_week)
 ```
 
 ```{r}
-head(old_output[[1]]$Dataset, 10)
+head(getDataset(new_output_week), 10)
 ```
-
-```{r}
-plot_delta(new_output)
-```
-
-```{r}
-head(getDataset(new_output), 10)
-```
-
 
 ************************************
 
 ## Thresholds & growing degree analysis
 
-For analyses of growing degree days, we want to convert our climatic data into binary response based on a given threshold. If we are working at weekly/monthly scale, it will be most appropriate to first apply the growing degrees threshold and then aggregate to the level of months. This behaviour will be normally require user input to proceed.
+For analyses of growing degree days, we want to convert our climatic data into binary response based on a given threshold. If we are working at weekly/monthly scale, we should first apply the growing degrees threshold and then aggregate to the level of months.
 
 **Old syntax**
 ```{r, eval = FALSE}
