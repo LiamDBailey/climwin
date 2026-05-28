@@ -101,6 +101,16 @@
 #' Function must return a single numeric value that can be minimsied to find the best window.
 #' Default AIC should work for most model structures, but some models (e.g. `spaMM` package) will require
 #' custom functions.
+#' @param k Integer. Number of folds for k-fold cross-validation. Use
+#'   \code{0} (default) to disable CV. When \code{k >= 2}, each optimisation
+#'   run also reports a mean-squared-error CV score computed at the optimal
+#'   parameters: the optimal weighted climate is fixed, then the fitted model
+#'   is evaluated by k-fold hold-out on the biological data. The CV score is
+#'   stored in the \code{weightwin_summary} and each run's output list.
+#' @param predict_fn Function used to generate predictions during CV. Defaults
+#'   to \code{\link[stats]{predict}}. Supply a wrapper (e.g.
+#'   \code{function(m, newdata) predict(m, newdata, re.form = NA)}) for mixed
+#'   models that need extra arguments.
 #' @param .predict_args A named list of extra arguments forwarded to
 #'   \code{\link[stats]{predict}} when drawing the predicted line in the
 #'   scatter panel.  Useful for mixed models where you may want to pass
@@ -143,6 +153,8 @@ run_weightwin <- function(n = 1,
                           cinterval = "day",
                           show_best = TRUE,
                           AIC_fn = AIC,
+                          k = 0L,
+                          predict_fn = predict,
                           .predict_args = list(),
                           .baselineIsCall = FALSE) {
 
@@ -151,6 +163,23 @@ run_weightwin <- function(n = 1,
 
   validate_arg("baseline", baseline, required = TRUE)
   if (!isTRUE(.baselineIsCall)) baseline <- substitute(baseline)
+
+  validate_arg("k", k, required = FALSE, type = c("numeric", "integer"),
+    additional_checks = list(
+      function(x) if (length(x) != 1L)    stop("must be a single value"),
+      function(x) if (x != floor(x))      stop("must be a whole number"),
+      function(x) if (x < 0L)             stop("must be 0 (disabled) or >= 2"),
+      function(x) if (x == 1L)            stop("must be 0 (disabled) or >= 2"),
+      function(x) if (x > nrow(bio_data)) stop("cannot exceed number of observations")
+    )
+  )
+  k <- as.integer(k)
+
+  validate_arg("predict_fn", predict_fn, required = FALSE, type = "function")
+
+  if (k >= 2L) {
+    fold_ids <- sample(rep(seq_len(k), length.out = nrow(bio_data)))
+  }
 
   method <- match.arg(method,
                       choices = c("L-BFGS-B", "nmkb", "hjkb", "ensemble"))
@@ -414,6 +443,22 @@ run_weightwin <- function(n = 1,
     bio_data   <- optimal_data$bio_data
     best_model <- eval(baseline)
 
+    cv_score <- if (k >= 2L) {
+      bio_data_cv   <- bio_data
+      response_name <- as.character(formula(best_model)[[2]])
+      fold_losses   <- vapply(seq_len(k), function(j) {
+        train_data <- bio_data_cv[fold_ids != j, ]
+        test_data  <- bio_data_cv[fold_ids == j, ]
+        bio_data   <- train_data
+        m_train    <- eval(baseline)
+        preds      <- tryCatch(predict_fn(m_train, newdata = test_data),
+                               error = function(e) NULL)
+        if (is.null(preds)) return(NA_real_)
+        mean((preds - test_data[[response_name]])^2, na.rm = TRUE)
+      }, numeric(1L))
+      mean(fold_losses, na.rm = TRUE)
+    } else NULL
+
     if (!is.null(plot_every)) {
       graphics::par(mfrow = mfrow_dims)
       plot(optimal_data$weights, type = "l",
@@ -437,7 +482,8 @@ run_weightwin <- function(n = 1,
                                          data  = optimal_data$bio_data),
                        weights    = list(par     = optimal_par,
                                          weights = optimal_data$weights),
-                       weightfunc = weightfunc_name
+                       weightfunc = weightfunc_name,
+                       cv_score   = cv_score
                      )))
 
     row_data <- c(
@@ -445,6 +491,7 @@ run_weightwin <- function(n = 1,
       setNames(as.list(optimal_par), paste0("end_",   par_labels)),
       list(AIC = AIC_fn(best_model))
     )
+    if (k >= 2L) row_data$CV_score <- cv_score
     summary_output <- bind_rows(summary_output, as.data.frame(row_data))
 
   }

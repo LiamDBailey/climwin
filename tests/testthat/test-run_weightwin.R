@@ -372,3 +372,143 @@ test_that("ensemble AIC is no worse than the best individual method AIC", {
   expect_lte(aic_ensemble, aic_min_individual + 1e-6)
 })
 
+# k-fold cross-validation -------------------------------------------------------
+# Helper with enough bio rows to support k = 2/3 splits.
+make_cv_data_ww <- function() {
+  climate_data <- data.frame(
+    Date = format(seq(as.Date("01/01/1979", "%d/%m/%Y"),
+                      by = "day", length.out = 20), "%d/%m/%Y"),
+    Temp = as.numeric(seq(5, 24))
+  )
+  bio_data <- data.frame(
+    Date = format(seq(as.Date("11/01/1979", "%d/%m/%Y"),
+                      by = "day", length.out = 8), "%d/%m/%Y"),
+    Mass = as.numeric(seq(100, 107))
+  )
+  list(climate_data = climate_data, bio_data = bio_data)
+}
+
+test_that("k = 0 produces no CV_score column in summary", {
+  d <- make_cv_data_ww()
+  result <- run_weightwin(
+    range = c(0, 4), bio_data = d$bio_data, climate_data = d$climate_data,
+    cdate = "Date", bdate = "Date", xvar = "Temp",
+    baseline = lm(Mass ~ climate, data = bio_data),
+    par = c(1.25, 0.5), k = 0, plot_every = NULL
+  )
+  expect_false("CV_score" %in% names(result@weightwin_summary))
+  expect_null(result@weightwin_output[[1]]$cv_score)
+})
+
+test_that("k = 2 adds a numeric CV_score to summary and output", {
+  set.seed(42)
+  d <- make_cv_data_ww()
+  result <- run_weightwin(
+    range = c(0, 4), bio_data = d$bio_data, climate_data = d$climate_data,
+    cdate = "Date", bdate = "Date", xvar = "Temp",
+    baseline = lm(Mass ~ climate, data = bio_data),
+    par = c(1.25, 0.5), k = 2, plot_every = NULL
+  )
+  expect_true("CV_score" %in% names(result@weightwin_summary))
+  expect_true(is.numeric(result@weightwin_summary$CV_score))
+  expect_false(is.na(result@weightwin_summary$CV_score[[1]]))
+  expect_true(is.numeric(result@weightwin_output[[1]]$cv_score))
+})
+
+test_that("k = 2, n = 2 gives CV_score for each run", {
+  set.seed(1)
+  d <- make_cv_data_ww()
+  result <- run_weightwin(
+    n = 2,
+    range = c(0, 4), bio_data = d$bio_data, climate_data = d$climate_data,
+    cdate = "Date", bdate = "Date", xvar = "Temp",
+    baseline = lm(Mass ~ climate, data = bio_data),
+    par = c(1.25, 0.5), par_min = c(0.1, 0.1), par_max = c(5, 5),
+    k = 2, plot_every = NULL
+  )
+  expect_equal(nrow(result@weightwin_summary), 2)
+  expect_equal(length(result@weightwin_summary$CV_score), 2)
+  expect_true(all(is.numeric(result@weightwin_summary$CV_score)))
+})
+
+test_that("k = 0 and k = 2 produce identical AIC values", {
+  d <- make_cv_data_ww()
+  res0 <- run_weightwin(
+    range = c(0, 4), bio_data = d$bio_data, climate_data = d$climate_data,
+    cdate = "Date", bdate = "Date", xvar = "Temp",
+    baseline = lm(Mass ~ climate, data = bio_data),
+    par = c(1.25, 0.5), k = 0, plot_every = NULL
+  )
+  set.seed(42)
+  res2 <- run_weightwin(
+    range = c(0, 4), bio_data = d$bio_data, climate_data = d$climate_data,
+    cdate = "Date", bdate = "Date", xvar = "Temp",
+    baseline = lm(Mass ~ climate, data = bio_data),
+    par = c(1.25, 0.5), k = 2, plot_every = NULL
+  )
+  expect_equal(res0@weightwin_summary$AIC, res2@weightwin_summary$AIC,
+               tolerance = 1e-6)
+})
+
+test_that("k = 1 throws an error", {
+  d <- make_cv_data_ww()
+  expect_error(
+    run_weightwin(
+      range = c(0, 4), bio_data = d$bio_data, climate_data = d$climate_data,
+      cdate = "Date", bdate = "Date", xvar = "Temp",
+      baseline = lm(Mass ~ climate, data = bio_data),
+      par = c(1.25, 0.5), k = 1, plot_every = NULL
+    ),
+    "must be 0.*or >= 2"
+  )
+})
+
+test_that("k > nrow(bio_data) throws an error", {
+  d <- make_cv_data_ww()
+  expect_error(
+    run_weightwin(
+      range = c(0, 4), bio_data = d$bio_data, climate_data = d$climate_data,
+      cdate = "Date", bdate = "Date", xvar = "Temp",
+      baseline = lm(Mass ~ climate, data = bio_data),
+      par = c(1.25, 0.5), k = 999, plot_every = NULL
+    ),
+    "cannot exceed number of observations"
+  )
+})
+
+test_that("custom predict_fn is called during CV", {
+  d <- make_cv_data_ww()
+  call_count <- 0L
+  spy_predict <- function(m, newdata) {
+    call_count <<- call_count + 1L
+    predict(m, newdata = newdata)
+  }
+  set.seed(1)
+  run_weightwin(
+    range = c(0, 4), bio_data = d$bio_data, climate_data = d$climate_data,
+    cdate = "Date", bdate = "Date", xvar = "Temp",
+    baseline   = lm(Mass ~ climate, data = bio_data),
+    par        = c(1.25, 0.5),
+    k          = 2,
+    predict_fn = spy_predict,
+    plot_every = NULL
+  )
+  # 1 run × 2 folds = 2 predict calls
+  expect_equal(call_count, 2L)
+})
+
+test_that("predict_fn rejects non-function values", {
+  d <- make_cv_data_ww()
+  expect_error(
+    run_weightwin(
+      range = c(0, 4), bio_data = d$bio_data, climate_data = d$climate_data,
+      cdate = "Date", bdate = "Date", xvar = "Temp",
+      baseline   = lm(Mass ~ climate, data = bio_data),
+      par        = c(1.25, 0.5),
+      predict_fn = "not_a_function",
+      plot_every = NULL
+    ),
+    "predict_fn"
+  )
+})
+
