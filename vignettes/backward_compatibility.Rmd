@@ -197,7 +197,7 @@ For analyses of growing degree days, we want to convert our climatic data into b
 
 **Old syntax**
 ```{r, eval = FALSE}
-old_output <- slidingwin(xvar = list(Temp = MassClimate$Temp),
+old_output_ggd <- slidingwin(xvar = list(Temp = MassClimate$Temp),
                          cdate = MassClimate$Date, 
                          bdate = Mass$Date, 
                          baseline = lm(Mass ~ 1, data = Mass),
@@ -206,6 +206,14 @@ old_output <- slidingwin(xvar = list(Temp = MassClimate$Temp),
                          stat = "sum",
                          func = c("lin"), cmissing = FALSE,
                          cinterval = "month", upper = 10, binary = TRUE)
+```
+
+```{r}
+plotdelta(old_output_ggd[[1]]$Dataset)
+```
+
+```{r}
+head(old_output_ggd[[1]]$Dataset, 10)
 ```
 
 **New syntax**
@@ -225,7 +233,7 @@ MassClimate_mo
 ```
 
 ```{r}
-new_output <- run_slidingwin(range = c(0, 12), type = "absolute", refday = c(20, 5),
+new_output_ggd <- run_slidingwin(range = c(0, 12), type = "absolute", refday = c(20, 5),
                              climate_data = MassClimate_mo,
                              ## Sum growing degree days across multiple months
                              xvar = "threshold", fn = sum,
@@ -233,15 +241,6 @@ new_output <- run_slidingwin(range = c(0, 12), type = "absolute", refday = c(20,
                              bio_data = Mass,
                              baseline = lm(Mass ~ climate, data = bio_data))
 ```
-
-```{r}
-plotdelta(old_output[[1]]$Dataset)
-```
-
-```{r}
-head(old_output[[1]]$Dataset, 10)
-```
-
 
 ```{r}
 plot_delta(new_output)
