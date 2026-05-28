@@ -54,7 +54,20 @@ old_output <- slidingwin(xvar = list(Temp = MassClimate$Temp),
                          func = c("lin"), cmissing = FALSE, cinterval = "day")
 ```
 
+```{r}
+plotdelta(old_output[[1]]$Dataset)
+```
+
+```{r}
+head(old_output[[1]]$Dataset, 10)
+```
+
 **New syntax**
+
+- `xvar`, `cdate` and `bdate` and character strings corresponding to column names.
+- Instead of specifying summary function with `stat`, you can provide any function to the `fn` argument. This accepts any function that summarises a vector of numbers into a single value (e.g. median).
+- `baseline` should now also include dummy 'climate' to specify climate effects. Adding a dummy column to `bio_data` is no longer needed, but it is necessary for `baseline` to always have 'data = bio_data'.
+
 ```{r}
 new_output <- run_slidingwin(xvar = "Temp",
                              cdate = "Date",
@@ -62,19 +75,9 @@ new_output <- run_slidingwin(xvar = "Temp",
                              bio_data = Mass,
                              baseline = lm(Mass ~ climate, data = bio_data),
                              range = c(0, 100),
-                             type = "absolute", refday = "20/05/2020",
+                             type = "absolute", refday = c(20, 5),
                              fn = mean, cinterval = "day",
                              climate_data = MassClimate)
-```
-
-**Comparison**
-
-```{r}
-plotdelta(old_output[[1]]$Dataset)
-```
-
-```{r}
-head(old_output[[1]]$Dataset, 10)
 ```
 
 ```{r}
@@ -107,7 +110,7 @@ old_output <- slidingwin(xvar = list(Temp = MassClimate$Temp),
 **New syntax**
 
 ```{r}
-new_output <- run_slidingwin(range = c(0, 150), type = "absolute", refday = "20/05/2020",
+new_output <- run_slidingwin(range = c(0, 150), type = "absolute", refday = c(20, 5),
                              climate_data = MassClimate,
                              xvar = "Temp", fn = mean,
                              cinterval = "day",
@@ -160,7 +163,7 @@ MassClimate_week <- trans_clim_interval(MassClimate, xvar = "Temp", cdate = "Dat
 ```
 
 ```{r}
-new_output <- run_slidingwin(range = c(0, 70), type = "absolute", refday = "20/05/2020",
+new_output <- run_slidingwin(range = c(0, 70), type = "absolute", refday = c(20, 5),
                              climate_data = MassClimate_week,
                              xvar = "Temp", fn = mean,
                              cinterval = "week",
@@ -221,7 +224,7 @@ MassClimate_mo
 ```
 
 ```{r}
-new_output <- run_slidingwin(range = c(0, 12), type = "absolute", refday = "20/05/2020",
+new_output <- run_slidingwin(range = c(0, 12), type = "absolute", refday = c(20, 5),
                              climate_data = MassClimate_mo,
                              ## Sum growing degree days across multiple months
                              xvar = "threshold", fn = sum,
@@ -292,7 +295,7 @@ old_output <- slidingwin(xvar = list(Temp = MassClimate_gaps$Temp),
 In the new syntax, missing climate data should be fixed in a pre-processing step.
 
 ```{r, error=TRUE}
-run_slidingwin(range = c(0, 150), type = "absolute", refday = "20/05/2020",
+run_slidingwin(range = c(0, 150), type = "absolute", refday = c(20, 5),
                climate_data = MassClimate_gaps,
                xvar = "Temp", fn = mean,
                cinterval = "day",
@@ -305,7 +308,7 @@ MassClimate_fixed <- repair_climate(MassClimate_gaps, cdate = "Date", xvar = "Te
 ```
 
 ```{r}
-new_output <- run_slidingwin(range = c(0, 150), type = "absolute", refday = "20/05/2020",
+new_output <- run_slidingwin(range = c(0, 150), type = "absolute", refday = c(20, 5),
                              climate_data = MassClimate_fixed,
                              xvar = "Temp", fn = mean,
                              cinterval = "day",
@@ -330,3 +333,8 @@ plot_delta(new_output)
 head(getDataset(new_output), 10)
 ```
 
+************************************
+
+## Weighted windows
+
+`weightwin` has experienced some of the largest changes in 
