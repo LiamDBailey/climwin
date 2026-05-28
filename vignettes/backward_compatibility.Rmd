@@ -254,6 +254,8 @@ head(getDataset(new_output), 10)
 
 ## Incomplete climate data
 
+Create data with missing climate information.
+
 ```{r}
 MassClimate_gaps <- MassClimate |> 
   mutate(Date = lubridate::dmy(Date)) |> 
@@ -263,21 +265,8 @@ MassClimate_gaps <- MassClimate |>
 
 **Old syntax**
 
-```{r, error=TRUE}
-## This fails
-slidingwin(xvar = list(Temp = MassClimate_gaps$Temp),
-           cdate = MassClimate_gaps$Date,
-           bdate = Mass$Date,
-           baseline = lm(Mass ~ 1, data = Mass),
-           range = c(150, 0),
-           type = "absolute", refday = c(20, 5),
-           stat = "mean",
-           func = c("lin"), cmissing = FALSE,
-           cinterval = "day")
-```
-
 ```{r}
-old_output <- slidingwin(xvar = list(Temp = MassClimate_gaps$Temp),
+old_output_missing <- slidingwin(xvar = list(Temp = MassClimate_gaps$Temp),
                          cdate = MassClimate_gaps$Date, 
                          bdate = Mass$Date, 
                          baseline = lm(Mass ~ 1, data = Mass),
@@ -290,25 +279,24 @@ old_output <- slidingwin(xvar = list(Temp = MassClimate_gaps$Temp),
                          cinterval = "day")
 ```
 
+```{r}
+plotdelta(old_output_missing[[1]]$Dataset)
+```
+
+```{r}
+head(old_output_missing[[1]]$Dataset, 10)
+```
+
 **New syntax**
 
-In the new syntax, missing climate data should be fixed in a pre-processing step.
+In the new syntax, missing climate data should be fixed in a pre-processing step. Default repair function is `imputeTS::na_interpolation`, which is the same as 'method1' in old code.
 
-```{r, error=TRUE}
-run_slidingwin(range = c(0, 150), type = "absolute", refday = c(20, 5),
-               climate_data = MassClimate_gaps,
-               xvar = "Temp", fn = mean,
-               cinterval = "day",
-               bio_data = Mass,
-               baseline = lm(Mass ~ climate, data = bio_data))
+```{r}
+MassClimate_fixed <- repair_climate(MassClimate_gaps, cdate = "Date", xvar = "Temp", method = imputeTS::na_interpolation)
 ```
 
 ```{r}
-MassClimate_fixed <- repair_climate(MassClimate_gaps, cdate = "Date", xvar = "Temp")
-```
-
-```{r}
-new_output <- run_slidingwin(range = c(0, 150), type = "absolute", refday = c(20, 5),
+new_output_missing <- run_slidingwin(range = c(0, 150), type = "absolute", refday = c(20, 5),
                              climate_data = MassClimate_fixed,
                              xvar = "Temp", fn = mean,
                              cinterval = "day",
@@ -317,24 +305,53 @@ new_output <- run_slidingwin(range = c(0, 150), type = "absolute", refday = c(20
 ```
 
 ```{r}
-plotdelta(old_output[[1]]$Dataset)
+plot_delta(new_output_missing)
 ```
 
 ```{r}
-head(old_output[[1]]$Dataset, 10)
-```
-
-
-```{r}
-plot_delta(new_output)
-```
-
-```{r}
-head(getDataset(new_output), 10)
+head(getDataset(new_output_missing), 10)
 ```
 
 ************************************
 
 ## Weighted windows
 
-`weightwin` has experienced some of the largest changes in 
+`weightwin` has experienced some of the largest changes in `climwin` v2.0.
+
+*Old syntax*
+
+```{r, echo=FALSE}
+old_output_weight <- weightwin(xvar = list(Temp = MassClimate$Temp),
+                         cdate = MassClimate$Date, 
+                         bdate = Mass$Date, 
+                         baseline = lm(Mass ~ 1, data = Mass),
+                         range = c(150, 0), 
+                         type = "absolute", refday = c(20, 5),
+                         weightfunc = "W", par = c(1, 1, 0))
+```
+
+```{r}
+summary(old_output_weight$BestModel)
+```
+
+
+*New syntax*
+
+
+
+```{r, echo=FALSE}
+new_output_weight <- run_weightwin(xvar = "Temp",
+                         cdate = "Date", 
+                         bdate = "Date", 
+                         bio_data = Mass,
+                         climate_data = MassClimate,
+                         baseline = lm(Mass ~ climate, data = bio_data),
+                         range = c(0, 150), 
+                         type = "absolute", refday = c(20, 5), weightfunc = "W",
+                         par = c(1, 1))
+```
+
+```{r}
+summary(getBestModel(new_output_weight))
+```
+
