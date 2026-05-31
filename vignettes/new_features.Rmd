@@ -4,33 +4,212 @@ author: "Liam D. Bailey and Martijn van de Pol"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{climwin}
+%\VignetteIndexEntry{climwin}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
----
+  ---
   
-************************************
-
-```{r}
+  ************************************
+  
+  ```{r}
 devtools::load_all()
 ```
-  
+
 ## Performance
 
-We hope that one noticable difference of climwin v2.0 will be an improvement in performance.
+We hope that one noticeable difference of `climwin` v2.0 will be an improvement in performance. The below graph shows median benchmarked run times for new and old versions of the package with simple models.
 
-```{r}
+```{r, echo = FALSE}
 ggplot2::ggplot() +
-  ggplot2::geom_line(data = bench_results,
-            ggplot2::aes(x = window_size, y = median, colour = expression),
-            linewidth = 1) +
-  ggplot2::geom_point(data = bench_results,
-            ggplot2::aes(x = window_size, y = median, colour = expression),
-            shape = 21) +
+  ggplot2::geom_line(data = bench_results_simple,
+                     ggplot2::aes(x = max_range, y = median, colour = expression),
+                     linewidth = 1) +
+  ggplot2::geom_point(data = bench_results_simple,
+                      ggplot2::aes(x = max_range, y = median, colour = expression),
+                      shape = 21) +
+  ggplot2::theme_classic()
+```
+
+```{r, echo = FALSE}
+ggplot2::ggplot() +
+  ggplot2::geom_line(data = bench_results_mixed,
+                     ggplot2::aes(x = max_range, y = median, colour = expression),
+                     linewidth = 1) +
+  ggplot2::geom_point(data = bench_results_mixed,
+                      ggplot2::aes(x = max_range, y = median, colour = expression),
+                      shape = 21) +
   ggplot2::theme_classic()
 ```
 
 ## Parallel processing
 
+`run_slidingwin`, `run_weightwin`, and `run_randwin` all now include parallel processing by default with the argument 'parallel'. This is particularly valuable for `run_randwin` where parallel processing can *** run times.
+
+## Custom functions
+
+`run_slidingwin` includes several arguments that take functions that can be used to tweak the output of the sliding window analysis.
+
+### Climate summary function
+
+The `fn` argument allows us to provide any function that can be used to summarise climate data within a window. By default, we use 'mean' but this can take any custom model. For example, we can use median.
+
+```{r}
+run_slidingwin(xvar = "Temp",
+               cdate = "Date",
+               bdate = "Date", 
+               bio_data = Mass,
+               baseline = lm(Mass ~ climate, data = bio_data),
+               range = c(0, 100),
+               type = "absolute", refday = c(20, 5),
+               fn = median, cinterval = "day",
+               climate_data = MassClimate)
+```
+
+### Coefficient model
+
+By default, we use the generic `coef` function to extract all model coefficients and return as columns in our final dataset. We can extract any information from our model as long as we return a named numeric vector.
+
+```{r}
+run_slidingwin(xvar = "Temp",
+               cdate = "Date",
+               bdate = "Date", 
+               bio_data = Mass,
+               baseline = lm(Mass ~ climate, data = bio_data),
+               range = c(0, 100),
+               type = "absolute", refday = c(20, 5),
+               fn = median, cinterval = "day",
+               climate_data = MassClimate, coef_fn = \(x) x ## Extract model info...
+               )
+```
+
+For mixed effects models, we need to change coef_fn to be `fixef` or even a combination of `fixef` and `ranef` to get all model information.
+
+```{r}
+run_slidingwin(xvar = "Temp",
+               cdate = "Date",
+               bdate = "Date", 
+               bio_data = Mass,
+               baseline = lmer(Mass ~ climate + (1|Cohort), data = bio_data),
+               range = c(0, 100),
+               type = "absolute", refday = c(20, 5),
+               fn = median, cinterval = "day",
+               climate_data = MassClimate, coef_fn = fixef ## Extract fixed effects...
+               )
+```
+
+```{r}
+run_slidingwin(xvar = "Temp",
+               cdate = "Date",
+               bdate = "Date", 
+               bio_data = Mass,
+               baseline = lmer(Mass ~ climate + (1|Cohort), data = bio_data),
+               range = c(0, 100),
+               type = "absolute", refday = c(20, 5),
+               fn = median, cinterval = "day",
+               climate_data = MassClimate, coef_fn = \(x) c(fixef(x), ranef(x)) ## Extract fixed and random effects...
+               )
+```
+
+### AIC function
+
+The `AIC_fn` argument defines how AIC information is extracted to assess models. This can be adjusted to deal with new model structures that may have more complex AIC methods or even use different methods to assess models.
+
+For small sample sizes, the AICc function from MuMIn can be used. This is not included by default to reduce dependencies in the package.
+
+```{r}
+run_slidingwin(xvar = "Temp",
+               cdate = "Date",
+               bdate = "Date", 
+               bio_data = Mass,
+               baseline = lm(Mass ~ climate, data = bio_data),
+               range = c(0, 100),
+               type = "absolute", refday = c(20, 5),
+               fn = mean, cinterval = "day",
+               climate_data = MassClimate, AIC_fn = MuMIn::AICc)
+```
+
+For other modelling packages like `spaMM`, a custom AIC function may be needed to decide between conditional and marginal AIC (i.e. considering random effects).
+
+```{r}
+require("spaMM", quietly = TRUE)
+run_slidingwin(xvar = "Temp",
+               cdate = "Date",
+               bdate = "Date", 
+               bio_data = Mass,
+               baseline = fitme(Mass ~ climate + (1|Cohort), data = bio_data),
+               range = c(0, 100),
+               type = "absolute", refday = c(20, 5),
+               fn = mean, cinterval = "day",
+               climate_data = MassClimate,
+               AIC_fn = \(x) AIC(x, verbose = FALSE)[1] ## spaMM returns multiple AIC values. We take the first marginal AIC value
+)
+```
+
+### k-fold cross validation function
+
+`climwin` v2.0 still includes k-fold cross validation for more robust model assessment. By default, k-fold cross validation is assessed using mean-square error. But a user can provide a custom function.
+
+```{r}
+require("Metrics", quietly = TRUE)
+run_slidingwin(xvar = "Temp",
+               cdate = "Date",
+               bdate = "Date", 
+               bio_data = Mass,
+               baseline = lm(Mass ~ climate, data = bio_data),
+               range = c(0, 100),
+               type = "absolute", refday = c(20, 5),
+               fn = mean, cinterval = "day",
+               climate_data = MassClimate, k = 2,
+               CV_func = Metrics::rmse)
+```
+
+For other modelling packages like `spaMM`, a custom AIC function may be needed to decide between conditional and marginal AIC (i.e. considering random effects).
+
+```{r}
+require("spaMM", quietly = TRUE)
+run_slidingwin(xvar = "Temp",
+               cdate = "Date",
+               bdate = "Date", 
+               bio_data = Mass,
+               baseline = fitme(Mass ~ climate + (1|Cohort), data = bio_data),
+               range = c(0, 100),
+               type = "absolute", refday = c(20, 5),
+               fn = mean, cinterval = "day",
+               climate_data = MassClimate,
+               AIC_fn = \(x) AIC(x, verbose = FALSE)[1] ## spaMM returns multiple AIC values. We take the first marginal AIC value
+)
+```
+
 ## S7 object output
 
+`climwin` v2.0 returns an S7 object that stores all important information. This can be easily accessed using `get*` functions rather than needing to manually draw from a list object.
+
+```{r}
+new_output <- run_slidingwin(xvar = "Temp",
+                             cdate = "Date",
+                             bdate = "Date", 
+                             bio_data = Mass,
+                             baseline = lm(Mass ~ climate, data = bio_data),
+                             range = c(0, 100),
+                             type = "absolute", refday = c(20, 5),
+                             fn = mean, cinterval = "day",
+                             climate_data = MassClimate)
+```
+
+You can see a simple overview of the sliding window analysis by simply calling the output in R.
+
+```{r}
+new_output
+```
+
+```{r}
+summary(getBestModel(new_output))
+```
+
+```{r}
+head(getBestModelData(new_output))
+```
+
+```{r}
+climwin::getDataset(new_output)
+```

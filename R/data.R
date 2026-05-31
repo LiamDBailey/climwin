@@ -83,8 +83,8 @@ benchmark_climwin <- function(){
     stop("This data is generated using 'bench' package")
   }
   
-  window_sizes <- c(25, 50, 75, 100, 150, 200)
-  simple_mods <- purrr::map_df(.x = window_sizes, .f = \(max_range){
+  window_sizes <- c(25, 50, 75, 100, 150, 200, 365)
+  bench_results_simple <- purrr::map_df(.x = window_sizes, .f = \(max_range){
     
     print(paste0("Benchmarking: ", max_range))
     
@@ -101,10 +101,10 @@ benchmark_climwin <- function(){
                                                bdate = "Date", 
                                                bio_data = Mass,
                                                baseline = lm(Mass ~ climate, data = bio_data),
-                                               range = 0:max_range,
+                                               range = c(0, max_range),
                                                type = "absolute", refday = c(20, 5),
                                                fn = mean, cinterval = "day",
-                                               climate_data = MassClimate), check = FALSE) |> 
+                                               climate_data = MassClimate), check = FALSE, iterations = 5) |> 
       select(expression:total_time) |> 
       mutate(expression = as.character(expression),
              across(.cols = c(min, median, total_time), .fns = as.numeric),
@@ -113,29 +113,35 @@ benchmark_climwin <- function(){
     
   })
   
+  usethis::use_data(bench_results_simple, internal = TRUE, overwrite = TRUE)
+  
   if (!require("lme4")){
     stop("Need 'lme4' for complex mods")
   }
   
-  complex_mods <- purrr::map_df(.x = window_sizes, .f = \(max_range){
+  window_sizes <- c(25, 50, 100)
+  
+  bench_results_mixed <- purrr::map_df(.x = window_sizes, .f = \(max_range){
     
-    output <- bench::mark(old = slidingwin(xvar = list(Temp = OffspringClimate$Temperature),
+    print(paste0("Benchmarking: ", max_range))
+    
+    output <- bench::mark(old = suppressWarnings(slidingwin(xvar = list(Temp = OffspringClimate$Temperature),
                                            cdate = OffspringClimate$Date, 
                                            bdate = Offspring$Date, 
-                                           baseline = glmer(Offspring ~ 1 + (1|Cohort), data = Offspring),
+                                           baseline = glmer(Offspring ~ 1 + (1|Cohort), data = Offspring, family = "poisson"),
                                            range = c(max_range, 0), 
                                            type = "relative",
                                            stat = "mean", 
-                                           func = c("quad"), cmissing = FALSE, cinterval = "day"),
-                          new = run_slidingwin(xvar = "Temperature",
+                                           func = c("quad"), cmissing = FALSE, cinterval = "day")),
+                          new = suppressWarnings(run_slidingwin(xvar = "Temperature",
                                                cdate = "Date",
                                                bdate = "Date", 
                                                bio_data = Offspring,
-                                               baseline = glmer(Offspring ~ poly(climate, 2) + (1|Cohort), family = "binomial", data = bio_data),
-                                               range = 0:max_range,
+                                               baseline = glmer(Offspring ~ poly(climate, 2) + (1|Cohort), family = "poisson", data = bio_data),
+                                               range = c(0, max_range),
                                                type = "relative",
                                                fn = mean, cinterval = "day",
-                                               climate_data = OffspringClimate),
+                                               climate_data = OffspringClimate, coef_fn = fixef)),
                           check = FALSE) |> 
       select(expression:total_time) |> 
       mutate(expression = as.character(expression),
@@ -145,9 +151,7 @@ benchmark_climwin <- function(){
     
   })
   
-  bench_results <- dplyr::bind_rows(simple_mods |> mutate(mod = "simple"),
-                                    complex_mods |> mutate(mod = "complex"))
-  usethis::use_data(bench_results, internal = TRUE)
+  usethis::use_data(bench_results_mixed, internal = TRUE, overwrite = TRUE)
   
 }
 
