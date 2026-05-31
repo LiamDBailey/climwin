@@ -192,6 +192,49 @@ test_that("run_weightwin ('F') returns a valid climwin_weightwin object", {
   expect_true(all(weights >= 0))
 })
 
+# W_old (3-parameter Weibull) --------------------------------------------------
+
+test_that("run_weightwin ('W_old') returns a valid climwin_weightwin object", {
+  d <- make_test_data()
+  result <- run_weightwin(
+    range      = c(0, 4),
+    bio_data   = d$bio_data,
+    climate_data = d$climate_data,
+    cdate = "Date", bdate = "Date", xvar = "Temp",
+    baseline = lm(Mass ~ climate, data = bio_data),
+    weightfunc = "W_old",
+    par        = c(3, 0.2, 0),
+    plot_every = NULL
+  )
+
+  expect_true(inherits(result, "S7_object"))
+  expect_true(inherits(result@weightwin_summary, "data.frame"))
+  expect_length(result@weightwin_output, 1)
+  expect_equal(result@weightwin_output[[1]]$weightfunc, "W_old")
+
+  weights <- result@weightwin_output[[1]]$weights$weights
+  expect_length(weights, 5)
+  expect_equal(sum(weights), 1, tolerance = 1e-10)
+  expect_true(all(weights >= 0))
+})
+
+test_that("run_weightwin ('W_old') summary has shape/scale/location columns", {
+  d <- make_test_data()
+  result <- run_weightwin(
+    range      = c(0, 4),
+    bio_data   = d$bio_data,
+    climate_data = d$climate_data,
+    cdate = "Date", bdate = "Date", xvar = "Temp",
+    baseline = lm(Mass ~ climate, data = bio_data),
+    weightfunc = "W_old",
+    par        = c(3, 0.2, 0),
+    plot_every = NULL
+  )
+  expect_true(all(c("start_shape", "start_scale", "start_location",
+                    "end_shape",   "end_scale",   "end_location") %in%
+                    names(result@weightwin_summary)))
+})
+
 # Custom weightfunc (function) -----------------------------------------------
 
 test_that("run_weightwin accepts a custom density function for weightfunc", {

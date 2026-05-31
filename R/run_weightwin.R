@@ -32,10 +32,16 @@
 #'   the reference day and month when \code{type = "absolute"}
 #'   (e.g. \code{c(20, 5)} for 20th May).
 #' @param weightfunc Either a character string (\code{"W"}, \code{"G"},
-#'   \code{"F"}) or a density function with signature
+#'   \code{"F"}, \code{"W_old"}) or a density function with signature
 #'   \code{function(x, par1, par2, ...)}. When a function is supplied,
 #'   \code{lower} and \code{upper} must be provided explicitly and
 #'   \code{par_labels} defaults to \code{"par1"}, \code{"par2"}, …
+#'   \code{"W_old"} is the 3-parameter Weibull used in the original climwin
+#'   package: \eqn{(\alpha/\beta) \cdot ((x - \gamma)/\beta)^{\alpha-1}
+#'   \exp(-(x-\gamma)/\beta)^\alpha}, where \eqn{\alpha} = shape,
+#'   \eqn{\beta} = scale, \eqn{\gamma} = location (\eqn{\le 0}).  Requires
+#'   \code{par = c(shape, scale, location)}; default bounds are
+#'   \code{lower = c(0.01, 0.01, -10)}, \code{upper = c(10, 10, 0)}.
 #' @param method Optimisation method.  One of:
 #'   \describe{
 #'     \item{\code{"L-BFGS-B"} (default)}{Bounded quasi-Newton with numerical
@@ -200,7 +206,7 @@ run_weightwin <- function(n = 1,
     if (is.null(lower) || is.null(upper))
       stop("When weightfunc is a function, 'lower' and 'upper' must be supplied")
   } else {
-    weightfunc <- match.arg(weightfunc, choices = c("W", "G", "F"))
+    weightfunc <- match.arg(weightfunc, choices = c("W", "G", "F", "W_old"))
     weightfunc_name <- weightfunc
 
     if (weightfunc == "W") {
@@ -223,6 +229,17 @@ run_weightwin <- function(n = 1,
       if (is.null(lower)) lower <- c(0.01, 0.1)
       if (is.null(upper)) upper <- c(2, 10)
       par_labels <- c("scale", "shape")
+    } else if (weightfunc == "W_old") {
+      ## 3-parameter Weibull from the original climwin package.
+      ## location <= 0 shifts the distribution left so the window can
+      ## peak before the reference date.
+      dfun <- function(x, shape, scale, location) {
+        shape / scale * ((x - location) / scale)^(shape - 1) *
+          exp(-((x - location) / scale)^shape)
+      }
+      if (is.null(lower)) lower <- c(0.01, 0.01, -10)
+      if (is.null(upper)) upper <- c(10,   10,    0)
+      par_labels <- c("shape", "scale", "location")
     }
   }
 
