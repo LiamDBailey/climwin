@@ -707,7 +707,8 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     
   } else {
     
-    #If climate has already been provided, simply update the model with the new term yvar.
+    #If climate has already been provided, simply update the model with the new term yvar
+    modeldat$climate <- rnorm(n = nrow(modeldat))
     modeloutput <- update(baseline, yvar ~., data = modeldat)
     
     coef_data <- list()
@@ -812,7 +813,6 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
               
               modeloutput <- tryCatch({
                 
-                update(modeloutput, .~., data = modeldat); 
                 update(modeloutput, .~., data = modeldat)
                 
                 }, error = function(e){
@@ -831,11 +831,13 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
               
               if(class(baseline)[1] == "coxph"){
                 
-                modeloutput <- my_update(modeloutput, .~., data = modeldat)
+                modeloutput <- tryCatch(my_update(modeloutput, .~., data = modeldat),
+                                        error = \(e) return(baseline))
                 
               } else {
                 
-                modeloutput <- update(modeloutput, .~., data = modeldat)
+                modeloutput <- tryCatch(update(modeloutput, .~., data = modeldat),
+                                        error = \(e) return(baseline))
                 
               }
               
@@ -1151,11 +1153,13 @@ basewin <- function(exclude, xvar, cdate, bdate, baseline, range,
     
     if(class(baseline)[1] == "coxph"){
       
-      LocalModel <- my_update(modeloutput, .~., data = modeldat)
+      LocalModel <- tryCatch(my_update(modeloutput, .~., data = modeldat),
+                             error = \(e) return(baseline))
       
     } else {
       
-      LocalModel <- update(modeloutput, .~., data = modeldat)
+      LocalModel <- tryCatch(update(modeloutput, .~., data = modeldat),
+                             error = \(e) return(baseline))
       
     }
     
