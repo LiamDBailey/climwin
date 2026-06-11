@@ -27,6 +27,9 @@ run_weightwin(
   cinterval = "day",
   show_best = TRUE,
   AIC_fn = AIC,
+  k = 0L,
+  predict_fn = predict,
+  CV_func = function(predicted, observed) mean((predicted - observed)^2, na.rm = TRUE),
   .predict_args = list(),
   .baselineIsCall = FALSE
 )
@@ -61,14 +64,21 @@ on \code{weightfunc}: 2 for \code{"W"} and \code{"G"}, 2 for \code{"F"}
 
 \item{type}{\code{"relative"} (default) or \code{"absolute"}.}
 
-\item{refday}{Reference date (\code{"DD/MM/YYYY"}) used when
-\code{type = "absolute"}.}
+\item{refday}{A two-element numeric vector \code{c(day, month)} specifying
+the reference day and month when \code{type = "absolute"}
+(e.g. \code{c(20, 5)} for 20th May).}
 
 \item{weightfunc}{Either a character string (\code{"W"}, \code{"G"},
-\code{"F"}) or a density function with signature
+\code{"F"}, \code{"W_old"}) or a density function with signature
 \code{function(x, par1, par2, ...)}. When a function is supplied,
 \code{lower} and \code{upper} must be provided explicitly and
-\code{par_labels} defaults to \code{"par1"}, \code{"par2"}, …}
+\code{par_labels} defaults to \code{"par1"}, \code{"par2"}, …
+\code{"W_old"} is the 3-parameter Weibull used in the original climwin
+package: \eqn{(\alpha/\beta) \cdot ((x - \gamma)/\beta)^{\alpha-1}
+\exp(-(x-\gamma)/\beta)^\alpha}, where \eqn{\alpha} = shape,
+\eqn{\beta} = scale, \eqn{\gamma} = location (\eqn{\le 0}).  Requires
+\code{par = c(shape, scale, location)}; default bounds are
+\code{lower = c(0.01, 0.01, -10)}, \code{upper = c(10, 10, 0)}.}
 
 \item{method}{Optimisation method.  One of:
 \describe{
@@ -145,6 +155,24 @@ predicted climate effect (line) from the current best model.  Set to
 Function must return a single numeric value that can be minimsied to find the best window.
 Default AIC should work for most model structures, but some models (e.g. `spaMM` package) will require
 custom functions.}
+
+\item{k}{Integer. Number of folds for k-fold cross-validation. Use
+\code{0} (default) to disable CV. When \code{k >= 2}, each optimisation
+run also reports a mean-squared-error CV score computed at the optimal
+parameters: the optimal weighted climate is fixed, then the fitted model
+is evaluated by k-fold hold-out on the biological data. The CV score is
+stored in the \code{weightwin_summary} and each run's output list.}
+
+\item{predict_fn}{Function used to generate predictions during CV. Defaults
+to \code{\link[stats]{predict}}. Supply a wrapper (e.g.
+\code{function(m, newdata) predict(m, newdata, re.form = NA)}) for mixed
+models that need extra arguments.}
+
+\item{CV_func}{Function used to score each fold during cross-validation.
+Must accept two numeric vectors \code{(predicted, observed)} and return a
+single numeric value (lower = better). Defaults to mean squared error:
+\code{function(predicted, observed) mean((predicted - observed)^2, na.rm = TRUE)}.
+The per-fold scores are averaged to produce \code{CV_score}.}
 
 \item{.predict_args}{A named list of extra arguments forwarded to
 \code{\link[stats]{predict}} when drawing the predicted line in the

@@ -65,8 +65,9 @@ Defaults to \code{mean}.}
 
 \item{type}{\code{"relative"} (default) or \code{"absolute"}.}
 
-\item{refday}{Reference date (\code{"DD/MM/YYYY"}) when
-\code{type = "absolute"}.}
+\item{refday}{A two-element numeric vector \code{c(day, month)} specifying
+the reference day and month when \code{type = "absolute"}
+(e.g. \code{c(20, 5)} for 20th May).}
 
 \item{parallel}{Logical. Use parallel processing (slidingwin only).
 Default \code{FALSE}.}

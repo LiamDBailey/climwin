@@ -22,6 +22,10 @@ run_slidingwin(
   parallel = FALSE,
   progress = TRUE,
   AIC_fn = AIC,
+  coef_fn = coef,
+  k = 0L,
+  predict_fn = predict,
+  CV_func = function(predicted, observed) mean((predicted - observed)^2, na.rm = TRUE),
   .baselineIsCall = FALSE,
   .processed_data = NULL
 )
@@ -54,7 +58,7 @@ biological record.  Pass \code{NULL} (default) to disable.}
 
 \item{type}{Character string specifying the type of date range calculation. Must be either "relative" (default) or "absolute".}
 
-\item{refday}{Character string in format "DD/MM/YYYY" specifying the reference date to use when type is "absolute".}
+\item{refday}{A two-element numeric vector \code{c(day, month)} specifying the reference day and month to use when \code{type = "absolute"} (e.g. \code{c(20, 5)} for 20th May).}
 
 \item{spatial}{Character string specifying the name of the spatial grouping column in both climate_data and bio_data. Defaults to NULL.}
 
@@ -73,6 +77,34 @@ biological record.  Pass \code{NULL} (default) to disable.}
 Function must return a single numeric value that can be minimsied to find the best window.
 Default AIC should work for most model structures, but some models (e.g. `spaMM` package) will require
 custom functions.}
+
+\item{coef_fn}{Function applied to each fitted window model immediately after
+\code{AIC_fn}; the model is then discarded. Must return a named numeric vector of
+any length — each element becomes a column in \code{dataset} using its name.
+A single unnamed value is permitted and stored under the column name \code{"coef"};
+unnamed vectors of length > 1 are an error. Errors within \code{coef_fn} for a
+given window produce \code{NA} for that window rather than stopping the analysis.
+Defaults to \code{coef} (extracts all model coefficients). Pass \code{NULL} to
+suppress coefficient extraction.}
+
+\item{k}{Integer. Number of folds for k-fold cross-validation. Must be \code{0}
+(disabled, default) or \code{>= 2}. When enabled, a \code{CV_score} column
+(mean out-of-sample MSE across folds) is appended to \code{dataset}. Fold
+assignments are sampled once before the window loop so all windows are evaluated
+on identical splits. Note: each window fits \code{k} additional models, so
+runtime scales with \code{k}.}
+
+\item{predict_fn}{Function used to generate out-of-sample predictions during
+cross-validation. Must accept a fitted model as its first argument and a
+\code{newdata} argument. Defaults to \code{predict}. Supply a custom function
+for model classes that require specific arguments (e.g.
+\code{function(m, newdata) predict(m, newdata, type = "response")}).}
+
+\item{CV_func}{Function used to score each fold during cross-validation.
+Must accept two numeric vectors \code{(predicted, observed)} and return a
+single numeric value (lower = better). Defaults to mean squared error:
+\code{function(predicted, observed) mean((predicted - observed)^2, na.rm = TRUE)}.
+The per-fold scores are averaged to produce \code{CV_score}.}
 
 \item{.baselineIsCall}{Logical. Internal parameter used to handle baseline substitution. Default is FALSE.}
 
@@ -160,7 +192,7 @@ MassWin <- run_slidingwin(
                      baseline = lm(Mass ~ climate, data = bio_data),
                      xvar = "Temp",
                      cdate = "Date", bdate = "Date", 
-                     type = "absolute", refday = "20/05/2025"
+                     type = "absolute", refday = c(20, 5)
                      )
  
 }
