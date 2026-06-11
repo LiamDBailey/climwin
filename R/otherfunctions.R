@@ -1666,7 +1666,7 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
     
   }
   
-  if(all(!colnames(modeldat) %in% "climate")){
+  if(!any(grepl(x = colnames(modeldat), pattern = "climate"))){
     
     modeldat$climate <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
     
@@ -1700,6 +1700,7 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
     
   } else {
     
+    modeldat$climate <- matrix(ncol = 1, nrow = nrow(modeldat), seq(from = 1, to = nrow(modeldat), by = 1))
     modeloutput <- update(baseline, yvar~., data = modeldat)
     
   }
@@ -1910,7 +1911,8 @@ basewin_weight <- function(n, xvar, cdate, bdate, baseline, range,
   
   weight                <- weight / sum(weight) 
   modeldat$climate      <- apply(cmatrix, 1, FUN = function(x) {sum(x * weight)})
-  LocalModel            <- update(modeloutput, .~., data = modeldat)
+  LocalModel            <- tryCatch(update(modeloutput, .~., data = modeldat),
+                                    error = \(e) return(baseline))
   
   if(any(colnames(model.frame(baseline)) %in% "climate")){
     
@@ -2725,7 +2727,8 @@ modloglik_W <- function(par = par,  modeloutput = modeloutput, baseline = baseli
     
   } else {
     
-    modeloutput                           <- update(modeloutput, .~., data = funcenv$modeldat)   # rerun regression model using new weather index
+    modeloutput                           <- tryCatch(update(modeloutput, .~., data = funcenv$modeldat),
+                                                      error = \(x) return(baseline))   # rerun regression model using new weather index
     deltaAICc                             <- AICc(modeloutput) - nullmodel
     funcenv$DAICc[[funcenv$modno]]        <- deltaAICc
     funcenv$par_shape[[funcenv$modno]]    <- par[1]
